@@ -116,5 +116,17 @@
                 "100.0"
             ]
         }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 0
+        }, 
+        {
+            "Name": "cnode2", 
+            "CpuCount": 1, 
+            "GpuCount": 0
+        }
     ]
 }

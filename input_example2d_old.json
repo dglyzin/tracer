@@ -6,7 +6,7 @@
     "SaveInterval": 0.1, 
     "GridStep": {
         "x": 0.025, 
-        "y": 0.025,
+        "y": 0.025, 
         "z": 1
     }, 
     "Blocks": [
@@ -20,7 +20,7 @@
             "Size": {
                 "x": 10.0, 
                 "y": 10.0
-            },             
+            }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [
@@ -115,6 +115,18 @@
                 "200.0", 
                 "100.0"
             ]
+        }
+    ],
+    "Hardware": [
+        {
+            "Name": "cnode1",
+            "CpuCount": 1,            
+            "GpuCount": 0
+        },
+        {
+            "Name": "cnode2",
+            "CpuCount": 1,            
+            "GpuCount": 0
         }
     ]
 }

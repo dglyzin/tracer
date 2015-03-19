@@ -3,6 +3,16 @@
 Created on Mar 19, 2015
 
 @author: dglyzin
+
+Здесь мы разрезаем блоки на части, если вычислительных устройств больше, чем блоков
+Создаем модель-клон с разрезанными блоками и готовый мэппинг блоков по устройствам 
+
+Создаем массивы с геометрией области (номера функций в каждой точке каждого блока)
+и сохраняем 
+После этого уже другой модуль по той же модели создает список функций (в т.ч. связки, которые появляются только тут после разрезания)
+Нужен общий порядок нумерации функций.
+
+model -> mapped model -> domain.dom+funcs.cpp+run.sh
 '''
 
 import numpy as np
@@ -14,43 +24,6 @@ import time
 from block import Block
 from interconnect import Interconnect
 import copy
-
-BOUND_SHIFT = 1 #we shift every bound index to add zero conditions
-HEATSOURCE_SHIFT = 1 #and every heatsource index too
-zerodate = date(1970,1,1)
-
-def translateLiquidWaterPercentage(jsonPercentage):
-    """
-    json stores percents, we need fraction
-    """
-    binaryPercentage = jsonPercentage/100.0
-    return binaryPercentage
-
-
-def translateConductivity(jsonConductivity):
-    """
-    json stores in (J/s)/m/K, we need (kJ/day)/m/K 
-    """
-    binaryConductivity = 86.4*jsonConductivity
-    return binaryConductivity
-
-def translateHeatFlow(jsonHeatFlow):
-    """
-    json stores in (kJ/s)/m^2, we need (kJ/day)/m^2 
-    """
-    binaryHeatFlow = 86400*jsonHeatFlow
-    return binaryHeatFlow
-
-
-
-
-def translateRecConductivity(jsonRecConductivity):
-    """
-    json stores in 1 / [(J/s)/m/K], we need 1 / [(kJ/day)/m/K]
-    """
-    binaryRecConductivity = jsonRecConductivity/86.4
-    return binaryRecConductivity
-
 
 
 def getOffset(arr):
