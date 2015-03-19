@@ -22,6 +22,7 @@ from interconnect import Interconnect
 from equation import Equation
 from bound import Bound
 from initial import Initial
+from compnode import Compnode
 
 XSTART = 0
 XEND   = 1
@@ -62,6 +63,11 @@ class Model(QObject):
     allInitialsDeleted = pyqtSignal()
     initialNameChanged = pyqtSignal(object, object)
 
+    compnodeAdded = pyqtSignal(object)
+    compnodeDeleted = pyqtSignal(object)
+    compnodeChanged = pyqtSignal(object)      
+    allCompnodesDeleted = pyqtSignal()
+
     modelUpdated = pyqtSignal()    
     
     def __init__(self):
@@ -73,6 +79,7 @@ class Model(QObject):
         self.equations = []
         self.bounds = []
         self.initials = []
+        self.compnodes = []
     
     
     def setSimpleValues(self, projdict=[]):
@@ -143,7 +150,8 @@ class Model(QObject):
             self.addBound(boundDict)            
         for initialDict in projectDict["Initials"]:
             self.addInitial(initialDict)            
-              
+        for compnodeDict in projectDict["Hardware"]:
+            self.addCompnode(compnodeDict)           
                 
         self.initSessionSettings()
         self.projectFileAssigned = True
@@ -172,7 +180,9 @@ class Model(QObject):
             ("Interconnects", [ic.getPropertiesDict() for ic in self.interconnects] ),            
             ("Equations", [equation.getPropertiesDict() for equation in self.equations] ),
             ("Bounds", [bound.getPropertiesDict() for bound in self.bounds] ),
-            ("Initials", [initial.getPropertiesDict() for initial in self.initials])            
+            ("Initials", [initial.getPropertiesDict() for initial in self.initials]),
+            ("Hardware", [compnode.getPropertiesDict() for compnode in self.compnodes]),
+                        
         ])        
         return modelDict  
   
@@ -253,7 +263,7 @@ class Model(QObject):
        
     ###Equations
     def addBlankEquation(self):        
-        equation = Equation(u"Грунт {num}".format(num = len(self.equations) + 1))
+        equation = Equation(u"Equation {num}".format(num = len(self.equations) + 1))
         self.equations.append(equation)
         self.equationAdded.emit(equation)
 
@@ -329,3 +339,32 @@ class Model(QObject):
             
     def initialToJson(self, index):
         return self.initials[index].toJson()
+
+    ####Computation nodes
+    def addBlankCompnode(self):
+        compnode = Compnode()
+        self.compnodes.append(compnode)
+        self.compnodeAdded.emit(compnode)       
+        
+    def addCompnode(self, cdict):
+        index = len(self.compnodes)
+        self.addBlankCompnode()
+        self.fillCompnodeProperties(index,cdict) 
+    
+    def fillCompnodeProperties(self,index,cdict):
+        self.compnodes[index].fillProperties(cdict)
+        self.compnodeChanged.emit(index)
+        
+    def deleteCompnode(self, index):
+        del self.compnodex[index]
+        self.compnodeDeleted.emit(index)
+
+    def deleteAllCompnodes(self):
+        self.compnodes = []
+        self.allCompnodesDeleted.emit()
+            
+    def compnodeToJson(self, index):
+        return self.compnodes[index].toJson()
+
+    def getDeviceCount(self):
+        return sum([node.cpuCount+node.gpuCount for node in self.compnodes])         
