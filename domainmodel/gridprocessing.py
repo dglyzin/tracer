@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+'''
+Created on Mar 19, 2015
+
+@author: dglyzin
+'''
+
 import numpy as np
 from settings import *
 

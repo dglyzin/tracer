@@ -120,13 +120,13 @@
     "Hardware": [
         {
             "Name": "cnode1",
-            "UseCpu": 1,            
-            "UseGpu": 0
+            "CpuCount": 1,            
+            "GpuCount": 0
         },
         {
             "Name": "cnode2",
-            "UseCpu": 1,            
-            "UseGpu": 0
+            "CpuCount": 1,            
+            "GpuCount": 0
         }
     ]
 }

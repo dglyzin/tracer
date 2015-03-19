@@ -1,17 +1,27 @@
 # -*- coding: utf-8 -*-
-
-import json
-from collections import OrderedDict
-from PyQt4.QtCore import QObject, pyqtSignal
-import os
-
 '''
+Created on Mar 19, 2015
+
+@author: dglyzin
+
+
 Model stores everything that user can provide.
 It is created all empty 
 Use addBlank* to create blocks, equations and bounds for editing (all members are initialized there (using constructor))
 Interconnects are not created by default
 Use add*(dict) to create * from existing dict
 '''
+
+
+import json
+from collections import OrderedDict
+from PyQt4.QtCore import QObject, pyqtSignal
+import os
+from block import Block 
+from interconnect import Interconnect
+from equation import Equation
+from bound import Bound
+from initial import Initial
 
 XSTART = 0
 XEND   = 1
@@ -20,214 +30,7 @@ YEND   = 3
 ZSTART = 4
 ZEND   = 5
 
-class BoundRegion(object):
-    def __init__(self, dict, dimension):
-        self.boundNumber = dict["BoundNumber"]
-        self.side = dict["Side"]
-        if dimension>1:
-            self.xfrom = dict["xfrom"]
-            self.xto = dict["xto"]
-            self.yfrom = dict["yfrom"]
-            self.yto = dict["yto"]
-        if dimension>2:
-            self.zfrom = dict["zfrom"]
-            self.zto = dict["zto"]
-        
-    
-    def getPropertiesDict(self, dimension):
-        propDict = OrderedDict([            
-            ("BoundNumber", self.boundNumber),
-            ("Side", self.side)
-        ])   
-        if dimension>1:
-            propDict.update({"xfrom":self.xfrom})
-            propDict.update({"xto":self.xto})
-            propDict.update({"yfrom":self.yfrom})
-            propDict.update({"yto":self.yto})
-        if dimension>2:
-            propDict.update({"zfrom":self.zfrom})
-            propDict.update({"zto":self.zto})
-        return propDict  
 
-
-class InitialRegion(object):
-    def __init__(self, dict, dimension):
-        self.initialNumber = dict["InitialNumber"]        
-        self.xfrom = dict["xfrom"]
-        self.xto = dict["xto"]
-        if dimension>1:            
-            self.yfrom = dict["yfrom"]
-            self.yto = dict["yto"]
-        if dimension>2:
-            self.zfrom = dict["zfrom"]
-            self.zto = dict["zto"]
-        
-    
-    def getPropertiesDict(self, dimension):
-        propDict = OrderedDict([            
-            ("InitialNumber", self.initialNumber),
-            ("xfrom", self.xfrom),
-            ("xto", self.xto)
-        ])   
-        if dimension>1:            
-            propDict.update({"yfrom":self.yfrom})
-            propDict.update({"yto":self.yto})
-        if dimension>2:
-            propDict.update({"zfrom":self.zfrom})
-            propDict.update({"zto":self.zto})
-        return propDict  
-
-
-class Block(object):
-    def __init__(self, name, dimension):
-        self.name = name
-        self.dimension = dimension
-        self.offsetX = 0.0
-        self.sizeX = 1.0
-        self.gridStepX = 1.0
-        
-        if self.dimension >1:
-            self.offsetY = 0.0
-            self.sizeY = 1.0
-            self.gridStepY = 1.0
-            
-        if self.dimension >2:
-            self.offsetZ = 0.0
-            self.sizeZ = 1.0
-            self.gridStepZ = 1.0
-        
-        self.defaultEquation = 0
-        self.defaultInitial = 0
-        self.boundRegions = []
-        self.initialRegions = []
-        
-        
-    def fillProperties(self, dict):
-        self.name = dict["Name"]
-        self.dimension = dict["Dimension"]
-        self.offsetX = dict["Offset"]["x"]
-        self.sizeX = dict["Size"]["x"]        
-        if self.dimension > 1:
-            self.offsetY = dict["Offset"]["y"]
-            self.sizeY = dict["Size"]["y"]            
-        if self.dimension > 2:
-            self.offsetZ = dict["Offset"]["z"]
-            self.sizeZ = dict["Size"]["z"]            
-        
-        self.defaultEquation = dict["DefaultEquation"]
-        self.defaultInitial = dict["DefaultInitial"]
-        
-        self.boundRegions = []
-        for boundDict in dict["BoundRegions"]:
-            self.boundRegions.append(BoundRegion(boundDict,self.dimension))
-        for initDict in dict["InitialRegions"]:
-            self.initialRegions.append(InitialRegion(initDict,self.dimension))                
-        
-        
-     
-    def getPropertiesDict(self):
-        offsetDict = OrderedDict([("x", self.offsetX)])
-        sizeDict = OrderedDict([("x", self.sizeX)])        
-        if self.dimension > 1:
-            offsetDict.update({"y":self.offsetY})
-            sizeDict.update({"y":self.sizeY})            
-        if self.dimension > 2:
-            offsetDict.update({"z":self.offsetZ})
-            sizeDict.update({"z":self.sizeZ})            
-        propDict = OrderedDict([            
-            ("Name", self.name),
-            ("Dimension", self.dimension),
-            ("Offset", offsetDict),
-            ("Size", sizeDict),            
-            ("DefaultEquation", self.defaultEquation),
-            ("DefaultInitial", self.defaultInitial),
-            ("BoundRegions", [bdict.getPropertiesDict(self.dimension) for bdict in  self.boundRegions]),
-            ("InitialRegions", [idict.getPropertiesDict(self.dimension) for idict in  self.initialRegions])
-        ])   
-        return propDict
-
-class Interconnect(object):
-    def __init__(self, name):
-        self.name = name
-        self.block1 = 0
-        self.block2 = 0
-        self.block1Side = 0
-        self.block2Side = 1
-
-    def fillProperties(self, dict):
-        self.name = dict["Name"]
-        self.block1 = dict["Block1"]
-        self.block2 = dict["Block2"]
-        self.block1Side = dict["Block1Side"]
-        self.block2Side = dict["Block2Side"]
-    
-    def getPropertiesDict(self):          
-        propDict = OrderedDict([            
-            ("Name", self.name),
-            ("Block1", self.block1),
-            ("Block2", self.block2),
-            ("Block1Side", self.block1Side),
-            ("Block2Side", self.block2Side)       
-        ])   
-        return propDict  
-      
-class Equation(object):
-    def __init__(self, name):
-        self.name = name
-        self.vars = "x"
-        self.system = ["U'=1"]
-
-    def fillProperties(self, dict):
-        self.name = dict["Name"]
-        self.vars = dict["Vars"]
-        self.system = dict["System"]
-        self.params = dict["Params"]
-        self.paramValues = dict["ParamValues"]
-   
-    def getPropertiesDict(self):          
-        propDict = OrderedDict([            
-            ("Name", self.name),
-            ("Vars", self.vars),
-            ("System", self.system),
-            ("Params", self.params),
-            ("ParamValues", self.paramValues)
-        ])   
-        return propDict  
-
-class Bound(object):
-    def __init__(self, name):
-        self.name = name
-        self.btype = 0
-        self.values = ["0"]
-
-    def fillProperties(self, dict):
-        self.name = dict["Name"]
-        self.btype = dict["Type"]
-        self.values = dict["Values"]        
-    
-    def getPropertiesDict(self):          
-        propDict = OrderedDict([            
-            ("Name", self.name),
-            ("Type", self.btype),
-            ("Values", self.values)            
-        ])   
-        return propDict  
-
-class Initial(object):
-    def __init__(self, name):
-        self.name = name
-        self.values = ["0"]
-
-    def fillProperties(self, dict):
-        self.name = dict["Name"]
-        self.values = dict["Values"]        
-
-    def getPropertiesDict(self):          
-        propDict = OrderedDict([            
-            ("Name", self.name),            
-            ("Values", self.values)            
-        ])   
-        return propDict  
 
 
 class Model(QObject):  
@@ -400,14 +203,14 @@ class Model(QObject):
         self.blocks.append(block)
         self.blockAdded.emit(block)
 
-    def fillBlockProperties(self, index, dict):
-        self.blocks[index].fillProperties(dict)
+    def fillBlockProperties(self, index, bdict):
+        self.blocks[index].fillProperties(bdict)
         self.blockChanged.emit(index)
    
-    def addBlock(self, dict):
+    def addBlock(self, bdict):
         index = len(self.blocks)
-        self.addBlankBlock(dict["Dimension"])
-        self.fillBlockProperties(index, dict)        
+        self.addBlankBlock(bdict["Dimension"])
+        self.fillBlockProperties(index, bdict)        
        
     def deleteBlock(self, index):
         del self.blocks[index]
@@ -426,14 +229,14 @@ class Model(QObject):
         self.interconnects.append(ic)
         self.interconnectAdded.emit(ic)
 
-    def fillInterconnectProperties(self, index, dict):
-        self.interconnects[index].fillProperties(dict)
+    def fillInterconnectProperties(self, index, idict):
+        self.interconnects[index].fillProperties(idict)
         self.interconnectChanged.emit(index)
    
-    def addInterconnect(self, dict):
+    def addInterconnect(self, idict):
         index = len(self.interconnects)
         self.addBlankInterconnect()
-        self.fillInterconnectProperties(index, dict)        
+        self.fillInterconnectProperties(index, idict)        
        
     def deleteInterconnect(self, index):
         del self.interconnects[index]
@@ -454,13 +257,13 @@ class Model(QObject):
         self.equations.append(equation)
         self.equationAdded.emit(equation)
 
-    def addEquation(self, dict):
+    def addEquation(self, edict):
         index = len(self.equations)
         self.addBlankEquation()
-        self.fillEquationProperties(index,dict)
+        self.fillEquationProperties(index,edict)
         
-    def fillEquationProperties(self, index,dict):
-        self.equations[index].fillProperties(dict)
+    def fillEquationProperties(self, index, edict):
+        self.equations[index].fillProperties(edict)
         self.equationChanged.emit(index)
     
     def deleteEquation(self, index):
@@ -481,13 +284,13 @@ class Model(QObject):
         self.bounds.append(bound)
         self.boundAdded.emit(bound)
 
-    def addBound(self, dict):
+    def addBound(self, bdict):
         index = len(self.bounds)
         self.addBlankBound()
-        self.fillBoundProperties(index, dict)
+        self.fillBoundProperties(index, bdict)
     
-    def fillBoundProperties(self, index, dict):
-        self.bounds[index].fillProperties(dict)
+    def fillBoundProperties(self, index, bdict):
+        self.bounds[index].fillProperties(bdict)
         self.boundChanged.emit(index)
    
     def deleteBound(self, index):
@@ -507,13 +310,13 @@ class Model(QObject):
         self.initials.append(initial)
         self.initialAdded.emit(initial)
 
-    def addInitial(self, dict):
+    def addInitial(self, idict):
         index = len(self.initials)
         self.addBlankInitial()
-        self.fillInitialProperties(index, dict)
+        self.fillInitialProperties(index, idict)
     
-    def fillInitialProperties(self, index, dict):
-        self.initials[index].fillProperties(dict)
+    def fillInitialProperties(self, index, idict):
+        self.initials[index].fillProperties(idict)
         self.initialChanged.emit(index)
    
     def deleteInitial(self, index):
@@ -526,4 +329,3 @@ class Model(QObject):
             
     def initialToJson(self, index):
         return self.initials[index].toJson()
-   

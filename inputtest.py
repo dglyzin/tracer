@@ -1,6 +1,5 @@
-
-from domainmodel.model import *
-import sys
+# -*- coding: utf-8 -*-
+from domainmodel.model import Model
 import filecmp
 
 if __name__=='__main__':
@@ -11,6 +10,6 @@ if __name__=='__main__':
     model.saveToFile(OutputFile)
     
     if filecmp.cmp(InputFile, OutputFile, shallow=False):
-      print "Test OK!"
+        print "Test OK!"
     else:
-      print "TEST FAILED. Files are different."
+        print "TEST FAILED. Files are different."
