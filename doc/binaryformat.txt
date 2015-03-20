@@ -1,0 +1,55 @@
+##Domain file format for hybriddomain project
+##Version 1 domain (.dom)
+
+# Domain geometry
+##!  uint8: 254
+##!  uint8: file format version major
+##!  uint8: file format version minor
+
+##!  2*float64: FinishTime, initial timeStep
+##!  float64: save interval
+##!  3* float64: dx, dy, dz
+##!  int32 Cell Size
+##!  int32 Halo Size
+
+### blocks 
+##!  int32: number of blocks N_B
+### following are N_B 1-2-3d blocks one by one
+### BEGINNING OF BLOCK
+##!  int32 dimension Db (can be 1,2 or 3) 
+##!  int32 computation node
+##!  int32 computation device
+##!  Db*int32: offset x, y, z (in number of grid steps) 
+##!  Db*int32: xc, yc, and zc number of grid steps in this block, total=xc*yc*zc
+### properties of every volume
+##!  total*uint16: function number 
+### END OF BLOCK
+
+### Interconnects 
+##!  int32: number of interconnects N_I
+### following are N_I interconnects one by one
+### BEGINNING OF IC
+##!  int32 ID dimension (can be 0,1,2)
+##!  int32 interconnect length
+##!  int32 source block 
+##!  int32 destination block
+##!  int32 source side (0-5)
+##!  int32 destination side (0-5)
+##!  ID*int32 source offset 
+##!  ID*int32 destination offset
+### END OF IC
+
+
+===============================================================================
+## State file format (*.bin)
+
+#Binary file format
+##!  uint8: 253
+##!  uint8: file format version major
+##!  uint8: file format version minor
+
+##!  float64 current time 
+###  following is the N_B  blocks one by one
+###  BEGINNING OF THE BLOCK
+##!  total*cellsize*fload64: state 
+###  END OF THE BLOCK
