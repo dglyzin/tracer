@@ -6,7 +6,7 @@
 ##!  uint8: file format version major
 ##!  uint8: file format version minor
 
-##!  2*float64: FinishTime, initial timeStep
+##!  3*float64: StartTime, FinishTime, Initial timestep
 ##!  float64: save interval
 ##!  3* float64: dx, dy, dz
 ##!  int32 Cell Size
@@ -29,14 +29,14 @@
 ##!  int32: number of interconnects N_I
 ### following are N_I interconnects one by one
 ### BEGINNING OF IC
-##!  int32 ID dimension (can be 0,1,2)
+##!  int32 dimension Id (can be 0,1,2)
 ##!  int32 interconnect length
 ##!  int32 source block 
 ##!  int32 destination block
 ##!  int32 source side (0-5)
 ##!  int32 destination side (0-5)
-##!  ID*int32 source offset 
-##!  ID*int32 destination offset
+##!  Id*int32 source offset 
+##!  Id*int32 destination offset
 ### END OF IC
 
 
@@ -51,5 +51,5 @@
 ##!  float64 current time 
 ###  following is the N_B  blocks one by one
 ###  BEGINNING OF THE BLOCK
-##!  total*cellsize*fload64: state 
+##!  total*cellsize*float64: state 
 ###  END OF THE BLOCK

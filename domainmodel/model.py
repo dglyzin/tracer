@@ -90,9 +90,9 @@ class Model(QObject):
             self.finishTime = 1.0
             self.timeStep = 0.05
             self.saveInterval = 0.1
-            self.gridStepX = 1
-            self.gridStepY = 1
-            self.gridStepZ = 1
+            self.gridStepX = 1.0
+            self.gridStepY = 1.0
+            self.gridStepZ = 1.0
         else:
             self.projectName = projdict["ProjectName"]
             self.startTime = projdict["StartTime"]
@@ -374,4 +374,10 @@ class Model(QObject):
         return self.compnodes[index].toJson()
 
     def getDeviceCount(self):
-        return sum([node.cpuCount+node.gpuCount for node in self.compnodes])         
+        return sum([node.cpuCount+node.gpuCount for node in self.compnodes])
+    
+    def getCellSize(self):
+        return 1
+        
+    def getHaloSize(self):
+        return 1

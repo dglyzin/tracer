@@ -4,7 +4,7 @@ Created on Mar 19, 2015
 
 @author: dglyzin
 '''
-from collections import OrderedDict
+
 from regions import  *
 
 class Block(object):
@@ -29,7 +29,10 @@ class Block(object):
         self.defaultInitial = 0
         self.boundRegions = []
         self.initialRegions = []
-        
+
+    def getCellCount(self, dx, dy, dz ):
+        #TODO complete
+        return [1,1,1]
         
     def fillProperties(self, bdict):
         self.name = bdict["Name"]

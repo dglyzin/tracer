@@ -12,7 +12,7 @@ Created on Mar 19, 2015
 
 '''
 
-#import numpy as np
+import numpy as np
 #from regions import BoundRegion
 #from gridprocessing import *
 #from datetime import date, datetime
@@ -21,17 +21,87 @@ Created on Mar 19, 2015
 #from block import Block
 #from interconnect import Interconnect
 #import copy
+#from model import Model
 
-class BinaryModel(object):
-    def __init__(self, model):
+class BinaryModel(object):    
+    def __init__(self, dmodel):
+        ':type dmodel: Model'        
         print "Welcome to the binary model saver!"
-        self.model = model
+        self.dmodel = dmodel
+
+ 
+    def fillBinarySettings(self):        
+        self.versionArr = np.zeros(3, dtype=np.uint8)
+        self.versionArr[0] = 254
+        self.versionArr[1] = 1
+        self.versionArr[2] = 0
         
+        self.timeAndStepArr = np.zeros(7, dtype=np.float64)        
+        self.timeAndStepArr[0] = self.dmodel.startTime 
+        self.timeAndStepArr[1] = self.dmodel.finishTime
+        self.timeAndStepArr[2] = self.dmodel.timeStep
+        self.timeAndStepArr[3] = self.dmodel.saveInterval
+        self.timeAndStepArr[4] = self.dmodel.gridStepX
+        self.timeAndStepArr[5] = self.dmodel.gridStepY
+        self.timeAndStepArr[6] = self.dmodel.gridStepZ   
+        
+        self.paramsArr = np.zeros(2, dtype=np.int32)        
+        self.paramsArr[0] = self.dmodel.getCellSize()
+        self.paramsArr[1] = self.dmodel.getHaloSize()       
+
+    def fillBinaryBlocks(self):
+        self.blockCount = len(self.dmodel.blocks) 
+        self.blockCountArr = np.zeros(1, dtype=np.int32)
+        self.blockCountArr[0] = self.blockCount
+        self.blockPropArrList = []
+        self.blockFuncArrList = []
+        for blockIdx in range(self.blockCount):
+            block = self.dmodel.blocks[blockIdx]
+            blockDim = block.dimension
+            cellCountList = block.getCellCount(self.dmodel.gridStepX, self.dmodel.gridStepY,
+                                           self.dmodel.gridStepZ )
+            cellCount = cellCountList[0]*cellCountList[1]*cellCountList[2]
+            blockPropArr = np.zeros(3+2*blockDim, dtype=np.int32)
+            blockFuncArr = np.zeros(cellCount, dtype=np.int16)
+            
+            self.blockPropArrList.append(blockPropArr)
+            self.blockFuncArrList.append(blockFuncArr)
+            
+                    
+     
+    def fillBinaryInterconnects(self):
+        self.icCount = 0
+        self.icCountArr = np.zeros(1, dtype=np.int32)
+        self.icCountArr[0] = self.icCount
+        self.icList = []
+    
+    
     def saveDomain(self, fileName):
         print "saving domain..."
+        #computing
+        self.fillBinarySettings()
+        self.fillBinaryBlocks()
+        self.fillBinaryInterconnects()
+        
+        #saving
+        domfile = open(fileName, "wb")        
+        #1. Save common settings        
+        self.versionArr.tofile(domfile)
+        self.timeAndStepArr.tofile(domfile)
+        self.paramsArr.tofile(domfile)
+        
+        
+        
+        #3. Save interconnects
+        self.icCountArr.tofile(domfile)
+        for icArr in self.icList:
+            icArr.tofile(domfile)          
+        domfile.close()        
+            
     
     def saveFuncs(self, fileName):
         print "saving funcs..."
+        print "not implemented yet..."
 
 
 
@@ -48,35 +118,7 @@ class BinaryModel(object):
 
 
         
-    def getBinarySettings(self):
-        self.domName = self.model.commonSettings.title
-        self.versionarr_bin = np.zeros(4, dtype=np.uint8)
-        self.versionarr_bin[0] = 253
-        self.versionarr_bin[1] = 2
-        self.versionarr_bin[2] = 0
-        self.versionarr_bin[3] = 1 #generated(1) or computed(0)
-        
-        self.versionarr_dom = np.zeros(3, dtype=np.uint8)
-        self.versionarr_dom[0] = 254
-        self.versionarr_dom[1] = 2
-        self.versionarr_dom[2] = 0
-        
-        startTime  = datetime.strptime(self.model.commonSettings.startTime, '%d.%m.%Y').date()
-        finishTime = datetime.strptime(self.model.commonSettings.finishTime, '%d.%m.%Y').date()
-        startTimeInt  = (startTime - zerodate).days
-        finishTimeInt = (finishTime - zerodate).days
-          
-        self.timearr = np.zeros(1, dtype=np.float64)
-        self.timearr[0] = startTimeInt
-        
-        self.params = np.zeros(7, dtype=np.float32)        
-        self.params[0] = float(finishTimeInt)
-        self.params[1] = self.model.commonSettings.timeStep
-        self.params[2] = self.model.commonSettings.savesPerMonth
-        self.params[3] = self.model.commonSettings.iceSpecHeat
-        self.params[4] = self.model.commonSettings.waterSpecHeat
-        self.params[5] = self.model.commonSettings.waterLatentHeat
-        self.params[6] = self.model.commonSettings.iceVolumetricExpansion
+    
         
 
 

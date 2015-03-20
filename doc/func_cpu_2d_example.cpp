@@ -258,7 +258,7 @@ typedef void (*func2dfull_ptr_t)(double* result, double* source,  double time,
 void Block0MainFunc(double* result, 
                     double* source,  //исходный X
                     double time,                
-                    int* cellFuncNum,   // номер функции для обработки клетки                                        
+                    int* cellFuncNum,   // номер функции для обработки клетки
                     double** ic,
                     func2d_ptr_t* pFuncs,
                     double* params    ){
