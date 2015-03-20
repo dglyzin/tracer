@@ -4,38 +4,40 @@ Created on Mar 19, 2015
 
 @author: dglyzin
 
-Здесь мы разрезаем блоки на части, если вычислительных устройств больше, чем блоков
-Создаем модель-клон с разрезанными блоками и готовый мэппинг блоков по устройствам 
-
 Создаем массивы с геометрией области (номера функций в каждой точке каждого блока)
 и сохраняем 
 После этого уже другой модуль по той же модели создает список функций (в т.ч. связки, которые появляются только тут после разрезания)
 Нужен общий порядок нумерации функций.
 
-model -> mapped model -> domain.dom+funcs.cpp+run.sh
+
 '''
 
-import numpy as np
-from regions import BoundRegion
-from gridprocessing import *
-from datetime import date, datetime
-from temp_modifiers import *
-import time
-from block import Block
-from interconnect import Interconnect
-import copy
-
-
-def getOffset(arr):
-    offset = 0
-    while arr[offset]<0:
-        offset = offset+1            
-    return offset
+#import numpy as np
+#from regions import BoundRegion
+#from gridprocessing import *
+#from datetime import date, datetime
+#from temp_modifiers import *
+#import time
+#from block import Block
+#from interconnect import Interconnect
+#import copy
 
 class BinaryModel(object):
     def __init__(self, model):
         print "Welcome to the binary model saver!"
         self.model = model
+        
+    def saveDomain(self, fileName):
+        print "saving domain..."
+    
+    def saveFuncs(self, fileName):
+        print "saving funcs..."
+
+
+
+
+        
+'''        
         self.extendedBlocks = model.blocks     #these two arrays will be replaced in case of cutting the block        
         self.extendedIC = copy.copy(model.interconnects) #into pieces for concurrent processing on different devices
         #shallow copy, we can edit list but should not edit copied interconnects
@@ -80,12 +82,7 @@ class BinaryModel(object):
 
     ##############################   GRID    ###################################
     def generateGlobalGrid(self):
-         '''
-         we need a grid that contains all nodes from every block
-         it should include every point of soil, bound or source change
-         then it should be refine not ot exceed dxMax-dyMax-dzMax
-         then for every block we'll include nodes that are inside that block into the binary description 
-         '''
+         
          
          
          for block in self.extendedBlocks:
@@ -765,11 +762,7 @@ class BinaryModel(object):
             
          
     def generateBinaryData(self, mappingType, device = 0, mapping = [], partition = []):
-        '''
-          if partition is not empty and only one block is present, 
-          we divide this block according to partition and map partitions
-          partition is a list of pairs [device number, processing power]
-        '''
+        
         #create all necessary arrays
         self.getBinarySettings();       
         self.generateGlobalGrid()
@@ -898,24 +891,7 @@ class BinaryModel(object):
             self.liquidWaterPercentages[idx].tofile(binfile)      
         binfile.close()
         
-    '''
-    def saveToFile(self, fileNameBase, device): 
-        time1 = time.time()
-        self.generateBinaryData()
-        time2 = time.time()
-        self.setSimpleMapping(device)
-        time3 = time.time()
-        self.saveDomFile(fileNameBase+".dom")
-        time4 = time.time()
-        self.saveBinFile(fileNameBase+".bin")
-        time5 = time.time()
-        
-        print "Data generated in ", time2-time1
-        print "Mapping set in ", time3-time2
-        print "Dom file saved in ", time4-time3
-        print "Bin file saved in ", time5-time4
-    ''' 
-    
+   
     #mapping type can be 0 (device number provided), 1 (explicit mapping specified) 
     #or 2 (only one block will be partitioned and parts are mapped)
     def buildAndSave(self, domFileName, binFileName,  mappingType, device = 0, mapping = [], partition = []): 
@@ -939,4 +915,4 @@ class BinaryModel(object):
         time3 = time.time()        
         print "Data generated in ", time2-time1        
         print "Dom file saved in ", time3-time2
-        
+'''

@@ -27,7 +27,3 @@ class Compnode(object):
                             ("CpuCount", self.cpuCount),
                             ("GpuCount", self.gpuCount)                   
                             ])
-
-
-    
-      

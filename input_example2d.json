@@ -128,5 +128,15 @@
             "CpuCount": 1, 
             "GpuCount": 0
         }
-    ]
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            [
+                0, 
+                "cpu", 
+                0
+            ]
+        ]
+    }
 }

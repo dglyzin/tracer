@@ -24,6 +24,7 @@ from bound import Bound
 from initial import Initial
 from compnode import Compnode
 
+
 XSTART = 0
 XEND   = 1
 YSTART = 2
@@ -152,6 +153,10 @@ class Model(QObject):
             self.addInitial(initialDict)            
         for compnodeDict in projectDict["Hardware"]:
             self.addCompnode(compnodeDict)           
+        
+        self.isMapped = projectDict["Mapping"]["IsMapped"]
+        self.mapping = projectDict["Mapping"]["BlockMapping"]
+        
                 
         self.initSessionSettings()
         self.projectFileAssigned = True
@@ -182,6 +187,9 @@ class Model(QObject):
             ("Bounds", [bound.getPropertiesDict() for bound in self.bounds] ),
             ("Initials", [initial.getPropertiesDict() for initial in self.initials]),
             ("Hardware", [compnode.getPropertiesDict() for compnode in self.compnodes]),
+            ("Mapping", OrderedDict ([("IsMapped", self.isMapped),
+                                      ("BlockMapping", self.mapping) ])
+            )
                         
         ])        
         return modelDict  
@@ -199,8 +207,7 @@ class Model(QObject):
             self.workDirectory = os.path.dirname(str(fileName))        
         self.projectFileAssigned = True
         self.projectFile = fileName        
-        
-        
+
 
     def setWorkDirectory(self, folder):
         self.workDirectory = folder
