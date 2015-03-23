@@ -51,5 +51,7 @@
 ##!  float64 current time 
 ###  following is the N_B  blocks one by one
 ###  BEGINNING OF THE BLOCK
-##!  total*cellsize*float64: state 
+##!   int32 block length
+##!   int32 block width
+##!   total*cellsize*float64: state 
 ###  END OF THE BLOCK
