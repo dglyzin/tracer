@@ -29,29 +29,26 @@
 ##!  int32: number of interconnects N_I
 ### following are N_I interconnects one by one
 ### BEGINNING OF IC
-##!  int32 dimension Id (can be 0,1,2)
+##!  int32 dimension I_d (can be 0,1,2)
 ##!  int32 interconnect length
 ##!  int32 source block 
 ##!  int32 destination block
 ##!  int32 source side (0-5)
 ##!  int32 destination side (0-5)
-##!  Id*int32 source offset 
-##!  Id*int32 destination offset
+##!  I_d*int32 source offset 
+##!  I_d*int32 destination offset
 ### END OF IC
-
-
 ===============================================================================
 ## State file format (*.bin)
-
-#Binary file format
 ##!  uint8: 253
 ##!  uint8: file format version major
 ##!  uint8: file format version minor
 
 ##!  float64 current time 
+##!  int32 Cell size
 ###  following is the N_B  blocks one by one
 ###  BEGINNING OF THE BLOCK
-##!   int32 block length
-##!   int32 block width
+##!   int32 dimension Db (can be 1,2 or 3) 
+##!   Db*int32 xc, (yc), (zc) - block size. Total=xc*yc*zc
 ##!   total*cellsize*float64: state 
 ###  END OF THE BLOCK

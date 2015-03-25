@@ -90,7 +90,11 @@ class BinaryModel(object):
         self.timeAndStepArr.tofile(domfile)
         self.paramsArr.tofile(domfile)
         
-        
+        #2. Save blocks
+        self.blockCountArr.tofile(domfile)
+        for blockIdx in range(self.blockCount):
+            self.blockPropArrList[blockIdx].tofile(domfile)
+            self.blockFuncArrList[blockIdx].tofile(domfile)
         
         #3. Save interconnects
         self.icCountArr.tofile(domfile)
