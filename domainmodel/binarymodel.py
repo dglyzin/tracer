@@ -23,12 +23,24 @@ import numpy as np
 #import copy
 #from model import Model
 
+devType = {"cpu":0, "gpu":1}
+
 class BinaryModel(object):    
     def __init__(self, dmodel):
         ':type dmodel: Model'        
         print "Welcome to the binary model saver!"
         self.dmodel = dmodel
 
+
+    def fill1dFuncs(self, funcArr):
+        pass
+    
+    def fill2dFuncs(self, funcArr, blockSize):
+        print "Filling 2d function array."
+        print "size:", blockSize[0], "x", blockSize[1]  
+        
+    def fill3dFuncs(self, funcArr):
+        pass
  
     def fillBinarySettings(self):        
         self.versionArr = np.zeros(3, dtype=np.uint8)
@@ -56,15 +68,50 @@ class BinaryModel(object):
         self.blockPropArrList = []
         self.blockFuncArrList = []
         for blockIdx in range(self.blockCount):
+            
             block = self.dmodel.blocks[blockIdx]
+            #1. Fill block params
             blockDim = block.dimension
             cellCountList = block.getCellCount(self.dmodel.gridStepX, self.dmodel.gridStepY,
                                            self.dmodel.gridStepZ )
             cellCount = cellCountList[0]*cellCountList[1]*cellCountList[2]
-            blockPropArr = np.zeros(3+2*blockDim, dtype=np.int32)
+            
+            
+            blockPropArr = np.zeros(4+2*blockDim, dtype=np.int32)
             blockFuncArr = np.zeros(cellCount, dtype=np.int16)
             
+            blockPropArr[0] = blockDim
+            mapping = self.dmodel.mapping[blockIdx] 
+            blockPropArr[1] = mapping[0]
+            blockPropArr[2] = devType[ mapping[1] ]
+            blockPropArr[3] = mapping[2]
+            idx = 4
+            blockPropArr[idx] = block.offsetX
+            idx += 1
+            if blockDim>1:
+                blockPropArr[idx] = block.offsetY
+                idx+=1
+            if blockDim>2:
+                blockPropArr[idx] = block.offsetZ
+                idx+=1
+            blockPropArr[idx] = block.sizeX
+            idx += 1
+            if blockDim>1:
+                blockPropArr[idx] = block.sizeY
+                idx+=1
+            if blockDim>2:
+                blockPropArr[idx] = block.sizeZ                            
             self.blockPropArrList.append(blockPropArr)
+            
+            #2. Fill block functions
+            #2.1 default center is filled already
+            if blockDim==1:
+                self.fill1dFuncs(blockFuncArr, cellCountList)
+            elif blockDim==2:
+                self.fill2dFuncs(blockFuncArr, cellCountList)
+            elif blockDim==3:
+                self.fill3dFuncs(blockFuncArr, cellCountList)
+                
             self.blockFuncArrList.append(blockFuncArr)
             
                     
