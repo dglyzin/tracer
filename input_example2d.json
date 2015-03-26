@@ -38,7 +38,23 @@
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 5.0, 
-                    "yto": 10.0
+                    "yto": 12.0
+                },
+                {
+                    "BoundNumber": 1, 
+                    "Side": 2, 
+                    "xfrom": 0.0, 
+                    "xto": 4.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0
+                },
+                {
+                    "BoundNumber": 1, 
+                    "Side": 3, 
+                    "xfrom": 4.0, 
+                    "xto": 10.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0
                 }
             ], 
             "InitialRegions": [

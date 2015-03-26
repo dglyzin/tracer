@@ -72,30 +72,39 @@ class BinaryModel(object):
             for idxX in range(xc-haloSize, xc):
                 funcArr[idxY,idxX] = curf_idx             
                 curf_idx += 1
-        '''
+        
         #fill user-defined bounds        
         for boundReg in block.boundRegions:
             if boundReg.side == 0:
                 for idxX in range(0, haloSize):
-                    ystart = max(haloSize,2)
-                    yend =  min(yc-haloSize,yc-2) 
+                    ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)
+                    ystart = max(haloSize,ystart)
+                    yend =  min(yc-haloSize,yend) 
                     funcArr[ystart:yend, idxX] = curf_idx             
                     curf_idx += 1
-                    
-                    
                      
             elif boundReg.side == 1:
-                idxX = 0:haloSize
-                idxY =
+                for idxX in range(xc- haloSize, xc):
+                    ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)
+                    ystart = max(haloSize,ystart)
+                    yend =  min(yc-haloSize,yend) 
+                    funcArr[ystart:yend, idxX] = curf_idx             
+                    curf_idx += 1
             elif boundReg.side == 2:
-                idxY = 0:haloSize
-                idxX =
+                for idxY in range(0, haloSize):
+                    xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
+                    xstart = max(haloSize,xstart)
+                    xend =  min(xc-haloSize,xend) 
+                    funcArr[idxY, xstart:xend] = curf_idx             
+                    curf_idx += 1
             elif boundReg.side == 3:
-                idxY = 0:haloSize
-                idxX =
-            funcArr[idxY, idxX] = curf_idx
-            curf_idx += 1
-           ''' 
+                for idxY in range(yc-haloSize, yc):
+                    xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
+                    xstart = max(haloSize,xstart)
+                    xend =  min(xc-haloSize,xend) 
+                    funcArr[idxY, xstart:xend] = curf_idx             
+                    curf_idx += 1
+            
                
         
     def fill3dFuncs(self, funcArr):

@@ -380,4 +380,4 @@ class Model(QObject):
         return 1
         
     def getHaloSize(self):
-        return 1
+        return 2
