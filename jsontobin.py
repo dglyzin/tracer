@@ -27,7 +27,7 @@ if __name__=='__main__':
         partModel = model
     else:
         partModel = partitionAndMap(model)
-        
+    
     bm = BinaryModel(partModel)
     bm.saveDomain(OutputDataFile)
     bm.saveFuncs(OutputFuncFile)

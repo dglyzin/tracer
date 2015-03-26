@@ -32,13 +32,13 @@ class Block(object):
 
     def getCellCount(self, dx, dy, dz ):
         #TODO complete
-        yc, zc = 1,1
+        yc, zc = 1, 1
         xc = self.sizeX/dx 
         if self.dimension >1:
             yc = self.sizeY/dy
         if self.dimension >2:
             zc = self.sizeZ/dz
-        return [xc, yc, zc]
+        return [int(xc), int(yc), int(zc)]
         
     def fillProperties(self, bdict):
         self.name = bdict["Name"]

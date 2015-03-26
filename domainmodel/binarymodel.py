@@ -27,7 +27,7 @@ devType = {"cpu":0, "gpu":1}
 
 class BinaryModel(object):    
     def __init__(self, dmodel):
-        ':type dmodel: Model'        
+        ':type dmodel: Model'
         print "Welcome to the binary model saver!"
         self.dmodel = dmodel
 
@@ -35,9 +35,68 @@ class BinaryModel(object):
     def fill1dFuncs(self, funcArr):
         pass
     
-    def fill2dFuncs(self, funcArr, blockSize):
+    def fill2dFuncs(self, funcArr, block, blockSize):
+        xc = blockSize[0]
+        yc = blockSize[1]
         print "Filling 2d function array."
-        print "size:", blockSize[0], "x", blockSize[1]  
+        print "size:", xc, "x", yc
+        haloSize = self.dmodel.getHaloSize()
+        #1 default center is filled already
+        curf_idx = 1
+        #fill default neumanns
+        #for haloIdx in range(haloSize):
+        for idxY in range(0, haloSize):
+            for idxX in range(0, haloSize):
+                funcArr[idxY,idxX] = curf_idx             
+                curf_idx += 1
+            funcArr[idxY, haloSize:(xc - haloSize) ] = curf_idx
+            curf_idx += 1
+            for idxX in range(xc-haloSize, xc):
+                funcArr[idxY,idxX] = curf_idx             
+                curf_idx += 1
+        
+        for idxX in range(0,haloSize):
+            funcArr[haloSize:(yc-haloSize),idxX] = curf_idx             
+            curf_idx += 1
+            
+        for idxX in range(xc-haloSize,xc):
+            funcArr[haloSize:(yc-haloSize),idxX] = curf_idx             
+            curf_idx += 1
+        
+        for idxY in range(yc-haloSize, yc):
+            for idxX in range(0, haloSize):
+                funcArr[idxY,idxX] = curf_idx             
+                curf_idx += 1
+            funcArr[idxY, haloSize:(xc - haloSize) ] = curf_idx
+            curf_idx += 1
+            for idxX in range(xc-haloSize, xc):
+                funcArr[idxY,idxX] = curf_idx             
+                curf_idx += 1
+        '''
+        #fill user-defined bounds        
+        for boundReg in block.boundRegions:
+            if boundReg.side == 0:
+                for idxX in range(0, haloSize):
+                    ystart = max(haloSize,2)
+                    yend =  min(yc-haloSize,yc-2) 
+                    funcArr[ystart:yend, idxX] = curf_idx             
+                    curf_idx += 1
+                    
+                    
+                     
+            elif boundReg.side == 1:
+                idxX = 0:haloSize
+                idxY =
+            elif boundReg.side == 2:
+                idxY = 0:haloSize
+                idxX =
+            elif boundReg.side == 3:
+                idxY = 0:haloSize
+                idxX =
+            funcArr[idxY, idxX] = curf_idx
+            curf_idx += 1
+           ''' 
+               
         
     def fill3dFuncs(self, funcArr):
         pass
@@ -75,7 +134,7 @@ class BinaryModel(object):
             cellCountList = block.getCellCount(self.dmodel.gridStepX, self.dmodel.gridStepY,
                                            self.dmodel.gridStepZ )
             cellCount = cellCountList[0]*cellCountList[1]*cellCountList[2]
-            
+            yc, xc = cellCountList[1] , cellCountList[0]
             
             blockPropArr = np.zeros(4+2*blockDim, dtype=np.int32)
             blockFuncArr = np.zeros(cellCount, dtype=np.int16)
@@ -104,16 +163,15 @@ class BinaryModel(object):
             self.blockPropArrList.append(blockPropArr)
             
             #2. Fill block functions
-            #2.1 default center is filled already
             if blockDim==1:
-                self.fill1dFuncs(blockFuncArr, cellCountList)
+                self.fill1dFuncs(blockFuncArr, block, cellCountList)
             elif blockDim==2:
-                self.fill2dFuncs(blockFuncArr, cellCountList)
+                self.fill2dFuncs(blockFuncArr.reshape([yc, xc]), block, cellCountList)
             elif blockDim==3:
-                self.fill3dFuncs(blockFuncArr, cellCountList)
+                self.fill3dFuncs(blockFuncArr, block, cellCountList)
                 
             self.blockFuncArrList.append(blockFuncArr)
-            
+            print blockFuncArr.reshape([yc, xc])
                     
      
     def fillBinaryInterconnects(self):
