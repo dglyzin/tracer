@@ -17,8 +17,8 @@ from domainmodel.binarymodel import BinaryModel
 from domainmodel.decomposer import partitionAndMap
 
 if __name__=='__main__':
-    InputFile = "input_example2d.json"
-    OutputDataFile = "example2d.dom"
+    InputFile = "brusselator_2block.json"
+    OutputDataFile = "brusselator_2block.dom"
     OutputFuncFile = "example2d.cpp"
     model = Model()
     model.loadFromFile(InputFile)

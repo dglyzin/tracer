@@ -39,6 +39,16 @@ class Block(object):
         if self.dimension >2:
             zc = self.sizeZ/dz
         return [int(xc), int(yc), int(zc)]
+
+    def getCellOffset(self, dx, dy, dz ):
+        #TODO complete
+        yc, zc = 1, 1
+        xc = self.offsetX/dx 
+        if self.dimension >1:
+            yc = self.offsetY/dy
+        if self.dimension >2:
+            zc = self.offsetZ/dz
+        return [int(xc), int(yc), int(zc)]
         
     def fillProperties(self, bdict):
         self.name = bdict["Name"]
