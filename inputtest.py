@@ -3,8 +3,8 @@ from domainmodel.model import Model
 import filecmp
 
 if __name__=='__main__':
-    InputFile = "input_example2d.json"
-    OutputFile = "input_example_re.json"
+    InputFile = "brusselator_2block.json"
+    OutputFile = "brusselator_2block_re.json"
     model = Model()
     model.loadFromFile(InputFile)    
     model.saveToFile(OutputFile)

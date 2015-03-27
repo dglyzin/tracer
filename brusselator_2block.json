@@ -1,0 +1,117 @@
+{
+    "ProjectName": "Input_Example", 
+    "StartTime": 0.0, 
+    "FinishTime": 100, 
+    "TimeStep": 0.02, 
+    "SaveInterval": 0.1, 
+    "GridStep": {
+        "x": 0.01, 
+        "y": 0.01, 
+        "z": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "UpBlock", 
+            "Dimension": 2, 
+            "Offset": {
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            "Size": {
+                "x": 1.0, 
+                "y": 0.5
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": []
+        }, 
+        {
+            "Name": "DownBlock", 
+            "Dimension": 2, 
+            "Offset": {
+                "x": 0.0, 
+                "y": 0.5
+            }, 
+            "Size": {
+                "x": 1.0, 
+                "y": 0.5
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": []
+        }
+    ], 
+    "Interconnects": [
+        {
+            "Name": "y-halves connection", 
+            "Block1": 0, 
+            "Block2": 1, 
+            "Block1Side": 3, 
+            "Block2Side": 2
+        }
+    ], 
+    "Equations": [
+        {
+            "Name": "Flat Brusselator", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=a+U^2*V-(b+1*U+D[U,{x,2}]+D[U,{y,2}]", 
+                "V'=b*U-U^2*V+mu*(D[V,{x,2}]+D[V,{y,2}])"
+            ], 
+            "Params": [
+                "a", 
+                "b", 
+                "mu"
+            ], 
+            "ParamValues": [
+                {
+                    "a": 0.6, 
+                    "mu": 0.025, 
+                    "b": 2
+                }
+            ]
+        }
+    ], 
+    "Bounds": [], 
+    "Initials": [
+        {
+            "Name": "Initial values", 
+            "Values": [
+                "15.0", 
+                "sin(x)*cos(y)"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        }, 
+        {
+            "Name": "cnode2", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            [
+                0, 
+                "cpu", 
+                0
+            ], 
+            [
+                1, 
+                "cpu", 
+                0
+            ]
+        ]
+    }
+}

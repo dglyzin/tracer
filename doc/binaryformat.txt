@@ -31,7 +31,7 @@
 ### following are N_I interconnects one by one
 ### BEGINNING OF IC
 ##!  int32 dimension I_d (can be 0,1,2)
-##!  int32 interconnect length
+##!  I_d*int32 interconnect length
 ##!  int32 source block 
 ##!  int32 destination block
 ##!  int32 source side (0-5)

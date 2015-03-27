@@ -81,8 +81,7 @@ class BinaryModel(object):
                     ystart = max(haloSize,ystart)
                     yend =  min(yc-haloSize,yend) 
                     funcArr[ystart:yend, idxX] = curf_idx             
-                    curf_idx += 1
-                     
+                    curf_idx += 1                     
             elif boundReg.side == 1:
                 for idxX in range(xc- haloSize, xc):
                     ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)
