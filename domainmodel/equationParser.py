@@ -24,12 +24,12 @@ elementaryFunction = sin^cos^exp^tan^ctan^cosh^sinh^tanh^ctanh
 exprForm1 = Optional('(') + (variable^real^parameter^elementaryFunction^derivative) + Optional(')') + Optional(operation) + Optional(')')
 expression = Suppress(variable + "'" + '=') + OneOrMore(exprForm1)
 
-#str -- строка, сформированная по установленному в .json правилу
-def parseEquation(str):
-    return expression.parseString(str)
+#estr -- строка, сформированная по установленному в .json правилу
+def parseEquation(estr):
+    return expression.parseString(estr)
 
-def orderOfEquation(str):
-    parsedStr = expression.parseString(str)
+def orderOfEquation(estr):
+    parsedStr = expression.parseString(estr)
     order = np.array([])
     for i,element in enumerate(parsedStr):
         if element == 'D[':

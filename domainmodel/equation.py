@@ -13,12 +13,12 @@ class Equation(object):
         self.vars = "x"
         self.system = ["U'=1"]
 
-    def fillProperties(self, dict):
-        self.name = dict["Name"]
-        self.vars = dict["Vars"]
-        self.system = dict["System"]
-        self.params = dict["Params"]
-        self.paramValues = dict["ParamValues"]
+    def fillProperties(self, edict):
+        self.name = edict["Name"]
+        self.vars = edict["Vars"]
+        self.system = edict["System"]
+        self.params = edict["Params"]
+        self.paramValues = edict["ParamValues"]
    
     def getPropertiesDict(self):          
         propDict = OrderedDict([            

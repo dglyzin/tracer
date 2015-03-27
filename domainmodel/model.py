@@ -383,8 +383,7 @@ class Model(QObject):
         
     def getHaloSize(self):
         return 1
-	def orderOfSystem(self):
-		orders = np.array([])
-		for equation in self.equations:
-			orders = np.hstack((orders,np.array(orderOfEquation(equation))))
-		return orders.max()
+    
+    def getMaxDerivOrder(self):        
+        orders = [orderOfEquation(equation) for equation in self.equations]
+        return max(orders)
