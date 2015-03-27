@@ -23,6 +23,8 @@ from equation import Equation
 from bound import Bound
 from initial import Initial
 from compnode import Compnode
+import numpy as np
+from equationParser import orderOfEquation
 
 
 XSTART = 0
@@ -381,3 +383,8 @@ class Model(QObject):
         
     def getHaloSize(self):
         return 1
+	def orderOfSystem(self):
+		orders = np.array([])
+		for equation in self.equations:
+			orders = np.hstack((orders,np.array(orderOfEquation(equation))))
+		return orders.max()
