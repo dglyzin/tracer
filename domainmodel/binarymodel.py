@@ -141,6 +141,8 @@ class BinaryModel(object):
             blockDim = block.dimension
             cellCountList = block.getCellCount(self.dmodel.gridStepX, self.dmodel.gridStepY,
                                            self.dmodel.gridStepZ )
+            cellOffsetList = block.getCellOffset(self.dmodel.gridStepX, self.dmodel.gridStepY,
+                                           self.dmodel.gridStepZ )
             cellCount = cellCountList[0]*cellCountList[1]*cellCountList[2]
             yc, xc = cellCountList[1] , cellCountList[0]
             
@@ -153,23 +155,23 @@ class BinaryModel(object):
             blockPropArr[2] = devType[ mapping[1] ]
             blockPropArr[3] = mapping[2]
             idx = 4
-            blockPropArr[idx] = block.offsetX
+            blockPropArr[idx] = cellOffsetList[0]
             idx += 1
             if blockDim>1:
-                blockPropArr[idx] = block.offsetY
+                blockPropArr[idx] = cellOffsetList[1]
                 idx+=1
             if blockDim>2:
-                blockPropArr[idx] = block.offsetZ
+                blockPropArr[idx] = cellOffsetList[2]
                 idx+=1
-            blockPropArr[idx] = block.sizeX
+            blockPropArr[idx] = cellCountList[0]
             idx += 1
             if blockDim>1:
-                blockPropArr[idx] = block.sizeY
+                blockPropArr[idx] = cellCountList[1]
                 idx+=1
             if blockDim>2:
-                blockPropArr[idx] = block.sizeZ                            
+                blockPropArr[idx] = cellCountList[2]                        
             self.blockPropArrList.append(blockPropArr)
-            
+            print blockPropArr 
             #2. Fill block functions
             if blockDim==1:
                 self.fill1dFuncs(blockFuncArr, block, cellCountList)
@@ -236,7 +238,7 @@ class BinaryModel(object):
         icPropArr2[2] = ic.block2
         icPropArr2[3] = ic.block1
         icPropArr2[4] = ic.block2Side
-        icPropArr2[5] = ic.block1Side 
+        icPropArr2[5] = ic.block1Side
         icPropArr2[6] = b2off
         icPropArr2[7] = b1off
         self.icList.append(icPropArr2)
@@ -245,7 +247,8 @@ class BinaryModel(object):
     def fillBinaryInterconnects(self):
         self.icCount = len(self.dmodel.interconnects) 
         self.icCountArr = np.zeros(1, dtype=np.int32)
-        self.icCountArr[0] = self.icCount
+        self.icCountArr[0] = self.icCount*2
+        print "saving", self.icCountArr[0], "ics"
         self.icList = []
         for icIdx in range(self.icCount):
             ic = self.dmodel.interconnects[icIdx]            
