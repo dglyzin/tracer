@@ -22,7 +22,7 @@ if __name__=='__main__':
     OutputFuncFile = "example2d.cpp"
     model = Model()
     model.loadFromFile(InputFile)
-    
+    print "Max derivative order is ", model.getMaxDerivOrder()
     if model.isMapped:
         partModel = model
     else:

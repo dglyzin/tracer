@@ -384,6 +384,6 @@ class Model(QObject):
     def getHaloSize(self):
         return 1
     
-    def getMaxDerivOrder(self):        
-        orders = [orderOfEquation(equation) for equation in self.equations]
+    def getMaxDerivOrder(self):            
+        orders = [orderOfEquation(equation) for equation in self.equations[0].system]
         return max(orders)

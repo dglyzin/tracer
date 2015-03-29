@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from pyparsing import *
 import numpy as np
 
@@ -28,10 +29,10 @@ expression = Suppress(variable + "'" + '=') + OneOrMore(exprForm1)
 def parseEquation(estr):
     return expression.parseString(estr)
 
-def orderOfEquation(estr):
+def orderOfEquation(estr):    
     parsedStr = expression.parseString(estr)
     order = np.array([])
     for i,element in enumerate(parsedStr):
         if element == 'D[':
             order = np.hstack((order,np.array([int(parsedStr[i+6])])))
-    return order.max()
+    return int(order.max())
