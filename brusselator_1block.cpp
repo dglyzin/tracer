@@ -15,10 +15,10 @@
 #define DY2 0.01
 
 #define Block0StrideX 1
-#define Block0StrideY 100
+#define Block0StrideY 11
 
-#define Block0CountX 100
-#define Block0CountY 100
+#define Block0CountX 11
+#define Block0CountY 11
 
 #define Block0OffsetX 0.0
 #define Block0OffsetY 0.0
@@ -28,7 +28,7 @@
 
 
 //для каждого блока свой набор точечных начальных функций и одна функция-заполнитель
-void Block0Initial0(double* result, int idxX, int idxY){    
+void Block0Initial0(double* result, int idxX, int idxY, int idxZ){
     double x = Block0OffsetX + idxX*DX;
     double y = Block0OffsetY + idxY*DY;
     int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
@@ -40,28 +40,28 @@ void Block0Initial0(double* result, int idxX, int idxY){
 //Заполняет result[idx] начальной функцией с номером из initType[idx]
 void Block0FillInitialValues(double* result, unsigned short int* initType){
 	printf("Initial array filling by user function started...\n");
-    initfunc2d_ptr_t initFuncArray[1];
+    initfunc_ptr_t initFuncArray[1];
     initFuncArray[0] = Block0Initial0;
     for(int idxY = 0; idxY<Block0CountY; idxY++)
         for(int idxX = 0; idxX<Block0CountX; idxX++){
             int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
             int type = initType[idx];
-            initFuncArray[type](result, idxX, idxY);
+            initFuncArray[type](result, idxX, idxY, 0);
         }
 }
 
 
 //Функции-заполнители нужно собрать в массив и отдать домену
-void getInitFuncArray(initfunc2d_fill_ptr_t** ppInitFuncs){
+void getInitFuncArray(initfunc_fill_ptr_t** ppInitFuncs){
 	printf("Welcome into userfuncs.so. Getting initial functions...\n");
 
-    initfunc2d_fill_ptr_t* pInitFuncs;
-    pInitFuncs = (initfunc2d_fill_ptr_t*) malloc( 1 * sizeof(initfunc2d_fill_ptr_t) );
+    initfunc_fill_ptr_t* pInitFuncs;
+    pInitFuncs = (initfunc_fill_ptr_t*) malloc( 1 * sizeof(initfunc_fill_ptr_t) );
     *ppInitFuncs = pInitFuncs;
     pInitFuncs[0] = Block0FillInitialValues;   
 }
 
-void releaseInitFuncArray(initfunc2d_fill_ptr_t* InitFuncs){
+void releaseInitFuncArray(initfunc_fill_ptr_t* InitFuncs){
     free(InitFuncs);    
 }
 
@@ -72,23 +72,21 @@ void releaseInitFuncArray(initfunc2d_fill_ptr_t* InitFuncs){
 //несуществующую точку в своем направлении и с разными stride
 
 //Основная функция
-void Block0CentralFunction(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){       
-    /*int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
+void Block0CentralFunction(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
     result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
                  + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
                  + DYM2*(source[idx+Block0StrideY*CELLSIZE] + source[idx-Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
     result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
                   + DXM2*(source[idx+Block0StrideX*CELLSIZE + 1] + source[idx-Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
                   + DYM2*(source[idx+Block0StrideY*CELLSIZE + 1] + source[idx-Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
-                  */
-	printf("OLOOLOLOLO...\n");
 }
 
 //условия по умолчанию для каждой стороны (4 штук),
 //для каждого угла (4 штук)
 //Блок0
 //y=0, x=0
-void Block0DefaultNeumannBound0(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){
+void Block0DefaultNeumannBound0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
     int idx = ( Block0StrideY + idxX) * CELLSIZE;
     result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
                  + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx+Block0StrideX*CELLSIZE] - 2.0*source[idx])
@@ -99,7 +97,7 @@ void Block0DefaultNeumannBound0(double* result, double* source, double t, int id
 }
 
 //сторона y=0, x центральные
-void Block0DefaultNeumannBound1(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){       
+void Block0DefaultNeumannBound1(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
     int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
     result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
                  + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
@@ -110,7 +108,7 @@ void Block0DefaultNeumannBound1(double* result, double* source, double t, int id
 }
 
 //сторона y=0, x=xmax
-void Block0DefaultNeumannBound2(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){       
+void Block0DefaultNeumannBound2(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
     int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
     result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
                  + DXM2*(source[idx-Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
@@ -121,7 +119,7 @@ void Block0DefaultNeumannBound2(double* result, double* source, double t, int id
 }
 
 //y центральные, x=0
-void Block0DefaultNeumannBound3(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){
+void Block0DefaultNeumannBound3(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
     int idx = ( Block0StrideY + idxX) * CELLSIZE;
     result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
                  + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx+Block0StrideX*CELLSIZE] - 2.0*source[idx])
@@ -132,7 +130,7 @@ void Block0DefaultNeumannBound3(double* result, double* source, double t, int id
 }
 
 //y=центральные, x=xmax
-void Block0DefaultNeumannBound4(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){       
+void Block0DefaultNeumannBound4(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
     int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
     result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
                  + DXM2*(source[idx-Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
@@ -143,7 +141,7 @@ void Block0DefaultNeumannBound4(double* result, double* source, double t, int id
 }
 
 //сторона y=ymax, x=0
-void Block0DefaultNeumannBound5(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){
+void Block0DefaultNeumannBound5(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
     int idx = ( Block0StrideY + idxX) * CELLSIZE;
     result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
                  + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx+Block0StrideX*CELLSIZE] - 2.0*source[idx])
@@ -154,7 +152,7 @@ void Block0DefaultNeumannBound5(double* result, double* source, double t, int id
 }
 
 //сторона y=ymax, x центральные
-void Block0DefaultNeumannBound6(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){       
+void Block0DefaultNeumannBound6(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
     int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
     result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
                  + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
@@ -165,7 +163,7 @@ void Block0DefaultNeumannBound6(double* result, double* source, double t, int id
 }
 
 //сторона y=ymax, x=xmax
-void Block0DefaultNeumannBound7(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){
+void Block0DefaultNeumannBound7(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
     int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
     result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
                  + DXM2*(source[idx-Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
@@ -177,10 +175,10 @@ void Block0DefaultNeumannBound7(double* result, double* source, double t, int id
 
 
 
-void getFuncArray(func2d_ptr_t** ppFuncs){
+void getFuncArray(func_ptr_t** ppFuncs){
 	printf("Welcome into userfuncs.so. Getting main functions...\n");
-    func2d_ptr_t* pFuncs;
-    pFuncs = (func2d_ptr_t*) malloc( ( 1 + 8 ) * sizeof(func2d_ptr_t) );
+    func_ptr_t* pFuncs;
+    pFuncs = (func_ptr_t*) malloc( ( 1 + 8 ) * sizeof(func_ptr_t) );
     *ppFuncs = pFuncs;
     pFuncs[0] = Block0CentralFunction;
     
@@ -194,7 +192,7 @@ void getFuncArray(func2d_ptr_t** ppFuncs){
     pFuncs[8] = Block0DefaultNeumannBound7;
 }
 
-void releaseFuncArray(func2d_ptr_t* Funcs){
+void releaseFuncArray(func_ptr_t* Funcs){
     free(Funcs);    
 }
 

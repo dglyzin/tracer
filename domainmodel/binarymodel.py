@@ -128,6 +128,7 @@ class BinaryModel(object):
         self.paramsArr = np.zeros(2, dtype=np.int32)        
         self.paramsArr[0] = self.dmodel.getCellSize()
         self.paramsArr[1] = self.dmodel.getHaloSize()       
+        print "Cell size:", self.paramsArr[0], "Halo size: ", self.paramsArr[1]
 
     def fillBinaryBlocks(self):
         self.blockCount = len(self.dmodel.blocks) 

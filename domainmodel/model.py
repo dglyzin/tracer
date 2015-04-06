@@ -379,7 +379,7 @@ class Model(QObject):
         return sum([node.cpuCount+node.gpuCount for node in self.compnodes])
     
     def getCellSize(self):
-        return 1
+        return len(self.equations[0].system)
         
     def getHaloSize(self):
         order =  self.getMaxDerivOrder()

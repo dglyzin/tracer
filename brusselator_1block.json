@@ -5,8 +5,8 @@
     "TimeStep": 0.02, 
     "SaveInterval": 0.1, 
     "GridStep": {
-        "x": 0.01, 
-        "y": 0.01, 
+        "x": 0.1, 
+        "y": 0.1, 
         "z": 1
     }, 
     "Blocks": [
@@ -80,8 +80,8 @@
         "BlockMapping": [
             [
                 0, 
-                "gpu", 
-                2
+                "cpu", 
+                0
             ]
         ]
     }
