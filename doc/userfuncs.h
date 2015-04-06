@@ -9,7 +9,7 @@
 #define USERFUNCS_H_
 
 typedef void (*initfunc2d_ptr_t)( double* result, int idxX, int idxY);
-typedef void (*initfunc2d_fill_ptr_t)( double* result, int* initType);
+typedef void (*initfunc2d_fill_ptr_t)( double* result, unsigned short int* initType);
 
 typedef void (*func2d_ptr_t)(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic);
 

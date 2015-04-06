@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "doc/userfuncs.h"
+#include <stdio.h>
 
 #define CELLSIZE 2
 
@@ -37,7 +38,8 @@ void Block0Initial0(double* result, int idxX, int idxY){
 
 
 //Заполняет result[idx] начальной функцией с номером из initType[idx]
-void Block0FillInitialValues(double* result, int* initType){
+void Block0FillInitialValues(double* result, unsigned short int* initType){
+	printf("Filling by user function started...");
     initfunc2d_ptr_t initFuncArray[1];
     initFuncArray[0] = Block0Initial0;
     for(int idxY = 0; idxY<Block0CountY; idxY++)
@@ -51,8 +53,9 @@ void Block0FillInitialValues(double* result, int* initType){
 
 //Функции-заполнители нужно собрать в массив и отдать домену
 void getInitFuncArray(initfunc2d_fill_ptr_t** ppInitFuncs){
-    initfunc2d_fill_ptr_t* pInitFuncs = *ppInitFuncs;
-    pInitFuncs = (initfunc2d_fill_ptr_t*) malloc( 1 * sizeof(initfunc2d_fill_ptr_t) );            
+    initfunc2d_fill_ptr_t* pInitFuncs;
+    pInitFuncs = (initfunc2d_fill_ptr_t*) malloc( 1 * sizeof(initfunc2d_fill_ptr_t) );
+    *ppInitFuncs = pInitFuncs;
     pInitFuncs[0] = Block0FillInitialValues;   
 }
 
@@ -68,13 +71,15 @@ void releaseInitFuncArray(initfunc2d_fill_ptr_t* InitFuncs){
 
 //Основная функция
 void Block0CentralFunction(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){       
-    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
+    /*int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
     result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
                  + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
                  + DYM2*(source[idx+Block0StrideY*CELLSIZE] + source[idx-Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
     result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
                   + DXM2*(source[idx+Block0StrideX*CELLSIZE + 1] + source[idx-Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
                   + DYM2*(source[idx+Block0StrideY*CELLSIZE + 1] + source[idx-Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
+                  */
+	printf("OLOOLOLOLO...\n");
 }
 
 //условия по умолчанию для каждой стороны (4 штук),
@@ -171,9 +176,10 @@ void Block0DefaultNeumannBound7(double* result, double* source, double t, int id
 
 
 void getFuncArray(func2d_ptr_t** ppFuncs){
-    func2d_ptr_t* pFuncs = *ppFuncs;
-    pFuncs = (func2d_ptr_t*) malloc( ( 1 + 8 + 2 + 1 ) * sizeof(func2d_ptr_t) );        
-    
+	printf("Welcome into userfuncs.so. Getting main functions...\n");
+    func2d_ptr_t* pFuncs;
+    pFuncs = (func2d_ptr_t*) malloc( ( 1 + 8 ) * sizeof(func2d_ptr_t) );
+    *ppFuncs = pFuncs;
     pFuncs[0] = Block0CentralFunction;
     
     pFuncs[1] = Block0DefaultNeumannBound0;
