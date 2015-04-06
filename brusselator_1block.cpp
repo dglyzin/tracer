@@ -39,7 +39,7 @@ void Block0Initial0(double* result, int idxX, int idxY){
 
 //Заполняет result[idx] начальной функцией с номером из initType[idx]
 void Block0FillInitialValues(double* result, unsigned short int* initType){
-	printf("Filling by user function started...");
+	printf("Initial array filling by user function started...\n");
     initfunc2d_ptr_t initFuncArray[1];
     initFuncArray[0] = Block0Initial0;
     for(int idxY = 0; idxY<Block0CountY; idxY++)
@@ -53,6 +53,8 @@ void Block0FillInitialValues(double* result, unsigned short int* initType){
 
 //Функции-заполнители нужно собрать в массив и отдать домену
 void getInitFuncArray(initfunc2d_fill_ptr_t** ppInitFuncs){
+	printf("Welcome into userfuncs.so. Getting initial functions...\n");
+
     initfunc2d_fill_ptr_t* pInitFuncs;
     pInitFuncs = (initfunc2d_fill_ptr_t*) malloc( 1 * sizeof(initfunc2d_fill_ptr_t) );
     *ppInitFuncs = pInitFuncs;
