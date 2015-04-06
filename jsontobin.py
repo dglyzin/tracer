@@ -17,9 +17,10 @@ from domainmodel.binarymodel import BinaryModel
 from domainmodel.decomposer import partitionAndMap
 
 if __name__=='__main__':
-    InputFile = "brusselator_2block.json"
-    OutputDataFile = "brusselator_2block.dom"
-    OutputFuncFile = "example2d.cpp"
+    projectName = "brusselator_1block"
+    InputFile = projectName+".json"
+    OutputDataFile = projectName+".dom"
+    OutputFuncFile = projectName+".cpp"
     model = Model()
     model.loadFromFile(InputFile)
     print "Max derivative order is ", model.getMaxDerivOrder()
@@ -31,6 +32,7 @@ if __name__=='__main__':
     bm = BinaryModel(partModel)
     bm.saveDomain(OutputDataFile)
     bm.saveFuncs(OutputFuncFile)
+    bm.compileFuncs(OutputFuncFile)
     #model.saveBinaryData(OutputDataFile, OutputFuncFile)
     
     

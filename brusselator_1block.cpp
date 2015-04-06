@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
+#include "doc/userfuncs.h"
 
 #define CELLSIZE 2
 
@@ -23,8 +24,7 @@
 
 //===================НАЧАЛЬНЫЕ УСЛОВИЯ==========================//
 //начальные условия - только на CPU
-typedef void (*initfunc2d_ptr_t)( double* result, int idxX, int idxY);
-typedef void (*initfunc2d_fill_ptr_t)( double* result, int* initType);
+
 
 //для каждого блока свой набор точечных начальных функций и одна функция-заполнитель
 void Block0Initial0(double* result, int idxX, int idxY){    
@@ -65,7 +65,6 @@ void releaseInitFuncArray(initfunc2d_fill_ptr_t* InitFuncs){
 //функции типа дирихле для всех границ всех блоков можно делать одни и те же ,
 //а один и тот же Нейман на разных границах разных блоков будет отдельной функцией, т.к. придумывает 
 //несуществующую точку в своем направлении и с разными stride
-typedef void (*func2d_ptr_t)(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic);
 
 //Основная функция
 void Block0CentralFunction(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){       
@@ -187,7 +186,7 @@ void getFuncArray(func2d_ptr_t** ppFuncs){
     pFuncs[8] = Block0DefaultNeumannBound7;
 }
 
-void releaseBoundFuncArray(func2d_ptr_t* Funcs){
+void releaseFuncArray(func2d_ptr_t* Funcs){
     free(Funcs);    
 }
 

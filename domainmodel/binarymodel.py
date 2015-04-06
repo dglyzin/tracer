@@ -13,6 +13,7 @@ Created on Mar 19, 2015
 '''
 
 import numpy as np
+import subprocess
 #from regions import BoundRegion
 #from gridprocessing import *
 #from datetime import date, datetime
@@ -282,7 +283,17 @@ class BinaryModel(object):
         for icArr in self.icList:
             icArr.tofile(domfile)          
         domfile.close()        
+        
             
+    def compileFuncs(self, fileName):        
+        print "compiling..."
+        command = "g++ "+ fileName + " -shared -fPIC -O3 -o libuserfuncs.so"
+        PIPE = subprocess.PIPE
+        p = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT, close_fds=True)
+        print p.stdout.read()
+        print "compilation finished"
+        
+    
     
     def saveFuncs(self, fileName):
         print "saving funcs..."
