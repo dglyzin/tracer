@@ -20,7 +20,8 @@ void releaseInitFuncArray(initfunc_fill_ptr_t* InitFuncs);
 void getFuncArray(func_ptr_t** ppFuncs);
 void releaseFuncArray(func_ptr_t* Funcs);
 
-
+void initDefaultParams(double **pparams, int* pparamscount);
+void releaseParams(double *params);
 
 
 

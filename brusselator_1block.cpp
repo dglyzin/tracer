@@ -23,6 +23,22 @@
 #define Block0OffsetX 0.0
 #define Block0OffsetY 0.0
 
+#define PAR_COUNT 3
+
+//===================ПАРАМЕТРЫ==================================//
+void initDefaultParams(double** pparams, int* pparamscount){
+	*pparamscount = PAR_COUNT;
+	*pparams = (double *) malloc(sizeof(double)*PAR_COUNT);
+	(*pparams)[0] = 0.6;
+	(*pparams)[1] = 0.025;
+	(*pparams)[2] = 2;
+}
+
+void releaseParams(double *params){
+	free(params);
+}
+
+
 //===================НАЧАЛЬНЫЕ УСЛОВИЯ==========================//
 //начальные условия - только на CPU
 
