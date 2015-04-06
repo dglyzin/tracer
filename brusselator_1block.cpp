@@ -32,8 +32,8 @@ void Block0Initial0(double* result, int idxX, int idxY, int idxZ){
     double x = Block0OffsetX + idxX*DX;
     double y = Block0OffsetY + idxY*DY;
     int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
-    result[idx] = 15.0;
-    result[idx+1] = sin(x)*cos(y);    
+    result[idx] = x;//15.0;
+    result[idx+1] = y;//sin(x)*cos(y);
 }
 
 
@@ -46,7 +46,7 @@ void Block0FillInitialValues(double* result, unsigned short int* initType){
         for(int idxX = 0; idxX<Block0CountX; idxX++){
             int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
             int type = initType[idx];
-            initFuncArray[type](result, idxX, idxY, 0);
+            initFuncArray[0](result, idxX, idxY, 0);
         }
 }
 
