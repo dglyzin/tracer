@@ -5,8 +5,8 @@
     "TimeStep": 0.02, 
     "SaveInterval": 0.1, 
     "GridStep": {
-        "x": 0.01, 
-        "y": 0.01, 
+        "x": 0.1, 
+        "y": 0.1, 
         "z": 1
     }, 
     "Blocks": [
@@ -18,7 +18,7 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 1.0, 
+                "x": 1.3, 
                 "y": 0.5
             }, 
             "DefaultEquation": 0, 
@@ -34,7 +34,7 @@
                 "y": 0.5
             }, 
             "Size": {
-                "x": 1.0, 
+                "x": 1.3, 
                 "y": 0.5
             }, 
             "DefaultEquation": 0, 

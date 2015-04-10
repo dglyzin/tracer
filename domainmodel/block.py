@@ -33,11 +33,11 @@ class Block(object):
     def getCellCount(self, dx, dy, dz ):
         #TODO complete
         yc, zc = 1, 1
-        xc = self.sizeX/dx+1 
+        xc = self.sizeX/dx#+1 
         if self.dimension >1:
-            yc = self.sizeY/dy+1
+            yc = self.sizeY/dy#+1
         if self.dimension >2:
-            zc = self.sizeZ/dz+1
+            zc = self.sizeZ/dz#+1
         return [int(xc), int(yc), int(zc)]
 
     def getCellOffset(self, dx, dy, dz ):

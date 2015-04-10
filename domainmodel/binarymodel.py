@@ -32,11 +32,20 @@ class BinaryModel(object):
         print "Welcome to the binary model saver!"
         self.dmodel = dmodel
 
-
-    def fill1dFuncs(self, funcArr):
+    def fill1dInitFuncs(self, funcArr, block, blockSize):
         pass
     
-    def fill2dFuncs(self, funcArr, block, blockSize):
+    def fill2dInitFuncs(self, funcArr, block, blockSize):
+        pass
+    
+    def fill3dInitFuncs(self, funcArr, block, blockSize):
+        pass
+    
+
+    def fill1dCompFuncs(self, funcArr, block, blockSize):
+        pass
+    
+    def fill2dCompFuncs(self, funcArr, block, blockSize):
         xc = blockSize[0]
         yc = blockSize[1]
         print "Filling 2d function array."
@@ -107,7 +116,7 @@ class BinaryModel(object):
             
                
         
-    def fill3dFuncs(self, funcArr):
+    def fill3dCompFuncs(self, funcArr, block, blockSize):
         pass
  
     def fillBinarySettings(self):        
@@ -125,9 +134,10 @@ class BinaryModel(object):
         self.timeAndStepArr[5] = self.dmodel.gridStepY
         self.timeAndStepArr[6] = self.dmodel.gridStepZ   
         
-        self.paramsArr = np.zeros(2, dtype=np.int32)        
+        self.paramsArr = np.zeros(3, dtype=np.int32)        
         self.paramsArr[0] = self.dmodel.getCellSize()
         self.paramsArr[1] = self.dmodel.getHaloSize()       
+        self.paramsArr[2] = 0 #TODO solver index
         print "Cell size:", self.paramsArr[0], "Halo size: ", self.paramsArr[1]
 
     def fillBinaryBlocks(self):
@@ -135,7 +145,8 @@ class BinaryModel(object):
         self.blockCountArr = np.zeros(1, dtype=np.int32)
         self.blockCountArr[0] = self.blockCount
         self.blockPropArrList = []
-        self.blockFuncArrList = []
+        self.blockInitFuncArrList = []
+        self.blockCompFuncArrList = []
         for blockIdx in range(self.blockCount):
             print "Saving block", blockIdx
             block = self.dmodel.blocks[blockIdx]
@@ -149,7 +160,8 @@ class BinaryModel(object):
             yc, xc = cellCountList[1] , cellCountList[0]
             
             blockPropArr = np.zeros(4+2*blockDim, dtype=np.int32)
-            blockFuncArr = np.zeros(cellCount, dtype=np.int16)
+            blockInitFuncArr = np.zeros(cellCount, dtype=np.int16)
+            blockCompFuncArr = np.zeros(cellCount, dtype=np.int16)
             
             blockPropArr[0] = blockDim
             mapping = self.dmodel.mapping[blockIdx] 
@@ -176,14 +188,19 @@ class BinaryModel(object):
             print blockPropArr 
             #2. Fill block functions
             if blockDim==1:
-                self.fill1dFuncs(blockFuncArr, block, cellCountList)
-            elif blockDim==2:
-                self.fill2dFuncs(blockFuncArr.reshape([yc, xc]), block, cellCountList)
+                self.fill1dInitFuncs(blockInitFuncArr, block, cellCountList)
+                self.fill1dCompFuncs(blockCompFuncArr, block, cellCountList)
+            elif blockDim==2:                
+                self.fill2dInitFuncs(blockInitFuncArr.reshape([yc, xc]), block, cellCountList)
+                self.fill2dCompFuncs(blockCompFuncArr.reshape([yc, xc]), block, cellCountList)
+                print blockCompFuncArr.reshape([yc, xc])
             elif blockDim==3:
-                self.fill3dFuncs(blockFuncArr, block, cellCountList)
-                
-            self.blockFuncArrList.append(blockFuncArr)
-            print blockFuncArr.reshape([yc, xc])
+                self.fill1dFuncs(blockInitFuncArr, block, cellCountList)
+                self.fill3dFuncs(blockCompFuncArr, block, cellCountList)
+            
+            self.blockInitFuncArrList.append(blockInitFuncArr)
+            self.blockCompFuncArrList.append(blockCompFuncArr)
+            
     
     def interconnect1dFill(self, icIdx):
         ic = self.dmodel.interconnects[icIdx]
@@ -277,7 +294,8 @@ class BinaryModel(object):
         self.blockCountArr.tofile(domfile)
         for blockIdx in range(self.blockCount):
             self.blockPropArrList[blockIdx].tofile(domfile)
-            self.blockFuncArrList[blockIdx].tofile(domfile)
+            self.blockInitFuncArrList[blockIdx].tofile(domfile)
+            self.blockCompFuncArrList[blockIdx].tofile(domfile)
         
         #3. Save interconnects
         self.icCountArr.tofile(domfile)

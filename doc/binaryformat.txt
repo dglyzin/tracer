@@ -11,6 +11,7 @@
 ##!  3* float64: dx, dy, dz
 ##!  int32 Cell Size
 ##!  int32 Halo Size
+##!  int32 Solver number (0=Euler, 1= RK4, etc,  see solver.h)
 
 ### blocks 
 ##!  int32: number of blocks N_B
@@ -23,7 +24,8 @@
 ##!  Db*int32: offset x, y, z (in number of grid steps) 
 ##!  Db*int32: xc, yc, and zc number of grid steps in this block, total=xc*yc*zc
 ### properties of every volume
-##!  total*uint16: function number 
+##!  total*uint16: init function number
+##!  total*uint16: computation function number 
 ### END OF BLOCK
 
 ### Interconnects 
