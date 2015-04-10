@@ -17,7 +17,7 @@ from domainmodel.binarymodel import BinaryModel
 from domainmodel.decomposer import partitionAndMap
 
 if __name__=='__main__':
-    projectName = "brusselator_2block"
+    projectName = "brusselator_1block"
     InputFile = projectName+".json"
     OutputDataFile = projectName+".dom"
     OutputFuncFile = projectName+".cpp"
