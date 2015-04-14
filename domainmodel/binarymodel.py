@@ -306,14 +306,13 @@ class BinaryModel(object):
             
     def compileFuncs(self, fileName):        
         print "compiling..."
-        command = "g++ "+ fileName + " -shared -fPIC -O3 -o libuserfuncs.so"
+        command = "nvcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -Xcompiler -fPIC"
         PIPE = subprocess.PIPE
         p = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT, close_fds=True)
         print p.stdout.read()
         print "compilation finished"
         
-    
-    
+        
     def saveFuncs(self, fileName):
         print "saving funcs..."
         print "not implemented yet..."

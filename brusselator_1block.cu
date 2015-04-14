@@ -62,7 +62,7 @@ void Block0FillInitialValues(double* result, unsigned short int* initType){
         for(int idxX = 0; idxX<Block0CountX; idxX++){
             int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
             int type = initType[idx];
-            initFuncArray[0](result, idxX, idxY, 0);
+            initFuncArray[0](result, idxX, idxY, type);
         }
 }
 
@@ -212,3 +212,119 @@ void releaseFuncArray(func_ptr_t* Funcs){
     free(Funcs);    
 }
 
+
+//==========================CUDA functions==================================
+
+//Основная функция
+__device__ void DevBlock0CentralFunction(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
+    result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
+                 + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
+                 + DYM2*(source[idx+Block0StrideY*CELLSIZE] + source[idx-Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
+    result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
+                  + DXM2*(source[idx+Block0StrideX*CELLSIZE + 1] + source[idx-Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
+                  + DYM2*(source[idx+Block0StrideY*CELLSIZE + 1] + source[idx-Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
+}
+
+
+//y=0, x=0
+__device__ void DevBlock0DefaultNeumannBound0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+    int idx = ( Block0StrideY + idxX) * CELLSIZE;
+    result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
+                 + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx+Block0StrideX*CELLSIZE] - 2.0*source[idx])
+                 + DYM2*(source[idx+Block0StrideY*CELLSIZE] + source[idx+Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
+    result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
+                  + DXM2*(source[idx+Block0StrideX*CELLSIZE + 1] + source[idx+Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
+                  + DYM2*(source[idx+Block0StrideY*CELLSIZE + 1] + source[idx+Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
+}
+
+//сторона y=0, x центральные
+__device__ void DevBlock0DefaultNeumannBound1(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
+    result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
+                 + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
+                 + DYM2*(source[idx+Block0StrideY*CELLSIZE] + source[idx+Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
+    result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
+                  + DXM2*(source[idx+Block0StrideX*CELLSIZE + 1] + source[idx-Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
+                  + DYM2*(source[idx+Block0StrideY*CELLSIZE + 1] + source[idx+Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
+}
+
+//сторона y=0, x=xmax
+__device__ void DevBlock0DefaultNeumannBound2(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
+    result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
+                 + DXM2*(source[idx-Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
+                 + DYM2*(source[idx+Block0StrideY*CELLSIZE] + source[idx+Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
+    result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
+                  + DXM2*(source[idx-Block0StrideX*CELLSIZE + 1] + source[idx-Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
+                  + DYM2*(source[idx+Block0StrideY*CELLSIZE + 1] + source[idx+Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
+}
+
+//y центральные, x=0
+__device__ void DevBlock0DefaultNeumannBound3(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+    int idx = ( Block0StrideY + idxX) * CELLSIZE;
+    result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
+                 + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx+Block0StrideX*CELLSIZE] - 2.0*source[idx])
+                 + DYM2*(source[idx+Block0StrideY*CELLSIZE] + source[idx-Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
+    result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
+                  + DXM2*(source[idx+Block0StrideX*CELLSIZE + 1] + source[idx+Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
+                  + DYM2*(source[idx+Block0StrideY*CELLSIZE + 1] + source[idx-Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
+}
+
+//y=центральные, x=xmax
+__device__ void DevBlock0DefaultNeumannBound4(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
+    result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
+                 + DXM2*(source[idx-Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
+                 + DYM2*(source[idx+Block0StrideY*CELLSIZE] + source[idx-Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
+    result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
+                  + DXM2*(source[idx-Block0StrideX*CELLSIZE + 1] + source[idx-Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
+                  + DYM2*(source[idx+Block0StrideY*CELLSIZE + 1] + source[idx-Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
+}
+
+//сторона y=ymax, x=0
+__device__ void DevBlock0DefaultNeumannBound5(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+    int idx = ( Block0StrideY + idxX) * CELLSIZE;
+    result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
+                 + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx+Block0StrideX*CELLSIZE] - 2.0*source[idx])
+                 + DYM2*(source[idx-Block0StrideY*CELLSIZE] + source[idx-Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
+    result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
+                  + DXM2*(source[idx+Block0StrideX*CELLSIZE + 1] + source[idx+Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
+                  + DYM2*(source[idx-Block0StrideY*CELLSIZE + 1] + source[idx-Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
+}
+
+//сторона y=ymax, x центральные
+__device__ void DevBlock0DefaultNeumannBound6(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
+    result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
+                 + DXM2*(source[idx+Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
+                 + DYM2*(source[idx-Block0StrideY*CELLSIZE] + source[idx-Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
+    result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
+                  + DXM2*(source[idx+Block0StrideX*CELLSIZE + 1] + source[idx-Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
+                  + DYM2*(source[idx-Block0StrideY*CELLSIZE + 1] + source[idx-Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
+}
+
+//сторона y=ymax, x=xmax
+__device__ void DevBlock0DefaultNeumannBound7(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
+    result[idx]  = 1.0 + source[idx]*source[idx]*source[idx+1] - params[1]*source[idx] + params[0] * (
+                 + DXM2*(source[idx-Block0StrideX*CELLSIZE] + source[idx-Block0StrideX*CELLSIZE] - 2.0*source[idx])
+                 + DYM2*(source[idx-Block0StrideY*CELLSIZE] + source[idx-Block0StrideY*CELLSIZE] - 2.0*source[idx]) );
+    result[idx+1] =  params[2] * source[idx] - source[idx] * source[idx] * source[idx+1] + params[0] * (
+                  + DXM2*(source[idx-Block0StrideX*CELLSIZE + 1] + source[idx-Block0StrideX*CELLSIZE + 1] - 2.0*source[idx+1])
+                  + DYM2*(source[idx-Block0StrideY*CELLSIZE + 1] + source[idx-Block0StrideY*CELLSIZE + 1] - 2.0*source[idx+1]) );
+}
+
+/*
+__global__ void Block0ComputeBorders(double* result, double* source, double t, double* params, double** ic, devFuncs, unsigned short int* devFuncNumbers)
+{
+    int idxX = threadIdx.x;
+    int idxY = threadIdx.y;
+    int idxZ = 0;
+    
+    int cellIdx = idxY * Block0StrideY + idxX;
+    devFuncs[devFuncNumbers[cellIdx]](result, source, t, idxX, idxY, idxZ, params, ic);
+    
+}
+
+*/

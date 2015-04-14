@@ -1,9 +1,9 @@
 {
     "ProjectName": "Input_Example", 
     "StartTime": 0.0, 
-    "FinishTime": 100, 
-    "TimeStep": 0.02, 
-    "SaveInterval": 0.1, 
+    "FinishTime": 1, 
+    "TimeStep": 0.1, 
+    "SaveInterval": 0.5, 
     "GridStep": {
         "x": 0.1, 
         "y": 0.1, 
