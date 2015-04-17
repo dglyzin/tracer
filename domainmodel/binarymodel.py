@@ -314,7 +314,7 @@ class BinaryModel(object):
         
         
     def saveFuncs(self, fileName):
-		self.dmodel.createCPP(fileName)
+        self.dmodel.createCPP(fileName)
         #print "saving funcs..."
         #print "not implemented yet..."
 
