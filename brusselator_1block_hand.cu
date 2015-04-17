@@ -64,7 +64,7 @@ void Block0FillInitialValues(double* result, unsigned short int* initType){
             int type = initType[idx];
             initFuncArray[0](result, idxX, idxY, type);
         }
-}
+}		
 
 
 //Функции-заполнители нужно собрать в массив и отдать домену

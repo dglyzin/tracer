@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from pyparsing import *
 
 #Создан для отслеживания того, что в уравнении
@@ -68,12 +69,12 @@ def getRhsLst(estrList,parList):
     rhsLst = list([])
     for eq in estrList:
         if not correctOperationSequence(eq):
-            raise SyntaxError('В уравнении ' + eq + ' несколько бинарных операций стоят рядом, что недопустимо!')
+            raise SyntaxError(u'В уравнении ' + eq + u' несколько бинарных операций стоят рядом, что недопустимо!')            
         boundaryCount = boundaryController(eq)
         if boundaryCount < 0:
-            raise SyntaxError('В уравнении ' + eq + ' где-то либо имеются лишние закрывающие скобки, либо отсутствует некотрое количество открывающих!')
+            raise SyntaxError(u'В уравнении ' + eq + u' где-то либо имеются лишние закрывающие скобки, либо отсутствует некотрое количество открывающих!')            
         elif boundaryCount > 0:
-            raise SyntaxError('В уравнении ' + eq + ' где-то либо имеются лишние открывающие скобки, либо отсутствует некотрое количество закрывающих!')
+            raise SyntaxError(u'В уравнении ' + eq + u' где-то либо имеются лишние открывающие скобки, либо отсутствует некотрое количество закрывающих!')            
         rhsLst.extend([equation_expression.parseString(eq).asList()])
 
     #Для создания по этому массиву сишной функции удобно, чтобы выражение типа ^3 было единой строкой!
