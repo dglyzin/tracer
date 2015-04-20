@@ -20,7 +20,7 @@ if __name__=='__main__':
     projectName = "brusselator_1block"
     InputFile = projectName+".json"
     OutputDataFile = projectName+".dom"
-    OutputFuncFile = projectName+".cu"
+    OutputFuncFile = projectName+".cpp"
     model = Model()
     model.loadFromFile(InputFile)
     print "Max derivative order is ", model.getMaxDerivOrder()
