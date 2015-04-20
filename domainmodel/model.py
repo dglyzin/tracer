@@ -24,8 +24,8 @@ from bound import Bound
 from initial import Initial
 from compnode import Compnode
 import numpy as np
-from eqParser import orderOfSystem
-from C_func_generator import generate_c_func
+from DerivHandler import DerivativeHandler
+from funcGenerator import Generator
 
 
 XSTART = 0
@@ -387,11 +387,13 @@ class Model(QObject):
         return order/2 + order%2
     
     def getMaxDerivOrder(self):
-        return orderOfSystem(self.equations[0].system,self.equations[0].params)
+		d = DerivativeHandler()
+        return d.orderOfSystem(self.equations[0].system,self.equations[0].params)
     
     def createCPP(self,cppFileName):
         try:
-            outputStr = generate_c_func(self.equations[0].system,self.equations[0].vars,self.equations[0].params)
+			gen = Generator()
+            outputStr = gen.generate_c_func(self.equations[0].system,self.equations[0].vars,self.equations[0].params)
         except SyntaxError as ex:
             print(ex)
         else:
