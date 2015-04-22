@@ -303,10 +303,11 @@ class BinaryModel(object):
             icArr.tofile(domfile)          
         domfile.close()        
         
-            
+           
     def compileFuncs(self, fileName):        
         print "compiling..."
-        command = "nvcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -Xcompiler -fPIC"
+        #command = "nvcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -Xcompiler -fPIC"
+        command = "gcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -fPIC"
         PIPE = subprocess.PIPE
         p = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT, close_fds=True)
         print p.stdout.read()

@@ -387,13 +387,15 @@ class Model(QObject):
         return order/2 + order%2
     
     def getMaxDerivOrder(self):
-		d = DerivativeHandler()
+        d = DerivativeHandler()
         return d.orderOfSystem(self.equations[0].system,self.equations[0].params)
     
     def createCPP(self,cppFileName):
         try:
-			gen = Generator()
-            outputStr = gen.generate_c_func(self.equations[0].system,self.equations[0].vars,self.equations[0].params)
+            gen = Generator()
+			boundNumber = 1
+			derivAtZero = 1
+            outputStr = gen.generate_c_func(boundNumber,derivAtZero,self.equations[0].system,self.equations[0].vars,self.equations[0].params)
         except SyntaxError as ex:
             print(ex)
         else:
