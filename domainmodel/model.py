@@ -393,8 +393,8 @@ class Model(QObject):
     def createCPP(self,cppFileName):
         try:
             gen = Generator()
-			boundNumber = 1
-			derivAtZero = 1
+            boundNumber = 1
+            derivAtZero = 1
             outputStr = gen.generate_c_func(boundNumber,derivAtZero,self.equations[0].system,self.equations[0].vars,self.equations[0].params)
         except SyntaxError as ex:
             print(ex)

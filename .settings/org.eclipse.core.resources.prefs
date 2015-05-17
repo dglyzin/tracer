@@ -1,0 +1,10 @@
+eclipse.preferences.version=1
+encoding//domainmodel/binarymodel.py=utf-8
+encoding//domainmodel/block.py=utf-8
+encoding//domainmodel/equation.py=utf-8
+encoding//domainmodel/gridprocessing.py=utf-8
+encoding//domainmodel/interconnect.py=utf-8
+encoding//domainmodel/model.py=utf-8
+encoding//domainmodel/regions.py=utf-8
+encoding/inputtest.py=utf-8
+encoding/jsontobin.py=utf-8
