@@ -966,7 +966,7 @@ class BaseWindow(QtGui.QMainWindow):
 ##        f.close()
 ##        print "initJson",jOut
         dirSourse="./domainmodel/Source"
-        libGenerateC.runGenCfile(self,self.programDate["dif"],dirSourse,outPath,"input.json")
+        libGenerateC.runGenCfile(self,dirSourse,outPath,"input.json")
 
 
 
@@ -977,7 +977,8 @@ class BaseWindow(QtGui.QMainWindow):
         #dim_str, lexp_str, steps_str, iters_str, work_port, mainnode, procnum, login,password,ip,port,mode
         #"640", "10", "1000", "5", "15561", "cnode1", "16", "tester","tester","corp7.uniyar.ac.ru","2222",'command'
         if self.comboRunValue.currentText()==u'Вычислить на кластере':
-            conCluster=cluster.OnClickConnect("640", "10", "1000", "5", "15561", "cnode1", "16", "tester","tester","corp7.uniyar.ac.ru","2222",'funcOut.c')
+            out=self.dictConfig
+            conCluster=cluster.OnClickConnect(out["dim_str"],out["lexp_str"],out["steps_str"],out["iters_str"],out["work_port"],out["mainnode"],out["procnum"],out["login"],out["password"],out["ip"],out["port"],'funcOut.c')
             QtGui.QMessageBox.warning (self, u'Предупреждение',
                 conCluster, QtGui.QMessageBox.Ok)
         else:

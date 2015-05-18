@@ -1,12 +1,12 @@
 {
     "ProjectName": "Input_Example", 
     "StartTime": 0.0, 
-    "FinishTime": 100, 
+    "FinishTime": 0.5, 
     "TimeStep": 0.02, 
     "SaveInterval": 0.1, 
     "GridStep": {
-        "x": 0.1, 
-        "y": 0.1, 
+        "x": 1, 
+        "y": 1, 
         "z": 1
     }, 
     "Blocks": [
@@ -18,13 +18,38 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 1.0, 
-                "y": 1.0
+                "x": 10.0, 
+                "y": 10.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [], 
-            "InitialRegions": []
+            "BoundRegions": [
+                {
+                    "BoundNumber": 0, 
+                    "Side": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 5.0
+                }, 
+                {
+                    "BoundNumber": 1, 
+                    "Side": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 5.0, 
+                    "yto": 10.0
+                }
+            ], 
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 1.0, 
+                    "xto": 2.0, 
+                    "yfrom": 1.0, 
+                    "yto": 2.0
+                }
+            ]
         }
     ], 
     "Interconnects": [], 
@@ -36,28 +61,52 @@
                 "y"
             ], 
             "System": [
-                "U'=a+U^2*V-(b+1*U+D[U,{x,2}]+D[U,{y,2}])", 
-                "V'=b*U-U^2*V+mu*(D[V,{x,2}]+D[V,{y,2}])"
+                "U'=1+U^2*V-k1*U+a*(D[U,{x,2}]+D[U,{y,2}])", 
+                "V'=k2*U-U^2*V+a*(D[V,{x,2}]+D[V,{y,2}])"
             ], 
             "Params": [
                 "a", 
-                "mu", 
-                "b"
+                "k2", 
+                "k1"
             ], 
             "ParamValues": {
-                "a": 0.6, 
-                "mu": 0.025, 
-                "b": 2
+                "a": "1", 
+                "k2": "1", 
+                "k1": "1"
             }
         }
     ], 
-    "Bounds": [], 
+    "Bounds": [
+        {
+            "Name": "Dirichlet example", 
+            "Type": 0, 
+            "Values": [
+                "15.0", 
+                "sin(t)"
+            ]
+        }, 
+        {
+            "Name": "Neumann example", 
+            "Type": 1, 
+            "Values": [
+                "-10.0", 
+                "cos(t)"
+            ]
+        }
+    ], 
     "Initials": [
         {
             "Name": "Initial values", 
             "Values": [
                 "15.0", 
                 "sin(x)*cos(y)"
+            ]
+        }, 
+        {
+            "Name": "Something hot", 
+            "Values": [
+                "200.0", 
+                "100.0"
             ]
         }
     ], 

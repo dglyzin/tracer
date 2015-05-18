@@ -11,31 +11,30 @@ funcListReplace='acosh','asinh','atanh','acos','asin','atan','cos','exp','log','
 
 class RunGCFILE:
     def __init__(self):
-        self.dif=['U', 'V']
-        self.dirFile=""
+        self.dirFile="" ##../File
         self.dirSourse="Source"
         self.InputFile = "input.json"
-        runGenCfile(self,self.dif,self.dirSourse,self.dirFile,self.InputFile)
+        runGenCfile(self,self.dirSourse,self.dirFile,self.InputFile)
 
 #    Run gen C file
-def runGenCfile(self,dif,dirSourse,dirFile,InputFile):
+def runGenCfile(self,dirSourse,dirFile,InputFile):
     #model = Model()
     if dirFile!="":
         dirFile=dirFile+"/"
-        
+
     projectFile = open(os.path.join(dirFile,InputFile))
     initDict = json.loads(projectFile.read())
-    projectFile.close()        
-        
+    projectFile.close()
+
     #model.loadFromFile(os.path.join(dirFile,InputFile))
     #initDict = model.toDict()
-    
+
     cFileName = os.path.join(dirFile,"funcOut.c")
     generateCfromDict(initDict, cFileName)
-    
+
 def generateCfromDict(modelDict, cFileName):
     dirSourse = "domainmodel/Source"
-    
+
     k=0
     for i in modelDict:
         print k,i,modelDict[i]
@@ -46,9 +45,10 @@ def generateCfromDict(modelDict, cFileName):
     equForReplace=equ[:]
     equOut=[]
     var = modelDict['Equations'][0]['Vars']
-    
-    dif=['U', 'V']
-    
+
+    dif=findDif(equ)
+##    print 'findDif(equ)',dif[:]
+
     param=modelDict['Equations'][0]['Params']
     initials=modelDict['Initials'][:]
     boundRegions=modelDict['Blocks'][0]['BoundRegions'][:]
@@ -584,6 +584,21 @@ def parseEqu(self,text):
                 equation.append(elem)
     return equation
 
+#вычленяем дифференцируемые функции
+def findDif(equ):
+    #вычленяем дифференциалы
+    dif=[]
+    difSearch = re.findall("[A-Za-z]+\'",str(equ))
+    for i in difSearch:
+        dif.append(i[:-1])
+    seen = set()
+    result = []
+    for x in dif:
+        if x in seen:
+            continue
+        seen.add(x)
+        result.append(x)
+    return result
 
 if __name__=='__main__':
     rgFile=RunGCFILE()
