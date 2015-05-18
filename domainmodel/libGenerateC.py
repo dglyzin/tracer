@@ -3,7 +3,8 @@ import sys
 import os
 from numpy import arange, sin, pi
 import re
-from model import *
+#from model import *
+import json
 
 funcList='acosh','asinh','atanh','acos','asin','atan','cos','exp','log','log10','sin','tan','tanh'
 funcListReplace='acosh','asinh','atanh','acos','asin','atan','cos','exp','log','log10','sin','tan','tanh'
@@ -18,27 +19,42 @@ class RunGCFILE:
 
 #    Run gen C file
 def runGenCfile(self,dif,dirSourse,dirFile,InputFile):
-    model = Model()
+    #model = Model()
     if dirFile!="":
         dirFile=dirFile+"/"
-    model.loadFromFile(os.path.join(dirFile,InputFile))
-    initDict= model.toDict()
+        
+    projectFile = open(os.path.join(dirFile,InputFile))
+    initDict = json.loads(projectFile.read())
+    projectFile.close()        
+        
+    #model.loadFromFile(os.path.join(dirFile,InputFile))
+    #initDict = model.toDict()
+    
+    cFileName = os.path.join(dirFile,"funcOut.c")
+    generateCfromDict(initDict, cFileName)
+    
+def generateCfromDict(modelDict, cFileName):
+    dirSourse = "domainmodel/Source"
+    
     k=0
-    for i in initDict:
-        print k,i,initDict[i]
+    for i in modelDict:
+        print k,i,modelDict[i]
         k=k+1
 
     #Достаем данные из JSON
-    equ=initDict['Equations'][0]['System']
+    equ=modelDict['Equations'][0]['System']
     equForReplace=equ[:]
     equOut=[]
-    var=initDict['Equations'][0]['Vars']
-    param=initDict['Equations'][0]['Params']
-    initials=initDict['Initials'][:]
-    boundRegions=initDict['Blocks'][0]['BoundRegions'][:]
-    bounds=initDict['Bounds'][:]
-    initOffset=initDict['Blocks'][0]['Offset']
-    initSize=initDict['Blocks'][0]['Size']
+    var = modelDict['Equations'][0]['Vars']
+    
+    dif=['U', 'V']
+    
+    param=modelDict['Equations'][0]['Params']
+    initials=modelDict['Initials'][:]
+    boundRegions=modelDict['Blocks'][0]['BoundRegions'][:]
+    bounds=modelDict['Bounds'][:]
+    initOffset=modelDict['Blocks'][0]['Offset']
+    initSize=modelDict['Blocks'][0]['Size']
     initSizeList=[]
     for i in var:
         initSizeList.append(initOffset[i])
@@ -72,7 +88,7 @@ def runGenCfile(self,dif,dirSourse,dirFile,InputFile):
         listEquForReplace=[equ]*9
         for iProizv in proizv:
             #получаем список из производных переменных и их степеней
-            func,varProizv,degProizv=replaceForProizv(self,iProizv)
+            func,varProizv,degProizv=replaceForProizv(None,iProizv)
             for x in varProizv:
                 if x not in var:
                     #добавляем неуказанные пользователем переменные
@@ -81,7 +97,7 @@ def runGenCfile(self,dif,dirSourse,dirFile,InputFile):
             for x in degProizv:
                 degProizvTotal+=int(x)  #Общая степень производной
 
-            spisokProizv=FindZamena(self,dif,func,varProizv,var,degProizv,dirSourse)
+            spisokProizv=FindZamena(None,dif,func,varProizv,var,degProizv,dirSourse)
             if len(spisokProizv)>0:
                 for i in range(len(spisokProizv)):
                     listEquForReplace[i]=listEquForReplace[i].replace(iProizv,spisokProizv[i])
@@ -174,7 +190,7 @@ def runGenCfile(self,dif,dirSourse,dirFile,InputFile):
 
 ##    print textTemplateC
 
-    fout = open(os.path.join(dirFile,"funcOut.c"), "wt")
+    fout = open(cFileName, "wt")
     fout.write(textTemplateC)   ##.encode(encoding='UTF-8')
     fout.close()
 

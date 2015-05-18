@@ -25,7 +25,9 @@ from initial import Initial
 from compnode import Compnode
 import numpy as np
 from DerivHandler import DerivativeHandler
+#generators
 from funcGenerator import Generator
+from libGenerateC import generateCfromDict
 
 
 XSTART = 0
@@ -391,14 +393,18 @@ class Model(QObject):
         return d.orderOfSystem(self.equations[0].system,self.equations[0].params)
     
     def createCPP(self,cppFileName):
-        try:
-            gen = Generator()
-            boundNumber = 1
-            derivAtZero = 1
-            outputStr = gen.generate_c_func(boundNumber,derivAtZero,self.equations[0].system,self.equations[0].vars,self.equations[0].params)
-        except SyntaxError as ex:
-            print(ex)
-        else:
-            f = open(cppFileName,'w')
-            f.write(outputStr)
-            f.close()
+        #generator 1
+        #try:
+        #    gen = Generator()
+        #    boundNumber = 1
+        #    derivAtZero = 1
+        #    outputStr = gen.generate_c_func(boundNumber,derivAtZero,self.equations[0].system,self.equations[0].vars,self.equations[0].params)
+        #except SyntaxError as ex:
+        #    print(ex)
+        #else:
+        #    f = open(cppFileName,'w')
+        #    f.write(outputStr)
+        #    f.close()
+        #generator2
+        generateCfromDict(self.toDict(),cppFileName)
+        
