@@ -10,6 +10,9 @@ import libGenerateJSON
 import libSyntaxCheck
 import libAnalysisSystem
 import cluster_connection as cluster
+from domainmodel.model import Model
+from domainmodel.binarymodel import BinaryModel
+from domainmodel.decomposer import partitionAndMap
 
 class BaseWindow(QtGui.QMainWindow):
     def __init__(self, parent = None):
@@ -24,7 +27,7 @@ class BaseWindow(QtGui.QMainWindow):
                             "StartTime": 0.0,"FinishTime": 0.5,
                             "TimeStep": 0.02,"SaveInterval": 0.1,"GridStep": {},
                             "Hardware": [{"Name": "cnode1", "CpuCount": 1, "GpuCount": 3}, {"Name": "cnode2", "CpuCount": 1, "GpuCount": 3}],
-                            "Mapping": {"IsMapped": "true", "BlockMapping": [[0, "cpu", 0]]}}
+                            "Mapping": {"IsMapped": "true", "BlockMapping": [0, "cpu", 0]}}
         self.sisChanged=False
         self.tabControl=0
 
@@ -667,7 +670,7 @@ class BaseWindow(QtGui.QMainWindow):
                 "StartTime": 0.0,"FinishTime": 0.5,
                 "TimeStep": 0.02,"SaveInterval": 0.1,"GridStep": {},
                 "Hardware": [{"Name": "cnode1", "CpuCount": 1, "GpuCount": 3}, {"Name": "cnode2", "CpuCount": 1, "GpuCount": 3}],
-                "Mapping": {"IsMapped": "true", "BlockMapping": [[0, "cpu", 0]]}}
+                "Mapping": {"IsMapped": "true", "BlockMapping": [0, "cpu", 0]}}
             self.textInputSystem.setText("")
         else:
             if os.path.isfile(os.path.join("config","example_"+str(out)+".json")):
@@ -709,7 +712,6 @@ class BaseWindow(QtGui.QMainWindow):
 
 #Методы_Третья вкладка <Области вычисления>
     def addBlocks(self):
-        t=datetime.datetime.now()
         out=str(self.textBlockName.text())
         if out=="":
             QtGui.QMessageBox.warning (self, u'Предупреждение',u"Введите уникальное имя", QtGui.QMessageBox.Ok)
@@ -771,7 +773,6 @@ class BaseWindow(QtGui.QMainWindow):
 
 #Методы_Пятая вкладка <Границы>
     def addBound(self):
-        t=datetime.datetime.now()
         out=str(self.textBoundsName.text())
         if out=="":
             QtGui.QMessageBox.warning (self, u'Предупреждение',u"Введите уникальное имя", QtGui.QMessageBox.Ok)
@@ -958,19 +959,43 @@ class BaseWindow(QtGui.QMainWindow):
         initJson.setInitals2(self.programDate["Initials"])
         initJson.setCompnode1(self.programDate["Hardware"])
         initJson.setMapping("true",self.programDate["Mapping"]["BlockMapping"])
-        outPath=os.path.join(os.getcwd(),"File")
-        initJson.Create_json(outPath,"input.json")
-
-##        f=open(os.path.join(".\hybriddomain\domainmodel","input.json"))
-##        jOut=json.loads(str(f.read()))
-##        f.close()
-##        print "initJson",jOut
-        dirSourse="./domainmodel/Source"
-        libGenerateC.runGenCfile(self,dirSourse,outPath,"input.json")
+##        outPath=os.path.join(os.getcwd(),"File")
+##        initJson.Create_json(outPath,"input.json")
+        initJson.Create_json(os.getcwd(),"input.json")
 
 
+        projectName = "projectOut" ##+str(datetime.datetime.now().strftime("%d-%H-%M-%S"))
+        InputFile = "input.json"
+        OutputDataFile = projectName+".dom"
+        OutputFuncFile = projectName+".cpp"
+##        os.chdir('File')
+##        print 'os.getcwd()',os.getcwd()
+        model = Model()
+        model.loadFromFile(InputFile)
+        print "Max derivative order is ", model.getMaxDerivOrder()
+        if model.isMapped:
+            partModel = model
+        else:
+            partModel = partitionAndMap(model)
 
-        self.runConnect()
+        bm = BinaryModel(partModel)
+        bm.saveDomain(OutputDataFile)
+##        os.chdir('..')
+##        print 'os.getcwd()',os.getcwd()
+        bm.saveFuncs(OutputFuncFile)
+##        os.chdir('File')
+        bm.compileFuncs(OutputFuncFile)
+##        os.chdir('..')
+
+        if self.comboRunValue.currentText()==u'Вычислить на кластере':
+            self.runConnect()
+        else:
+            QtGui.QMessageBox.warning (self, u'Предупреждение',
+                    u"Файл "+os.getcwd()+u"/projectOut.cpp скомпилирован", QtGui.QMessageBox.Ok)
+
+##        dirSourse="./domainmodel/Source"
+##        libGenerateC.runGenCfile(self,dirSourse,outPath,"input.json")
+
 
     #Вызов окна подключения
     def runConnect(self):
@@ -978,13 +1003,13 @@ class BaseWindow(QtGui.QMainWindow):
         #"640", "10", "1000", "5", "15561", "cnode1", "16", "tester","tester","corp7.uniyar.ac.ru","2222",'command'
         if self.comboRunValue.currentText()==u'Вычислить на кластере':
             out=self.dictConfig
-            conCluster=cluster.OnClickConnect(out["dim_str"],out["lexp_str"],out["steps_str"],out["iters_str"],out["work_port"],out["mainnode"],out["procnum"],out["login"],out["password"],out["ip"],out["port"],'funcOut.c')
+            conCluster=cluster.OnClickConnect(out["dim_str"],out["lexp_str"],out["steps_str"],out["iters_str"],out["work_port"],out["mainnode"],out["procnum"],out["login"],out["password"],out["ip"],out["port"],'projectOut.cpp')
             QtGui.QMessageBox.warning (self, u'Предупреждение',
                 conCluster, QtGui.QMessageBox.Ok)
         else:
-            out=libGenerateC.CompliteClient(self,os.getcwd()+"/File",'funcOut.c')
-            QtGui.QMessageBox.warning (self, u'Предупреждение',
-                out, QtGui.QMessageBox.Ok)
+##            out=libGenerateC.CompliteClient(self,os.getcwd()+"/File",'funcOut.c')
+##            QtGui.QMessageBox.warning (self, u'Предупреждение',
+##                out, QtGui.QMessageBox.Ok)
             pass
 
 

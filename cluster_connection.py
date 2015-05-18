@@ -86,18 +86,25 @@ def serverRunProcess(work_port, procnum, login,password,ip,port,command):
             stdin, stdout, stderr = client.exec_command('rm -r ndtracer; mkdir ndtracer')
             time.sleep(0.3)
             cftp=client.open_sftp()
-            if os.path.exists('.\\File\\'+command):
-                cftp.put('.\\File\\'+command, 'ndtracer/'+command)
+##            if os.path.exists('./File/'+command):
+##                cftp.put('./File/'+command, 'ndtracer/'+command)
+##            else:
+##                outText='Файл отсутствует'
+            if os.path.exists(command):
+                cftp.put(command, 'ndtracer/'+command)
+                cftp.put('libuserfuncs.so', 'ndtracer/'+'libuserfuncs.so')
+                stdin, stdout, stderr = client.exec_command('cd ndtracer; mkdir doc' )
+                cftp.put('.\\doc\\userfuncs.h', 'ndtracer/doc/userfuncs.h')
             else:
                 outText='Файл отсутствует'
-##            if os.path.exists('.\\Source\\'+command[:-2]+'.h'):
-##                cftp.put('.\\Source\\'+command[:-2]+'.h', 'ndtracer/'+command[:-2]+'.h')
+
             cftp.close()
             print "compiling..."+command[:-2]
             stdin, stdout, stderr = client.exec_command('cd ndtracer; pwd')
             outPathCompile = stdout.read()
 ##            stdin, stdout, stderr = client.exec_command('cd ndtracer; g++ '+command+' -std=c99 -lm -o '+command[:-2])
-            stdin, stdout, stderr = client.exec_command('cd ndtracer; g++ -c '+command)
+            outCommand = "gcc "+ command + " -shared  -O3 -o libuserfuncs.so -fPIC"
+            stdin, stdout, stderr = client.exec_command('cd ndtracer; '+outCommand)
             outText=str(stdout.read()+stderr.read())
             if outText=='':
                 outText=u'Файл скомпилирован в каталоге: '+outPathCompile

@@ -155,7 +155,7 @@ class JsonFileCreate:
         self.model.addEquation(eDict)
 
     def addEquation1(self,sName,lVars,lSystem,lParams,ldParamValues):
-        eDict={"Name": sName, "Vars": lVars, "System": lSystem, "Params": lParams, "ParamValues": ldParamValues}
+        eDict={"Name": sName, "Vars": lVars, "System": lSystem, "Params": lParams, "ParamValues": [ldParamValues]}
         self.model.addEquation(eDict)
 
     def setEquation(self):

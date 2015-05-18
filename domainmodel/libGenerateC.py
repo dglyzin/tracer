@@ -156,6 +156,13 @@ def generateCfromDict(modelDict, cFileName):
 
     textTemplateC=(textTemplateC).decode('utf-8')
 
+    #Создаем и вставляем блок со значением параметра
+    paramValues=modelDict['Equations'][0]['ParamValues']
+    outReplace=''
+    for index, element in enumerate(param):
+        outReplace=outReplace+"(*pparams)["+str(index)+"] = "+str(paramValues[0][element])+";\n"
+    textTemplateC=textTemplateC.replace('$initParams$',outReplace)
+
     #Создаем и вставляем блоки с начальными условиями
     initBlok=tempDict['$Block0Initial$']
     outReplace=''
@@ -189,7 +196,8 @@ def generateCfromDict(modelDict, cFileName):
         textTemplateC=str(textTemplateC.encode('ascii', 'ignore')).replace(listParamForTempl[i],listEquForTemplate[i])
 
 ##    print textTemplateC
-
+##    path=os.path.join(os.getcwd(),"File")
+##    fout = open(os.path.join(path,cFileName), "wt")
     fout = open(cFileName, "wt")
     fout.write(textTemplateC)   ##.encode(encoding='UTF-8')
     fout.close()
@@ -562,8 +570,6 @@ def CompliteClient(self,dirFileRun,fileName):
     if out=='':
         return u'VC: Файл скомпилирован в каталоге: '+dirFileRun
     else:
-##        print 'gcc Source\\'+fileName+' -lm -o Source\\'+fileName[:-2]
-##        stdin, stdout, stderr=os.popen3('g++ Source\\'+fileName+' -std=c99 -lm -o Source\\'+fileName[:-2])
         stdin, stdout, stderr=os.popen3('g++ -c '+dirFileRun+fileName)
         out=stderr.read()
         if out=='':

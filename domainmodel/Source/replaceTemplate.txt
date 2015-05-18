@@ -1,5 +1,5 @@
 $Block0Initial$%
-void Block0Initial$v0$(double* result, int idxX, int idxY){    
+void Block0Initial$v0$(double* result, int idxX, int idxY, int idxZ){    
     double x = Block0OffsetX + idxX*DX;
     double y = Block0OffsetY + idxY*DY;
     int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
@@ -8,14 +8,14 @@ void Block0Initial$v0$(double* result, int idxX, int idxY){
 %$Block0InitialFill$%
 initFuncArray[$v0$] = Block0Initial$v0$;
 %$Neiman$%
-void Block0Bound0_$v0$(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){
+void Block0Bound0_$v0$(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
     int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
     double bound_value; 
     double nonexistent0X,nonexistent1X,nonexistent2X,nonexistent0Y,nonexistent1Y,nonexistent2Y;  	
     $v1$
 }
 %$Dirichlet$%
-void Block0Bound1(double* result, double* source, double t, int idxX, int idxY, double* params, double** ic){
+void Block0Bound1(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
     int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
     $v1$
 }

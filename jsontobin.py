@@ -5,7 +5,7 @@
 Создает бинарный файл со свойствами области
 Создает файл с функциями задачи
 
-Файл с состоянием не создается, т.к. у нас имеются функции, которые может вызвать ядро 
+Файл с состоянием не создается, т.к. у нас имеются функции, которые может вызвать ядро
 для заполнения начальных значений
 
 
@@ -28,11 +28,9 @@ if __name__=='__main__':
         partModel = model
     else:
         partModel = partitionAndMap(model)
-    
+
     bm = BinaryModel(partModel)
     bm.saveDomain(OutputDataFile)
     bm.saveFuncs(OutputFuncFile)
     bm.compileFuncs(OutputFuncFile)
     #model.saveBinaryData(OutputDataFile, OutputFuncFile)
-    
-    
