@@ -305,7 +305,7 @@ class BinaryModel(object):
 
 
     def compileFuncs(self, fileName):
-        dirName = os.path.abspath(fileName)
+        dirName = os.path.abspath(os.path.dirname(fileName))
         print "compiling..."
         #command = "nvcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -Xcompiler -fPIC"
         command = "gcc "+ fileName + " -shared  -O3 -o " + dirName+"/libuserfuncs.so -fPIC"
