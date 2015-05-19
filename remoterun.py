@@ -56,31 +56,24 @@ def remoteProjectRun(InputFile):
     print 'python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/project.json'
     stdin, stdout, stderr = client.exec_command('python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/project.json')
     print stdout.read()
-    '''while True:
-            line = stdout.readline()
-            if flagClose==True:
-                break
-            else:
-                if line != '':
-                    if line[0:8] == 'file_out':
-##                        outCommand = os.popen('if exist "'+curDir+'/File/'+line[:-1]+'"'' (echo file exist)').read()
-##                        if outCommand[:-1]=='file exist':
-                            if os.path.exists(curDir+'/File/'+line[:-1]):
-##                                print 'Yes'
-                                continue
-                            cftp.get('ndtracer/'+line[:-1],curDir+'/File/'+line[:-1])
-##                            makeGraph
-                else:
-                    break
-        
-        
-        '''
+    
+    #4 Run Solver binary on created files
+    print "Checking if solver executable at "+conn.solverExecutable+" exists..."
+    stdin, stdout, stderr = client.exec_command('test -f '+conn.solverExecutable)
+    if stdout.channel.recv_exit_status():
+        print "Please provide correct path to the solver executable."
+        return
+    else:
+        print "Solver executable found."
+    
+    
+    
     client.close()
     
     
     
     
-    #4 Run Solver binary on created files
+    
     
 
     '''projectName = "brusselator_1block"

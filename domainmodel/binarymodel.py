@@ -302,7 +302,10 @@ class BinaryModel(object):
         for icArr in self.icList:
             icArr.tofile(domfile)
         domfile.close()
-
+    
+    
+    def saveFuncs(self, fileName):
+        self.dmodel.createCPP(fileName)
 
     def compileFuncs(self, fileName):
         dirName = os.path.abspath(os.path.dirname(fileName))
@@ -316,10 +319,13 @@ class BinaryModel(object):
         print "compilation finished"
 
 
-    def saveFuncs(self, fileName):
-        self.dmodel.createCPP(fileName)
-        #print "saving funcs..."
-        #print "not implemented yet..."
-
-
+    def createRunFile(self, OutputRunFile, DomFileName):
+        runFile = open(OutputRunFile, "w")
+        conn = self.dmodel.connection
+        projFolder = conn.workspace+"/"+self.dmodel.projectName
+        nodeCount = self.dmodel.getNodeCount()
+        runFile.write("echo Welcome to generated kernel launcher!\n")
+        runFile.write("export LD_LIBRARY_PATH="+projFolder+":$LD_LIBRARY_PATH\n")
+        runFile.write("#srun -N "+str(nodeCount)+ " -p debug "+conn.solverExecutable+" "+DomFileName+"\n")
+        runFile.close()
 

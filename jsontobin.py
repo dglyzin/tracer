@@ -24,6 +24,7 @@ def createBinaries(InputFile):
 
     OutputDataFile = projectName+".dom"
     OutputFuncFile = projectName+".cpp"
+    OutputRunFile = projectName+".sh"
     model = Model()
     model.loadFromFile(InputFile)
     print "Max derivative order is ", model.getMaxDerivOrder()
@@ -36,6 +37,7 @@ def createBinaries(InputFile):
     bm.saveDomain(OutputDataFile)
     bm.saveFuncs(OutputFuncFile)
     bm.compileFuncs(OutputFuncFile)
+    bm.createRunFile(OutputRunFile,OutputDataFile)
 
                 
 if __name__=='__main__':

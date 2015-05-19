@@ -411,6 +411,9 @@ class Model(QObject):
     def getDeviceCount(self):
         return sum([node.cpuCount+node.gpuCount for node in self.compnodes])
     
+    def getNodeCount(self):
+        return len(self.compnodes)
+    
     def getCellSize(self):
         return len(self.equations[0].system)
         
