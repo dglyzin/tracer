@@ -66,6 +66,8 @@ def remoteProjectRun(InputFile):
     else:
         print "Solver executable found."
     
+    stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/project.sh')
+    print stdout.read()
     
     
     client.close()

@@ -326,6 +326,6 @@ class BinaryModel(object):
         nodeCount = self.dmodel.getNodeCount()
         runFile.write("echo Welcome to generated kernel launcher!\n")
         runFile.write("export LD_LIBRARY_PATH="+projFolder+":$LD_LIBRARY_PATH\n")
-        runFile.write("#srun -N "+str(nodeCount)+ " -p debug "+conn.solverExecutable+" "+DomFileName+"\n")
+        runFile.write("srun -N "+str(nodeCount)+ " -p debug "+conn.solverExecutable+" "+DomFileName+"\n")
         runFile.close()
 
