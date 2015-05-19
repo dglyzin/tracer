@@ -55,7 +55,7 @@ def remoteProjectRun(InputFile):
     print 'Running preprocessor:'
     print 'python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/project.json'
     stdin, stdout, stderr = client.exec_command('python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/project.json')
-    
+    print stdout.read()
     '''while True:
             line = stdout.readline()
             if flagClose==True:
