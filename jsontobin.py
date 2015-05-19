@@ -2,8 +2,8 @@
 '''
 Модуль импортирует входной json
 Создает по нему модель (включая и задачу, и мэппинг узлов-девайсов)
-Создает бинарный файл со свойствами области
-Создает файл с функциями задачи
+Создает бинарный файл с геометрией и свойствами области (*.dom)
+Создает файл с функциями задачи (*.so)
 
 Файл с состоянием не создается, т.к. у нас имеются функции, которые может вызвать ядро
 для заполнения начальных значений
@@ -11,14 +11,17 @@
 
 model -> mapped model -> domain.dom+funcs.cpp+run.sh
 '''
-
+import sys
 from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel
 from domainmodel.decomposer import partitionAndMap
 
-if __name__=='__main__':
-    projectName = "brusselator_1block"
-    InputFile = projectName+".json"
+def createBinaries(InputFile):    
+    projectName = InputFile.split('.json')[0]
+    if projectName == '':
+        print "Bad file name"
+        return
+
     OutputDataFile = projectName+".dom"
     OutputFuncFile = projectName+".cpp"
     model = Model()
@@ -33,4 +36,11 @@ if __name__=='__main__':
     bm.saveDomain(OutputDataFile)
     bm.saveFuncs(OutputFuncFile)
     bm.compileFuncs(OutputFuncFile)
-    #model.saveBinaryData(OutputDataFile, OutputFuncFile)
+
+                
+if __name__=='__main__':
+    if len(sys.argv)==1:
+        print "Please specify a json file to read"
+    else:
+        InputFile = sys.argv[1]  
+        createBinaries(InputFile)
