@@ -309,6 +309,7 @@ class BinaryModel(object):
         print "compiling..."
         #command = "nvcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -Xcompiler -fPIC"
         command = "gcc "+ fileName + " -shared  -O3 -o " + dirName+"/libuserfuncs.so -fPIC"
+        print command
         PIPE = subprocess.PIPE
         p = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
         print p.stdout.read()
