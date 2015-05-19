@@ -33,7 +33,7 @@ def runGenCfile(self,dirSourse,dirFile,InputFile):
     generateCfromDict(initDict, cFileName)
 
 def generateCfromDict(modelDict, cFileName):
-    dirSourse = "domainmodel/Source"
+    dirSourse = os.path.join(os.path.abspath(os.path.dirname(__file__)),"Source")
 
     k=0
     for i in modelDict:

@@ -1,6 +1,6 @@
 #include <math.h>
 #include <stdlib.h>
-#include "doc/userfuncs.h"
+#include "../hybriddomain/doc/userfuncs.h"
 #include <stdio.h>
 
 #define CELLSIZE 2
