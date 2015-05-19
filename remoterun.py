@@ -50,6 +50,12 @@ def remoteProjectRun(InputFile):
     cftp=client.open_sftp()
     cftp.put(InputFile, projFolder+"/project.json")
     cftp.close()
+    
+    #3 Run jsontobin on json
+    print 'Running preprocessor:'
+    print 'python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/project.json'
+    stdin, stdout, stderr = client.exec_command('python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/project.json')
+    
     '''while True:
             line = stdout.readline()
             if flagClose==True:
@@ -73,7 +79,7 @@ def remoteProjectRun(InputFile):
     
     
     
-    #3 Run jsontobin on json
+    
     #4 Run Solver binary on created files
     
 

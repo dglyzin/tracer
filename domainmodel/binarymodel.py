@@ -11,7 +11,7 @@ Created on Mar 19, 2015
 
 
 '''
-
+import os
 import numpy as np
 import subprocess
 #from regions import BoundRegion
@@ -305,9 +305,10 @@ class BinaryModel(object):
 
 
     def compileFuncs(self, fileName):
+        dirName = os.path.abspath(filename)
         print "compiling..."
         #command = "nvcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -Xcompiler -fPIC"
-        command = "gcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -fPIC"
+        command = "gcc "+ fileName + " -shared  -O3 -o " + dirName+"/libuserfuncs.so -fPIC"
         PIPE = subprocess.PIPE
         p = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
         print p.stdout.read()
