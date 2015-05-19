@@ -22,6 +22,7 @@ from model import *
 class JsonFileCreate:
     def __init__(self):
         self.model=Model()
+        self.connection=Connection()
         #Глобальные настройки
         self.dirSource=''
         self.inFile=''
@@ -51,8 +52,6 @@ class JsonFileCreate:
         self.initialRegions = [{}]
         self.boundRegions = [{}]
         self.interconnects=[]
-
-##        self.bloks=[{"Name": "MainBlock", "Dimension": 2, "Offset": {},"Size":{},"DefaultEquation": 0, "DefaultInitial": 0, "BoundRegions": [], "InitialRegions": []}]
         self.bloks=[]
 
     def defaultInit(self):
@@ -99,7 +98,7 @@ class JsonFileCreate:
         self.setInitals()
         self.setCompnode()
         self.setMapping("true",[0,"cpu",0])
-
+        self.setClusterConnect({"Host": "10.7.129.222", "Port": 22, "Username": "tester", "Password": "", "Workspace": "/home/tester/Tracer1", "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"})
 
     def setGlobal(self,dirSource,inFile,outFile):
         self.dirSource=dirSource
@@ -120,17 +119,22 @@ class JsonFileCreate:
         projdict["FinishTime"]=finishTime
         projdict["TimeStep"]=timeStep
         projdict["SaveInterval"]=saveInterval
-        projdict["GridStep"]=gridStepValueList
-        '''projdict["GridStep"]={}
-        if len(self.gridStepValueList)>=1:
-            projdict["GridStep"]["x"]=gridStepValueList[0]
-            projdict["GridStep"]["y"]=1
-            projdict["GridStep"]["z"]=1
-        elif len(self.gridStepValueList)>=2:
-            projdict["GridStep"]["y"]=gridStepValueList[1]
-        elif len(self.gridStepValueList)>=3:
-            projdict["GridStep"]["z"]=gridStepValueList[2]
-'''
+##        projdict["GridStep"]=gridStepValueList
+        projdict["GridStep"]={}
+        projdict["GridStep"]["x"]=1
+        projdict["GridStep"]["y"]=1
+        projdict["GridStep"]["z"]=1
+        for key, value in gridStepValueList.items():
+            projdict["GridStep"][key]=value
+##        if len(self.gridStepValueList)>=1:
+##            projdict["GridStep"]["x"]=gridStepValueList[0]
+##            projdict["GridStep"]["y"]=1
+##            projdict["GridStep"]["z"]=1
+##        elif len(self.gridStepValueList)>=2:
+##            projdict["GridStep"]["y"]=gridStepValueList[1]
+##        elif len(self.gridStepValueList)>=3:
+##            projdict["GridStep"]["z"]=gridStepValueList[2]
+
         self.model.setSimpleValues(projdict)
 
     def addBlocks(self,sName,iDimension,dOffset,dSize,iDefaultEquation,iDefaultInitial,lBoundRegions,lInitialRegions):
@@ -232,6 +236,10 @@ class JsonFileCreate:
         self.model.isMapped=str(isMapped)
         self.model.mapping=[mapping]
 
+    def setClusterConnect(self,dConnection):
+        self.connection.fromDict(dConnection)
+        self.model.connection=self.connection
+
     def Create_json(self,dir,OutputFile):
         if dir!="":
             dir=dir+"/"
@@ -241,7 +249,7 @@ class JsonFileCreate:
 if  __name__ =='__main__':
     objName = JsonFileCreate()
     objName.defaultInit()
-    objName.Create_json('','input.json')
+    objName.Create_json('','projectOut.json')
 
 
 ##    model = Model()

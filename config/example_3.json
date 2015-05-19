@@ -1,4 +1,12 @@
 {
+    "Connection": {
+        "Host": "corp7.uniyar.ac.ru", 
+        "Port": 2222, 
+        "Username": "tester", 
+        "Password": "tester", 
+        "Workspace": "/home/tester/Tracer1", 
+        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
+    }, 
     "ProjectName": "Input_Example", 
     "StartTime": 0.0, 
     "FinishTime": 0.5, 

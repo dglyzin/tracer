@@ -37,7 +37,7 @@ def generateCfromDict(modelDict, cFileName):
 
     k=0
     for i in modelDict:
-        print k,i,modelDict[i]
+##        print k,i,modelDict[i]
         k=k+1
 
     #Достаем данные из JSON
@@ -151,8 +151,8 @@ def generateCfromDict(modelDict, cFileName):
     tempDict={}
     for i in range(int(len(tempList)/2)):
         tempDict[tempList[i*2]]=tempList[i*2+1]
-    for i in tempDict:
-        print i,tempDict[i]
+##    for i in tempDict:
+##        print i,tempDict[i]
 
     textTemplateC=(textTemplateC).decode('utf-8')
 
@@ -218,7 +218,7 @@ def replaceBounds(bounds,boundRegions,tempDict,text,initSizeList,forNeiman):
         yto=i['yto']
         nType=bounds[nBounds]['Type']
         lValues=bounds[nBounds]['Values']
-        print "nType",nType,lValues
+##        print "nType",nType,lValues
         if nType==0:
             initBlok=tempDict['$Dirichlet$']
             rpl=""
@@ -322,11 +322,9 @@ def NeimanNonexistent(nSide,xfrom,xto,yfrom,yto,initSizeList,sistem,textRpl):
 
     textRpl=textRpl.replace('$nonexistent1$',nonexistent[0]+nonexistent[1]+nonexistent[2]+nonexistent[3]+nonexistent[4]+nonexistent[5])
 
-    print 'textRpl',textRpl,sistem
+##    print 'textRpl',textRpl,sistem
 
     textRpl=textRpl.replace('$sistemGx1$',sistem)
-
-##    print 'textRplOut',textRpl,nSide
 
     return textRpl
 
@@ -555,9 +553,8 @@ def FindZamena(self,dif,func,varProizv,var,degree,dirSource):
         z=z.strip(' ')
         z=z.strip('\n')
         if z[:len(strOut)]==strOut:
-##            spisokProizv=z.split('\n') #Режем найденный текст в список
             spisokProizv=z.splitlines() #Режем найденный текст в список
-    print spisokProizv
+##    print spisokProizv
     #Первый элемент описание его не передаем
     return spisokProizv[1:]
 
@@ -580,7 +577,6 @@ def CompliteClient(self,dirFileRun,fileName):
 #Вспомогательный метод
 def parseEqu(self,text):
     text = text.replace(' ','')     #очищаем от пробелов
-##    equationArray = text.split('\n')    #режем текст на уравнения
     equationArray = text.splitlines()    #режем текст на уравнения
     equation=[]     #Список уравнений
     for line in equationArray:
