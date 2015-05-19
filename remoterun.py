@@ -68,6 +68,7 @@ def remoteProjectRun(InputFile):
     
     stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/project.sh')
     print stdout.read()
+    print stderr.read()
     
     
     client.close()
