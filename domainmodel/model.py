@@ -37,7 +37,33 @@ YEND   = 3
 ZSTART = 4
 ZEND   = 5
 
-
+class Connection(object):  
+    def __init__(self):
+        self.host = "corp7.uniyar.ac.ru"
+        self.port = 22
+        self.username = "tester"
+        self.password = ""
+        self.workspace = "/home/tester/Tracer"
+        self.solverExecutable = "/home/dglyzin/hybridsolver/bin/HS"
+    
+    def toDict(self):
+        connDict = OrderedDict([
+        ("Host", self.host), 
+        ("Port", self.port),
+        ("Username", self.username),
+        ("Password", self.password),
+        ("Workspace", self.workspace),
+        ("SolverExecutable", self.solverExecutable)
+        ])
+        return connDict
+      
+    def fromDict(self, connDict):
+        self.host = connDict["Host"]
+        self.port = connDict["Port"]
+        self.username = connDict["Username"]
+        self.password = connDict["Password"]
+        self.workspace = connDict["Workspace"]
+        self.solverExecutable = connDict["SolverExecutable"]
 
 
 class Model(QObject):  
@@ -77,9 +103,10 @@ class Model(QObject):
     modelUpdated = pyqtSignal()    
     
     def __init__(self):
-        super(Model, self).__init__()                
-        self.initSessionSettings()
+        super(Model, self).__init__()                       
+        self.initSessionSettings()        
         self.setSimpleValues()
+        self.connection = Connection()
         self.blocks = []
         self.interconnects = []
         self.equations = []
@@ -144,6 +171,8 @@ class Model(QObject):
         projectFile = open(fileName)
         projectDict = json.loads(projectFile.read())
         projectFile.close()
+        
+        self.connection.fromDict(projectDict["Connection"])
 
         self.setSimpleValues(projectDict)       
         for blockDict in projectDict["Blocks"]:            
@@ -174,7 +203,8 @@ class Model(QObject):
 
     ##SAVE    
     def toDict(self):
-        modelDict = OrderedDict([            
+        modelDict = OrderedDict([ 
+            ("Connection", self.connection.toDict()),
             ("ProjectName", self.projectName),
             ("StartTime", self.startTime),
             ("FinishTime", self.finishTime),
@@ -380,6 +410,9 @@ class Model(QObject):
 
     def getDeviceCount(self):
         return sum([node.cpuCount+node.gpuCount for node in self.compnodes])
+    
+    def getNodeCount(self):
+        return len(self.compnodes)
     
     def getCellSize(self):
         return len(self.equations[0].system)

@@ -11,7 +11,7 @@ Created on Mar 19, 2015
 
 
 '''
-
+import os
 import numpy as np
 import subprocess
 #from regions import BoundRegion
@@ -302,22 +302,30 @@ class BinaryModel(object):
         for icArr in self.icList:
             icArr.tofile(domfile)
         domfile.close()
-
+    
+    
+    def saveFuncs(self, fileName):
+        self.dmodel.createCPP(fileName)
 
     def compileFuncs(self, fileName):
+        dirName = os.path.abspath(os.path.dirname(fileName))
         print "compiling..."
         #command = "nvcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -Xcompiler -fPIC"
-        command = "gcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -fPIC"
+        command = "gcc "+ fileName + " -shared  -O3 -o " + dirName+"/libuserfuncs.so -fPIC"
+        print command
         PIPE = subprocess.PIPE
         p = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
         print p.stdout.read()
         print "compilation finished"
 
 
-    def saveFuncs(self, fileName):
-        self.dmodel.createCPP(fileName)
-        #print "saving funcs..."
-        #print "not implemented yet..."
-
-
+    def createRunFile(self, OutputRunFile, DomFileName):
+        runFile = open(OutputRunFile, "w")
+        conn = self.dmodel.connection
+        projFolder = conn.workspace+"/"+self.dmodel.projectName
+        nodeCount = self.dmodel.getNodeCount()
+        runFile.write("echo Welcome to generated kernel launcher!\n")
+        runFile.write("export LD_LIBRARY_PATH="+projFolder+":$LD_LIBRARY_PATH\n")
+        runFile.write("srun -N "+str(nodeCount)+ " -p debug "+conn.solverExecutable+" "+DomFileName+"\n")
+        runFile.close()
 

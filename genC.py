@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, os, json,datetime
+import sys, os, json
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PyQt4 import QtCore, QtGui
@@ -9,10 +9,11 @@ import libGenerateC
 import libGenerateJSON
 import libSyntaxCheck
 import libAnalysisSystem
-import cluster_connection as cluster
+##import cluster_connection as cluster
 from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel
 from domainmodel.decomposer import partitionAndMap
+from remoterun import remoteProjectRun
 
 class BaseWindow(QtGui.QMainWindow):
     def __init__(self, parent = None):
@@ -27,7 +28,8 @@ class BaseWindow(QtGui.QMainWindow):
                             "StartTime": 0.0,"FinishTime": 0.5,
                             "TimeStep": 0.02,"SaveInterval": 0.1,"GridStep": {},
                             "Hardware": [{"Name": "cnode1", "CpuCount": 1, "GpuCount": 3}, {"Name": "cnode2", "CpuCount": 1, "GpuCount": 3}],
-                            "Mapping": {"IsMapped": "true", "BlockMapping": [0, "cpu", 0]}}
+                            "Mapping": {"IsMapped": "true", "BlockMapping": [0, "cpu", 0]},
+                            "Connection": {"Host": "10.7.129.222", "Port": 22, "Username": "tester", "Password": "", "Workspace": "/home/tester/Tracer1", "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"}}
         self.sisChanged=False
         self.tabControl=0
 
@@ -140,7 +142,7 @@ class BaseWindow(QtGui.QMainWindow):
             self.setToolTip(self.dictConfig["helpTextList8"])
             self.updateList8()
 
-        print self.tabControl
+##        print self.tabControl
         self.tabControl=i
 
 #_______Первая вкладка <Система>
@@ -155,7 +157,7 @@ class BaseWindow(QtGui.QMainWindow):
 
         list=os.listdir("config")
         lenList=str(list).count("example_")
-        print lenList
+##        print lenList
 
         for elem in range(lenList):
             iter+=1
@@ -602,6 +604,65 @@ class BaseWindow(QtGui.QMainWindow):
                 self.textGridStep.setText("1")
             self.dictGridStep[self.programDate["var"][i]]=self.textGridStep
 
+
+
+
+        pos=1
+        self.titleDialog = QtGui.QLabel(u'Адрес кластера')
+        self.titleDialog.setAlignment(QtCore.Qt.AlignLeft)
+        self.list8.addWidget(self.titleDialog, pos, 2,1,1)
+
+        self.textHost = QtGui.QLineEdit()
+        self.textHost.setText(str(self.programDate["Connection"]["Host"]))
+        self.list8.addWidget(self.textHost, pos, 3, 1, 1)
+
+        pos+=1
+        self.titleDialog = QtGui.QLabel(u'Порт')
+        self.titleDialog.setAlignment(QtCore.Qt.AlignLeft)
+        self.list8.addWidget(self.titleDialog, pos, 2,1,1)
+
+        self.textPort = QtGui.QLineEdit()
+        self.textPort.setText(str(self.programDate["Connection"]["Port"]))
+        self.list8.addWidget(self.textPort, pos, 3, 1, 1)
+
+        pos+=1
+        self.titleDialog = QtGui.QLabel(u'Логин')
+        self.titleDialog.setAlignment(QtCore.Qt.AlignLeft)
+        self.list8.addWidget(self.titleDialog, pos, 2,1,1)
+
+        self.textLogin = QtGui.QLineEdit()
+        self.textLogin.setText(str(self.programDate["Connection"]["Username"]))
+        self.list8.addWidget(self.textLogin, pos, 3, 1, 1)
+
+        pos+=1
+        self.titleDialog = QtGui.QLabel(u'Пароль')
+        self.titleDialog.setAlignment(QtCore.Qt.AlignLeft)
+        self.list8.addWidget(self.titleDialog, pos, 2,1,1)
+
+        self.textPassword = QtGui.QLineEdit()
+        self.textPassword.setText(str(self.programDate["Connection"]["Password"]))
+        self.list8.addWidget(self.textPassword, pos, 3, 1, 1)
+
+        pos+=1
+        self.titleDialog = QtGui.QLabel(u'Директория')
+        self.titleDialog.setAlignment(QtCore.Qt.AlignLeft)
+        self.list8.addWidget(self.titleDialog, pos, 2,1,1)
+
+        self.textWorkspace = QtGui.QLineEdit()
+        self.textWorkspace.setText(str(self.programDate["Connection"]["Workspace"]))
+        self.list8.addWidget(self.textWorkspace, pos, 3, 1, 1)
+
+        pos+=1
+        self.titleDialog = QtGui.QLabel(u'Директория решателя')
+        self.titleDialog.setAlignment(QtCore.Qt.AlignLeft)
+        self.list8.addWidget(self.titleDialog, pos, 2,1,1)
+
+        self.textSolverExecutable = QtGui.QLineEdit()
+        self.textSolverExecutable.setText(str(self.programDate["Connection"]["SolverExecutable"]))
+        self.list8.addWidget(self.textSolverExecutable, pos, 3, 1, 1)
+
+
+
 #Методы_Первая вкладка <Система>
     def sistemCheck(self):
         statusSystem=True   #Проверяем корректно ли продолжать работу программы
@@ -659,18 +720,19 @@ class BaseWindow(QtGui.QMainWindow):
                         self.programDate["param"].append({})
                         self.programDate["param"][0][i]=1
                 self.programDate["system"]=analSys.system
-                print self.programDate
+##                print self.programDate
 
     def useTemplate(self):
         out=self.comboEqu.currentIndex()
         if out==0:
             self.programDate={"dif":[],"var":[],"param":[],"system":[],
-                "Initials":[],"Blocks":[],"Bounds":[],"Interconnects":[],
-                "ProjectName":"New_project",
-                "StartTime": 0.0,"FinishTime": 0.5,
-                "TimeStep": 0.02,"SaveInterval": 0.1,"GridStep": {},
-                "Hardware": [{"Name": "cnode1", "CpuCount": 1, "GpuCount": 3}, {"Name": "cnode2", "CpuCount": 1, "GpuCount": 3}],
-                "Mapping": {"IsMapped": "true", "BlockMapping": [0, "cpu", 0]}}
+                            "Initials":[],"Blocks":[],"Bounds":[],"Interconnects":[],
+                            "ProjectName":"New_project",
+                            "StartTime": 0.0,"FinishTime": 0.5,
+                            "TimeStep": 0.02,"SaveInterval": 0.1,"GridStep": {},
+                            "Hardware": [{"Name": "cnode1", "CpuCount": 1, "GpuCount": 3}, {"Name": "cnode2", "CpuCount": 1, "GpuCount": 3}],
+                            "Mapping": {"IsMapped": "true", "BlockMapping": [0, "cpu", 0]},
+                            "Connection": {"Host": "10.7.129.222", "Port": 22, "Username": "tester", "Password": "", "Workspace": "/home/tester/Tracer1", "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"}}
             self.textInputSystem.setText("")
         else:
             if os.path.isfile(os.path.join("config","example_"+str(out)+".json")):
@@ -689,6 +751,13 @@ class BaseWindow(QtGui.QMainWindow):
                 self.programDate["TimeStep"]=jOut["TimeStep"]
                 self.programDate["SaveInterval"]=jOut["SaveInterval"]
                 self.programDate["GridStep"]=jOut["GridStep"]
+                self.programDate["Connection"]["Host"]=jOut["Connection"]["Host"]
+                self.programDate["Connection"]["Port"]=jOut["Connection"]["Port"]
+                self.programDate["Connection"]["Username"]=jOut["Connection"]["Username"]
+                self.programDate["Connection"]["Password"]=jOut["Connection"]["Password"]
+                self.programDate["Connection"]["Workspace"]=jOut["Connection"]["Workspace"]
+                self.programDate["Connection"]["SolverExecutable"]=jOut["Connection"]["SolverExecutable"]
+##                print self.programDate
                 out=''
                 for i in self.programDate["system"]:
                     out+=i+'\n'
@@ -736,7 +805,6 @@ class BaseWindow(QtGui.QMainWindow):
         try:
             if str(self.programDate["Blocks"][:])<>str("["+str(self.textFullBlocks.toPlainText())+"]"):
                 out=str("["+str(self.textFullBlocks.toPlainText())+"]").replace("'",'"')
-                print out
                 self.programDate["Blocks"]=json.loads(out.replace('u"','"'))
         except:
             QtGui.QMessageBox.warning (self, u'Предупреждение',u"Границы решения заданы неверно", QtGui.QMessageBox.Ok)
@@ -827,7 +895,6 @@ class BaseWindow(QtGui.QMainWindow):
         try:
             if str(self.programDate["Blocks"][:])<>str("["+str(self.textFullBoundSp.toPlainText())+"]"):
                 out=str("["+str(self.textFullBoundSp.toPlainText())+"]").replace("'",'"')
-                print out
                 self.programDate["Blocks"]=json.loads(out.replace('u"','"'))
         except:
             QtGui.QMessageBox.warning (self, u'Предупреждение',u"Границы условия заданы неверно", QtGui.QMessageBox.Ok)
@@ -850,7 +917,6 @@ class BaseWindow(QtGui.QMainWindow):
         try:
             if str(self.programDate["Blocks"][:])<>str("["+str(self.textFullBoundSp.toPlainText())+"]"):
                 out=str("["+str(self.textFullBoundSp.toPlainText())+"]").replace("'",'"')
-                print out
                 self.programDate["Blocks"]=json.loads(out.replace('u"','"'))
         except:
             QtGui.QMessageBox.warning (self, u'Предупреждение',u"Начальные условия заданы неверно", QtGui.QMessageBox.Ok)
@@ -897,7 +963,6 @@ class BaseWindow(QtGui.QMainWindow):
         try:
             if str(self.programDate["Interconnects"][:])<>str("["+str(self.textFullUnion.toPlainText())+"]"):
                 out=str("["+str(self.textFullUnion.toPlainText())+"]").replace("'",'"')
-                print out
                 self.programDate["Interconnects"]=json.loads(out.replace('u"','"'))
         except:
             QtGui.QMessageBox.warning (self, u'Предупреждение',u"Связи между блоками заданы неверно", QtGui.QMessageBox.Ok)
@@ -913,12 +978,19 @@ class BaseWindow(QtGui.QMainWindow):
         for key, value in self.dictGridStep.items():
             dict[str(key).replace("u'","'")]=float(str(value.text()))
         self.programDate["GridStep"]=dict
-        print self.programDate
+        self.programDate["Connection"]["Host"]=str(self.textHost.text())
+        self.programDate["Connection"]["Port"]=int(self.textPort.text())
+        self.programDate["Connection"]["Username"]=str(self.textLogin.text())
+        self.programDate["Connection"]["Password"]=str(self.textPassword.text())
+        self.programDate["Connection"]["Workspace"]=str(self.textWorkspace.text())
+        self.programDate["Connection"]["SolverExecutable"]=str(self.textSolverExecutable.text())
+##        print self.programDate
+
 
 #_______Начало основного метода
     def mainCode(self):
         self.sistemCheck()
-        print self.programDate
+##        print self.programDate
 
         if self.textInputSystem.toPlainText()=="":
             QtGui.QMessageBox.warning (self, u'Предупреждение',u"Введите систему", QtGui.QMessageBox.Ok)
@@ -938,16 +1010,15 @@ class BaseWindow(QtGui.QMainWindow):
         for i in self.programDate["Blocks"]:
             for j in i["BoundRegions"]:
                 for n, k in enumerate(self.programDate["Bounds"]):
-                    print n,k,j
+##                    print n,k,j
                     if unicode(j["BoundNumber"])==unicode(k["Name"]):
-                        print 'tut'
                         j["BoundNumber"]=n
             for j in i["InitialRegions"]:
                 for n, k in enumerate(self.programDate["Initials"]):
                     if unicode(j["InitialNumber"])==unicode(k["Name"]):
                         j["InitialNumber"]=n
 
-        print "self.programDate",self.programDate
+##        print "self.programDate",self.programDate
 
         initJson=libGenerateJSON.JsonFileCreate()
         print 'self.programDate', self.programDate["GridStep"]
@@ -959,58 +1030,53 @@ class BaseWindow(QtGui.QMainWindow):
         initJson.setInitals2(self.programDate["Initials"])
         initJson.setCompnode1(self.programDate["Hardware"])
         initJson.setMapping("true",self.programDate["Mapping"]["BlockMapping"])
-##        outPath=os.path.join(os.getcwd(),"File")
-##        initJson.Create_json(outPath,"input.json")
-        initJson.Create_json(os.getcwd(),"input.json")
+        initJson.setClusterConnect(self.programDate["Connection"])
 
-
-        projectName = "projectOut" ##+str(datetime.datetime.now().strftime("%d-%H-%M-%S"))
-        InputFile = "input.json"
+        projectName = "projectOut"
+        InputFile = projectName+".json"
         OutputDataFile = projectName+".dom"
         OutputFuncFile = projectName+".cpp"
-##        os.chdir('File')
-##        print 'os.getcwd()',os.getcwd()
+
+        initJson.Create_json(os.getcwd(),InputFile)
+
         model = Model()
         model.loadFromFile(InputFile)
-        print "Max derivative order is ", model.getMaxDerivOrder()
+##        print "Max derivative order is ", model.getMaxDerivOrder()
         if model.isMapped:
             partModel = model
         else:
             partModel = partitionAndMap(model)
-
         bm = BinaryModel(partModel)
         bm.saveDomain(OutputDataFile)
-##        os.chdir('..')
-##        print 'os.getcwd()',os.getcwd()
         bm.saveFuncs(OutputFuncFile)
-##        os.chdir('File')
         bm.compileFuncs(OutputFuncFile)
-##        os.chdir('..')
 
         if self.comboRunValue.currentText()==u'Вычислить на кластере':
-            self.runConnect()
+##            self.runConnect()
+            runCluster=remoteProjectRun(InputFile)
+            if runCluster<>"" and runCluster<>None:
+                QtGui.QMessageBox.warning (self, u'Предупреждение', unicode(runCluster), QtGui.QMessageBox.Ok)
+            else:
+                QtGui.QMessageBox.warning (self, u'Предупреждение', u'Файл скомпилирован на кластере', QtGui.QMessageBox.Ok)
         else:
             QtGui.QMessageBox.warning (self, u'Предупреждение',
-                    u"Файл "+os.getcwd()+u"/projectOut.cpp скомпилирован", QtGui.QMessageBox.Ok)
-
-##        dirSourse="./domainmodel/Source"
-##        libGenerateC.runGenCfile(self,dirSourse,outPath,"input.json")
+                    u'Файл '+os.getcwd()+u'/projectOut.cpp скомпилирован', QtGui.QMessageBox.Ok)
 
 
-    #Вызов окна подключения
-    def runConnect(self):
-        #dim_str, lexp_str, steps_str, iters_str, work_port, mainnode, procnum, login,password,ip,port,mode
-        #"640", "10", "1000", "5", "15561", "cnode1", "16", "tester","tester","corp7.uniyar.ac.ru","2222",'command'
-        if self.comboRunValue.currentText()==u'Вычислить на кластере':
-            out=self.dictConfig
-            conCluster=cluster.OnClickConnect(out["dim_str"],out["lexp_str"],out["steps_str"],out["iters_str"],out["work_port"],out["mainnode"],out["procnum"],out["login"],out["password"],out["ip"],out["port"],'projectOut.cpp')
-            QtGui.QMessageBox.warning (self, u'Предупреждение',
-                conCluster, QtGui.QMessageBox.Ok)
-        else:
-##            out=libGenerateC.CompliteClient(self,os.getcwd()+"/File",'funcOut.c')
+##    #Вызов окна подключения
+##    def runConnect(self):
+##        #dim_str, lexp_str, steps_str, iters_str, work_port, mainnode, procnum, login,password,ip,port,mode
+##        #"640", "10", "1000", "5", "15561", "cnode1", "16", "tester","tester","corp7.uniyar.ac.ru","2222",'command'
+##        if self.comboRunValue.currentText()==u'Вычислить на кластере':
+##            out=self.dictConfig
+##            conCluster=cluster.OnClickConnect(out["dim_str"],out["lexp_str"],out["steps_str"],out["iters_str"],out["work_port"],out["mainnode"],out["procnum"],out["login"],out["password"],out["ip"],out["port"],'projectOut.cpp')
 ##            QtGui.QMessageBox.warning (self, u'Предупреждение',
-##                out, QtGui.QMessageBox.Ok)
-            pass
+##                conCluster, QtGui.QMessageBox.Ok)
+##        else:
+####            out=libGenerateC.CompliteClient(self,os.getcwd()+"/File",'funcOut.c')
+####            QtGui.QMessageBox.warning (self, u'Предупреждение',
+####                out, QtGui.QMessageBox.Ok)
+##            pass
 
 
 
