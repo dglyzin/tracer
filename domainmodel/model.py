@@ -26,7 +26,7 @@ from compnode import Compnode
 import numpy as np
 from DerivHandler import DerivativeHandler
 #generators
-from funcGenerator import Generator
+from funcGenerator import FunctionCodeGenerator
 from libGenerateC import generateCfromDict
 
 
@@ -406,5 +406,15 @@ class Model(QObject):
         #    f.write(outputStr)
         #    f.close()
         #generator2
+		try:
+			gen = FunctionCodeGenerator()
+			#приходится опять формировать словарь из gridStep'ов, т.к. ф-я принимает именно его. Но это легко исправить.
+			outputStr = gen.generateAllFunctions(self.blocks, self.equations, self.bounds, {'x': self.gridStepX, 'y': self.gridStepY, 'z': self.gridStepZ})
+		except Exception as ex:
+			print(ex)
+		else:
+			f = open(cppFileName,'w')
+            f.write(outputStr)
+            f.close()
         generateCfromDict(self.toDict(),cppFileName)
         
