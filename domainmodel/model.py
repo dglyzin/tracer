@@ -423,7 +423,7 @@ class Model(QObject):
     
     def getMaxDerivOrder(self):
         d = DerivativeHandler()
-        return d.orderOfSystem(self.equations[0].system,self.equations[0].params)
+        return d.orderOfSystem(self.equations[0].system,self.equations[0].params, self.equations[0].vars)
     
     def createCPP(self,cppFileName):
         #generator 1
