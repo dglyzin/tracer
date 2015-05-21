@@ -15,10 +15,10 @@
 #define DY2 0.01
 
 #define Block0StrideX 1
-#define Block0StrideY 100
+#define Block0StrideY 10
 
-#define Block0CountX 100
-#define Block0CountY 100
+#define Block0CountX 10
+#define Block0CountY 10
 
 #define Block0OffsetX 0.0
 #define Block0OffsetY 0.0
