@@ -9,9 +9,9 @@
     }, 
     "ProjectName": "Brus_test", 
     "StartTime": 0.0, 
-    "FinishTime": 0.1, 
-    "TimeStep": 0.1, 
-    "SaveInterval": 0.5, 
+    "FinishTime": 1, 
+    "TimeStep": 1, 
+    "SaveInterval": 1, 
     "GridStep": {
         "x": 0.1, 
         "y": 0.1, 
@@ -44,7 +44,7 @@
                 "y"
             ], 
             "System": [
-                "U'=D[U,{x,2}]", 
+                "U'=D[U,{y,2}]", 
                 "V'=0"
             ], 
             "Params": [
@@ -66,8 +66,8 @@
         {
             "Name": "Initial values", 
             "Values": [
-                "20.0 + x", 
-                "0.0"
+                "10", 
+                "-10"
             ]
         }
     ], 
