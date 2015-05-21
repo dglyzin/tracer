@@ -67,7 +67,7 @@
             "Name": "Initial values", 
             "Values": [
                 "15.0", 
-                "sin(x)*cos(y)"
+                "x+y"
             ]
         }
     ], 
