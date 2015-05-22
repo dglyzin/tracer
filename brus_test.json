@@ -9,8 +9,8 @@
     }, 
     "ProjectName": "Brus_test", 
     "StartTime": 0.0, 
-    "FinishTime": 1, 
-    "TimeStep": 1, 
+    "FinishTime": 100, 
+    "TimeStep": 0.1, 
     "SaveInterval": 1, 
     "GridStep": {
         "x": 0.1, 

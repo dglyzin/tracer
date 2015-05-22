@@ -2,6 +2,7 @@
 import numpy as np
 import itertools
 from equationParser import MathExpressionParser
+# from Cheetah.Tests.CheetahWrapper import OUTPUT
 
 class BoundaryFunctionCodeGenerator:
 # Генерирует код функции, являющейся краевым условием    
@@ -39,7 +40,6 @@ class BoundaryFunctionCodeGenerator:
 #         Если длина словаря dictionary равна двум и длина массива indepVrbls равна двум, то надо сделать условие на угол прямоугольника
 #         Если длина словаря dictionary равна двум а длина массива indepVrbls равна трем, то надо сделать условие на ребро
 #         Если длина словаря dictionary равна трем, то надо сделать условие на угол параллелепипеда
-# Считается, что все граничные условия --- условия Неймана.
         dcg = DerivativeCodeGenerator()
         boundaryConditionCount = len(tupleList)
         
@@ -388,17 +388,29 @@ class FunctionCodeGenerator:
             allStrideLists.append(strideList)
         
 #         Создаем дефайны
+#         definitions = list()
+#         for (indepVar, d, d2, dm1, dm2) in zip(indepVariables, DList, D2List, DM1List, DM2List):
+#             definitions.append('#define D' + indepVar.upper() + ' ' + str(d) + '\n')
+#             definitions.append('#define D' + indepVar.upper() + '2 ' + str(d2) + '\n')
+#             definitions.append('#define D' + indepVar.upper() + 'M1 ' + str(dm1) + '\n')
+#             definitions.append('#define D' + indepVar.upper() + 'M2 ' + str(dm2) + '\n\n')
+#         for blockNumber,(strideList, countList, cellsize) in enumerate(zip(allStrideLists, allCountLists, cellsizeList)):
+#             definitions.append('#define Block' + str(blockNumber) + 'CELLSIZE' + ' ' + str(cellsize) + '\n\n')
+#             for (indepVar, stride, count) in zip(indepVariables, strideList, countList):
+#                 definitions.append('#define Block' + str(blockNumber) + 'Stride' + indepVar.upper() + ' ' + str(stride) + '\n')
+#                 definitions.append('#define Block' + str(blockNumber) + 'Count' + indepVar.upper() + ' ' + str(count) + '\n\n')
         definitions = list()
-        for (indepVar, d, d2, dm1, dm2) in zip(indepVariables, DList, D2List, DM1List, DM2List):
-            definitions.append('#define D' + indepVar.upper() + ' ' + str(d) + '\n')
-            definitions.append('#define D' + indepVar.upper() + '2 ' + str(d2) + '\n')
-            definitions.append('#define D' + indepVar.upper() + 'M1 ' + str(dm1) + '\n')
-            definitions.append('#define D' + indepVar.upper() + 'M2 ' + str(dm2) + '\n\n')
+        indepVarListInGeneralCase = ["X","Y","Z"]
+        for (indepVar, d, d2, dm1, dm2) in zip(indepVarListInGeneralCase, DList, D2List, DM1List, DM2List):
+            definitions.append('#define D' + indepVar + ' ' + str(d) + '\n')
+            definitions.append('#define D' + indepVar + '2 ' + str(d2) + '\n')
+            definitions.append('#define D' + indepVar + 'M1 ' + str(dm1) + '\n')
+            definitions.append('#define D' + indepVar + 'M2 ' + str(dm2) + '\n\n')
         for blockNumber,(strideList, countList, cellsize) in enumerate(zip(allStrideLists, allCountLists, cellsizeList)):
             definitions.append('#define Block' + str(blockNumber) + 'CELLSIZE' + ' ' + str(cellsize) + '\n\n')
             for (indepVar, stride, count) in zip(indepVariables, strideList, countList):
-                definitions.append('#define Block' + str(blockNumber) + 'Stride' + indepVar.upper() + ' ' + str(stride) + '\n')
-                definitions.append('#define Block' + str(blockNumber) + 'Count' + indepVar.upper() + ' ' + str(count) + '\n\n')
+                definitions.append('#define Block' + str(blockNumber) + 'Stride' + indepVar + ' ' + str(stride) + '\n')
+                definitions.append('#define Block' + str(blockNumber) + 'Count' + indepVar + ' ' + str(count) + '\n\n')
         return ''.join(definitions)
         
     def __determineNameOfBoundary(self, boundaryNumber):
@@ -410,20 +422,23 @@ class FunctionCodeGenerator:
             raise AttributeError("Error in function __determineNameOfBoundary(): argument 'boundaryNumber' should take only integer values from 0 to 5!")
     
     def __generateFunctionSignature(self, blockNumber, name, indepVariableList, strideList):
-        signatureStart = 'void ' + name + '(double* result, double* source, double t,'
-        signatureMiddle = ' int idx' + indepVariableList[0].upper() + ','
-#         Делаем срез нулевого элемента, т.к. его уже учли
-        for indepVar in indepVariableList[1:]:
-            signatureMiddle = signatureMiddle + ' int idx' + indepVar.upper() + ','
-        signatureEnd = ' double* params, double** ic){\n'
-        signature = signatureStart + signatureMiddle + signatureEnd
-        
-        idx = '\t int idx = ( idx' + indepVariableList[0].upper()
-#         Опять срезаем нулевой элемент, т.к. его тоже уже учли
-        changedStrideList = strideList[1:]
-        for i,indepVar in enumerate(indepVariableList[1:]):
-            idx = idx + ' + idx' + indepVar.upper() + ' * ' + changedStrideList[i]
-        idx = idx + ') * Block' + str(blockNumber) + 'CELLSIZE;\n'
+        signature = 'void ' + name + '(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){\n'
+        strBlockNumber = str(blockNumber)
+        idx = "\tint idx = (idxZ*Block" + strBlockNumber + "StrideZ*Block" + strBlockNumber + "StrideY + idxY*Block" + strBlockNumber + "StrideY + idxX)*Block" + strBlockNumber + "CELLSIZE;\n"
+#         signatureStart = 'void ' + name + '(double* result, double* source, double t,'
+#         signatureMiddle = ' int idx' + indepVariableList[0].upper() + ','
+# #         Делаем срез нулевого элемента, т.к. его уже учли
+#         for indepVar in indepVariableList[1:]:
+#             signatureMiddle = signatureMiddle + ' int idx' + indepVar.upper() + ','
+#         signatureEnd = ' double* params, double** ic){\n'
+#         signature = signatureStart + signatureMiddle + signatureEnd
+#          
+#         idx = '\t int idx = ( idx' + indepVariableList[0].upper()
+# #         Опять срезаем нулевой элемент, т.к. его тоже уже учли
+#         changedStrideList = strideList[1:]
+#         for i,indepVar in enumerate(indepVariableList[1:]):
+#             idx = idx + ' + idx' + indepVar.upper() + ' * ' + changedStrideList[i]
+#         idx = idx + ') * Block' + str(blockNumber) + 'CELLSIZE;\n'
         
         return list([signature,idx])
     
@@ -990,11 +1005,126 @@ class FunctionCodeGenerator:
         boundaryFunctions.append(self.generateBoundaryFunctionsCode(blockNumber, blockRanges, boundaryConditionList, estrList, indepVrbls, params))
         return ''.join(boundaryFunctions)
     
-    def generateAllFunctions(self, blocks, equations, bounds, gridStep):
+    def __generateParamFunction(self, params, paramValues):
+        paramCount = len(params)
+        paramValuesCount = len(paramValues)
+        if paramCount != paramValuesCount:
+            raise AttributeError("Count of parameter values is not corresponds to count of parameters!")
+        
+        output = list(["void initDefaultParams(double** pparams, int* pparamscount){\n"])
+        output.append("\t*pparamscount = PAR_COUNT;\n")
+        output.append("\t*pparams = (double *) malloc(sizeof(double)*PAR_COUNT);\n")
+        
+        for index,param in enumerate(params):
+            output.append("\t(*pparams)[" + str(index) + "] = " + str(paramValues[param]) + ";\n")
+        
+        output.append("}\n\nvoid releaseParams(double *params){\n\tfree(params);\n}\n\n")
+        
+        return ''.join(output)
+    
+    def __generatePointInitial(self, initial, initialNumber, indepVariableList):
+#         Функция генерируют точечную начальную функцию с номером initialNumber.
+#         changedValueList --- будет содержать строки, которые просто надо подставить в нужное место и не надо парсить.
+        pointFunction = list()
+        changedValueList = list()
+        valueList = initial["Values"]
+        for value in valueList:
+            changedValue = value
+            for i,indepVariable in enumerate(indepVariableList):
+                if i == 0:
+                    new = 'x'
+                elif i == 1:
+                    new = 'y'
+                else:
+                    new = 'z'
+                changedValue = changedValue.replace(indepVariable, new)
+            changedValueList.append(changedValue)
+        
+        pointFunction.append("void Initial"+str(initialNumber)+"(double* cellstart, double x, double y, double z){\n")
+        for k,changedValue in enumerate(changedValueList):
+            pointFunction.append("\tcellstart[" + str(k) + "] = " + changedValue + ";\n")
+        pointFunction.append("}\n\n")
+        return ''.join(pointFunction)
+    
+    def __generateFillFunctionForBlock(self, blockNumber, countOfInitials, indepVariableList):
+        fillFunction = list()
+        strBlockNum = str(blockNumber)
+        signature = "void Block" + strBlockNum + "FillInitialValues(double* result, int* initType, int Block" + strBlockNum + "CountX, int Block" + strBlockNum + "CountY, int Block" + strBlockNum + "CountZ, int Block" + strBlockNum + "OffsetX, int Block" + strBlockNum + "OffsetY, int Block" + strBlockNum + "OffsetZ){\n"
+        fillFunction.append(signature)
+        
+        fillFunction.append("\tinitfunc_ptr_t initFuncArray[" + str(countOfInitials) + "];\n")
+        for i in range(0, countOfInitials):
+            index = str(i)
+            fillFunction.append("\tinitFuncArray[" + index + "] = Initial" + index + ";\n")
+        
+        dimension = len(indepVariableList)
+        if dimension == 3:
+            fillFunction.append("\tfor(int idxZ = 0; idxZ<Block" + strBlockNum + "CountZ; idxZ++)\n")
+            fillFunction.append("\t\tfor(int idxY = 0; idxY<Block" + strBlockNum + "CountY; idxY++)\n")
+            fillFunction.append("\t\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n")
+            spaces = "\t\t\t\t"
+            
+        elif dimension == 2:
+            fillFunction.append("\tfor(int idxY = 0; idxY<Block" + strBlockNum + "CountY; idxY++)\n")
+            fillFunction.append("\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n")
+            spaces = "\t\t\t"
+        else:
+            fillFunction.append("\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n")
+            spaces = "\t\t"
+        fillFunction.append(spaces + "int idx = (idxZ*Block" + strBlockNum + "CountY*Block" + strBlockNum + "CountX + idxY*Block" + strBlockNum + "CountX + idxX)*Block" + strBlockNum + "CELLSIZE;\n")
+        fillFunction.append(spaces + "int type = initType[idx];\n")
+        fillFunction.append(spaces + "initFuncArray[type](result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, Block" + strBlockNum + "OffsetZ + idxZ*DZ);}\n")
+        
+        fillFunction.append("}\n\n")
+        
+        return ''.join(fillFunction)
+    
+    def __generateGetInitFuncArray(self, countOfBlocks):
+        strCountOfBlocks = str(countOfBlocks)
+        output = list(["void getInitFuncArray(initfunc_fill_ptr_t** ppInitFuncs){\n"])
+        output.append('\tprintf("Welcome into userfuncs.so. Getting initial functions...\n");\n')
+        output.append("\tinitfunc_fill_ptr_t* pInitFuncs;\n")
+        output.append("\tpInitFuncs = (initfunc_fill_ptr_t*) malloc( " + strCountOfBlocks + " * sizeof(initfunc_fill_ptr_t) );\n")
+        output.append("\t*ppInitFuncs = pInitFuncs;\n")
+        for i in range(0, countOfBlocks):
+            index = str(i)
+            output.append("\tpInitFuncs[" + index + "] = Block" + index + "FillInitialValues;\n")
+        output.append("}\n\n")
+        
+        output.append("void releaseInitFuncArray(initfunc_fill_ptr_t* InitFuncs){\n\tfree(InitFuncs);\n}\n\n")
+        
+        return ''.join(output)
+    
+    def generateInitials(self, blocks, initials, equations):
+#         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
+        output = list(["//===================PARAMETERS==========================//\n\n"])
+        output.append(self.__generateParamFunction(equations[0]['Params'], equations[0]['ParamValues'][0]))
+        
+        output.append("//===================INITIAL CONDITIONS==========================//\n\n")
+        indepVariableList = equations[0]['Vars']
+        for initialNumber,initial in enumerate(initials):
+            output.append(self.__generatePointInitial(initial, initialNumber, indepVariableList))
+        
+        countOfInitials = len(initials)
+        for blockNumber, block in enumerate(blocks):
+            output.append(self.__generateFillFunctionForBlock(blockNumber, countOfInitials, indepVariableList))
+        
+        output.append(self.__generateGetInitFuncArray(len(blocks)))
+        
+        return ''.join(output)
+    
+    def generateAllFunctions(self, blocks, equations, bounds, initials, gridStep):
         indepVrbls = equations[0]['Vars']
         params = equations[0]['Params']
         
         dim = len(indepVrbls)
+        if dim == 0:
+            raise AttributeError("Independent variables were not defined!")
+        elif dim == 1:
+            indepVrbls.extend(['y','z'])
+        elif dim == 2:
+            indepVrbls.append('z')
+
         DList = list([])
         DList.append(gridStep['x'])
         if dim >= 2:
@@ -1014,8 +1144,10 @@ class FunctionCodeGenerator:
                 blockSizeList.append(block['Size']['z'])
             allBlockSizeList.append(blockSizeList)
         
-        outputStr = "#indlude <Math.h>\n#include <stdio.h>\n#include <stdlib.h>\n\n"
+        outputStr = '#indlude <Math.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include "../hybriddomain/doc/userfuncs.h"\n\n'
         outputStr = outputStr + self.generateAllDefinitions(indepVrbls, DList, allBlockSizeList, cellsizeList)
+        outputStr += "\n#define PAR_COUNT " + str(len(params)) + "\n"
+        outputStr += self.generateInitials(blocks, initials, equations)
         for blockNumber,block in enumerate(blocks):
             estrList = equations[block['DefaultEquation']]['System']
             cf = self.generateCentralFunctionCode(block, blockNumber, estrList, indepVrbls, params)
