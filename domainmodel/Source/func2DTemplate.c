@@ -17,8 +17,7 @@
 #define Block0StrideX 1
 #define Block0StrideY 10
 
-#define Block0CountX 10
-#define Block0CountY 10
+$PasteDefine$
 
 #define Block0OffsetX 0.0
 #define Block0OffsetY 0.0
@@ -50,7 +49,7 @@
 
 #define PAR_COUNT 3
 
-//===================ПАРАМЕТРЫ==================================//
+//===================PARAMETRY==================================//
 void initDefaultParams(double** pparams, int* pparamscount){
 	*pparamscount = PAR_COUNT;
 	*pparams = (double *) malloc(sizeof(double)*PAR_COUNT);
@@ -62,16 +61,16 @@ void releaseParams(double *params){
 }
 
 
-//===================НАЧАЛЬНЫЕ УСЛОВИЯ==========================//
-//начальные условия - только на CPU
+//===================NAChAL''NYE USLOVIJa==========================//
+//nachal'nye uslovija - tol'ko na CPU
 
 
-//для каждого блока свой набор точечных начальных функций и одна функция-заполнитель
+//dlja kazhdogo bloka svoj nabor tochechnyh nachal'nyh funkcij i odna funkcija-zapolnitel'
 $Block0Initial$
 
 
-//Заполняет result[idx] начальной функцией с номером из initType[idx]
-//изменился код
+//Zapolnjaet result[idx] nachal'noj funkciej s nomerom iz initType[idx]
+//izmenilsja kod
 void Block0FillInitialValues(double* result, unsigned short int* initType){
 	printf("Initial array filling by user function started...\n");
     initfunc_ptr_t initFuncArray[1];
@@ -80,12 +79,12 @@ void Block0FillInitialValues(double* result, unsigned short int* initType){
         for(int idxX = 0; idxX<Block0CountX; idxX++){
             int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
             int type = initType[idx];
-            initFuncArray[0](result, idxX, idxY, type);
+            $Block0InitFuncArray$
         }
 }
 
 
-//Функции-заполнители нужно собрать в массив и отдать домену
+//Funkcii-zapolniteli nuzhno sobrat' v massiv i otdat' domenu
 void getInitFuncArray(initfunc_fill_ptr_t** ppInitFuncs){
 	printf("Welcome into userfuncs.so. Getting initial functions...\n");
 
@@ -99,91 +98,13 @@ void releaseInitFuncArray(initfunc_fill_ptr_t* InitFuncs){
     free(InitFuncs);    
 }
 
-//===================ГРАНИЧНЫЕ УСЛОВИЯ И ОСНОВНАЯ ФУНКЦИЯ==========================//
-//функции типа дирихле для всех границ всех блоков можно делать одни и те же ,
-//а один и тот же Нейман на разных границах разных блоков будет отдельной функцией, т.к. придумывает 
-//несуществующую точку в своем направлении и с разными stride
+//===================GRANIChNYE USLOVIJa I OSNOVNAJa FUNKCIJa==========================//
+//funkcii tipa dirihle dlja vseh granic vseh blokov mozhno delat' odni i te zhe ,
+//a odin i tot zhe Nejman na raznyh granicah raznyh blokov budet otdel'noj funkciej, t.k. pridumyvaet 
+//nesushhestvujushhuju tochku v svoem napravlenii i s raznymi stride
 
-//Основная функция
-void Block0CentralFunction(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
-    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
-    $@sistemCentrC@$
-}
+$BlockReplace$
 
-//условия по умолчанию для каждой стороны (4 штук),
-//для каждого угла (4 штук)
-//Блок0
-//y=0, x=0
-void Block0DefaultNeumannBound0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
-    int idx = ( Block0StrideY + idxX) * CELLSIZE;
-    $@sistemUpL@$
-}
-
-//сторона y=0, x центральные
-void Block0DefaultNeumannBound1(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
-    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
-    $@sistemUpC@$
-}
-
-//сторона y=0, x=xmax
-void Block0DefaultNeumannBound2(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
-    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
-    $@sistemUpR@$
-}
-
-//y центральные, x=0
-void Block0DefaultNeumannBound3(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
-    int idx = ( Block0StrideY + idxX) * CELLSIZE;
-    $@sistemCentrL@$
-}
-
-//y=центральные, x=xmax
-void Block0DefaultNeumannBound4(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
-    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
-    $@sistemCentrR@$
-}
-
-//сторона y=ymax, x=0
-void Block0DefaultNeumannBound5(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
-    int idx = ( Block0StrideY + idxX) * CELLSIZE;
-    $@sistemDownL@$
-}
-
-//сторона y=ymax, x центральные
-void Block0DefaultNeumannBound6(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
-    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
-    $@sistemDownC@$
-}
-
-//сторона y=ymax, x=xmax
-void Block0DefaultNeumannBound7(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
-    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE;
-    $@sistemDownR@$
-}
-
-$Neiman$
-
-$Dirichlet$
-
-void getFuncArray(func_ptr_t** ppFuncs){
-	printf("Welcome into userfuncs.so. Getting main functions...\n");
-    func_ptr_t* pFuncs;
-    pFuncs = (func_ptr_t*) malloc( ( 1 + 8 ) * sizeof(func_ptr_t) );
-    *ppFuncs = pFuncs;
-    pFuncs[0] = Block0CentralFunction;
-    
-    pFuncs[1] = Block0DefaultNeumannBound0;
-    pFuncs[2] = Block0DefaultNeumannBound1;
-    pFuncs[3] = Block0DefaultNeumannBound2;
-    pFuncs[4] = Block0DefaultNeumannBound3;
-    pFuncs[5] = Block0DefaultNeumannBound4;
-    pFuncs[6] = Block0DefaultNeumannBound5;
-    pFuncs[7] = Block0DefaultNeumannBound6;
-    pFuncs[8] = Block0DefaultNeumannBound7;
-	
-	$pFuncs$
-	
-}
 
 void releaseFuncArray(func_ptr_t* Funcs){
     free(Funcs);    

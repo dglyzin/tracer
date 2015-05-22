@@ -5,6 +5,7 @@ from numpy import arange, sin, pi
 import re
 #from model import *
 import json
+from block import Block
 
 funcList='acosh','asinh','atanh','acos','asin','atan','cos','exp','log','log10','sin','tan','tanh'
 funcListReplace='acosh','asinh','atanh','acos','asin','atan','cos','exp','log','log10','sin','tan','tanh'
@@ -35,128 +36,40 @@ def runGenCfile(self,dirSourse,dirFile,InputFile):
 def generateCfromDict(modelDict, cFileName):
     dirSourse = os.path.join(os.path.abspath(os.path.dirname(__file__)),"Source")
 
-    k=0
-    for i in modelDict:
-##        print k,i,modelDict[i]
-        k=k+1
-
     #Достаем данные из JSON
     equ=modelDict['Equations'][0]['System']
     equForReplace=equ[:]
-    equOut=[]
     var = modelDict['Equations'][0]['Vars']
-
     dif=findDif(equ)
-##    print 'findDif(equ)',dif[:]
-
     param=modelDict['Equations'][0]['Params']
     initials=modelDict['Initials'][:]
-    boundRegions=modelDict['Blocks'][0]['BoundRegions'][:]
-    bounds=modelDict['Bounds'][:]
-    initOffset=modelDict['Blocks'][0]['Offset']
-    initSize=modelDict['Blocks'][0]['Size']
-    initSizeList=[]
-    for i in var:
-        initSizeList.append(initOffset[i])
-        initSizeList.append(initSize[i])
+    lAllBounds=modelDict['Bounds'][:]
 
-
-    global funcList
-    returnEqu=[]
     #список ключевых слов для замены
-    listParamForTempl = ['$@sistemUpL@$','$@sistemUpC@$','$@sistemUpR@$',
-                '$@sistemCentrL@$','$@sistemCentrC@$','$@sistemCentrR@$',
-                '$@sistemDownL@$','$@sistemDownC@$','$@sistemDownR@$']
-    listEquForTemplate = []
-    forNeiman=""
-    listForNeimanProizv=[]
+    listParamForTempl = ["$replace0$","$replace1$","$replace2$",
+                            "$replace3$","$replaceOsn$","$replace4$",
+                            "$replace5$","$replace6$","$replace7$"]
 
-    #Заменяем в уравнениях U' на $i - r[idx] U на %i - s[idx]
-    for x in equForReplace:
-        for i in range(len(dif)):
-            x=x.replace(dif[i]+"'",'$'+str(i))    # $ - r[idx]
-            x=x.replace(dif[i],'%'+str(i))    # % - s[idx]
-        #Заменяем параметры на param[]
-        x=replaceParam(x,param)
-        equOut.append(x)
-
-    #Вычленяем в уравнениях производную
-    for equ in equOut:
-        proizv = re.findall("D\[[A-Za-z0-9$%,.{}()\^\\\*\+-]+\]",equ)
-        arrayFunc=[]
-        arrayDegree=[]
-        listEquForReplace=[equ]*9
-        for iProizv in proizv:
-            #получаем список из производных переменных и их степеней
-            func,varProizv,degProizv=replaceForProizv(None,iProizv)
-            for x in varProizv:
-                if x not in var:
-                    #добавляем неуказанные пользователем переменные
-                    var.append(x)
-            degProizvTotal=0
-            for x in degProizv:
-                degProizvTotal+=int(x)  #Общая степень производной
-
-            spisokProizv=FindZamena(None,dif,func,varProizv,var,degProizv,dirSourse)
-            if len(spisokProizv)>0:
-                for i in range(len(spisokProizv)):
-                    listEquForReplace[i]=listEquForReplace[i].replace(iProizv,spisokProizv[i])
-                listForNeimanProizv.append(spisokProizv[5])
-
-        for i in listEquForReplace:
-            i=i.replace('$0','result[idx]')    # $ - r[idx]
-            i=i.replace('%0','source[idx]')    # % - s[idx]
-
-            i=i.replace('$1','result[idx+1]')    # $ - r[idx+1]
-            i=i.replace('%1','source[idx+1]')    # % - s[idx+1]
-
-            i=i.replace('$2','result[idx+2]')    # $ - r[idx+2]
-            i=i.replace('%2','source[idx+2]')    # % - s[idx+2]
-
-            #Приводим 1,1 к 1.1
-            p=re.findall("[0-9][,][0-9]",i)
-            if p:
-                for elem in p:
-                    i=i.replace(elem,elem[0]+'.'+elem[-1])
-
-            i=replacePow(i)
-
-            #Заменяем переменные на idx, но это не совсем корректно
-            #======================================================
-            i=replaceVar(i,var)
-            #======================================================
-
-            returnEqu.append(i)
-
-##    print returnEqu[:]
-
-    for i in range(9):
-        if len(equOut)==1:
-            listEquForTemplate.append(returnEqu[i]+';\n  ')
-        if len(equOut)==2:
-            listEquForTemplate.append(returnEqu[i]+';\n  '+returnEqu[i+9]+';')
-        if len(equOut)==3:
-            listEquForTemplate.append(returnEqu[i]+';\n  '+returnEqu[i+9]+';\n  '+returnEqu[i+18]+';')
-
-    forNeiman=listEquForTemplate[4]
+    lSistemOut=genSistem(listParamForTempl,equForReplace,dif,param,var,dirSourse)
+    forNeiman=lSistemOut[4]
 
     #Создаем файл основного кода программы
     f = open(os.path.join(dirSourse,"func2DTemplate.c"))
-    textTemplateC=f.read()
+    textTemplateC=(f.read()).decode('utf-8')
     f.close()
+
     ftemp = open(os.path.join(dirSourse,"replaceTemplate.txt"))
-    temp=ftemp.read()
+    tempDict=json.loads(ftemp.read())
     ftemp.close()
-    tempList=temp.split('%')
-    tempDict={}
-    for i in range(int(len(tempList)/2)):
-        tempDict[tempList[i*2]]=tempList[i*2+1]
-##    for i in tempDict:
-##        print i,tempDict[i]
 
-    textTemplateC=(textTemplateC).decode('utf-8')
+##    print 'tempDict',tempDict
 
-    #Создаем и вставляем блок со значением параметра
+    allDictNameBlock,allListBound,allListinitSizeList,replDefine=blocksInfo(modelDict)
+
+    #Вставляем к define
+    textTemplateC=textTemplateC.replace('$PasteDefine$',replDefine)
+
+    #Вставляем значения параметра
     paramValues=modelDict['Equations'][0]['ParamValues']
     outReplace=''
     for index, element in enumerate(param):
@@ -175,7 +88,6 @@ def generateCfromDict(modelDict, cFileName):
             iter+=1
         t=t.replace('$v1$',rpl)
         outReplace=outReplace+t
-
     textTemplateC=textTemplateC.replace('$Block0Initial$',outReplace)
 
     #Добавляем вызов начальных условий
@@ -185,30 +97,44 @@ def generateCfromDict(modelDict, cFileName):
         t=initBlok.replace('$v0$',str(i))
         outReplace=outReplace+t
     textTemplateC=textTemplateC.replace('$Block0InitialFill$',outReplace)
+    initBlok=tempDict['$Block0InitFuncArray$']
+    #Временное решение. Проблема с некоректностью в JSON массива переменных
+    out=re.findall("[A-Za-z0-9]+",str(modelDict['Equations'][0]['System']))
+    f=False
+    for i in out:
+        if i=='z': f=True
+    if f==False: initBlok=initBlok.replace('idxZ','0')
+    textTemplateC=textTemplateC.replace('$Block0InitFuncArray$',initBlok)
 
-    #Блоки краевых условий
+    #Вставляем основной текст для каждого блока отдельно
+    out=''
+    for bl in modelDict['Blocks']:
+        n=allDictNameBlock[bl["Name"]]
+        out+=genBlockCode(tempDict,n,allListBound[n],allListinitSizeList[n],listParamForTempl,lSistemOut,forNeiman,lAllBounds)
 
-##    print 'forNeiman',forNeiman,initSizeList
+    textTemplateC=textTemplateC.replace('$BlockReplace$',out)
 
-    textTemplateC=replaceBounds(bounds,boundRegions,tempDict,textTemplateC,initSizeList,forNeiman)
-
-    for i in range(len(listEquForTemplate)):
-        textTemplateC=str(textTemplateC.encode('ascii', 'ignore')).replace(listParamForTempl[i],listEquForTemplate[i])
-
-##    print textTemplateC
-##    path=os.path.join(os.getcwd(),"File")
-##    fout = open(os.path.join(path,cFileName), "wt")
     fout = open(cFileName, "wt")
     fout.write(textTemplateC)   ##.encode(encoding='UTF-8')
     fout.close()
 
-#Блоки краевых условий
-def replaceBounds(bounds,boundRegions,tempDict,text,initSizeList,forNeiman):
+
+#Создаем основной код блока
+def genBlockCode(tempDict,nomberBlock,blockBound,blockInitSizeList,listParamForTempl,lSistemOut,forNeiman,lAllBounds):
+    blockCode=tempDict['$BlockReplace$']
+    for i in range(len(lSistemOut)):
+        blockCode=blockCode.replace(listParamForTempl[i],lSistemOut[i])
+    blockCode=replaceBounds(lAllBounds,blockBound,tempDict,blockCode,blockInitSizeList,forNeiman)
+    blockCode=blockCode.replace('$Nomber$',str(nomberBlock))
+    return blockCode
+
+#__________________Блоки краевых условий
+def replaceBounds(lAllBounds,blockBound,tempDict,text,initSizeList,forNeiman):
     varIter=8
     varI=0
     strNeiman=''
     strRplOption=''
-    for i in boundRegions:
+    for i in blockBound:
         varIter+=1
         nBounds=i['BoundNumber']
         nSide=i['Side']
@@ -216,8 +142,8 @@ def replaceBounds(bounds,boundRegions,tempDict,text,initSizeList,forNeiman):
         xto=i['xto']
         yfrom=i['yfrom']
         yto=i['yto']
-        nType=bounds[nBounds]['Type']
-        lValues=bounds[nBounds]['Values']
+        nType=lAllBounds[nBounds]['Type']
+        lValues=lAllBounds[nBounds]['Values']
 ##        print "nType",nType,lValues
         if nType==0:
             initBlok=tempDict['$Dirichlet$']
@@ -243,7 +169,7 @@ def replaceBounds(bounds,boundRegions,tempDict,text,initSizeList,forNeiman):
             t=initBlok.replace('$v1$',t)
             rpl=t.replace('$v0$',str(varI))
             strNeiman=strNeiman+rpl
-            strRplOption=strRplOption+"pFuncs["+str(varIter)+"] = Block0Bound0_"+str(varI)+";\n"
+            strRplOption=strRplOption+"pFuncs["+str(varIter)+"] = Block$Nomber$Bound0_"+str(varI)+";\n"
 
     text=text.replace('$Neiman$',strNeiman)
     text=text.replace('$Dirichlet$',"")
@@ -327,6 +253,106 @@ def NeimanNonexistent(nSide,xfrom,xto,yfrom,yto,initSizeList,sistem,textRpl):
     textRpl=textRpl.replace('$sistemGx1$',sistem)
 
     return textRpl
+
+#обрабатываем все входные блоки
+def blocksInfo(modelDict):
+    allDictNameBlock={}
+    allListBound=[]
+    allListinitSizeList=[]
+    replDefine=''
+    nomber=0
+    for bl in modelDict['Blocks']:
+        allDictNameBlock[bl['Name']]=nomber
+        allListBound.append(bl['BoundRegions'][:])
+        initSizeList=[]
+        for key, value in bl['Offset'].iteritems():
+            initSizeList.append(value)
+            initSizeList.append(bl['Size'][key])
+        allListinitSizeList.append(initSizeList)
+
+        block=Block(bl['Name'],bl['Dimension'])
+        block.fillProperties(bl)
+        out=block.getCellCount(modelDict['GridStep']['x'],modelDict['GridStep']['y'],modelDict['GridStep']['z'])
+        replDefine=replDefine+"#define Block"+str(nomber)+"CountX "+str(out[0])+" \n #define Block"+str(nomber)+"CountY "+str(out[1])+" \n #define Block"+str(nomber)+"CountZ "+str(out[2])
+        nomber+=1
+
+    return allDictNameBlock,allListBound,allListinitSizeList,replDefine
+
+#Преобразовываем систему уравнений в необходимый вид
+def genSistem(listParamForTempl,equForReplace,dif,param,var,dirSourse):
+    returnEqu=[]
+    equOut=[]
+
+    listEquForTemplate = []
+    forNeiman=""
+    listForNeimanProizv=[]
+
+    #Заменяем в уравнениях U' на $i - r[idx] U на %i - s[idx]
+    for x in equForReplace:
+        for i in range(len(dif)):
+            x=x.replace(dif[i]+"'",'$'+str(i))    # $ - r[idx]
+            x=x.replace(dif[i],'%'+str(i))    # % - s[idx]
+        #Заменяем параметры на param[]
+        x=replaceParam(x,param)
+        equOut.append(x)
+
+    #Вычленяем в уравнениях производную
+    for equ in equOut:
+        proizv = re.findall("D\[[A-Za-z0-9$%,.{}()\^\\\*\+-]+\]",equ)
+        arrayFunc=[]
+        arrayDegree=[]
+        listEquForReplace=[equ]*9
+        for iProizv in proizv:
+            #получаем список из производных переменных и их степеней
+            func,varProizv,degProizv=replaceForProizv(None,iProizv)
+            for x in varProizv:
+                if x not in var:
+                    #добавляем неуказанные пользователем переменные
+                    var.append(x)
+            degProizvTotal=0
+            for x in degProizv:
+                degProizvTotal+=int(x)  #Общая степень производной
+
+            spisokProizv=FindZamena(None,dif,func,varProizv,var,degProizv,dirSourse)
+            if len(spisokProizv)>0:
+                for i in range(len(spisokProizv)):
+                    listEquForReplace[i]=listEquForReplace[i].replace(iProizv,spisokProizv[i])
+                listForNeimanProizv.append(spisokProizv[5])
+
+        for i in listEquForReplace:
+            i=i.replace('$0','result[idx]')    # $ - r[idx]
+            i=i.replace('%0','source[idx]')    # % - s[idx]
+
+            i=i.replace('$1','result[idx+1]')    # $ - r[idx+1]
+            i=i.replace('%1','source[idx+1]')    # % - s[idx+1]
+
+            i=i.replace('$2','result[idx+2]')    # $ - r[idx+2]
+            i=i.replace('%2','source[idx+2]')    # % - s[idx+2]
+
+            #Приводим 1,1 к 1.1
+            p=re.findall("[0-9][,][0-9]",i)
+            if p:
+                for elem in p:
+                    i=i.replace(elem,elem[0]+'.'+elem[-1])
+
+            i=replacePow(i)
+
+            #Заменяем переменные на idx, но это не совсем корректно
+            #======================================================
+            i=replaceVar(i,var)
+            #======================================================
+
+            returnEqu.append(i)
+
+    for i in range(9):
+        if len(equOut)==1:
+            listEquForTemplate.append(returnEqu[i]+';\n  ')
+        if len(equOut)==2:
+            listEquForTemplate.append(returnEqu[i]+';\n  '+returnEqu[i+9]+';')
+        if len(equOut)==3:
+            listEquForTemplate.append(returnEqu[i]+';\n  '+returnEqu[i+9]+';\n  '+returnEqu[i+18]+';')
+
+    return listEquForTemplate[:]
 
 #заменяем переменные на idx
 def replaceVar(equ,var):
@@ -545,18 +571,14 @@ def FindZamena(self,dif,func,varProizv,var,degree,dirSource):
 
     #Общий файл с заменами
     file = open(os.path.join(dirSource,"difAll.txt"))
-    t=file.read()
-    zamena=t.split('@$next$@')
+    dictProizv=json.loads(file.read())
     file.close()
-    #Текс файла полученый как список, преобразуем и ищем нужную часть
-    for z in zamena:
-        z=z.strip(' ')
-        z=z.strip('\n')
-        if z[:len(strOut)]==strOut:
-            spisokProizv=z.splitlines() #Режем найденный текст в список
-##    print spisokProizv
-    #Первый элемент описание его не передаем
-    return spisokProizv[1:]
+
+    if strOut in dictProizv:
+        return dictProizv[strOut]
+    else:
+        print "error: The derivative "+strOut+" is not the Map"
+        return [""]*9
 
 def CompliteClient(self,dirFileRun,fileName):
 ##    print 'cl Source\\'+fileName

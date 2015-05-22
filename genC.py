@@ -697,8 +697,9 @@ class BaseWindow(QtGui.QMainWindow):
                     QtGui.QMessageBox.warning (self, u'Предупреждение',
                 u"Число не может быть переменной", QtGui.QMessageBox.Ok)
                 elif str(textInput).count(i)==0:
-                    QtGui.QMessageBox.warning (self, u'Предупреждение',
-                u"Данная переменная не используется "+i, QtGui.QMessageBox.Ok)
+##                    QtGui.QMessageBox.warning (self, u'Предупреждение',
+##                u"Данная переменная не используется "+i, QtGui.QMessageBox.Ok)
+                    pass
             #введен некорректный символ
             if re.findall('[^A-Za-z0-9,]',checkText):
                 statusSystem=False
