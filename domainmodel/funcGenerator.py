@@ -39,6 +39,7 @@ class BoundaryFunctionCodeGenerator:
 #         ≈сли длина словар€ dictionary равна двум и длина массива indepVrbls равна двум, то надо сделать условие на угол пр€моугольника
 #         ≈сли длина словар€ dictionary равна двум а длина массива indepVrbls равна трем, то надо сделать условие на ребро
 #         ≈сли длина словар€ dictionary равна трем, то надо сделать условие на угол параллелепипеда
+# —читаетс€, что все граничные услови€ --- услови€ Ќеймана.
         dcg = DerivativeCodeGenerator()
         boundaryConditionCount = len(tupleList)
         
@@ -285,7 +286,10 @@ class DerivativeCodeGenerator:
         for indepVar in fullIndepVarList:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
         if len(indepVarList) == 1 or indepVarList[0] == indepVarList[1]: 
-            increment = 'D' + indepVarList[0].upper() + 'M' + derivativeOrderList[0]
+            generalOrder = 0
+            for order in derivativeOrderList:
+                generalOrder = generalOrder + int(order)
+            increment = 'D' + indepVarList[0].upper() + 'M' + str(generalOrder)
             specialIncrement = 'D' + indepVarList[0].upper()
             stride = 'Block' + str(blockNumber) + 'Stride' + indepVarList[0].upper()
             order = 0
@@ -1020,3 +1024,5 @@ class FunctionCodeGenerator:
             outputStr = outputStr + cf + dbf + bf
          
         return outputStr
+    
+        

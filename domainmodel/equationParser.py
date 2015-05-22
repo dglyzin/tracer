@@ -2,18 +2,29 @@
 from pyparsing import Literal, Word, nums, alphas, Group, Forward, Optional, OneOrMore, Suppress, restOfLine, ZeroOrMore
 
 class CorrectnessController:
-
+#     —о степен€ми не все проверено, например выражение "V'= a^2d + D[W,{z,2}]" распарситс€ до ['a','^','2'] и все функции создадутс€!
+    def emptyControl(self, stringForControl):
+#         ѕровер€ет, не пуста ли строка; если в строке уравнение, то не стоит ли после или до знака = пустота.
+        if len(stringForControl) == 0:
+            raise SyntaxError("Some equation or boundary condition was defined by empty string!")
+        if stringForControl.startswith('=') or stringForControl.startswith("'"):
+            raise SyntaxError("An equation " + stringForControl + " doesn't contain any left hand side!")
+        if stringForControl.endswith('=') or stringForControl.endswith("'"):
+            raise SyntaxError("An equation " + stringForControl + " doesn't contain any right hand side!")
+    
     def controlBrackets(self, stringForControl):
-        count = 0
+        boundaryCount = 0
         for char in stringForControl:
             if char == '(':
-                count = count + 1
+                boundaryCount = boundaryCount + 1
             elif char == ')':
-                count = count - 1
-        return count
+                boundaryCount = boundaryCount - 1
+        if boundaryCount < 0:
+            raise SyntaxError('Either too more closing brackets or there is a lack of opening brackets in the expression ' + stringForControl + '!')            
+        elif boundaryCount > 0:
+            raise SyntaxError('Either too more opening brackets or there is a lack of closing  brackets in the expression ' + stringForControl + '!')
     
     def controlOperators(self, stringForControl):
-        correct = True
         operationList = list(['-','+','*','/','^'])
         length = len(stringForControl)
         for i,char in enumerate(stringForControl):
@@ -24,33 +35,26 @@ class CorrectnessController:
             firstAlternative = char in operationList and ( rightIsOperator or leftIsOperator or rightIsBound or isLast)
             secondAlternative = char in operationList[1:] and (i >= 1 and stringForControl[i-1] == '(' or i == 0)
             if firstAlternative or secondAlternative:
-                correct = False
-                break
-        return correct
+                raise SyntaxError('Some binary operators are located uncorrectly in expression ' + stringForControl + '!')
 
     def controlPowers(self, parsedStringForControl):
-        for lst in parsedStringForControl:
-            if lst[0] == '^':
-                power = lst[1:]
-                if not power.isnumeric():
-                    return -1
-        return 1
+        for i,element in enumerate(parsedStringForControl):
+            if element == '^':
+                power = ''
+                if i < len(parsedStringForControl) - 1:
+                    power = parsedStringForControl[i + 1]
+                if not power.isdigit():
+                    raise SyntaxError('A power is absent or not an integer in some inputed function or equation!')
     
     def controlDerivatives(self, parsedStringForControl, independentVariableList):
         for expressionList in parsedStringForControl:
             if expressionList[0] == 'D[':
-                listOfInputedVars = list([])
                 for i,symbol in enumerate(expressionList):
                     if symbol == '{':
                         if expressionList[i+1] not in independentVariableList:
-                            return 1
-#                         elif expressionList[i+1] in listOfInputedVars:
-#                             return 2
+                            raise SyntaxError("Error in inputing of some derivative: independent variable, in which partial derivative should be calculated, is absent in list of independent variables!")
                         elif int(expressionList[i+3]) == 0:
-                            return 3
-                        else:
-                            listOfInputedVars.extend([expressionList[i+1]])
-        return 0
+                            raise SyntaxError("Error in inputing of some derivative: derivative should have positive order!")
 
 class ParsePatternCreater:
     
@@ -142,48 +146,36 @@ class MathExpressionParser:
             lst.insert(index,power)
         
     def parseMathExpression(self, mathExpressionForParsing, *args):
+        controller = CorrectnessController()
+        controller.emptyControl(mathExpressionForParsing)
+        controller.controlOperators(mathExpressionForParsing)
+        controller.controlBrackets(mathExpressionForParsing)
+        
         length = len(args)
         if length < 2 or length  > 3:
             raise AttributeError("Method parseMathExpression() takes at least three arguments and didn't take five or more arguments!")
         
         ppc = ParsePatternCreater()
         parsePattern = ppc.createParsePattern(*args)
-        
-        controller = CorrectnessController()
-                   
-        boundaryCount = controller.controlBrackets(mathExpressionForParsing)
-        if boundaryCount < 0:
-            raise SyntaxError('Either too more closing brackets or there is a lack of opening brackets in input function !')            
-        elif boundaryCount > 0:
-            raise SyntaxError('Either too more opening brackets or there is a lack of closing  brackets in input function !')
             
         parsedExpression = parsePattern.parseString(mathExpressionForParsing).asList()
+        controller.controlPowers(parsedExpression)
         self.__concatPower(parsedExpression)
-        if not controller.controlPowers(parsedExpression):
-            raise SyntaxError('A power is not an integer!')
         
-        derivativeControlResult = controller.controlDerivatives(parsedExpression, args[-1])
-        if derivativeControlResult == 1:
-            raise SyntaxError("Error in inputing of some derivative: independent variable, in which partial derivative should be calculated, is absent in list of independent variables!")
-        elif derivativeControlResult == 2:
-            raise SyntaxError("Error in inputing of some derivative: duplication of independent variable, in which derivative should be calculate!")
-        elif derivativeControlResult == 3:
-            raise SyntaxError("Error in inputing of some derivative: derivative should have positive order!")
-        
-        strForControl = ''
-        for element in parsedExpression:
-            strForControl = strForControl + ''.join(element)
-        if not controller.controlOperators(strForControl):
-            raise SyntaxError('Some binary operators are located uncorrectly in input function !')
+        controller.controlDerivatives(parsedExpression, args[-1])
         
         return parsedExpression
 
     def getVariableList(self,equationStringList):
         ppc = ParsePatternCreater()
         parsePattern = ppc.createParsePattern()
+        controller = CorrectnessController()
         
         variableList = list([])
         for equationString in equationStringList:
+            if equationString.find("=") == -1:
+                raise SyntaxError("An expression " + equationString + " plays the role of equation in the system but doesn't contain the symbol '='!")
+            controller.emptyControl(equationString)
             variableList.extend(parsePattern.parseString(equationString).asList())
         return variableList
     
