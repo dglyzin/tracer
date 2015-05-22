@@ -13,8 +13,8 @@
     "TimeStep": 1, 
     "SaveInterval": 1, 
     "GridStep": {
-        "x": 0.25, 
-        "y": 0.25, 
+        "x": 0.1, 
+        "y": 0.1, 
         "z": 1
     }, 
     "Blocks": [
