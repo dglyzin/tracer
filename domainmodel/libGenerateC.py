@@ -67,6 +67,7 @@ def generateCfromDict(modelDict, cFileName):
     allDictNameBlock,allListBound,allListinitSizeList,replDefine=blocksInfo(modelDict)
 
     #Вставляем к define
+
     textTemplateC=textTemplateC.replace('$PasteDefine$',replDefine)
 
     #Вставляем значения параметра
@@ -171,8 +172,15 @@ def replaceBounds(lAllBounds,blockBound,tempDict,text,initSizeList,forNeiman):
             strNeiman=strNeiman+rpl
             strRplOption=strRplOption+"pFuncs["+str(varIter)+"] = Block$Nomber$Bound0_"+str(varI)+";\n"
 
+    kolFunc='+'
+    if len(blockBound)==0:
+        kolFunc=''
+    else:
+        kolFunc+=str(len(blockBound))
+
     text=text.replace('$Neiman$',strNeiman)
     text=text.replace('$Dirichlet$',"")
+    text=text.replace('$kolFunc$',kolFunc)
     text=text.replace('$pFuncs$',strRplOption)
     return text
 
@@ -186,34 +194,34 @@ def NeimanNonexistent(nSide,xfrom,xto,yfrom,yto,initSizeList,sistem,textRpl):
         rpl1='-'
         rpl2='+'
 
-    nonexistent=["nonexistent0X = source[idx"+rpl1+"Block0StrideX*CELLSIZE]"+rpl2+"2.0 * bound_value * DX2;\n",
-                "nonexistent1X = source[idx"+rpl1+"Block0StrideX*CELLSIZE+1]"+rpl2+"2.0 * bound_value * DX2;\n",
-                "nonexistent2X = source[idx"+rpl1+"Block0StrideX*CELLSIZE+2]"+rpl2+"2.0 * bound_value * DX2;\n",
-                "nonexistent0Y = source[idx"+rpl1+"Block0StrideY*CELLSIZE]"+rpl2+"2.0 * bound_value * DY2;\n",
-                "nonexistent1Y = source[idx"+rpl1+"Block0StrideY*CELLSIZE+1]"+rpl2+"2.0 * bound_value * DY2;\n",
-                "nonexistent2Y = source[idx"+rpl1+"Block0StrideY*CELLSIZE+2]"+rpl2+"2.0 * bound_value * DY2;\n"]
+    nonexistent=["nonexistent0X = source[idx"+rpl1+"Block$Nomber$StrideX*CELLSIZE]"+rpl2+"2.0 * bound_value * DX2;\n",
+                "nonexistent1X = source[idx"+rpl1+"Block$Nomber$StrideX*CELLSIZE+1]"+rpl2+"2.0 * bound_value * DX2;\n",
+                "nonexistent2X = source[idx"+rpl1+"Block$Nomber$StrideX*CELLSIZE+2]"+rpl2+"2.0 * bound_value * DX2;\n",
+                "nonexistent0Y = source[idx"+rpl1+"Block$Nomber$StrideY*CELLSIZE]"+rpl2+"2.0 * bound_value * DY2;\n",
+                "nonexistent1Y = source[idx"+rpl1+"Block$Nomber$StrideY*CELLSIZE+1]"+rpl2+"2.0 * bound_value * DY2;\n",
+                "nonexistent2Y = source[idx"+rpl1+"Block$Nomber$StrideY*CELLSIZE+2]"+rpl2+"2.0 * bound_value * DY2;\n"]
 
     if nSide==0:
-        forReplace="source[idx-Block0StrideX*CELLSIZE]"
+        forReplace="source[idx-Block$Nomber$StrideX*CELLSIZE]"
         if sistem.find(forReplace)==-1: nonexistent[0]='//'+nonexistent[0]
         sistem=sistem.replace(forReplace,"nonexistent0X")
-        forReplace="source[idx-Block0StrideX*CELLSIZE+1]"
+        forReplace="source[idx-Block$Nomber$StrideX*CELLSIZE+1]"
         if sistem.find(forReplace)==-1: nonexistent[1]='//'+nonexistent[1]
         sistem=sistem.replace(forReplace,"nonexistent1X")
-        forReplace="source[idx-Block0StrideX*CELLSIZE+2]"
+        forReplace="source[idx-Block$Nomber$StrideX*CELLSIZE+2]"
         if sistem.find(forReplace)==-1: nonexistent[2]='//'+nonexistent[2]
         sistem=sistem.replace(forReplace,"nonexistent2X")
         nonexistent[3]='//'+nonexistent[3]
         nonexistent[4]='//'+nonexistent[4]
         nonexistent[5]='//'+nonexistent[5]
     elif nSide==1:
-        forReplace="source[idx+Block0StrideX*CELLSIZE]"
+        forReplace="source[idx+Block$Nomber$StrideX*CELLSIZE]"
         if sistem.find(forReplace)==-1: nonexistent[0]='//'+nonexistent[0]
         sistem=sistem.replace(forReplace,"nonexistent0X")
-        forReplace="source[idx+Block0StrideX*CELLSIZE+1]"
+        forReplace="source[idx+Block$Nomber$StrideX*CELLSIZE+1]"
         if sistem.find(forReplace)==-1: nonexistent[1]='//'+nonexistent[1]
         sistem=sistem.replace(forReplace,"nonexistent1X")
-        forReplace="source[idx+Block0StrideX*CELLSIZE+2]"
+        forReplace="source[idx+Block$Nomber$StrideX*CELLSIZE+2]"
         if sistem.find(forReplace)==-1: nonexistent[2]='//'+nonexistent[2]
         sistem=sistem.replace(forReplace,"nonexistent2X")
         nonexistent[3]='//'+nonexistent[3]
@@ -223,26 +231,26 @@ def NeimanNonexistent(nSide,xfrom,xto,yfrom,yto,initSizeList,sistem,textRpl):
         nonexistent[0]='//'+nonexistent[0]
         nonexistent[1]='//'+nonexistent[1]
         nonexistent[2]='//'+nonexistent[2]
-        forReplace="source[idx-Block0StrideY*CELLSIZE]"
+        forReplace="source[idx-Block$Nomber$StrideY*CELLSIZE]"
         if sistem.find(forReplace)==-1: nonexistent[3]='//'+nonexistent[3]
         sistem=sistem.replace(forReplace,"nonexistent0Y")
-        forReplace="source[idx-Block0StrideY*CELLSIZE+1]"
+        forReplace="source[idx-Block$Nomber$StrideY*CELLSIZE+1]"
         if sistem.find(forReplace)==-1: nonexistent[4]='//'+nonexistent[4]
         sistem=sistem.replace(forReplace,"nonexistent1Y")
-        forReplace="source[idx-Block0StrideY*CELLSIZE+2]"
+        forReplace="source[idx-Block$Nomber$StrideY*CELLSIZE+2]"
         if sistem.find(forReplace)==-1: nonexistent[5]='//'+nonexistent[5]
         sistem=sistem.replace(forReplace,"nonexistent2Y")
     elif nSide==3:
         nonexistent[0]='//'+nonexistent[0]
         nonexistent[1]='//'+nonexistent[1]
         nonexistent[2]='//'+nonexistent[2]
-        forReplace="source[idx+Block0StrideY*CELLSIZE]"
+        forReplace="source[idx+Block$Nomber$StrideY*CELLSIZE]"
         if sistem.find(forReplace)==-1: nonexistent[3]='//'+nonexistent[3]
         sistem=sistem.replace(forReplace,"nonexistent0Y")
-        forReplace="source[idx+Block0StrideY*CELLSIZE+1]"
+        forReplace="source[idx+Block$Nomber$StrideY*CELLSIZE+1]"
         if sistem.find(forReplace)==-1: nonexistent[4]='//'+nonexistent[4]
         sistem=sistem.replace(forReplace,"nonexistent1Y")
-        forReplace="source[idx+Block0StrideY*CELLSIZE+2]"
+        forReplace="source[idx+Block$Nomber$StrideY*CELLSIZE+2]"
         if sistem.find(forReplace)==-1: nonexistent[5]='//'+nonexistent[5]
         sistem=sistem.replace(forReplace,"nonexistent2Y")
 
@@ -261,6 +269,12 @@ def blocksInfo(modelDict):
     allListinitSizeList=[]
     replDefine=''
     nomber=0
+    x=modelDict['GridStep']['x']
+    y=modelDict['GridStep']['y']
+    z=modelDict['GridStep']['z']
+    replDefine='#define DX '+str(x)+'\n #define DY '+str(y)+'\n #define DZ '+str(z)+'\n #define DX2 '+str(x*x)+'\n #define DY2 '+str(y*y)+'\n #define DZ2 '+str(z*z)
+    replDefine=replDefine+'\n #define DXM '+str(1/x)+'\n #define DYM '+str(1/y)+'\n #define DZM '+str(1/z)+'\n #define DXM2 '+str(1/(x*x))+'\n #define DYM2 '+str(1/(y*y))+'\n #define DZM2 '+str(1/(z*z))
+    replDefine=replDefine+'\n #define DXYM2 '+str(1/(x*y))+'\n #define DXZM '+str(1/(x*z))+'\n #define DYZM '+str(1/(y*z))+'\n #define DXM3 '+str(1/(x*x*x))+'\n #define DYM3 '+str(1/(y*y*y))+'\n #define DZM3 '+str(1/(z*z*z))
     for bl in modelDict['Blocks']:
         allDictNameBlock[bl['Name']]=nomber
         allListBound.append(bl['BoundRegions'][:])
@@ -273,8 +287,11 @@ def blocksInfo(modelDict):
         block=Block(bl['Name'],bl['Dimension'])
         block.fillProperties(bl)
         out=block.getCellCount(modelDict['GridStep']['x'],modelDict['GridStep']['y'],modelDict['GridStep']['z'])
-        replDefine=replDefine+"#define Block"+str(nomber)+"CountX "+str(out[0])+" \n #define Block"+str(nomber)+"CountY "+str(out[1])+" \n #define Block"+str(nomber)+"CountZ "+str(out[2])
+        replDefine=replDefine+"\n #define Block"+str(nomber)+"StrideX "+str('1')+" \n #define Block"+str(nomber)+"StrideY "+str(out[1])+" \n #define Block"+str(nomber)+"StrideZ "+str(out[2])
+        replDefine=replDefine+"\n #define Block"+str(nomber)+"CountX "+str(out[0])+" \n #define Block"+str(nomber)+"CountY "+str(out[1])+" \n #define Block"+str(nomber)+"CountZ "+str(out[2])
         nomber+=1
+
+    replDefine=replDefine+"\n #define CELLSIZE "+str(len(modelDict['Equations'][0]['System']))
 
     return allDictNameBlock,allListBound,allListinitSizeList,replDefine
 
@@ -574,11 +591,153 @@ def FindZamena(self,dif,func,varProizv,var,degree,dirSource):
     dictProizv=json.loads(file.read())
     file.close()
 
-    if strOut in dictProizv:
-        return dictProizv[strOut]
+
+    #Определяем производящую функцию
+    if func=='%0':      iter=''
+    elif func=='%1':    iter='+1'
+    else:               iter='+2'
+
+    #Как списке будут представлены призводные
+    #012
+    #345
+    #678
+
+    varProizv = set(varProizv)
+
+    listForX1=['+','+','-','+','+','-','+','+','-']
+    listForX2=['+','-','-','+','-','-','+','-','-']
+
+    listForY1=['-','-','-','+','+','+','+','+','+']
+    listForY2=['-','-','-','-','-','-','+','+','+']
+
+    listForZ1=['+','+','-','+','+','-','+','+','-']
+    listForZ2=['+','-','-','+','-','-','+','-','-']
+
+    listOut=[]
+    if fullDegree==1:
+        nZamL=''
+        prOut=dictProizv["1"]
+        prOut=prOut.replace('$iter$',iter)
+        nZam=retPartProizv(varProizv,var)[0]
+        prOut=prOut.replace('$n$',nZam)
+
+        if nZam[-1]=='X':
+            prOut=prOut.replace('$d$','DXM')
+            for i in listForX1:
+                listOut.append(prOut.replace('$z1$',i))
+        if nZam[-1]=='Y':
+            prOut=prOut.replace('$d$','DYM')
+            for i in listForY1:
+                listOut.append(prOut.replace('$z1$',i))
+        if nZam[-1]=='Z':
+            prOut=prOut.replace('$d$','DZM')
+        for i in listForZ1:
+            listOut.append(prOut.replace('$z1$',i))
+        return listOut
+
+    if fullDegree==2:
+        if len(varProizv)==1:
+            prOut=dictProizv["2"]
+            prOut=prOut.replace('$iter$',iter)
+            out=retPartProizv(varProizv,var)[0]
+            prOut=prOut.replace('$n$',out)
+
+            list1=[]
+            list2=[]
+            if out[-1]=='X':
+                prOut=prOut.replace('$d$','DXM2')
+                list1=listForX1
+                list2=listForX2
+
+            if out[-1]=='Y':
+                prOut=prOut.replace('$d$','DYM2')
+                list1=listForY1
+                list2=listForY2
+
+            if out[-1]=='Z':
+                prOut=prOut.replace('$d$','DZM2')
+                list1=listForZ1
+                list2=listForZ2
+
+            for i in range(9):
+                    ret=prOut.replace('$z1$',list1[i])
+                    listOut.append(ret.replace('$z2$',list2[i]))
+        else:
+            prOut=dictProizv["11"]
+            prOut=prOut.replace('$iter$',iter)
+            out=retPartProizv(varProizv,var)[0]
+            zn=[]
+            d='D'
+            for i in range(out):
+                if out[i][-1]=='X':
+                    zn.append('$nx$'+out[i])
+                    d+='X'
+                if out[i][-1]=='Y':
+                    zn.append('$ny$'+out[i])
+                    d+='Y'
+                if out[i][-1]=='Z':
+                    zn.append('$nz$'+out[i])
+                    d+='Z'
+
+            for i in range(len(zn)):
+                prOut=prOut.replace('$zn'+str(i)+'$',zn(i))
+
+            d+='M2'
+            prOut=prOut.replace('$d$',d)
+            for i in range(9):
+                    ret=prOut.replace('$nx$',listForX1[i])
+                    ret=prOut.replace('$ny$',listForY1[i])
+                    ret=prOut.replace('$nZ$',listForZ1[i])
+                    listOut.append(ret)
+        return listOut
+
+    if fullDegree==3:
+        if len(varProizv)==1:
+            prOut=dictProizv["3"]
+            prOut=prOut.replace('$iter$',iter)
+            out=retPartProizv(varProizv,var)[0]
+            prOut=prOut.replace('$n$',out)
+
+            list1=[]
+            list2=[]
+            if out[-1]=='X':
+                prOut=prOut.replace('$d$','DXM3')
+                list1=listForX1
+                list2=listForX2
+
+            if out[-1]=='Y':
+                prOut=prOut.replace('$d$','DYM3')
+                list1=listForY1
+                list2=listForY2
+
+            if out[-1]=='Z':
+                prOut=prOut.replace('$d$','DZM3')
+                list1=listForZ1
+                list2=listForZ2
+
+            for i in range(9):
+                    ret=prOut.replace('$z1$',list1[i])
+                    listOut.append(ret.replace('$z2$',list2[i]))
+
+        return listOut
     else:
         print "error: The derivative "+strOut+" is not the Map"
         return [""]*9
+
+
+def retPartProizv(varProizv,var):
+    outL=[]
+    for i in varProizv:
+        if i==var[0]:
+            outL.append('Block$Nomber$StrideX')
+        if len(var)>1:
+            if i==var[1]:
+                outL.append('Block$Nomber$StrideY')
+        if len(var)>2:
+            if i==var[2]:
+                outL.append('Block$Nomber$StrideZ')
+    return outL
+
 
 def CompliteClient(self,dirFileRun,fileName):
 ##    print 'cl Source\\'+fileName

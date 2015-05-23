@@ -3,19 +3,6 @@
 #include "../hybriddomain/doc/userfuncs.h"
 #include <stdio.h>
 
-#define CELLSIZE 2
-
-#define DX 0.1
-#define DY 0.1
-
-#define DXM2 100.0
-#define DYM2 100.0
-
-#define DX2 0.01
-#define DY2 0.01
-
-#define Block0StrideX 1
-#define Block0StrideY 10
 
 $PasteDefine$
 
