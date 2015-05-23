@@ -426,27 +426,16 @@ class Model(QObject):
         return d.orderOfSystem(self.equations[0].system,self.equations[0].params, self.equations[0].vars)
 
     def createCPP(self,cppFileName):
-        #generator 1
+        #generator1
         #try:
-        #    gen = Generator()
-        #    boundNumber = 1
-        #    derivAtZero = 1
-        #    outputStr = gen.generate_c_func(boundNumber,derivAtZero,self.equations[0].system,self.equations[0].vars,self.equations[0].params)
-        #except SyntaxError as ex:
+        #    gen = FunctionCodeGenerator()
+            #приходится опять формировать словарь из gridStep'ов, т.к. ф-я принимает именно его. Но это легко исправить.
+        #    outputStr = gen.generateAllFunctions(self.blocks, self.equations, self.bounds, self.initials, {'x': self.gridStepX, 'y': self.gridStepY, 'z': self.gridStepZ})
+        #except Exception as ex:
         #    print(ex)
         #else:
         #    f = open(cppFileName,'w')
         #    f.write(outputStr)
         #    f.close()
-        #generator2
-        try:
-            gen = FunctionCodeGenerator()
-            #приходится опять формировать словарь из gridStep'ов, т.к. ф-я принимает именно его. Но это легко исправить.
-            outputStr = gen.generateAllFunctions(self.blocks, self.equations, self.bounds, {'x': self.gridStepX, 'y': self.gridStepY, 'z': self.gridStepZ})
-        except Exception as ex:
-            print(ex)
-        else:
-            f = open(cppFileName,'w')
-            f.write(outputStr)
-            f.close()
+		#generator2
         generateCfromDict(self.toDict(),cppFileName)
