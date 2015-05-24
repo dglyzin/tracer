@@ -1,10 +1,10 @@
 {
 "1":
-"$d$*(source[idx$z1$$n$*CELLSIZE$iter$]- source[idx])",
+"$d$*(source[idx$z1$$n$*CELLSIZE$iter$]- source[idx$iter$])",
 "2":
-"$d$*(source[idx$z1$$n$*CELLSIZE$iter$]+source[idx$z2$$n$*CELLSIZE$iter$]- 2*source[idx])",
+"$d$*(source[idx$z1$$n$*CELLSIZE$iter$]+source[idx$z2$$n$*CELLSIZE$iter$]- 2*source[idx$iter$])",
 "3":
-"$d$*(source[idx$z1$$n$*CELLSIZE$iter$]- 3*source[idx]+3*source[idx$z2$$n$*CELLSIZE$iter$]-source[idx$z2$2*$n$*CELLSIZE$iter$])",
+"$d$*(source[idx$z1$$n$*CELLSIZE$iter$]- 3*source[idx$iter$]+3*source[idx$z2$$n$*CELLSIZE$iter$]-source[idx$z2$2*$n$*CELLSIZE$iter$])",
 "11":
-"$d$*(source[idx+($zn1$$zn2$)*CELLSIZE$iter$]-source[idx$zn1$*CELLSIZE$iter$]-source[idx$zn2$CELLSIZE$iter$]+source[idx])"
+"$d$*(source[idx+($zn1$$zn2$)*CELLSIZE$iter$]-source[idx$zn1$*CELLSIZE$iter$]-source[idx$zn2$CELLSIZE$iter$]+source[idx$iter$])"
 }

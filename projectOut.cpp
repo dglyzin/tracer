@@ -135,55 +135,55 @@ void releaseInitFuncArray(initfunc_fill_ptr_t* InitFuncs){
  void Block0CentralFunction(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ 
      int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; 
      result[idx]=1+(source[idx]*source[idx])*source[idx+1]-params[2]*source[idx]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE]+source[idx-Block0StrideX*CELLSIZE]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE]+source[idx-Block0StrideY*CELLSIZE]- 2*source[idx]));
-  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx])); 
+  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx+1])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx+1])); 
  } 
  //y=0, x=0 
  void Block0DefaultNeumannBound0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ 
      int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; 
      result[idx]=1+(source[idx]*source[idx])*source[idx+1]-params[2]*source[idx]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE]+source[idx+Block0StrideX*CELLSIZE]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE]+source[idx+Block0StrideY*CELLSIZE]- 2*source[idx]));
-  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx+Block0StrideX*CELLSIZE+1]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx+Block0StrideY*CELLSIZE+1]- 2*source[idx])); 
+  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx+Block0StrideX*CELLSIZE+1]- 2*source[idx+1])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx+Block0StrideY*CELLSIZE+1]- 2*source[idx+1])); 
  } 
  //y=0, x centr 
  void Block0DefaultNeumannBound1(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ 
      int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; 
      result[idx]=1+(source[idx]*source[idx])*source[idx+1]-params[2]*source[idx]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE]+source[idx-Block0StrideX*CELLSIZE]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE]+source[idx+Block0StrideY*CELLSIZE]- 2*source[idx]));
-  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx+Block0StrideY*CELLSIZE+1]- 2*source[idx])); 
+  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx+1])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx+Block0StrideY*CELLSIZE+1]- 2*source[idx+1])); 
  } 
  //y=0, x=xmax 
  void Block0DefaultNeumannBound2(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ 
      int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; 
      result[idx]=1+(source[idx]*source[idx])*source[idx+1]-params[2]*source[idx]+params[0]*(DXM2*(source[idx-Block0StrideX*CELLSIZE]+source[idx-Block0StrideX*CELLSIZE]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE]+source[idx+Block0StrideY*CELLSIZE]- 2*source[idx]));
-  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx-Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx+Block0StrideY*CELLSIZE+1]- 2*source[idx])); 
+  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx-Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx+1])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx+Block0StrideY*CELLSIZE+1]- 2*source[idx+1])); 
  }  
  //y centr, x=0 
  void Block0DefaultNeumannBound3(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ 
      int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; 
      result[idx]=1+(source[idx]*source[idx])*source[idx+1]-params[2]*source[idx]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE]+source[idx+Block0StrideX*CELLSIZE]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE]+source[idx-Block0StrideY*CELLSIZE]- 2*source[idx]));
-  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx+Block0StrideX*CELLSIZE+1]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx])); 
+  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx+Block0StrideX*CELLSIZE+1]- 2*source[idx+1])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx+1])); 
  } 
  //y centr, x=xmax 
  void Block0DefaultNeumannBound4(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ 
      int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; 
      result[idx]=1+(source[idx]*source[idx])*source[idx+1]-params[2]*source[idx]+params[0]*(DXM2*(source[idx-Block0StrideX*CELLSIZE]+source[idx-Block0StrideX*CELLSIZE]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE]+source[idx-Block0StrideY*CELLSIZE]- 2*source[idx]));
-  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx-Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx])); 
+  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx-Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx+1])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx+1])); 
  } 
  //y=ymax, x=0 
  void Block0DefaultNeumannBound5(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ 
      int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; 
      result[idx]=1+(source[idx]*source[idx])*source[idx+1]-params[2]*source[idx]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE]+source[idx+Block0StrideX*CELLSIZE]- 2*source[idx])+DYM2*(source[idx-Block0StrideY*CELLSIZE]+source[idx-Block0StrideY*CELLSIZE]- 2*source[idx]));
-  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx+Block0StrideX*CELLSIZE+1]- 2*source[idx])+DYM2*(source[idx-Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx])); 
+  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx+Block0StrideX*CELLSIZE+1]- 2*source[idx+1])+DYM2*(source[idx-Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx+1])); 
  } 
  //y=ymax, x centr 
  void Block0DefaultNeumannBound6(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ 
      int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; 
      result[idx]=1+(source[idx]*source[idx])*source[idx+1]-params[2]*source[idx]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE]+source[idx-Block0StrideX*CELLSIZE]- 2*source[idx])+DYM2*(source[idx-Block0StrideY*CELLSIZE]+source[idx-Block0StrideY*CELLSIZE]- 2*source[idx]));
-  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx])+DYM2*(source[idx-Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx])); 
+  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx+Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx+1])+DYM2*(source[idx-Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx+1])); 
  } 
  //y=ymax, x=xmax 
  void Block0DefaultNeumannBound7(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ 
      int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; 
      result[idx]=1+(source[idx]*source[idx])*source[idx+1]-params[2]*source[idx]+params[0]*(DXM2*(source[idx-Block0StrideX*CELLSIZE]+source[idx-Block0StrideX*CELLSIZE]- 2*source[idx])+DYM2*(source[idx-Block0StrideY*CELLSIZE]+source[idx-Block0StrideY*CELLSIZE]- 2*source[idx]));
-  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx-Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx])+DYM2*(source[idx-Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx])); 
+  result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(source[idx-Block0StrideX*CELLSIZE+1]+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx+1])+DYM2*(source[idx-Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx+1])); 
  } 
  
  void Block0Bound0_0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ 
@@ -207,7 +207,7 @@ nonexistent1X = source[idx-Block0StrideX*CELLSIZE+1]+2.0 * bound_value * DX2;
 //nonexistent1Y = source[idx-Block0StrideY*CELLSIZE+1]+2.0 * bound_value * DY2;
 //nonexistent2Y = source[idx-Block0StrideY*CELLSIZE+2]+2.0 * bound_value * DY2;
 
-   result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(nonexistent1X+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx]));
+   result[idx+1]=params[1]*source[idx]-(source[idx]*source[idx])*source[idx+1]+params[0]*(DXM2*(nonexistent1X+source[idx-Block0StrideX*CELLSIZE+1]- 2*source[idx+1])+DYM2*(source[idx+Block0StrideY*CELLSIZE+1]+source[idx-Block0StrideY*CELLSIZE+1]- 2*source[idx+1]));
  
 } 
  
