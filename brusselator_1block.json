@@ -1,7 +1,7 @@
 {
     "Connection": {
-        "Host": "10.7.129.222", 
-        "Port": 22, 
+        "Host": "corp7.uniyar.ac.ru", 
+        "Port": 2222, 
         "Username": "tester", 
         "Password": "", 
         "Workspace": "/home/tester/Tracer1", 

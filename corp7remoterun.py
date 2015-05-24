@@ -30,7 +30,7 @@ def remoteProjectRun(InputFile):
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     #print conn.host, conn.username, passwd, conn.port
     try:
-        client.connect(hostname=conn.host, username=conn.username, password=passwd, port=conn.port )
+        client.connect(hostname="corp7.uniyar.ac.ru", username=conn.username, password=passwd, port=2222 )
 
         print "Checking if folder "+conn.workspace+" exists..."
         stdin, stdout, stderr = client.exec_command('test -d '+conn.workspace)
