@@ -26,8 +26,8 @@
 typedef void (*initfunc2d_ptr_t)( double* result, int idxX, int idxY);
 typedef void (*initfunc2d_fill_ptr_t)( double* result, int* initType);
 
-//для каждого блока свой набор точечных начальных функций и одна функция-заполнитель
-void Block0Initial0(double* result, int idxX, int idxY){    
+//для всех блоков точечные начальные функции одинаковы, но функция-заполнитель для каждого --- своя!
+void Initial0(double* result, int idxX, int idxY){    
     double x = Block0OffsetX + idxX*DX;
     double y = Block0OffsetY + idxY*DY;
     int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
@@ -35,7 +35,7 @@ void Block0Initial0(double* result, int idxX, int idxY){
     result[idx+1] = sin(x)*cos(y);    
 }
 
-void Block0Initial1(double* result, int idxX, int idxY){
+void Initial1(double* result, int idxX, int idxY){
     double x = Block0OffsetX + idxX*DX;
     double y = Block0OffsetY + idxY*DY;
     int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
@@ -46,11 +46,23 @@ void Block0Initial1(double* result, int idxX, int idxY){
 //Заполняет result[idx] начальной функцией с номером из initType[idx]
 void Block0FillInitialValues(double* result, int* initType){
     initfunc2d_ptr_t initFuncArray[2];
-    initFuncArray[0] = Block0Initial0;
-    initFuncArray[1] = Block0Initial1;
+    initFuncArray[0] = Initial0;
+    initFuncArray[1] = Initial1;
     for(int idxY = 0; idxY<Block0CountY; idxY++)
         for(int idxX = 0; idxX<Block0CountX; idxX++){
             int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
+            int type = initType[idx];
+            initFuncArray[type](result, idxX, idxY);
+        }
+}
+//Заполняет result[idx] начальной функцией с номером из initType[idx]
+void Block1FillInitialValues(double* result, int* initType){
+    initfunc2d_ptr_t initFuncArray[2];
+    initFuncArray[0] = Initial0;
+    initFuncArray[1] = Initial1;
+    for(int idxY = 0; idxY<Block1CountY; idxY++)
+        for(int idxX = 0; idxX<Block1CountX; idxX++){
+            int idx = (idxY*Block1CountX + idxX)*CELLSIZE;
             int type = initType[idx];
             initFuncArray[type](result, idxX, idxY);
         }
@@ -60,8 +72,9 @@ void Block0FillInitialValues(double* result, int* initType){
 //Функции-заполнители нужно собрать в массив и отдать домену
 void getInitFuncArray(initfunc2d_fill_ptr_t** ppInitFuncs){
     initfunc2d_fill_ptr_t* pInitFuncs = *ppInitFuncs;
-    pInitFuncs = (initfunc2d_fill_ptr_t*) malloc( 1 * sizeof(initfunc2d_fill_ptr_t) );            
-    pInitFuncs[0] = Block0FillInitialValues;   
+    pInitFuncs = (initfunc2d_fill_ptr_t*) malloc( 2 * sizeof(initfunc2d_fill_ptr_t) );            
+    pInitFuncs[0] = Block0FillInitialValues;
+	pInitFuncs[1] = Block1FillInitialValues;
 }
 
 void releaseInitFuncArray(initfunc2d_fill_ptr_t* InitFuncs){

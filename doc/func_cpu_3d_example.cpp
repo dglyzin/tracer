@@ -39,6 +39,7 @@
 #define Block1OffsetZ 5.0
 
 
+
 //начальные условия - только на CPU
 typedef void (*initfunc_ptr_t)( double*, double, double, double );
 
