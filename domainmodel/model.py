@@ -132,7 +132,7 @@ class Model(QObject):
             self.finishTime = projdict["FinishTime"]
             self.timeStep = projdict["TimeStep"]
             self.saveInterval = projdict["SaveInterval"]
-            self.solverIndex = projdict["SolverIndex"]
+            self.solverIndex = projdict["Solver"]
             self.gridStepX = projdict["GridStep"]["x"]
             self.gridStepY = projdict["GridStep"]["y"]
             self.gridStepZ = projdict["GridStep"]["z"]
@@ -212,7 +212,7 @@ class Model(QObject):
             ("FinishTime", self.finishTime),
             ("TimeStep", self.timeStep),
             ("SaveInterval", self.saveInterval),
-            ("SolverIndex", self.solverIndex),
+            ("Solver", self.solverIndex),
             ("GridStep", OrderedDict([
                             ("x", self.gridStepX),
                             ("y", self.gridStepY),
