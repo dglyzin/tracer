@@ -48,11 +48,8 @@
 ##!  uint8: file format version minor
 
 ##!  float64 current time 
-##!  int32 Cell size
 ###  following is the N_B  blocks one by one
-###  BEGINNING OF THE BLOCK
-##!   int32 dimension Db (can be 1,2 or 3) 
-##!   Db*int32 xc, (yc), (zc) - block size. Total=xc*yc*zc
+###  BEGINNING OF THE BLOCK##!   
 ##!   total*cellsize*float64: state 
 ###  END OF THE BLOCK
 
