@@ -287,7 +287,7 @@ def blocksInfo(modelDict):
         block=Block(bl['Name'],bl['Dimension'])
         block.fillProperties(bl)
         out=block.getCellCount(modelDict['GridStep']['x'],modelDict['GridStep']['y'],modelDict['GridStep']['z'])
-        replDefine=replDefine+"\n #define Block"+str(nomber)+"StrideX "+str('1')+" \n #define Block"+str(nomber)+"StrideY "+str(out[1])+" \n #define Block"+str(nomber)+"StrideZ "+str(out[2])
+        replDefine=replDefine+"\n #define Block"+str(nomber)+"StrideX "+str('1')+" \n #define Block"+str(nomber)+"StrideY "+str(out[0])+" \n #define Block"+str(nomber)+"StrideZ "+str(out[0]*out[1])
         replDefine=replDefine+"\n #define Block"+str(nomber)+"CountX "+str(out[0])+" \n #define Block"+str(nomber)+"CountY "+str(out[1])+" \n #define Block"+str(nomber)+"CountZ "+str(out[2])
         nomber+=1
 
