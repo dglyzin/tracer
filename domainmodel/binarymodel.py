@@ -137,7 +137,7 @@ class BinaryModel(object):
         self.paramsArr = np.zeros(3, dtype=np.int32)
         self.paramsArr[0] = self.dmodel.getCellSize()
         self.paramsArr[1] = self.dmodel.getHaloSize()
-        self.paramsArr[2] = 0 #TODO solver index
+        self.paramsArr[2] = self.dmodel.solverIndex
         print "Cell size:", self.paramsArr[0], "Halo size: ", self.paramsArr[1]
 
     def fillBinaryBlocks(self):
