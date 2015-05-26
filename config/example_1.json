@@ -12,6 +12,9 @@
     "FinishTime": 100, 
     "TimeStep": 0.02, 
     "SaveInterval": 0.1, 
+	"Solver": 0,
+    "SolverAbsTolerance": 0.001,
+    "SolverRelTolerance": 0.001,
     "GridStep": {
         "x": 0.1, 
         "y": 0.1, 

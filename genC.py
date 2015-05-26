@@ -29,7 +29,8 @@ class BaseWindow(QtGui.QMainWindow):
                             "TimeStep": 0.02,"SaveInterval": 0.1,"GridStep": {},
                             "Hardware": [{"Name": "cnode1", "CpuCount": 1, "GpuCount": 3}, {"Name": "cnode2", "CpuCount": 1, "GpuCount": 3}],
                             "Mapping": {"IsMapped": "true", "BlockMapping": [0, "cpu", 0]},
-                            "Connection": {"Host": "10.7.129.222", "Port": 22, "Username": "tester", "Password": "", "Workspace": "/home/tester/Tracer1", "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"}}
+                            "Connection": {"Host": "10.7.129.222", "Port": 22, "Username": "tester", "Password": "", "Workspace": "/home/tester/Tracer1", "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"},
+                            "Solver": 0,"SolverAbsTolerance": 0.001,"SolverRelTolerance": 0.001,}
         self.sisChanged=False
         self.tabControl=0
 
@@ -733,7 +734,8 @@ class BaseWindow(QtGui.QMainWindow):
                             "TimeStep": 0.02,"SaveInterval": 0.1,"GridStep": {},
                             "Hardware": [{"Name": "cnode1", "CpuCount": 1, "GpuCount": 3}, {"Name": "cnode2", "CpuCount": 1, "GpuCount": 3}],
                             "Mapping": {"IsMapped": "true", "BlockMapping": [0, "cpu", 0]},
-                            "Connection": {"Host": "10.7.129.222", "Port": 22, "Username": "tester", "Password": "", "Workspace": "/home/tester/Tracer1", "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"}}
+                            "Connection": {"Host": "10.7.129.222", "Port": 22, "Username": "tester", "Password": "", "Workspace": "/home/tester/Tracer1", "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"},
+                            "Solver": 0,"SolverAbsTolerance": 0.001,"SolverRelTolerance": 0.001,}
             self.textInputSystem.setText("")
         else:
             if os.path.isfile(os.path.join("config","example_"+str(out)+".json")):
@@ -1023,7 +1025,10 @@ class BaseWindow(QtGui.QMainWindow):
 
         initJson=libGenerateJSON.JsonFileCreate()
         print 'self.programDate', self.programDate["GridStep"]
-        initJson.setSimpleValues(self.programDate["ProjectName"],self.programDate["StartTime"],self.programDate["FinishTime"],self.programDate["TimeStep"],self.programDate["SaveInterval"],self.programDate["GridStep"])
+        initJson.setSimpleValues(self.programDate["ProjectName"],self.programDate["StartTime"],
+                                    self.programDate["FinishTime"],self.programDate["TimeStep"],
+                                    self.programDate["SaveInterval"],self.programDate["Solver"],
+                                    self.programDate["SolverAbsTolerance"],self.programDate["SolverRelTolerance"],self.programDate["GridStep"])
         initJson.setBlocks1(self.programDate["Blocks"])
         for i in self.programDate["Interconnects"]: initJson.addInterconnects(i)
         initJson.addEquation1("Flat Brusselator",self.programDate["var"],self.programDate["system"],self.programDate["param"][0].keys(),self.programDate["param"][0])

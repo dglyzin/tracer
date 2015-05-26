@@ -106,11 +106,11 @@ def remoteProjectRun(InputFile):
 
 
 if __name__=='__main__':
-    #1 Get file name from command line
-    if len(sys.argv)==1:
-        print "Please specify a json file to read"
-    else:
-        InputFile = sys.argv[1]
-        remoteProjectRun(InputFile)
-##    remoteProjectRun("tests/test3_heat_wbounds2.json")
+##    #1 Get file name from command line
+##    if len(sys.argv)==1:
+##        print "Please specify a json file to read"
+##    else:
+##        InputFile = sys.argv[1]
+##        remoteProjectRun(InputFile)
+    remoteProjectRun("tests/test3_heat_wbounds.json")
 

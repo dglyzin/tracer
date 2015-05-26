@@ -77,9 +77,22 @@ def generateCfromDict(modelDict, cFileName):
         outReplace=outReplace+"(*pparams)["+str(index)+"] = "+str(paramValues[0][element])+";\n"
     textTemplateC=textTemplateC.replace('$initParams$',outReplace)
 
-    #Создаем и вставляем блоки с начальными условиями
+
+    #Вставляем основной текст для каждого блока отдельно
+    outReplaceBlockAllInitial=''
+    outReplaceBlockFillInitial=''
+    outInitInGetInitFuncArray=''
+    lAllInit=[]
+
+
+    replaceTemp=tempDict['$Block0InitFuncArray$']
+    out=re.findall("[A-Za-z0-9]+",str(modelDict['Equations'][0]['System']))
+    f=False
+    for i in out:
+        if i=='z': f=True
+    if f==False: replaceTemp=replaceTemp.replace('idxZ','0')
+
     initBlok=tempDict['$Block0Initial$']
-    outReplace=''
     for i in range(len(initials)):
         t=initBlok.replace('$v0$',str(i))
         rpl=""
@@ -88,26 +101,74 @@ def generateCfromDict(modelDict, cFileName):
             rpl=rpl+"result[idx+"+str(iter)+"] = "+j+";\n"
             iter+=1
         t=t.replace('$v1$',rpl)
-        outReplace=outReplace+t
-    textTemplateC=textTemplateC.replace('$Block0Initial$',outReplace)
+        outReplaceBlockAllInitial=outReplaceBlockAllInitial+t
+        lAllInit.append("BlockAllInitial"+str(i))
+    outReplaceBlockAllInitial=outReplaceBlockAllInitial.replace('$Nomber$',str("All"))
 
-    #Добавляем вызов начальных условий
-    initBlok=tempDict['$Block0InitialFill$']
-    outReplace=''
-    for i in range(len(initials)):
-        t=initBlok.replace('$v0$',str(i))
-        outReplace=outReplace+t
-    textTemplateC=textTemplateC.replace('$Block0InitialFill$',outReplace)
-    initBlok=tempDict['$Block0InitFuncArray$']
-    #Временное решение. Проблема с некоректностью в JSON массива переменных
-    out=re.findall("[A-Za-z0-9]+",str(modelDict['Equations'][0]['System']))
-    f=False
-    for i in out:
-        if i=='z': f=True
-    if f==False: initBlok=initBlok.replace('idxZ','0')
-    textTemplateC=textTemplateC.replace('$Block0InitFuncArray$',initBlok)
+    iter=0
+    for bl in modelDict['Blocks']:
+        i=0
+        out=''
+        lTmp=[]
+        lTmp.append(lAllInit[bl["DefaultInitial"]])
+        for initValue in bl["InitialRegions"]:
+            initBlok=tempDict['$Block0Initial$']
+            t=initBlok.replace('$v0$',str(i))
+            rpl=""
+            n=0
+            for j in initials[initValue["InitialNumber"]]['Values']:
+                rpl=rpl+"result[idx+"+str(n)+"] = "+j+";\n"
+                n+=1
+            t=t.replace('$v1$',rpl)
+            out=out+t
+            lAllInit.append("Block"+str(iter)+"Initial"+str(i))
+            lTmp.append("Block"+str(iter)+"Initial"+str(i))
+            i+=1
 
-    #Вставляем основной текст для каждого блока отдельно
+        for boundValue in bl["BoundRegions"]:
+            initBlok=tempDict['$Block0Initial$']
+            t=initBlok.replace('$v0$',str(i))
+            rpl=""
+            n=0
+            if lAllBounds[boundValue["BoundNumber"]]["Type"]==0:
+                initBlok=tempDict['$Block0InitialDirihle$']
+                t=initBlok.replace('$v0$',str(i))
+                rpl=""
+                n=0
+                for j in lAllBounds[boundValue["BoundNumber"]]['Values']:
+                    rpl=rpl+"result[idx+"+str(n)+"] = "+j+";\n"
+                    n+=1
+                t=t.replace('$v1$',rpl)
+                out=out+t
+                lAllInit.append("Block"+str(iter)+"InitialDirihle"+str(i))
+                lTmp.append("Block"+str(iter)+"InitialDirihle"+str(i))
+                i+=1
+
+        out=out.replace('$Nomber$',str(iter))
+        outReplaceBlockAllInitial=outReplaceBlockAllInitial+'\n'+out
+
+        initFillInitialValues=tempDict['$Block0FillInitialValues$']
+        initFillInitialValues=initFillInitialValues.replace("$Block0InitFuncArray$",replaceTemp)
+
+        textReplace=""
+        for elem in range(len(lTmp)):
+            textReplace=textReplace+"initFuncArray["+str(elem)+"] = "+str(lTmp[elem])+";\n"
+        initFillInitialValues=initFillInitialValues.replace('$Block0InitialFill$',textReplace)
+        initFillInitialValues=initFillInitialValues.replace('$kol$',str(len(lTmp)))
+
+        initFillInitialValues=initFillInitialValues.replace('$Nomber$',str(iter))
+
+        outReplaceBlockFillInitial=outReplaceBlockFillInitial+'\n'+initFillInitialValues
+
+        outInitInGetInitFuncArray=outInitInGetInitFuncArray+"pInitFuncs["+str(iter)+"] = Block"+str(iter)+"FillInitialValues;"
+
+        iter+=1
+
+    textTemplateC=textTemplateC.replace('$Block0Initial$',outReplaceBlockAllInitial)
+    textTemplateC=textTemplateC.replace('$Block0FillInitialValues$',outReplaceBlockFillInitial)
+    textTemplateC=textTemplateC.replace('$pInitFuncs$',outInitInGetInitFuncArray)
+
+
     out=''
     for bl in modelDict['Blocks']:
         n=allDictNameBlock[bl["Name"]]
@@ -153,7 +214,8 @@ def replaceBounds(lAllBounds,blockBound,tempDict,text,initSizeList,forNeiman):
             rpl=""
             iter=0
             for j in lValues:
-                rpl=rpl+"result[idx+"+str(iter)+"] = "+j+";\n"
+                rpl=rpl+"result[idx+"+str(iter)+"] = 0;\n"
+##                rpl=rpl+"result[idx+"+str(iter)+"] = "+j+";\n"
                 iter+=1
             t=initBlok.replace('$v1$',rpl)
             rpl=t.replace('$v0$',str(varD))
