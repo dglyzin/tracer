@@ -294,6 +294,7 @@ class BinaryModel(object):
         self.versionArr.tofile(domfile)
         self.timeAndStepArr.tofile(domfile)
         self.paramsArr.tofile(domfile)
+        self.toleranceArr.tofile(domfile)
 
         #2. Save blocks
         self.blockCountArr.tofile(domfile)
