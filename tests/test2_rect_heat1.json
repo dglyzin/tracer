@@ -9,10 +9,12 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 0.001, 
+    "FinishTime": 1, 
     "TimeStep": 0.001, 
     "SaveInterval": 0.1, 
     "Solver": 2,
+    "SolverAbsTolerance": 0.001,
+    "SolverRelTolerance": 0.001,
     "GridStep": {
         "x": 0.1, 
         "y": 0.1, 
@@ -28,7 +30,7 @@
             }, 
             "Size": {
                 "x": 1.0, 
-                "y": 1.0
+                "y": 2.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -45,7 +47,8 @@
                 "y"
             ], 
             "System": [
-                "U'=D[U,{x,2}]+ D[U,{y,2}]"                
+                "U'=D[U,{x,2}]+ D[U,{y,2}]", 
+                "V'=D[V,{x,2}]+ D[V,{y,2}]"
             ], 
             "Params": [
                 "a", 
@@ -66,7 +69,8 @@
         {
             "Name": "Initial values", 
             "Values": [
-                "((x<0.5)&&(y>=0.5))?40.0:0.0"                
+                "((x>=0.5)&&(y>=0.5))?40.0:0.0", 
+                "x+y"
             ]
         }
     ], 
