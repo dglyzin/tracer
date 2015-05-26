@@ -7,12 +7,14 @@
         "Workspace": "/home/tester/Tracer1", 
         "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
     }, 
-    "ProjectName": "Brus_test", 
+    "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 1, 
+    "FinishTime": 10, 
     "TimeStep": 0.001, 
-    "SaveInterval": 1, 
+    "SaveInterval": 0.1, 
     "Solver": 0,
+    "SolverAbsTolerance": 0.001,
+    "SolverRelTolerance": 0.001,
     "GridStep": {
         "x": 0.1, 
         "y": 0.1, 
@@ -32,7 +34,16 @@
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [], 
+            "BoundRegions": [
+                {
+                    "BoundNumber": 0, 
+                    "Side": 2, 
+                    "xfrom": 0.0, 
+                    "xto": 1.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0                    
+                }
+            ], 
             "InitialRegions": []
         }
     ], 
@@ -61,12 +72,20 @@
             ]
         }
     ], 
-    "Bounds": [], 
+    "Bounds": [
+        {
+            "Name": "Dirichlet example", 
+            "Type": 0, 
+            "Values": [
+                "-20.0"
+            ]
+        }
+    ], 
     "Initials": [
         {
             "Name": "Initial values", 
             "Values": [
-                "((x>=0.5)&&(y>=0.5))?40.0:0.0"                
+                "((x>=0.5)&&(y>=0.5))?40.0:0.0" 
             ]
         }
     ], 

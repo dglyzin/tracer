@@ -132,7 +132,9 @@ def genBlockCode(tempDict,nomberBlock,blockBound,blockInitSizeList,listParamForT
 #__________________Блоки краевых условий
 def replaceBounds(lAllBounds,blockBound,tempDict,text,initSizeList,forNeiman):
     varIter=8
-    varI=0
+    varD=0
+    varN=0
+    strDirihle=''
     strNeiman=''
     strRplOption=''
     for i in blockBound:
@@ -154,8 +156,10 @@ def replaceBounds(lAllBounds,blockBound,tempDict,text,initSizeList,forNeiman):
                 rpl=rpl+"result[idx+"+str(iter)+"] = "+j+";\n"
                 iter+=1
             t=initBlok.replace('$v1$',rpl)
-            text=text.replace('$Dirichlet$',t)
-            strRplOption=strRplOption+"pFuncs["+str(varIter)+"] = Block0Bound1;\n"
+            rpl=t.replace('$v0$',str(varD))
+            strDirihle=strDirihle+rpl
+            strRplOption=strRplOption+"pFuncs["+str(varIter)+"] = Block$Nomber$Bound1_"+str(varD)+";\n"
+            varD+=1
 
         elif nType==1:
             initBlok=tempDict['$Neiman$']
@@ -168,9 +172,10 @@ def replaceBounds(lAllBounds,blockBound,tempDict,text,initSizeList,forNeiman):
                 rpl=NeimanNonexistent(nSide,xfrom,xto,yfrom,yto,initSizeList,sistem,rpl)
                 t=t+rpl
             t=initBlok.replace('$v1$',t)
-            rpl=t.replace('$v0$',str(varI))
+            rpl=t.replace('$v0$',str(varN))
             strNeiman=strNeiman+rpl
-            strRplOption=strRplOption+"pFuncs["+str(varIter)+"] = Block$Nomber$Bound0_"+str(varI)+";\n"
+            strRplOption=strRplOption+"pFuncs["+str(varIter)+"] = Block$Nomber$Bound0_"+str(varN)+";\n"
+            varN+=1
 
     kolFunc='+'
     if len(blockBound)==0:
@@ -179,7 +184,7 @@ def replaceBounds(lAllBounds,blockBound,tempDict,text,initSizeList,forNeiman):
         kolFunc+=str(len(blockBound))
 
     text=text.replace('$Neiman$',strNeiman)
-    text=text.replace('$Dirichlet$',"")
+    text=text.replace('$Dirichlet$',strDirihle)
     text=text.replace('$kolFunc$',kolFunc)
     text=text.replace('$pFuncs$',strRplOption)
     return text

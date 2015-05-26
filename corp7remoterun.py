@@ -112,5 +112,5 @@ if __name__=='__main__':
     else:
         InputFile = sys.argv[1]
         remoteProjectRun(InputFile)
-##    remoteProjectRun("brus_test.json")
+##    remoteProjectRun("tests/test3_heat_wbounds2.json")
 

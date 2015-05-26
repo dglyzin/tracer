@@ -10,7 +10,7 @@
 "$Neiman$":
 "void Block$Nomber$Bound0_$v0$(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ \n    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; \n    double bound_value; \n    double nonexistent0X,nonexistent1X,nonexistent2X,nonexistent0Y,nonexistent1Y,nonexistent2Y;  \n    $v1$ \n}",
 "$Dirichlet$":
-"void Block$Nomber$Bound1(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ \n    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; \n    $v1$ \n}",
+"void Block$Nomber$Bound1_$v0$(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){ \n    int idx = ( idxY * Block0StrideY + idxX) * CELLSIZE; \n    $v1$ \n}",
 "$pFuncs$":
 "pFuncs[$v0$] = $v1$;",
 "$BlockReplace$":
