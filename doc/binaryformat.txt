@@ -12,6 +12,7 @@
 ##!  int32 Cell Size
 ##!  int32 Halo Size
 ##!  int32 Solver number (0=Euler, 1= RK4, etc,  see solver.h)
+##!  2* float64: Solver absolute and relative tolerance
 
 ### blocks 
 ##!  int32: number of blocks N_B

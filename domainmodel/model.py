@@ -123,6 +123,8 @@ class Model(QObject):
             self.timeStep = 0.05
             self.saveInterval = 0.1
             self.solverIndex = 0
+            self.soverAtol = 0.01
+            self.soverRtol = 0.01
             self.gridStepX = 1.0
             self.gridStepY = 1.0
             self.gridStepZ = 1.0
@@ -133,6 +135,8 @@ class Model(QObject):
             self.timeStep = projdict["TimeStep"]
             self.saveInterval = projdict["SaveInterval"]
             self.solverIndex = projdict["Solver"]
+            self.solverAtol = projdict["SolverAbsTolerance"]
+            self.solverRtol = projdict["SolverRelTolerance"]
             self.gridStepX = projdict["GridStep"]["x"]
             self.gridStepY = projdict["GridStep"]["y"]
             self.gridStepZ = projdict["GridStep"]["z"]
@@ -213,6 +217,8 @@ class Model(QObject):
             ("TimeStep", self.timeStep),
             ("SaveInterval", self.saveInterval),
             ("Solver", self.solverIndex),
+            ("SolverAbsTolerance", self.solverAtol),
+            ("SolverRelTolerance", self.solverRtol),
             ("GridStep", OrderedDict([
                             ("x", self.gridStepX),
                             ("y", self.gridStepY),
@@ -440,5 +446,5 @@ class Model(QObject):
         #    f = open(cppFileName,'w')
         #    f.write(outputStr)
         #    f.close()
-		#generator2
+        #generator2
         generateCfromDict(self.toDict(),cppFileName)
