@@ -40,7 +40,7 @@ class BinaryModel(object):
         
         #1 fill default conditions
         funcArr[:] = block.defaultInitial
-        
+        usedIndices = 1
         #2 fill user-defined conditions
         #2.1 collect user-defines initial conditions that are used in this block
         usedInitNums = []
@@ -49,7 +49,7 @@ class BinaryModel(object):
                 usedInitNums.append(initReg.initialNumber)
         #2.2 fill them    
         for initReg in block.initialRegions:    
-            initFuncNum = usedInitNums.index(initReg.initialNumber)
+            initFuncNum = usedIndices + usedInitNums.index(initReg.initialNumber)
             xstart, xend = initReg.getXrange(self.dmodel.gridStepX)
             ystart, yend = initReg.getYrange(self.dmodel.gridStepY)            
             funcArr[ystart:yend, xstart:xend] = initFuncNum             
@@ -58,7 +58,7 @@ class BinaryModel(object):
         
         #3 overwrite with values that come from Dirichlet bounds
         #3.1 collect dirichlet bound numbers that are used in this block
-        usedIndices = len(usedInitNums)
+        usedIndices += len(usedInitNums)
         usedBoundNums = []
         for boundReg in block.boundRegions:
             if not (boundReg.boundNumber in usedBoundNums):
