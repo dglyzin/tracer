@@ -36,8 +36,7 @@ class BinaryModel(object):
         pass
 
     def fill2dInitFuncs(self, funcArr, block, blockSize):
-        xc = blockSize[0]
-        yc = blockSize[1]
+        print "Filling 2d initial function array."
         
         #1 fill default conditions
         funcArr[:] = block.defaultInitial
@@ -82,7 +81,7 @@ class BinaryModel(object):
     def fill2dCompFuncs(self, funcArr, block, blockSize):
         xc = blockSize[0]
         yc = blockSize[1]
-        print "Filling 2d function array."
+        print "Filling 2d main function array."
         print "size:", xc, "x", yc
         haloSize = self.dmodel.getHaloSize()
         #1 default center is filled already
@@ -231,7 +230,8 @@ class BinaryModel(object):
                 self.fill1dCompFuncs(blockCompFuncArr, block, cellCountList)
             elif blockDim==2:
                 self.fill2dInitFuncs(blockInitFuncArr.reshape([yc, xc]), block, cellCountList)
-                self.fill2dCompFuncs(blockCompFuncArr.reshape([yc, xc]), block, cellCountList)
+                print blockInitFuncArr.reshape([yc, xc])
+                self.fill2dCompFuncs(blockCompFuncArr.reshape([yc, xc]), block, cellCountList)                
                 print blockCompFuncArr.reshape([yc, xc])
             elif blockDim==3:
                 self.fill1dFuncs(blockInitFuncArr, block, cellCountList)
