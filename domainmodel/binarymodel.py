@@ -36,7 +36,41 @@ class BinaryModel(object):
         pass
 
     def fill2dInitFuncs(self, funcArr, block, blockSize):
-        pass
+        xc = blockSize[0]
+        yc = blockSize[1]
+        
+        #1 fill default conditions
+        funcArr[:] = block.defaultInitial
+        
+        #2 fill user-defined conditions
+        #2.1 collect user-defines initial conditions that are used in this block
+        usedInitNums = []
+        for initReg in block.initialRegions:
+            if not initReg.initialNumber in usedInitNums:
+                usedInitNums.append(initReg.initialNumber)
+        #2.2 fill them    
+        for initReg in block.initialRegions:    
+            initFuncNum = usedInitNums.index(initReg.initialNumber)
+            xstart, xend = initReg.getXrange(self.dmodel.gridStepX)
+            ystart, yend = initReg.getYrange(self.dmodel.gridStepY)            
+            funcArr[ystart:yend, xstart:xend] = initFuncNum             
+        
+        #3 overwrite with values that come from Dirichlet bounds
+        #3.1 collect dirichlet bound numbers that are used in this block
+        usedIndices = len(usedInitNums)
+        usedBoundNums = []
+        for boundReg in block.boundRegions:
+            if not boundReg.boundNumber in usedBoundNums:
+                usedBoundNums.append(boundReg.boundNumber) 
+        
+        #3.2 fill them    
+        for boundReg in block.boundRegions:    
+            initFuncNum = usedIndices + usedBoundNums.index(boundReg.boundNumber)
+            xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
+            ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)            
+            funcArr[ystart:yend, xstart:xend] = initFuncNum
+        
+        
 
     def fill3dInitFuncs(self, funcArr, block, blockSize):
         pass
