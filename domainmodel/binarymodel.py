@@ -37,7 +37,8 @@ class BinaryModel(object):
 
     def fill2dInitFuncs(self, funcArr, block, blockSize):
         print "Filling 2d initial function array."
-        
+        xc = blockSize[0]
+        yc = blockSize[1]
         #1 fill default conditions
         funcArr[:] = block.defaultInitial
         usedIndices = 0
@@ -65,14 +66,25 @@ class BinaryModel(object):
                 usedBoundNums.append(boundReg.boundNumber) 
         
         print "Used bound nums:", usedBoundNums
-        #3.2 fill them    
-        for boundReg in block.boundRegions:    
+        #3.2 fill them
+        for boundReg in block.boundRegions:
             initFuncNum = usedIndices + usedBoundNums.index(boundReg.boundNumber)
-            xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
-            ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)            
-            funcArr[ystart:yend, xstart:xend] = initFuncNum
-        
-        
+            if boundReg.side == 0:       
+                idxX = 0         
+                ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
+                funcArr[ystart:yend, idxX] = initFuncNum                
+            elif boundReg.side == 1:
+                idxX = xc - 1
+                ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
+                funcArr[ystart:yend, idxX] = initFuncNum                    
+            elif boundReg.side == 2:
+                idxY =  0
+                xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)                
+                funcArr[idxY, xstart:xend] = initFuncNum
+            elif boundReg.side == 3:
+                idxY = yc-1
+                xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
+                funcArr[idxY, xstart:xend] = initFuncNum
 
     def fill3dInitFuncs(self, funcArr, block, blockSize):
         pass
