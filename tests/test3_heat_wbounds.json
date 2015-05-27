@@ -85,7 +85,15 @@
         {
             "Name": "Initial values", 
             "Values": [
-                "((x>=0.5)&&(y>=0.5))?40.0:0.0" 
+                "0.0", 
+                "x+y"
+            ]
+        },
+        {
+            "Name": "Initial values", 
+            "Values": [
+                "40.0", 
+                "x+y"
             ]
         }
     ], 
