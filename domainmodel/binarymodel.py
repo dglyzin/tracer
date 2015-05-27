@@ -54,7 +54,7 @@ class BinaryModel(object):
             ystart, yend = initReg.getYrange(self.dmodel.gridStepY)            
             funcArr[ystart:yend, xstart:xend] = initFuncNum             
         
-        print "Init nums:", usedInitNums
+        print "Used init nums:", usedInitNums
         
         #3 overwrite with values that come from Dirichlet bounds
         #3.1 collect dirichlet bound numbers that are used in this block
@@ -64,6 +64,7 @@ class BinaryModel(object):
             if not (boundReg.boundNumber in usedBoundNums):
                 usedBoundNums.append(boundReg.boundNumber) 
         
+        print "Used bound nums:", usedBoundNums
         #3.2 fill them    
         for boundReg in block.boundRegions:    
             initFuncNum = usedIndices + usedBoundNums.index(boundReg.boundNumber)

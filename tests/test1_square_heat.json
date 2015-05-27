@@ -37,7 +37,7 @@
             "BoundRegions": [], 
             "InitialRegions": [  
                 {
-                    "InitialNumber": 0, 
+                    "InitialNumber": 1, 
                     "xfrom": 0.5, 
                     "xto": 1.0, 
                     "yfrom": 0.5, 
@@ -77,7 +77,7 @@
         {
             "Name": "Initial values", 
             "Values": [
-                "20.0", 
+                "0.0", 
                 "x+y"
             ]
         },
