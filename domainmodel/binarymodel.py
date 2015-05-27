@@ -40,10 +40,10 @@ class BinaryModel(object):
         
         #1 fill default conditions
         funcArr[:] = block.defaultInitial
-        usedIndices = 1
+        usedIndices = 0
         #2 fill user-defined conditions
         #2.1 collect user-defines initial conditions that are used in this block
-        usedInitNums = []
+        usedInitNums = [block.defaultInitial]
         for initReg in block.initialRegions:
             if not (initReg.initialNumber in usedInitNums):
                 usedInitNums.append(initReg.initialNumber)

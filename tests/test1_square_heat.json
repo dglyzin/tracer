@@ -35,14 +35,15 @@
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [], 
-            "InitialRegions": [
+            "InitialRegions": [  
                 {
-                    "InitialNumber": 1, 
+                    "InitialNumber": 0, 
                     "xfrom": 0.5, 
                     "xto": 1.0, 
                     "yfrom": 0.5, 
                     "yto": 1.0
-                }]
+                }
+            ]
         }
     ], 
     "Interconnects": [], 
@@ -76,7 +77,7 @@
         {
             "Name": "Initial values", 
             "Values": [
-                "0.0", 
+                "20.0", 
                 "x+y"
             ]
         },
