@@ -66,9 +66,17 @@ class BinaryModel(object):
                 usedBoundNums.append(boundReg.boundNumber) 
         
         print "Used bound nums:", usedBoundNums
+        
+        
+        
         #3.2 fill them
+        #this is a way with duplications, should be removed
+        initFuncNum=usedIndices
         for boundReg in block.boundRegions:
-            initFuncNum = usedIndices + usedBoundNums.index(boundReg.boundNumber)
+            #this was a way without duplications
+            #initFuncNum = usedIndices + usedBoundNums.index(boundReg.boundNumber)
+            
+            
             if boundReg.side == 0:       
                 idxX = 0         
                 ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
@@ -85,6 +93,8 @@ class BinaryModel(object):
                 idxY = yc-1
                 xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
                 funcArr[idxY, xstart:xend] = initFuncNum
+            #remove 
+            initFuncNum+=1
 
     def fill3dInitFuncs(self, funcArr, block, blockSize):
         pass

@@ -9,7 +9,7 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 2, 
+    "FinishTime": 1, 
     "TimeStep": 0.001, 
     "SaveInterval": 0.1, 
     "Solver": 0,
@@ -37,7 +37,31 @@
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
+                    "Side": 0, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 1.0                    
+                },
+                {
+                    "BoundNumber": 1, 
+                    "Side": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 1.0                    
+                },
+                {
+                    "BoundNumber": 0, 
                     "Side": 2, 
+                    "xfrom": 0.0, 
+                    "xto": 1.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0                    
+                },
+                {
+                    "BoundNumber": 0, 
+                    "Side": 3, 
                     "xfrom": 0.0, 
                     "xto": 1.0, 
                     "yfrom": 0.0, 
@@ -77,7 +101,14 @@
             "Name": "Dirichlet example", 
             "Type": 0, 
             "Values": [
-                "-20.0"
+                "10.0"
+            ]
+        },
+        {
+            "Name": "Dirichlet example", 
+            "Type": 0, 
+            "Values": [
+                "100.0"
             ]
         }
     ], 
@@ -85,15 +116,7 @@
         {
             "Name": "Initial values", 
             "Values": [
-                "0.0", 
-                "x+y"
-            ]
-        },
-        {
-            "Name": "Initial values", 
-            "Values": [
-                "40.0", 
-                "x+y"
+                "0.0"               
             ]
         }
     ], 
