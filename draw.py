@@ -56,16 +56,12 @@ for index in range(blockCount) :
     
   info.append(blockInfo)
   
+  total = blockInfo[3] * blockInfo[4] * blockInfo[5]
+  dom.read(2 * 2 * total)
+  
 print info
 
 dom.close()
-
-
-#bin = open(unicode(sys.argv[2]), 'rb')
-#m253, = struct.unpack('b', bin.read(1))
-#versionMajor, = struct.unpack('b', bin.read(1))
-#versionMinor, = struct.unpack('b', bin.read(1))
-#time, = struct.unpack('d', bin.read(8))
 
 z = sys.argv[3]
 
@@ -79,11 +75,11 @@ minX = 0
 maxX = 0
 
 for i in range( len(info) ) :
-  if info[i][0] < minZ :
-    minZ = info[i][0]
+  if info[i][2] < minZ :
+    minZ = info[i][2]
     
-  if info[i][0] + info[i][3] > maxZ :
-    maxZ = info[i][0] + info[i][3]
+  if info[i][2] + info[i][5] > maxZ :
+    maxZ = info[i][2] + info[i][5]
     
   if info[i][1] < minY :
     minY = info[i][1]
@@ -91,34 +87,71 @@ for i in range( len(info) ) :
   if info[i][1] + info[i][4] > maxY :
     maxY = info[i][1] + info[i][4]
     
-  if info[i][2] < minX :
+  if info[i][0] < minX :
     minX = info[i][2]
     
-  if info[i][2] + info[i][5] > maxX :
-    maxX = info[i][2] + info[i][5]
+  if info[i][0] + info[i][3] > maxX :
+    maxX = info[i][0] + info[i][3]
     
-print minZ
-print maxZ
-
-print minY
-print maxY
-
-print minX
-print maxX
-
-#for i in range( len(info) ) :
-#  total = info[i][3] * info[i][4] * info[i][5] * cellSize
-#  
-#  data = np.fromfile(bin, dtype=np.float64, count=total)
-#  data = data.reshape([info[i][5], info[i][4], info[i][3], cellSize]);
-#  
-#  print data[int(z),:,:,0]
+#print minZ
+#print maxZ
 #
-#  xs = np.arange(0,blockInfo[3])*dx
-#  ys = np.arange(0,blockInfo[4])*dy
-#  
-#  X,Y = np.meshgrid(xs,ys)
-#  layer = data[int(z),:,:,0]
-#  print X.shape, Y.shape, layer.shape
-#  plt.pcolormesh(X, Y, layer)
-#  plt.show()
+#print minY
+#print maxY
+#
+#print minX
+#print maxX
+
+countZ = maxZ - minZ
+countY = maxY - minY
+countX = maxX - minX
+
+print countZ
+print countY
+print countX
+
+offsetZ = -minZ
+offsetY = -minY
+offsetX = -minX
+
+print offsetZ
+print offsetY
+print offsetX
+
+data = np.zeros((countZ, countY, countX, cellSize), dtype=np.float64)
+#print data
+
+#resultTemperature[offsetZ:offsetZ+zc, offsetY:offsetY+yc, offsetX:offsetX+xc] = temperature[:, :, :]
+
+bin = open(unicode(sys.argv[2]), 'rb')
+m253, = struct.unpack('b', bin.read(1))
+versionMajor, = struct.unpack('b', bin.read(1))
+versionMinor, = struct.unpack('b', bin.read(1))
+time, = struct.unpack('d', bin.read(8))
+
+for i in range( len(info) ) :
+  countZBlock = info[i][5]
+  countYBlock = info[i][4]
+  countXBlock = info[i][3]
+  
+  coordZBlock = info[i][2] - offsetZ
+  coordYBlock = info[i][1] - offsetY
+  coordXBlock = info[i][0] - offsetX
+  
+  total = countZBlock * countYBlock * countXBlock * cellSize
+  
+  blockData = np.fromfile(bin, dtype=np.float64, count=total)
+  blockData = blockData.reshape(countZBlock, countYBlock, countXBlock, cellSize);
+  print coordXBlock , coordXBlock + countXBlock
+  print data.shape
+  print blockData.shape
+  data[coordZBlock : coordZBlock + countZBlock, coordYBlock : coordYBlock + countYBlock, coordXBlock : coordXBlock + countXBlock, :] = blockData[:, :, :, :]
+
+xs = np.arange(0, countX)*dx
+ys = np.arange(0, countY)*dy
+
+X,Y = np.meshgrid(xs,ys)
+layer = data[int(z),:,:,0]
+print X.shape, Y.shape, layer.shape
+plt.pcolormesh(X, Y, layer)
+plt.show()
