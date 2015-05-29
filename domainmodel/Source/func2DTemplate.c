@@ -55,20 +55,10 @@ void releaseParams(double *params){
 //dlja kazhdogo bloka svoj nabor tochechnyh nachal'nyh funkcij i odna funkcija-zapolnitel'
 $Block0Initial$
 
-
 //Zapolnjaet result[idx] nachal'noj funkciej s nomerom iz initType[idx]
 //izmenilsja kod
-void Block0FillInitialValues(double* result, unsigned short int* initType){
-	printf("Initial array filling by user function started...\n");
-    initfunc_ptr_t initFuncArray[1];
-    $Block0InitialFill$
-    for(int idxY = 0; idxY<Block0CountY; idxY++)
-        for(int idxX = 0; idxX<Block0CountX; idxX++){
-            int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
-            int type = initType[idx];
-            $Block0InitFuncArray$
-        }
-}
+
+$Block0FillInitialValues$
 
 
 //Funkcii-zapolniteli nuzhno sobrat' v massiv i otdat' domenu
@@ -78,7 +68,8 @@ void getInitFuncArray(initfunc_fill_ptr_t** ppInitFuncs){
     initfunc_fill_ptr_t* pInitFuncs;
     pInitFuncs = (initfunc_fill_ptr_t*) malloc( 1 * sizeof(initfunc_fill_ptr_t) );
     *ppInitFuncs = pInitFuncs;
-    pInitFuncs[0] = Block0FillInitialValues;   
+	$pInitFuncs$
+    //pInitFuncs[0] = Block0FillInitialValues;   
 }
 
 void releaseInitFuncArray(initfunc_fill_ptr_t* InitFuncs){

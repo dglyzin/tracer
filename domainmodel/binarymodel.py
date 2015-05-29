@@ -36,7 +36,65 @@ class BinaryModel(object):
         pass
 
     def fill2dInitFuncs(self, funcArr, block, blockSize):
-        pass
+        print "Filling 2d initial function array."
+        xc = blockSize[0]
+        yc = blockSize[1]
+        #1 fill default conditions
+        funcArr[:] = block.defaultInitial
+        usedIndices = 0
+        #2 fill user-defined conditions
+        #2.1 collect user-defines initial conditions that are used in this block
+        usedInitNums = [block.defaultInitial]
+        for initReg in block.initialRegions:
+            if not (initReg.initialNumber in usedInitNums):
+                usedInitNums.append(initReg.initialNumber)
+        #2.2 fill them    
+        for initReg in block.initialRegions:    
+            initFuncNum = usedIndices + usedInitNums.index(initReg.initialNumber)
+            xstart, xend = initReg.getXrange(self.dmodel.gridStepX)
+            ystart, yend = initReg.getYrange(self.dmodel.gridStepY)            
+            funcArr[ystart:yend, xstart:xend] = initFuncNum             
+        
+        print "Used init nums:", usedInitNums
+        
+        #3 overwrite with values that come from Dirichlet bounds
+        #3.1 collect dirichlet bound numbers that are used in this block
+        usedIndices += len(usedInitNums)
+        usedBoundNums = []
+        for boundReg in block.boundRegions:
+            if not (boundReg.boundNumber in usedBoundNums):
+                usedBoundNums.append(boundReg.boundNumber) 
+        
+        print "Used bound nums:", usedBoundNums
+        
+        
+        
+        #3.2 fill them
+        #this is a way with duplications, should be removed
+        initFuncNum=usedIndices
+        for boundReg in block.boundRegions:
+            #this was a way without duplications
+            #initFuncNum = usedIndices + usedBoundNums.index(boundReg.boundNumber)
+            
+            
+            if boundReg.side == 0:       
+                idxX = 0         
+                ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
+                funcArr[ystart:yend, idxX] = initFuncNum                
+            elif boundReg.side == 1:
+                idxX = xc - 1
+                ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
+                funcArr[ystart:yend, idxX] = initFuncNum                    
+            elif boundReg.side == 2:
+                idxY =  0
+                xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)                
+                funcArr[idxY, xstart:xend] = initFuncNum
+            elif boundReg.side == 3:
+                idxY = yc-1
+                xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
+                funcArr[idxY, xstart:xend] = initFuncNum
+            #remove 
+            initFuncNum+=1
 
     def fill3dInitFuncs(self, funcArr, block, blockSize):
         pass
@@ -48,7 +106,7 @@ class BinaryModel(object):
     def fill2dCompFuncs(self, funcArr, block, blockSize):
         xc = blockSize[0]
         yc = blockSize[1]
-        print "Filling 2d function array."
+        print "Filling 2d main function array."
         print "size:", xc, "x", yc
         haloSize = self.dmodel.getHaloSize()
         #1 default center is filled already
@@ -197,7 +255,8 @@ class BinaryModel(object):
                 self.fill1dCompFuncs(blockCompFuncArr, block, cellCountList)
             elif blockDim==2:
                 self.fill2dInitFuncs(blockInitFuncArr.reshape([yc, xc]), block, cellCountList)
-                self.fill2dCompFuncs(blockCompFuncArr.reshape([yc, xc]), block, cellCountList)
+                print blockInitFuncArr.reshape([yc, xc])
+                self.fill2dCompFuncs(blockCompFuncArr.reshape([yc, xc]), block, cellCountList)                
                 print blockCompFuncArr.reshape([yc, xc])
             elif blockDim==3:
                 self.fill1dFuncs(blockInitFuncArr, block, cellCountList)

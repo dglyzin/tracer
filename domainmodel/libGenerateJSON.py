@@ -105,7 +105,7 @@ class JsonFileCreate:
         self.inFile=inFile
         self.outFile=outFile
 
-    def setSimpleValues(self,projectName,startTime,finishTime,timeStep,saveInterval,gridStepValueList):
+    def setSimpleValues(self,projectName,startTime,finishTime,timeStep,saveInterval,Solver,SolverAbsTolerance,SolverRelTolerance,gridStepValueList):
         self.projectName=projectName
         self.startTime=startTime
         self.finishTime=finishTime
@@ -120,6 +120,9 @@ class JsonFileCreate:
         projdict["TimeStep"]=timeStep
         projdict["SaveInterval"]=saveInterval
 ##        projdict["GridStep"]=gridStepValueList
+        projdict["Solver"]=Solver
+        projdict["SolverAbsTolerance"]=SolverAbsTolerance
+        projdict["SolverRelTolerance"]=SolverRelTolerance
         projdict["GridStep"]={}
         projdict["GridStep"]["x"]=1
         projdict["GridStep"]["y"]=1

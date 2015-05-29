@@ -1,7 +1,9 @@
 eclipse.preferences.version=1
 encoding//domainmodel/binarymodel.py=utf-8
 encoding//domainmodel/block.py=utf-8
+encoding//domainmodel/bound.py=utf-8
 encoding//domainmodel/equation.py=utf-8
+encoding//domainmodel/funcGenerator.py=utf-8
 encoding//domainmodel/gridprocessing.py=utf-8
 encoding//domainmodel/interconnect.py=utf-8
 encoding//domainmodel/libGenerateC.py=utf-8

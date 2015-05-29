@@ -1,18 +1,18 @@
 {
     "Connection": {
-        "Host": "corp7.uniyar.ac.ru", 
-        "Port": 2222, 
+        "Host": "10.7.129.222", 
+        "Port": 22, 
         "Username": "tester", 
         "Password": "tester", 
         "Workspace": "/home/tester/Tracer1", 
         "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
     }, 
-    "ProjectName": "Brus_test", 
+    "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
     "FinishTime": 1, 
-    "TimeStep": 1, 
-    "SaveInterval": 1, 
-	"Solver": 0,
+    "TimeStep": 0.001, 
+    "SaveInterval": 0.1, 
+    "Solver": 2,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
@@ -29,7 +29,7 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 1.0, 
+                "x": 2.0, 
                 "y": 1.0
             }, 
             "DefaultEquation": 0, 
@@ -47,8 +47,8 @@
                 "y"
             ], 
             "System": [
-                "U'=D[U,{y,2}]", 
-                "V'=0"
+                "U'=D[U,{x,2}]+ D[U,{y,2}]", 
+                "V'=D[V,{x,2}]+ D[V,{y,2}]"
             ], 
             "Params": [
                 "a", 
@@ -57,7 +57,7 @@
             ], 
             "ParamValues": [
                 {
-                    "a": 0.6, 
+                    "a": 0.65, 
                     "mu": 0.025, 
                     "b": 2
                 }
@@ -69,8 +69,8 @@
         {
             "Name": "Initial values", 
             "Values": [
-                "10", 
-                "-10"
+                "((x>=0.5)&&(y>=0.5))?40.0:0.0", 
+                "x+y"
             ]
         }
     ], 

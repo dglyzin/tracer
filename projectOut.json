@@ -7,14 +7,17 @@
         "Workspace": "/home/tester/Tracer1", 
         "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
     }, 
-    "ProjectName": "Input_Example", 
+    "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 0.5, 
-    "TimeStep": 0.02, 
+    "FinishTime": 10, 
+    "TimeStep": 0.001, 
     "SaveInterval": 0.1, 
+    "Solver": 0, 
+    "SolverAbsTolerance": 0.001, 
+    "SolverRelTolerance": 0.001, 
     "GridStep": {
-        "x": 1, 
-        "y": 1, 
+        "x": 0.1, 
+        "y": 0.1, 
         "z": 1
     }, 
     "Blocks": [
@@ -26,38 +29,22 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 10.0, 
-                "y": 10.0
+                "x": 1.0, 
+                "y": 1.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
-                    "Side": 1, 
+                    "Side": 2, 
                     "xfrom": 0.0, 
-                    "xto": 0.0, 
+                    "xto": 1.0, 
                     "yfrom": 0.0, 
-                    "yto": 5.0
-                }, 
-                {
-                    "BoundNumber": 1, 
-                    "Side": 1, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 5.0, 
-                    "yto": 10.0
+                    "yto": 0.0
                 }
             ], 
-            "InitialRegions": [
-                {
-                    "InitialNumber": 1, 
-                    "xfrom": 1.0, 
-                    "xto": 2.0, 
-                    "yfrom": 1.0, 
-                    "yto": 2.0
-                }
-            ]
+            "InitialRegions": []
         }
     ], 
     "Interconnects": [], 
@@ -69,19 +56,18 @@
                 "y"
             ], 
             "System": [
-                "U'=1+U^2*V-k1*U+a*(D[U,{x,2}]+D[U,{y,2}])", 
-                "V'=k2*U-U^2*V+a*(D[V,{x,2}]+D[V,{y,2}])"
+                "U'=D[U,{x,2}]+D[U,{y,2}]"
             ], 
             "Params": [
                 "a", 
-                "k2", 
-                "k1"
+                "mu", 
+                "b"
             ], 
             "ParamValues": [
                 {
-                    "a": "1", 
-                    "k2": "1", 
-                    "k1": "1"
+                    "a": 0.65, 
+                    "mu": 0.025, 
+                    "b": 2
                 }
             ]
         }
@@ -91,16 +77,7 @@
             "Name": "Dirichlet example", 
             "Type": 0, 
             "Values": [
-                "15.0", 
-                "sin(t)"
-            ]
-        }, 
-        {
-            "Name": "Neumann example", 
-            "Type": 1, 
-            "Values": [
-                "-10.0", 
-                "cos(t)"
+                "-20.0"
             ]
         }
     ], 
@@ -108,15 +85,7 @@
         {
             "Name": "Initial values", 
             "Values": [
-                "15.0", 
-                "sin(x)*cos(y)"
-            ]
-        }, 
-        {
-            "Name": "Something hot", 
-            "Values": [
-                "200.0", 
-                "100.0"
+                "((x>=0.5)&&(y>=0.5))?40.0:0.0"
             ]
         }
     ], 
