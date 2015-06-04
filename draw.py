@@ -150,8 +150,10 @@ for i in range( len(info) ) :
 xs = np.arange(0, countX)*dx
 ys = np.arange(0, countY)*dy
 
+
 X,Y = np.meshgrid(xs,ys)
 layer = data[int(z),:,:,0]
 print X.shape, Y.shape, layer.shape
+print layer
 plt.pcolormesh(X, Y, layer)
 plt.show()
