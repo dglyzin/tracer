@@ -16,8 +16,8 @@
     "SolverAbsTolerance": 0.0001,
     "SolverRelTolerance": 0.0001,
     "GridStep": {
-        "x": 0.0001, 
-        "y": 0.0001, 
+        "x": 0.01, 
+        "y": 0.01, 
         "z": 1
     }, 
     "Blocks": [

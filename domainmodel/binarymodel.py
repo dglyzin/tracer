@@ -378,7 +378,7 @@ class BinaryModel(object):
         dirName = os.path.abspath(os.path.dirname(fileName))
         print "compiling..."
         #command = "nvcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -Xcompiler -fPIC"
-        command = "gcc -g"+ fileName + " -shared  -O3 -o " + dirName+"/libuserfuncs.so -fPIC"
+        command = "gcc -g "+ fileName + " -shared  -O3 -o " + dirName+"/libuserfuncs.so -fPIC"
         print command
         PIPE = subprocess.PIPE
         p = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
