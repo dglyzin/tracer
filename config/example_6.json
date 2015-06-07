@@ -1,0 +1,140 @@
+{
+    "Connection": {
+        "Host": "corp7.uniyar.ac.ru", 
+        "Port": 2222, 
+        "Username": "tester", 
+        "Password": "tester", 
+        "Workspace": "/home/tester/Tracer1", 
+        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
+    }, 
+    "ProjectName": "Heat_test", 
+    "StartTime": 0.0, 
+    "FinishTime": 1, 
+    "TimeStep": 0.000001, 
+    "SaveInterval": 0.1, 
+    "Solver": 0,
+    "SolverAbsTolerance": 0.001,
+    "SolverRelTolerance": 0.001,
+    "GridStep": {
+        "x": 0.01, 
+        "y": 0.01, 
+        "z": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "MainBlock", 
+            "Dimension": 2, 
+            "Offset": {
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            "Size": {
+                "x": 1.0, 
+                "y": 2.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [
+                {
+                    "BoundNumber": 1, 
+                    "Side": 0, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 2.0                    
+                },
+                {
+                    "BoundNumber": 1, 
+                    "Side": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 2.0                    
+                },
+                {
+                    "BoundNumber": 0, 
+                    "Side": 2, 
+                    "xfrom": 0.0, 
+                    "xto": 1.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0                    
+                },
+                {
+                    "BoundNumber": 0, 
+                    "Side": 3, 
+                    "xfrom": 0.0, 
+                    "xto": 1.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0                    
+                }
+            ], 
+            "InitialRegions": []
+        }
+    ], 
+    "Interconnects": [], 
+    "Equations": [
+        {
+            "Name": "Flat Brusselator", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=D[U,{x,2}]+ D[U,{y,2}]"
+            ], 
+            "Params": [
+                "a", 
+                "b", 
+                "mu"
+            ], 
+            "ParamValues": [
+                {
+                    "a": 0.65, 
+                    "mu": 0.025, 
+                    "b": 2
+                }
+            ]
+        }
+    ], 
+    "Bounds": [
+        {
+            "Name": "Dirichlet example", 
+            "Type": 0, 
+            "Values": [
+                "-10.0"
+            ]
+        },
+        {
+            "Name": "Dirichlet example", 
+            "Type": 0, 
+            "Values": [
+                "100.0"
+            ]
+        }
+    ], 
+    "Initials": [
+        {
+            "Name": "Initial values", 
+            "Values": [
+                "0.0"               
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            [
+                0, 
+                "cpu", 
+                0
+            ]
+        ]
+    }
+}

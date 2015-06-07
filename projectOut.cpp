@@ -107,7 +107,7 @@ initFuncArray[1] = Block0InitialDirihle0;
  
  for(int idxY = 0; idxY<Block0CountY; idxY++)
     for(int idxX = 0; idxX<Block0CountX; idxX++){
-       int idx = (idxY*Block0CountX + idxX)*CELLSIZE;
+       int idx = (idxY*Block0CountX + idxX);
        int type = initType[idx];
        initFuncArray[type](result, idxX, idxY, 0);
        }

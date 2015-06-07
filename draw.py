@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import sys
 
 dom = open(unicode(sys.argv[1]), 'rb')
+##dom = open('projectOut.dom', 'rb')
 m254, = struct.unpack('b', dom.read(1))
 versionMajor, = struct.unpack('b', dom.read(1))
 versionMinor, = struct.unpack('b', dom.read(1))
@@ -37,7 +38,7 @@ for index in range(blockCount) :
   node, = struct.unpack('i', dom.read(4))
   deviceType, = struct.unpack('i', dom.read(4))
   deviveNumber, = struct.unpack('i', dom.read(4))
-  
+
   blockInfo = []
   blockInfo.append(0)
   blockInfo.append(0)
@@ -45,20 +46,20 @@ for index in range(blockCount) :
   blockInfo.append(1)
   blockInfo.append(1)
   blockInfo.append(1)
-  
+
   for x in range(dimension) :
     coord, = struct.unpack('i', dom.read(4))
     blockInfo[x] = coord
-    
+
   for x in range(dimension) :
     count, = struct.unpack('i', dom.read(4))
     blockInfo[x + 3] = count
-    
+
   info.append(blockInfo)
-  
+
   total = blockInfo[3] * blockInfo[4] * blockInfo[5]
   dom.read(2 * 2 * total)
-  
+
 print info
 
 dom.close()
@@ -77,22 +78,22 @@ maxX = 0
 for i in range( len(info) ) :
   if info[i][2] < minZ :
     minZ = info[i][2]
-    
+
   if info[i][2] + info[i][5] > maxZ :
     maxZ = info[i][2] + info[i][5]
-    
+
   if info[i][1] < minY :
     minY = info[i][1]
-    
+
   if info[i][1] + info[i][4] > maxY :
     maxY = info[i][1] + info[i][4]
-    
+
   if info[i][0] < minX :
     minX = info[i][2]
-    
+
   if info[i][0] + info[i][3] > maxX :
     maxX = info[i][0] + info[i][3]
-    
+
 #print minZ
 #print maxZ
 #
@@ -133,13 +134,13 @@ for i in range( len(info) ) :
   countZBlock = info[i][5]
   countYBlock = info[i][4]
   countXBlock = info[i][3]
-  
+
   coordZBlock = info[i][2] - offsetZ
   coordYBlock = info[i][1] - offsetY
   coordXBlock = info[i][0] - offsetX
-  
+
   total = countZBlock * countYBlock * countXBlock * cellSize
-  
+
   blockData = np.fromfile(bin, dtype=np.float64, count=total)
   blockData = blockData.reshape(countZBlock, countYBlock, countXBlock, cellSize);
   print coordXBlock , coordXBlock + countXBlock
