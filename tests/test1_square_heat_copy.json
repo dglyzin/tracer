@@ -9,17 +9,17 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 1.0, 
-    "TimeStep": 0.0001, 
+    "FinishTime": 5,
+    "TimeStep":   0.0001, 
     "SaveInterval": 0.1, 
     "Solver": 0,
-    "SolverAbsTolerance": 0.01,
-    "SolverRelTolerance": 0.01,
+    "SolverAbsTolerance": 0.0001,
+    "SolverRelTolerance": 0.0001,
     "GridStep": {
         "x": 0.1, 
         "y": 0.1, 
         "z": 1
-    }, 
+    },  
     "Blocks": [
         {
             "Name": "MainBlock", 
@@ -29,8 +29,8 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 1.0, 
-                "y": 1.0
+                "x": 100.0, 
+                "y": 100.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -68,7 +68,7 @@
         {
             "Name": "Initial values", 
             "Values": [
-                "((x>=0.5)&&(y>=0.5))?40.0:0.0"
+                "((x>=50.0)&&(y>=50.0))?40.0:0.0"
             ]
         }
     ], 
