@@ -9,10 +9,10 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 5,
+    "FinishTime": 50,
     "TimeStep":   0.0001, 
     "SaveInterval": 0.1, 
-    "Solver": 0,
+    "Solver": 2,
     "SolverAbsTolerance": 0.0001,
     "SolverRelTolerance": 0.0001,
     "GridStep": {
