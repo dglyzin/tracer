@@ -103,14 +103,15 @@ class BinaryModel(object):
     def fill1dCompFuncs(self, funcArr, block, blockSize):
         pass
 
-    def fill2dCompFuncs(self, funcArr, block, blockSize):
+    def fill2dCompFuncs(self, funcArr, block, blockSize, usedIndices):
         xc = blockSize[0]
         yc = blockSize[1]
         print "Filling 2d main function array."
         print "size:", xc, "x", yc
         haloSize = self.dmodel.getHaloSize()
         #1 default center is filled already
-        curf_idx = 1
+        funcArr[:] = usedIndices
+        curf_idx = usedIndices+1
         #fill default neumanns
         #for haloIdx in range(haloSize):
         for idxY in range(0, haloSize):
@@ -171,7 +172,7 @@ class BinaryModel(object):
                     xend =  min(xc-haloSize,xend)
                     funcArr[idxY, xstart:xend] = curf_idx
                     curf_idx += 1
-
+        return curf_idx
 
 
     def fill3dCompFuncs(self, funcArr, block, blockSize):
@@ -210,6 +211,7 @@ class BinaryModel(object):
         self.blockPropArrList = []
         self.blockInitFuncArrList = []
         self.blockCompFuncArrList = []
+        usedMainIndices = 0
         for blockIdx in range(self.blockCount):
             print "Saving block", blockIdx
             block = self.dmodel.blocks[blockIdx]
@@ -256,7 +258,7 @@ class BinaryModel(object):
             elif blockDim==2:
                 self.fill2dInitFuncs(blockInitFuncArr.reshape([yc, xc]), block, cellCountList)
                 print blockInitFuncArr.reshape([yc, xc])
-                self.fill2dCompFuncs(blockCompFuncArr.reshape([yc, xc]), block, cellCountList)                
+                usedMainIndices = self.fill2dCompFuncs(blockCompFuncArr.reshape([yc, xc]), block, cellCountList, usedMainIndices)                
                 print blockCompFuncArr.reshape([yc, xc])
             elif blockDim==3:
                 self.fill1dFuncs(blockInitFuncArr, block, cellCountList)

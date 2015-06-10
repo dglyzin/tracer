@@ -1,25 +1,25 @@
 {
     "Connection": {
-        "Host": "10.7.129.222", 
-        "Port": 22, 
+        "Host": "corp7.uniyar.ac.ru", 
+        "Port": 2222, 
         "Username": "tester", 
         "Password": "tester", 
         "Workspace": "/home/tester/Tracer1", 
-        "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
+        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 50,
-    "TimeStep":   0.0001, 
+    "FinishTime": 5, 
+    "TimeStep": 0.00001, 
     "SaveInterval": 0.1, 
-    "Solver": 2,
-    "SolverAbsTolerance": 0.0001,
-    "SolverRelTolerance": 0.0001,
+    "Solver": 0,
+    "SolverAbsTolerance": 0.001,
+    "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.1, 
-        "y": 0.1, 
+        "x": 0.01, 
+        "y": 0.01, 
         "z": 1
-    },  
+    }, 
     "Blocks": [
         {
             "Name": "MainBlock", 
@@ -29,12 +29,37 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 100.0, 
-                "y": 100.0
+                "x": 1.0, 
+                "y": 2.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [], 
+            "BoundRegions": [
+                {
+                    "BoundNumber": 1, 
+                    "Side": 0, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.25                    
+                },
+                {
+                    "BoundNumber": 1, 
+                    "Side": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 1.75, 
+                    "yto": 2.0                    
+                },
+                {
+                    "BoundNumber": 0, 
+                    "Side": 2, 
+                    "xfrom": 0.25, 
+                    "xto": 0.75, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0                    
+                }
+            ], 
             "InitialRegions": []
         }
     ], 
@@ -63,12 +88,27 @@
             ]
         }
     ], 
-    "Bounds": [], 
+    "Bounds": [
+        {
+            "Name": "Dirichlet example", 
+            "Type": 0, 
+            "Values": [
+                "-10.0"
+            ]
+        },
+        {
+            "Name": "Dirichlet example", 
+            "Type": 0, 
+            "Values": [
+                "100.0"
+            ]
+        }
+    ], 
     "Initials": [
         {
             "Name": "Initial values", 
             "Values": [
-                "((x>=50.0)&&(y>=50.0))?40.0:0.0"
+                "0.0"               
             ]
         }
     ], 

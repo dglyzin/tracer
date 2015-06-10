@@ -36,7 +36,7 @@ def remoteProjectRun(InputFile):
         stdin, stdout, stderr = client.exec_command('test -d '+conn.workspace)
         if stdout.channel.recv_exit_status():
             print "Please create workspace folder and put hybriddomain preprocessor into it"
-            return
+            return "Please create workspace folder and put hybriddomain preprocessor into it"
         else:
             print "Workspace OK."
 
@@ -64,16 +64,13 @@ def remoteProjectRun(InputFile):
         stdin, stdout, stderr = client.exec_command('test -f '+conn.solverExecutable)
         if stdout.channel.recv_exit_status():
             print "Please provide correct path to the solver executable."
-            return
+            return "Please provide correct path to the solver executable."
         else:
             print "Solver executable found."
 
-        stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/project.sh')
-        print stdout.read()
-        print stderr.read()
-
-
-        client.close()
+##        stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/project.sh')
+##        print stdout.read()
+##        print stderr.read()
 
     #Обрабатываю исключения
     except paramiko.ssh_exception.AuthenticationException:
@@ -82,6 +79,46 @@ def remoteProjectRun(InputFile):
         return u'Указан неправильный адрес или порт'
     except paramiko.ssh_exception.SSHException:
         return u'Ошибка в протоколе SSH'
+    except Exception:
+        return u'Error'
+    finally:
+        client.close()
+        return ""
+
+def loadRezalt(InputFile):
+    model = Model()
+    model.loadFromFile(InputFile)
+    conn = model.connection
+    if conn.password == "":
+        print "Please enter password for user "+ model.connection.username+":"
+        passwd = getpass.getpass()
+    else:
+        passwd = conn.password
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    #print conn.host, conn.username, passwd, conn.port
+    try:
+        client.connect(hostname="corp7.uniyar.ac.ru", username=conn.username, password=passwd, port=2222 )
+        cftp=client.open_sftp()
+        stdin, stdout, stderr = client.exec_command('cd '+conn.workspace+'/Heat_test; ls')
+        line = stdout.read()
+        line = line.splitlines()
+        for i in line:
+##            print conn.workspace+'/Heat_test/'+i
+            cftp.get(conn.workspace+'/Heat_test/'+i,'./drow/'+i)
+        cftp.close()
+            #Обрабатываю исключения
+    except paramiko.ssh_exception.AuthenticationException:
+        print u'Неверный логин или пароль'
+    except socket.error:
+        print u'Указан неправильный адрес или порт'
+    except paramiko.ssh_exception.SSHException:
+        print u'Ошибка в протоколе SSH'
+    except Exception:
+        print u'Error'
+    finally:
+        client.close()
+        print ""
 
 
 
@@ -105,12 +142,12 @@ def remoteProjectRun(InputFile):
 '''
 
 
-if __name__=='__main__':
-##    #1 Get file name from command line
-##    if len(sys.argv)==1:
-##        print "Please specify a json file to read"
-##    else:
-##        InputFile = sys.argv[1]
-##        remoteProjectRun(InputFile)
-    remoteProjectRun("tests/test3_heat_wbounds.json")
-
+##if __name__=='__main__':
+####    #1 Get file name from command line
+####    if len(sys.argv)==1:
+####        print "Please specify a json file to read"
+####    else:
+####        InputFile = sys.argv[1]
+####        remoteProjectRun(InputFile)
+##    remoteProjectRun("tests/test3_heat_wbounds.json")
+##

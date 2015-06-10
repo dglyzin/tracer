@@ -13,7 +13,8 @@ import libAnalysisSystem
 from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel
 from domainmodel.decomposer import partitionAndMap
-from remoterun import remoteProjectRun
+from corp7remoterun import remoteProjectRun,loadRezalt
+from fromClusterDraw import runDrow
 
 class BaseWindow(QtGui.QMainWindow):
     def __init__(self, parent = None):
@@ -197,7 +198,7 @@ class BaseWindow(QtGui.QMainWindow):
         self.list1.addWidget(self.comboAddFunc, 4, 1)
         self.comboAddFunc.currentIndexChanged['QString'].connect(self.addTextButton)
 
-        value=['Вычислить локально','Вычислить на кластере']
+        value=['Вычислить на кластере','Вычислить локально']
         self.comboRunValue = QtGui.QComboBox(self)
         for elem in value:
             self.comboRunValue.addItem(str(elem).decode('utf-8'))
@@ -207,6 +208,11 @@ class BaseWindow(QtGui.QMainWindow):
         runEqu = QtGui.QPushButton(u'Вычислить', self)
         self.list1.addWidget(runEqu, 5, 0, 1, 1)
         self.connect(runEqu, QtCore.SIGNAL('clicked()'),self.mainCode)
+
+        #кнопка рисовки
+        runEqu = QtGui.QPushButton(u'Запуск рисовки', self)
+        self.list1.addWidget(runEqu, 6, 0, 1, 2)
+        self.connect(runEqu, QtCore.SIGNAL('clicked()'),self.drow)
 
 
 #_______Вторая вкладка <Параметры>
@@ -1038,52 +1044,55 @@ class BaseWindow(QtGui.QMainWindow):
         initJson.setMapping("true",self.programDate["Mapping"]["BlockMapping"])
         initJson.setClusterConnect(self.programDate["Connection"])
 
-        projectName = "projectOut"
+        projectName = "project"
         InputFile = projectName+".json"
         OutputDataFile = projectName+".dom"
         OutputFuncFile = projectName+".cpp"
 
         initJson.Create_json(os.getcwd(),InputFile)
 
-        model = Model()
-        model.loadFromFile(InputFile)
-##        print "Max derivative order is ", model.getMaxDerivOrder()
-        if model.isMapped:
-            partModel = model
-        else:
-            partModel = partitionAndMap(model)
-        bm = BinaryModel(partModel)
-        bm.saveDomain(OutputDataFile)
-        bm.saveFuncs(OutputFuncFile)
-        bm.compileFuncs(OutputFuncFile)
-
         if self.comboRunValue.currentText()==u'Вычислить на кластере':
-##            self.runConnect()
             runCluster=remoteProjectRun(InputFile)
             if runCluster<>"" and runCluster<>None:
                 QtGui.QMessageBox.warning (self, u'Предупреждение', unicode(runCluster), QtGui.QMessageBox.Ok)
             else:
                 QtGui.QMessageBox.warning (self, u'Предупреждение', u'Файл скомпилирован на кластере', QtGui.QMessageBox.Ok)
         else:
+            model = Model()
+            model.loadFromFile(InputFile)
+            if model.isMapped:
+                partModel = model
+            else:
+                partModel = partitionAndMap(model)
+            bm = BinaryModel(partModel)
+            bm.saveDomain(OutputDataFile)
+            bm.saveFuncs(OutputFuncFile)
+            bm.compileFuncs(OutputFuncFile)
             QtGui.QMessageBox.warning (self, u'Предупреждение',
                     u'Файл '+os.getcwd()+u'/projectOut.cpp скомпилирован', QtGui.QMessageBox.Ok)
 
 
-##    #Вызов окна подключения
-##    def runConnect(self):
-##        #dim_str, lexp_str, steps_str, iters_str, work_port, mainnode, procnum, login,password,ip,port,mode
-##        #"640", "10", "1000", "5", "15561", "cnode1", "16", "tester","tester","corp7.uniyar.ac.ru","2222",'command'
-##        if self.comboRunValue.currentText()==u'Вычислить на кластере':
-##            out=self.dictConfig
-##            conCluster=cluster.OnClickConnect(out["dim_str"],out["lexp_str"],out["steps_str"],out["iters_str"],out["work_port"],out["mainnode"],out["procnum"],out["login"],out["password"],out["ip"],out["port"],'projectOut.cpp')
-##            QtGui.QMessageBox.warning (self, u'Предупреждение',
-##                conCluster, QtGui.QMessageBox.Ok)
-##        else:
-####            out=libGenerateC.CompliteClient(self,os.getcwd()+"/File",'funcOut.c')
-####            QtGui.QMessageBox.warning (self, u'Предупреждение',
-####                out, QtGui.QMessageBox.Ok)
-##            pass
-
+    def drow(self):
+        s=os.listdir('./drow/')
+        for i in s:
+            os.remove('./drow/'+i)
+        projectName = "project"
+        InputFile = projectName+".json"
+        loadRezalt(InputFile)
+        s=os.listdir('./drow/')
+        dom=''
+        bin=''
+        for i in s:
+            if i[-4:]=='.dom':
+                dom=i
+            if i[-4:]=='.bin':
+                bin=i
+        print dom,bin
+        if dom<>'' and bin <> '':
+            runDrow('./drow/'+dom,'./drow/'+bin,0)
+        else:
+            QtGui.QMessageBox.warning (self, u'Предупреждение',
+                    u'Система пока нерешилась, подождите немного', QtGui.QMessageBox.Ok)
 
 
 if __name__ == '__main__':
