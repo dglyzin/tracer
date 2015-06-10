@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import itertools
+import re
 from equationParser import MathExpressionParser
 # from Cheetah.Tests.CheetahWrapper import OUTPUT
 
@@ -993,8 +994,13 @@ class FunctionCodeGenerator:
                 boundaryRanges = boundaryRanges + [[region['zfrom'],region['zto']]]
                 
             bound = bounds[boundNumber]
+#             Если условие Дирихле, то используем производные по t,
+#             если Неймановское условие --- то сами значения.
             boundaryType = bound['Type']
-            values = bound['Values']
+            if boundaryType == 0:
+                values = bound["Derivative"]
+            elif boundaryType == 1:
+                values = bound['Values']
                 
             boundaryCondition = dict({'values': values, 'type': boundaryType, 'side': side, 'ranges': boundaryRanges})
             boundaryConditionList.append(boundaryCondition)
@@ -1025,7 +1031,6 @@ class FunctionCodeGenerator:
 #         changedValueList --- будет содержать строки, которые просто надо подставить в нужное место и не надо парсить.
         pointFunction = list()
 #         changedValueList = list()
-#         Считаем, что уже сделана проверка на то что в initial["Values"] ровно столько начальных условий, сколько уравнений.
         valueList = initial["Values"]
         if len(valueList) != countOfEquations:
             raise AttributeError("Component's count of some initial condition is not corresponds to component's count of unknown vector-function!")
@@ -1042,8 +1047,14 @@ class FunctionCodeGenerator:
 #             changedValueList.append(changedValue)
 #         
         pointFunction.append("void Initial"+str(initialNumber)+"(double* cellstart, double x, double y, double z){\n")
+        t = re.compile('t')
+        repl = lambda match: t.sub('0.0', match.group())
         for k,value in enumerate(valueList):
-            pointFunction.append("\tcellstart[" + str(k) + "] = " + value + ";\n")
+#             Т.к. начальные условия не должны зависеть от t, его надо везде заменить на 0
+#             newValue = value.replace('t','0.0')
+#             Этот вариант замещает не всегда правильно! надо переделать.
+            newValue = re.sub('\(.*?\)',repl,value)
+            pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
         pointFunction.append("}\n\n")
         return ''.join(pointFunction)
     
@@ -1110,31 +1121,37 @@ class FunctionCodeGenerator:
         
         return ''.join(output)
     
-    def generateInitials(self, blocks, initials, equations):
+    def generateInitials(self, blocks, initials, DirichletBoundaries, equations):
 #         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
         countOfEquations = len(equations[0]['System'])
         output = list(["//===================PARAMETERS==========================//\n\n"])
         output.append(self.__generateParamFunction(equations[0]['Params'], equations[0]['ParamValues'][0]))
         
         output.append("//===================INITIAL CONDITIONS==========================//\n\n")
+        reducedInitials = initials + DirichletBoundaries
         indepVariableList = equations[0]['Vars']
-        for initialNumber,initial in enumerate(initials):
+        for initialNumber,initial in enumerate(reducedInitials):
             output.append(self.__generatePointInitial(countOfEquations, initial, initialNumber, indepVariableList))
         
-        countOfInitials = len(initials)
+#         Выбрасываем лишние поля (просто приводим вид словарей для граничных условий к виду словарей для начальных условий)
+#         reducedDirichletBoundaries = list([])    
+#         for dirichletBoundary in DirichletBoundaries:
+#             reducedDirichletBoundary = {"Name" : dirichletBoundary["Name"], "Values" : dirichletBoundary["Values"]}
+        
+        countOfInitials = len(reducedInitials)
         for blockNumber, block in enumerate(blocks):
             output.append(self.__generateFillFunctionForBlock(blockNumber, countOfInitials, indepVariableList))
         
         output.append(self.__generateGetInitFuncArray(len(blocks)))
         
-        return ''.join(output)
+        return ''.join(output)                     
     
     def generateAllFunctions(self, blocks, equations, bounds, initials, gridStep):
 #         gridStep --- словарь, всегда содержащий 3 пары {'x': , 'y': , 'z': }
         userIndepVariables = equations[0]['Vars']
         defaultIndepVariables = ['x','y','z']
         params = equations[0]['Params']
-    
+        
         dim = len(userIndepVariables)
         DList = [gridStep['x'], gridStep['y'], gridStep['z']]
 
@@ -1158,7 +1175,13 @@ class FunctionCodeGenerator:
         
         outputStr = '#indlude <Math.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include "../hybriddomain/doc/userfuncs.h"\n\n'
         outputStr += self.generateAllDefinitions(len(params), defaultIndepVariables, DList, allBlockOffsetList, allBlockSizeList, cellsizeList)
-        outputStr += self.generateInitials(blocks, initials, equations)
+        
+        DirichletBoundaries = list([])
+        for boundary in bounds:
+            if boundary['Type'] == 0:
+                DirichletBoundaries.append(boundary)
+        outputStr += self.generateInitials(blocks, initials, DirichletBoundaries, equations)
+        
         for blockNumber,block in enumerate(blocks):
             estrList = equations[block['DefaultEquation']]['System']
             cf = self.generateCentralFunctionCode(block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params)
@@ -1168,4 +1191,4 @@ class FunctionCodeGenerator:
          
         return outputStr
     
-        
+            

@@ -436,15 +436,15 @@ class Model(QObject):
 
     def createCPP(self,cppFileName):
         #generator1
-        #try:
-        #    gen = FunctionCodeGenerator()
+        try:
+            gen = FunctionCodeGenerator()
             #приходится опять формировать словарь из gridStep'ов, т.к. ф-я принимает именно его. Но это легко исправить.
-        #    outputStr = gen.generateAllFunctions(self.blocks, self.equations, self.bounds, self.initials, {'x': self.gridStepX, 'y': self.gridStepY, 'z': self.gridStepZ})
-        #except Exception as ex:
-        #    print(ex)
-        #else:
-        #    f = open(cppFileName,'w')
-        #    f.write(outputStr)
-        #    f.close()
+            outputStr = gen.generateAllFunctions(self.blocks, self.equations, self.bounds, self.initials, [self.gridStepX, self.gridStepY, self.gridStepZ])
+        except Exception as ex:
+            print(ex)
+        else:
+            f = open(cppFileName,'w')
+            f.write(outputStr)
+            f.close()
         #generator2
-        generateCfromDict(self.toDict(),cppFileName)
+        #generateCfromDict(self.toDict(),cppFileName)
