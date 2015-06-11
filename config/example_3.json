@@ -23,42 +23,34 @@
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 2, 
+            "Dimension": 1, 
             "Offset": {
-                "x": 0.0, 
-                "y": 0.0
+                "x": 0.0
             }, 
             "Size": {
-                "x": 10.0, 
-                "y": 10.0
+                "x": 10.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
-                    "Side": 1, 
+                    "Side": 0, 
                     "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 0.0, 
-                    "yto": 5.0
+                    "xto": 0.0
                 }, 
                 {
                     "BoundNumber": 1, 
                     "Side": 1, 
                     "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 5.0, 
-                    "yto": 10.0
+                    "xto": 0.0
                 }
             ], 
             "InitialRegions": [
                 {
                     "InitialNumber": 1, 
                     "xfrom": 1.0, 
-                    "xto": 2.0, 
-                    "yfrom": 1.0, 
-                    "yto": 2.0
+                    "xto": 2.0
                 }
             ]
         }
@@ -68,12 +60,11 @@
         {
             "Name": "Flat Brusselator", 
             "Vars": [
-                "x", 
-                "y"
+                "x"
             ], 
             "System": [
-                "U'=1+U^2*V-k1*U+a*(D[U,{x,2}]+D[U,{y,2}])", 
-                "V'=k2*U-U^2*V+a*(D[V,{x,2}]+D[V,{y,2}])"
+                "U'=D[U,{x,2}]", 
+                "V'=k2*U-U^2*V+a*(D[V,{x,2}])"
             ], 
             "Params": [
                 "k1", 
@@ -96,7 +87,11 @@
             "Values": [
                 "15.0", 
                 "sin(t)"
-            ]
+            ],
+			"Derivative": [
+				"0.0",
+				"cos(t)"
+			]
         }, 
         {
             "Name": "Neumann example", 
@@ -104,7 +99,11 @@
             "Values": [
                 "-10.0", 
                 "cos(t)"
-            ]
+            ],
+			"Derivative": [
+				"0.0",
+				"-sin(t)"
+			]
         }
     ], 
     "Initials": [
@@ -112,7 +111,7 @@
             "Name": "Initial values", 
             "Values": [
                 "15.0", 
-                "sin(x)*cos(y)"
+                "sin(x)"
             ]
         }, 
         {

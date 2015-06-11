@@ -13,11 +13,14 @@ class Bound(object):
         self.name = name
         self.btype = 0
         self.values = ["0"]
+        self.derivative = ["0"]
 
     def fillProperties(self, bdict):
         self.name = bdict["Name"]
         self.btype = bdict["Type"]
         self.values = bdict["Values"]
+        if self.btype == 0:
+            self.derivative = bdict["Derivative"]
     
     def getPropertiesDict(self):          
         propDict = OrderedDict([            
@@ -25,4 +28,6 @@ class Bound(object):
             ("Type", self.btype),
             ("Values", self.values)
         ])
+        if self.btype == 0:
+            propDict.setdefault("Derivative", self.derivative)
         return propDict  
