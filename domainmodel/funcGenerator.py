@@ -501,7 +501,7 @@ class FunctionCodeGenerator:
         
         return ''.join(function)
     
-    def __rectangleNearSegment(self, ribCoordinateMin, ribCoordinateMax, rectCoordinateList):
+    def __rectVertexNearSegment(self, ribCoordinateMin, ribCoordinateMax, rectCoordinateList):
 # Определяет, лежит ли часть стороны прямоугольника на отрезке. Возвращает 0, если не лежит,
 # 1, если лежит не полностью, 2, если лежит полностью.
 # rectCoordinateList содержит четыре координаты -- углы прямоугольника
@@ -606,7 +606,7 @@ class FunctionCodeGenerator:
         generalCondList = list([boundary1CondList, boundary2CondList])
         for (boundaryCondList, resultCondList) in zip(generalCondList, generalResultCondList):
             for boundaryCondition in boundaryCondList:
-                pointsOnRib = self.__rectangleNearSegment(ribCoordinateMin, ribCoordinateMax, boundaryCondition[1])
+                pointsOnRib = self.__rectVertexNearSegment(ribCoordinateMin, ribCoordinateMax, boundaryCondition[1])
                 if len(pointsOnRib[0]) == 2:
 #                     (Сами условия, координаты углов, список координат углов на ребре, координаты одномерного отрезка, Тип условия)
                     resultCondList.extend([(boundaryCondition[0], boundaryCondition[1], pointsOnRib[0], pointsOnRib[1], boundaryCondition[2])])
@@ -644,7 +644,7 @@ class FunctionCodeGenerator:
         else:
             raise AttributeError("В задаче присутствует более чем 3 независимых переменных!")
                     
-    def __generateAngleAndRibFunctions(self, blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary):
+    def __generateVertexAndRibFunctions(self, blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary):
 #         blockRanges --- это словарь {'min' : [x_min,y_min,z_min], 'max' : [x_max,y_max,z_max]}
 #         parsedBoundaryConditionDictionary --- это словарь вида {Номер границы : [(распарсенное условие 1, [4 или 2 координаты краев части 1 границы], Тип условия),
 #                                                                                  (распарсенное условие 2, [4 или 2 координаты краев части 2 границы], Тип условия), ...]}
@@ -658,31 +658,31 @@ class FunctionCodeGenerator:
         blockDimension = len(userIndepVariables)
 #         Двумерный случай
         if blockDimension == 2:
-            angles = [(0,2),(0,3),(1,2),(1,3)]
-            anglesCoordinates = [(blockRanges['min'][0], blockRanges['min'][1]),(blockRanges['min'][0], blockRanges['max'][1]),
-                                 (blockRanges['max'][0], blockRanges['min'][1]),(blockRanges['max'][0], blockRanges['max'][1])]
+            Vertexs = [(0,2),(1,2),(0,3),(1,3)]
+            VertexsCoordinates = [(blockRanges['min'][0], blockRanges['min'][1]),(blockRanges['max'][0], blockRanges['min'][1]),
+                                  (blockRanges['min'][0], blockRanges['max'][1]),(blockRanges['max'][0], blockRanges['max'][1])]
 #             Для каждого угла ищутся граничные условия, заданные пользователем. Если находятся, то используются они,
 #             а иначе используются дефолтные
-            for i,angle in enumerate(angles):
-                
-                if angle == (0,3):
-                    index = 1
-                elif angle == (1,3):
-                    index = 2
-                elif angle == (1,2):
-                    index = 3
-                elif angle == (0,2):
-                    index = 4
+            for i,Vertex in enumerate(Vertexs):
+                index = i + 1
+#                 if Vertex == (0,2):
+#                     index = 1
+#                 elif Vertex == (1,2):
+#                     index = 2
+#                 elif Vertex == (0,3):
+#                     index = 3
+#                 elif Vertex == (1,3):
+#                     index = 4
 #                 Делается преобразование в множество потому, что для множеств определена операция isdisjoint()
-                c = set([anglesCoordinates[i]])
+                c = set([VertexsCoordinates[i]])
                 
                 bound1CondValue = defuaultBoundaryConditionValues
                 bound2CondValue = defuaultBoundaryConditionValues
                 type1 = 1
                 type2 = 1
                 
-                if angle[0] in parsedBoundaryConditionDictionary:
-                    bound1CondList = parsedBoundaryConditionDictionary[angle[0]]
+                if Vertex[0] in parsedBoundaryConditionDictionary:
+                    bound1CondList = parsedBoundaryConditionDictionary[Vertex[0]]
                     for boundCondition in bound1CondList:
                         a = set(boundCondition[1])
                         if not a.isdisjoint(c):
@@ -692,8 +692,8 @@ class FunctionCodeGenerator:
                             if type1 != 0 and type1 != 1:
                                 raise AttributeError("Type of boundary condition should be equal either 0 or 1!")
                             break
-                if angle[1] in parsedBoundaryConditionDictionary:
-                    bound2CondList = parsedBoundaryConditionDictionary[angle[1]]
+                if Vertex[1] in parsedBoundaryConditionDictionary:
+                    bound2CondList = parsedBoundaryConditionDictionary[Vertex[1]]
                     for boundCondition in bound2CondList:
                         a = set(boundCondition[1])
                         if not a.isdisjoint(c):
@@ -703,31 +703,31 @@ class FunctionCodeGenerator:
                                 raise AttributeError("Type of boundary condition should be equal either 0 or 1!")
                             break
                 
-                boundaryName1 = self.__determineNameOfBoundary(angle[0])
-                boundaryName2 = self.__determineNameOfBoundary(angle[1])
+                boundaryName1 = self.__determineNameOfBoundary(Vertex[0])
+                boundaryName2 = self.__determineNameOfBoundary(Vertex[1])
                 if bound1CondValue == defuaultBoundaryConditionValues and bound2CondValue == defuaultBoundaryConditionValues:
 #                     Генерируется функция для угла по-умолчанию; ничего в массив не записывается, т.к. дефолтное значение уже записано
-                    output.extend(['//Default boundary condition for ANGLE between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n'])
-                    boundaryConditionList = list([tuple((angle[0], bound1CondValue)), tuple((angle[1], bound2CondValue))])
-                    nameForAngle = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForAngle' + str(angle[0]) + '_' + str(angle[1])
-                    output.extend([self.__generateNeumann(blockNumber, nameForAngle, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
+                    output.extend(['//Default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n'])
+                    boundaryConditionList = list([tuple((Vertex[0], bound1CondValue)), tuple((Vertex[1], bound2CondValue))])
+                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
+                    output.extend([self.__generateNeumann(blockNumber, nameForVertex, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
                     continue
-                output.extend(['//Non-default boundary condition for ANGLE between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n'])
+                output.extend(['//Non-default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n'])
                 if type1 == type2 == 1:
-                    boundaryConditionList = list([tuple((angle[0], bound1CondValue)), tuple((angle[1], bound2CondValue))])
-                    nameForAngle = 'Block' + str(blockNumber) + 'NeumannBoundForAngle' + str(angle[0]) + '_' + str(angle[1])
-                    output.extend([self.__generateNeumann(blockNumber, nameForAngle, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
+                    boundaryConditionList = list([tuple((Vertex[0], bound1CondValue)), tuple((Vertex[1], bound2CondValue))])
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
+                    output.extend([self.__generateNeumann(blockNumber, nameForVertex, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
                 elif type1 == 0:
-                    boundaryConditionList = list([tuple((angle[0], bound1CondValue))])
-                    nameForAngle = 'Block' + str(blockNumber) + 'DirichletBoundForAngle' + str(angle[0]) + '_' + str(angle[1])
-                    output.extend([self.__generateDirichlet(blockNumber, nameForAngle, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
+                    boundaryConditionList = list([tuple((Vertex[0], bound1CondValue))])
+                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
+                    output.extend([self.__generateDirichlet(blockNumber, nameForVertex, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
                 else:
-                    boundaryConditionList = list([tuple((angle[1], bound2CondValue))])
-                    nameForAngle = 'Block' + str(blockNumber) + 'DirichletBoundForAngle' + str(angle[0]) + '_' + str(angle[1])
-                    output.extend([self.__generateDirichlet(blockNumber, nameForAngle, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
+                    boundaryConditionList = list([tuple((Vertex[1], bound2CondValue))])
+                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
+                    output.extend([self.__generateDirichlet(blockNumber, nameForVertex, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
                 
                 arrWithFunctionNames.pop(index)
-                arrWithFunctionNames.insert(index, nameForAngle)
+                arrWithFunctionNames.insert(index, nameForVertex)
         
 #         А в трехмерном случае пока что не учтен массив arrWithFunctionNames       
         elif blockDimension == 3:
@@ -756,11 +756,11 @@ class FunctionCodeGenerator:
 #                     Здесь надо сначала определить те границы, которые касаются ребра, и для каждой из них
 #                     сгенерить функцию
                     for boundaryCondition in parsedBoundaryConditionDictionary[rib[0]]:
-                        if len(self.__rectangleNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
+                        if len(self.__rectVertexNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
                             pairsOfBoundaryCondition.append(((boundaryCondition[0],boundaryCondition[2]), (defuaultBoundaryConditionValues,1)))
                 elif rib[0] not in parsedBoundaryConditionDictionary and rib[1] in parsedBoundaryConditionDictionary:
                     for boundaryCondition in parsedBoundaryConditionDictionary[rib[1]]:
-                        if len(self.__rectangleNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
+                        if len(self.__rectVertexNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
                             pairsOfBoundaryCondition.append(((defuaultBoundaryConditionValues,1), (boundaryCondition[0],boundaryCondition[2])))
                 else:
                     continue
@@ -779,8 +779,8 @@ class FunctionCodeGenerator:
                         boundaryConditionList = list([tuple((rib[1], pair[1][0]))])
                         output.extend([self.__generateDirichlet(blockNumber, nameForRib, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
             
-            angles = [(0,2,4),(0,2,5),(0,3,4),(0,3,5),(1,2,4),(1,2,5),(1,3,4),(1,3,5)]
-            anglesCoordinates = [(blockRanges['min'][0], blockRanges['min'][1], blockRanges['min'][2]),
+            Vertexs = [(0,2,4),(0,2,5),(0,3,4),(0,3,5),(1,2,4),(1,2,5),(1,3,4),(1,3,5)]
+            VertexsCoordinates = [(blockRanges['min'][0], blockRanges['min'][1], blockRanges['min'][2]),
                                  (blockRanges['min'][0], blockRanges['min'][1], blockRanges['max'][2]),
                                  (blockRanges['min'][0], blockRanges['max'][1], blockRanges['min'][2]),
                                  (blockRanges['min'][0], blockRanges['max'][1], blockRanges['max'][2]),
@@ -789,8 +789,8 @@ class FunctionCodeGenerator:
                                  (blockRanges['max'][0], blockRanges['max'][1], blockRanges['min'][2]),
                                  (blockRanges['max'][0], blockRanges['max'][1], blockRanges['max'][2])]
             
-            for i,angle in enumerate(angles):
-                c = set([anglesCoordinates[i]])
+            for i,Vertex in enumerate(Vertexs):
+                c = set([VertexsCoordinates[i]])
                     
                 bound1CondValue = defuaultBoundaryConditionValues
                 bound2CondValue = defuaultBoundaryConditionValues
@@ -799,8 +799,8 @@ class FunctionCodeGenerator:
                 type2 = 1
                 type3 = 1
                     
-                if angle[0] in parsedBoundaryConditionDictionary:
-                    bound1CondList = parsedBoundaryConditionDictionary[angle[0]]
+                if Vertex[0] in parsedBoundaryConditionDictionary:
+                    bound1CondList = parsedBoundaryConditionDictionary[Vertex[0]]
                     for boundCondition in bound1CondList:
                         a = set(boundCondition[1])
                         if not a.isdisjoint(c):
@@ -809,8 +809,8 @@ class FunctionCodeGenerator:
                             if type1 != 0 and type1 != 1:
                                 raise AttributeError("Type of boundary condition should be equal either 0 or 1!")
                             break
-                if angle[1] in parsedBoundaryConditionDictionary:
-                    bound2CondList = parsedBoundaryConditionDictionary[angle[1]]
+                if Vertex[1] in parsedBoundaryConditionDictionary:
+                    bound2CondList = parsedBoundaryConditionDictionary[Vertex[1]]
                     for boundCondition in bound2CondList:
                         a = set(boundCondition[1])
                         if not a.isdisjoint(c):
@@ -819,8 +819,8 @@ class FunctionCodeGenerator:
                             if type2 != 0 and type2 != 1:
                                 raise AttributeError("Type of boundary condition should be equal either 0 or 1!")
                             break
-                if angle[2] in parsedBoundaryConditionDictionary:
-                    bound3CondList = parsedBoundaryConditionDictionary[angle[2]]
+                if Vertex[2] in parsedBoundaryConditionDictionary:
+                    bound3CondList = parsedBoundaryConditionDictionary[Vertex[2]]
                     for boundCondition in bound3CondList:
                         a = set(boundCondition[1])
                         if not a.isdisjoint(c):
@@ -832,26 +832,26 @@ class FunctionCodeGenerator:
                 if bound1CondValue == defuaultBoundaryConditionValues and bound2CondValue == defuaultBoundaryConditionValues and bound3CondValue == defuaultBoundaryConditionValues:
                     continue
                 
-                boundaryName1 = self.__determineNameOfBoundary(angle[0])
-                boundaryName2 = self.__determineNameOfBoundary(angle[1])
-                boundaryName3 = self.__determineNameOfBoundary(angle[2])
-                output.extend(['//Non-default boundary condition for ANGLE between boundaries ' + boundaryName1 + ', ' + boundaryName2 + ' and ' + boundaryName3 + '\n'])
+                boundaryName1 = self.__determineNameOfBoundary(Vertex[0])
+                boundaryName2 = self.__determineNameOfBoundary(Vertex[1])
+                boundaryName3 = self.__determineNameOfBoundary(Vertex[2])
+                output.extend(['//Non-default boundary condition for Vertex between boundaries ' + boundaryName1 + ', ' + boundaryName2 + ' and ' + boundaryName3 + '\n'])
                 if type1 == type2 == type3 == 1:
-                    boundaryConditionList = list([tuple((angle[0], bound1CondValue)), tuple((angle[1], bound2CondValue)), tuple((angle[2], bound3CondValue))])
-                    nameForAngle = 'Block' + str(blockNumber) + 'NeumannBoundForAngle' + str(angle[0]) + '_' + str(angle[1])
-                    output.extend([self.__generateNeumann(blockNumber, nameForAngle, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
+                    boundaryConditionList = list([tuple((Vertex[0], bound1CondValue)), tuple((Vertex[1], bound2CondValue)), tuple((Vertex[2], bound3CondValue))])
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
+                    output.extend([self.__generateNeumann(blockNumber, nameForVertex, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
                 elif type1 == 0:
-                    boundaryConditionList = list([tuple((angle[0], bound1CondValue))])
-                    nameForAngle = 'Block' + str(blockNumber) + 'DirichletBoundForAngle' + str(angle[0]) + '_' + str(angle[1])
-                    output.extend([self.__generateDirichlet(blockNumber, nameForAngle, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
+                    boundaryConditionList = list([tuple((Vertex[0], bound1CondValue))])
+                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
+                    output.extend([self.__generateDirichlet(blockNumber, nameForVertex, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
                 elif type2 == 0:
-                    boundaryConditionList = list([tuple((angle[1], bound2CondValue))])
-                    nameForAngle = 'Block' + str(blockNumber) + 'DirichletBoundForAngle' + str(angle[0]) + '_' + str(angle[1])
-                    output.extend([self.__generateDirichlet(blockNumber, nameForAngle, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
+                    boundaryConditionList = list([tuple((Vertex[1], bound2CondValue))])
+                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
+                    output.extend([self.__generateDirichlet(blockNumber, nameForVertex, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
                 else:
-                    boundaryConditionList = list([tuple((angle[2], bound3CondValue))])
-                    nameForAngle = 'Block' + str(blockNumber) + 'DirichletBoundForAngle' + str(angle[0]) + '_' + str(angle[1])
-                    output.extend([self.__generateDirichlet(blockNumber, nameForAngle, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
+                    boundaryConditionList = list([tuple((Vertex[2], bound3CondValue))])
+                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
+                    output.extend([self.__generateDirichlet(blockNumber, nameForVertex, defaultIndepVariables, userIndepVariables, params, boundaryConditionList)])
 
         return output
     
@@ -924,7 +924,7 @@ class FunctionCodeGenerator:
 #             else:
 #                 outputFile.extend([self.__generateNeumann(blockNumber, 'Block' + str(blockNumber) + 'NeumannBound' + str(boundaryNumber) + '_' + str(countOfGeneratedFunction[boundaryNumber]), parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple)])
 #         
-#         outputFile.extend(self.__generateAngleAndRibFunctions(blockNumber, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary))
+#         outputFile.extend(self.__generateVertexAndRibFunctions(blockNumber, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary))
 #         return ''.join(outputFile)
     
 #     def generateDefaultBoundaryFunction(self, block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params):
@@ -952,16 +952,16 @@ class FunctionCodeGenerator:
 #             defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForSide, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])
 #             
 #         if len(userIndepVariables) == 2:
-#             angles = [(0,2),(0,3),(1,2),(1,3)]
-#             for angle in angles:
-#                 boundaryName1 = self.__determineNameOfBoundary(angle[0])
-#                 boundaryName2 = self.__determineNameOfBoundary(angle[1])
-#                 defaultFunctions.extend(['//Default boundary condition for angle between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n'])
-#                 defaultBoundaryConditionList = list([tuple((angle[0], defuaultBoundaryConditionValues)), tuple((angle[1], defuaultBoundaryConditionValues))])
-#                 nameForAngle = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForAngle' + str(angle[0]) + '_' + str(angle[1])
-#                 defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForAngle, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])
+#             Vertexs = [(0,2),(0,3),(1,2),(1,3)]
+#             for Vertex in Vertexs:
+#                 boundaryName1 = self.__determineNameOfBoundary(Vertex[0])
+#                 boundaryName2 = self.__determineNameOfBoundary(Vertex[1])
+#                 defaultFunctions.extend(['//Default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n'])
+#                 defaultBoundaryConditionList = list([tuple((Vertex[0], defuaultBoundaryConditionValues)), tuple((Vertex[1], defuaultBoundaryConditionValues))])
+#                 nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
+#                 defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForVertex, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])
 #                     
-# #             defaultFunctions.extend([self.__generateAngleOrRib(blockNumber, nameForAngle, parsedEstrList, variables, indepVrbls, params, defaultBoundaryConditionList)])
+# #             defaultFunctions.extend([self.__generateVertexOrRib(blockNumber, nameForVertex, parsedEstrList, variables, indepVrbls, params, defaultBoundaryConditionList)])
 #         elif len(userIndepVariables) == 3:
 #             ribs = [(0,2),(0,3),(0,4),(0,5),(1,2),(1,3),(1,4),(1,5),(2,4),(2,5),(3,4),(3,5)]
 #             for rib in ribs:
@@ -969,17 +969,17 @@ class FunctionCodeGenerator:
 #                 boundaryName2 = self.__determineNameOfBoundary(rib[1])
 #                 defaultFunctions.extend(['//Default boundary condition for rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n'])
 #                 defaultBoundaryConditionList = list([tuple((rib[0], defuaultBoundaryConditionValues)), tuple((rib[1], defuaultBoundaryConditionValues))])
-#                 nameForAngle = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForRib' + str(rib[0]) + '_' + str(rib[1])
-#                 defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForAngle, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])
-#             angles = [(0,2,4),(0,2,5),(0,3,4),(0,3,5),(1,2,4),(1,2,5),(1,3,4),(1,3,5)]
-#             for angle in angles:
-#                 boundaryName1 = self.__determineNameOfBoundary(angle[0])
-#                 boundaryName2 = self.__determineNameOfBoundary(angle[1])
-#                 boundaryName3 = self.__determineNameOfBoundary(angle[2])
-#                 defaultFunctions.extend(['//Default boundary condition for angle between boundaries ' + boundaryName1 + ', ' + boundaryName2 + ' and ' + boundaryName3 + '\n'])
-#                 defaultBoundaryConditionList = list([tuple((angle[0], defuaultBoundaryConditionValues)), tuple((angle[1], defuaultBoundaryConditionValues)), tuple((angle[2], defuaultBoundaryConditionValues))])
-#                 nameForAngle = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForAngle' + str(angle[0]) + '_' + str(angle[1]) + '_' + str(angle[2])
-#                 defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForAngle, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])
+#                 nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForRib' + str(rib[0]) + '_' + str(rib[1])
+#                 defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForVertex, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])
+#             Vertexs = [(0,2,4),(0,2,5),(0,3,4),(0,3,5),(1,2,4),(1,2,5),(1,3,4),(1,3,5)]
+#             for Vertex in Vertexs:
+#                 boundaryName1 = self.__determineNameOfBoundary(Vertex[0])
+#                 boundaryName2 = self.__determineNameOfBoundary(Vertex[1])
+#                 boundaryName3 = self.__determineNameOfBoundary(Vertex[2])
+#                 defaultFunctions.extend(['//Default boundary condition for Vertex between boundaries ' + boundaryName1 + ', ' + boundaryName2 + ' and ' + boundaryName3 + '\n'])
+#                 defaultBoundaryConditionList = list([tuple((Vertex[0], defuaultBoundaryConditionValues)), tuple((Vertex[1], defuaultBoundaryConditionValues)), tuple((Vertex[2], defuaultBoundaryConditionValues))])
+#                 nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1]) + '_' + str(Vertex[2])
+#                 defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForVertex, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])
 #         
 #         return ''.join(defaultFunctions)
 #     
@@ -1061,8 +1061,10 @@ class FunctionCodeGenerator:
                 boundaryNumberList.extend([side])
                 parsedBoundaryConditionDictionary.update({side : [(parsedBoundaryCondition, boundaryCoordList, boundaryCondition['type'])]})
         
-        dimension = len(userIndepVariables)    
-        for side in range(0, boundaryCount):
+        dimension = len(userIndepVariables)
+        properSequenceOfSides = [2,3,0,1]    
+#         for side in range(0, boundaryCount):
+        for side in properSequenceOfSides:
             boundaryName = self.__determineNameOfBoundary(side)
             if side in parsedBoundaryConditionDictionary:
                 if dimension == 2:
@@ -1121,7 +1123,7 @@ class FunctionCodeGenerator:
 #             else:
 #                 outputFile.extend([self.__generateNeumann(blockNumber, 'Block' + str(blockNumber) + 'NeumannBound' + str(side) + '_' + str(countOfGeneratedFunction[side]), parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple)])
         
-        outputFile.extend(self.__generateAngleAndRibFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary))
+        outputFile.extend(self.__generateVertexAndRibFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary))
         return ''.join(outputFile)
     
 
@@ -1395,10 +1397,10 @@ class FunctionCodeGenerator:
                 arrWithFunctionNames = ["Block" + str(blockNumber) + "CentralFunction"]
             elif dim == 2:
                 arrWithFunctionNames = ["Block" + str(blockNumber) + "CentralFunction",
-                                        "Block" + str(blockNumber) + "DefaultNeumannBoundForAngle0_3",
-                                        "Block" + str(blockNumber) + "DefaultNeumannBoundForAngle1_3",
-                                        "Block" + str(blockNumber) + "DefaultNeumannBoundForAngle1_2",
-                                        "Block" + str(blockNumber) + "DefaultNeumannBoundForAngle0_2"]
+                                        "Block" + str(blockNumber) + "DefaultNeumannBoundForVertex0_2",
+                                        "Block" + str(blockNumber) + "DefaultNeumannBoundForVertex1_2",
+                                        "Block" + str(blockNumber) + "DefaultNeumannBoundForVertex0_3",
+                                        "Block" + str(blockNumber) + "DefaultNeumannBoundForVertex1_3"]
             
 #             dbf = self.generateDefaultBoundaryFunction(block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params)
             bf = self.generateAllBoundaries(block, blockNumber, arrWithFunctionNames, estrList, bounds, defaultIndepVariables, userIndepVariables, params)
