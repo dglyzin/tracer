@@ -1230,9 +1230,9 @@ class FunctionCodeGenerator:
             valueList = initial.values
             if len(valueList) != countOfEquations:
                 raise AttributeError("Component's count of some initial condition is not corresponds to component's count of unknown vector-function!")      
-            name = "void Initial"+str(initialNumber)
+            name = "Initial"+str(initialNumber)
             listWithInitialFunctionNames.append(name)
-            pointFunction.append(name + "(double* cellstart, double x, double y, double z){\n")
+            pointFunction.append("void " + name + "(double* cellstart, double x, double y, double z){\n")
             t = re.compile('t')
     #         Функция, которая в выражении match.group() заменяет все 't' на '0.0'
             repl = lambda match: t.sub('0.0', match.group())
@@ -1249,9 +1249,9 @@ class FunctionCodeGenerator:
                 valueList = bound.values
                 if len(valueList) != countOfEquations:
                     raise AttributeError("Component's count of some boundary condition is not corresponds to component's count of unknown vector-function!")      
-                name = "void DirichletInitial" + str(boundNumber)
+                name = "DirichletInitial" + str(boundNumber)
                 listWithDirichletFunctionNames.append(name)
-                pointFunction.append(name + "(double* cellstart, double x, double y, double z){\n")
+                pointFunction.append("void " + name + "(double* cellstart, double x, double y, double z){\n")
                 t = re.compile('t')
         #         Функция, которая в выражении match.group() заменяет все 't' на '0.0'
 #                 repl = lambda match: t.sub('0.0', match.group())
@@ -1433,9 +1433,9 @@ class FunctionCodeGenerator:
         output = list()
         for blockNumber in range(0, countOfBlocks):
             arrWithFunctionNames = totalArrWithFunctionNames[blockNumber]
-            output.append("void getBlock" + str(blockNumber) + "BoundFuncArray(boundfunc_ptr_t** ppBoundFuncs){\n")
-            output.append("\tboundfunc_ptr_t* pBoundFuncs = *ppBoundFuncs;\n")
-            output.append("\tpBoundFuncs = (boundfunc_ptr_t*) malloc( " + str(len(arrWithFunctionNames)) + " * sizeof(boundfunc_ptr_t) );\n")
+            output.append("void getBlock" + str(blockNumber) + "BoundFuncArray(func_ptr_t** ppBoundFuncs){\n")
+            output.append("\tfunc_ptr_t* pBoundFuncs = *ppBoundFuncs;\n")
+            output.append("\tpBoundFuncs = (func_ptr_t*) malloc( " + str(len(arrWithFunctionNames)) + " * sizeof(func_ptr_t) );\n")
             output.append("\t*ppInitFuncs = pInitFuncs;\n\n")
             for i,funcName in enumerate(arrWithFunctionNames):
                 index = str(i)
@@ -1449,7 +1449,7 @@ class FunctionCodeGenerator:
             for blockNumber in range(0, countOfBlocks):
                 output.append("\tif (blockIdx == 0)\n\t\tgetBlock" + str(blockNumber) + "BoundFuncArray(ppBoundFuncs);\n")
         output.append("}\n\n")
-        output.append("void releaseBoundFuncArray(boundfunc_ptr_t* BoundFuncs){\n\tfree(BoundFuncs);\n}\n\n")
+        output.append("void releaseBoundFuncArray(func_ptr_t* BoundFuncs){\n\tfree(BoundFuncs);\n}\n\n")
         
         return ''.join(output)
 
