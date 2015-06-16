@@ -1287,7 +1287,7 @@ class FunctionCodeGenerator:
 #             Генерируется сама функция-заполнитель.
             fillFunction = list()
             strBlockNum = str(blockNumber)
-            signature = "void Block" + strBlockNum + "FillInitialValues(double* result, int* initType){\n"
+            signature = "void Block" + strBlockNum + "FillInitialValues(double* result, unsigned short int* initType){\n"
             fillFunction.append(signature)
             
             fillFunction.append("\tinitfunc_ptr_t initFuncArray[" + str(countOfInitialsForBlock + countOfDirichletForBlock) + "];\n")
@@ -1436,7 +1436,7 @@ class FunctionCodeGenerator:
             output.append("void getBlock" + str(blockNumber) + "BoundFuncArray(func_ptr_t** ppBoundFuncs){\n")
             output.append("\tfunc_ptr_t* pBoundFuncs = *ppBoundFuncs;\n")
             output.append("\tpBoundFuncs = (func_ptr_t*) malloc( " + str(len(arrWithFunctionNames)) + " * sizeof(func_ptr_t) );\n")
-            output.append("\t*ppInitFuncs = pInitFuncs;\n\n")
+            output.append("\t*ppBoundFuncs = pBoundFuncs;\n\n")
             for i,funcName in enumerate(arrWithFunctionNames):
                 index = str(i)
                 output.append("\tpBoundFuncs[" + index + "] = " + funcName + ";\n")
