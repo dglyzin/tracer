@@ -9,6 +9,7 @@ encoding//domainmodel/interconnect.py=utf-8
 encoding//domainmodel/libGenerateC.py=utf-8
 encoding//domainmodel/model.py=utf-8
 encoding//domainmodel/regions.py=utf-8
+encoding//domainmodel/someFuncs.py=utf-8
 encoding/inputtest.py=utf-8
 encoding/jsontobin.py=utf-8
 encoding/remoterun.py=utf-8
