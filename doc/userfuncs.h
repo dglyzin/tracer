@@ -8,7 +8,7 @@
 #ifndef USERFUNCS_H_
 #define USERFUNCS_H_
 
-typedef void (*initfunc_ptr_t)( double* result, int idxX, int idxY, int idxZ);
+typedef void (*initfunc_ptr_t)( double* result, double x, double y, double z);
 typedef void (*initfunc_fill_ptr_t)( double* result, unsigned short int* initType);
 
 typedef void (*func_ptr_t)(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic);
