@@ -6,7 +6,7 @@ from equationParser import MathExpressionParser
 # from Cheetah.Tests.CheetahWrapper import OUTPUT
 
 class BoundaryFunctionCodeGenerator:
-# Р“РµРЅРµСЂРёСЂСѓРµС‚ РєРѕРґ С„СѓРЅРєС†РёРё, СЏРІР»СЏСЋС‰РµР№СЃСЏ РєСЂР°РµРІС‹Рј СѓСЃР»РѕРІРёРµРј    
+# Генерирует код функции, являющейся краевым условием    
     def __generateCodeForPower(self, preventElementInParsedExpression, creatingOutputList, expressionWithPower):
         power = int(expressionWithPower[1])
         if power > 0:
@@ -35,12 +35,12 @@ class BoundaryFunctionCodeGenerator:
             raise SyntaxError('Power should be greater than zero!')
     
     def __generateDerivative(self, outputList, blockNumber, parsedDrivativeExpression, varIndex, userIndepVariables, tupleList):
-# Р­С‚Р° С„СѓРЅРєС†РёСЏ РґРѕР»Р¶РЅР° РїСЂР°РІРёР»СЊРЅРѕ РѕРїСЂРµРґРµР»РёС‚СЊ РїР°СЂР°РјРµС‚СЂС‹ РґР»СЏ РїРµСЂРµРґР°С‡Рё РёС… РІ С„СѓРЅРєС†РёСЋ generateCodeForDerivative()
-#         Р•СЃР»Рё dictionary РїСѓСЃС‚, С‚Рѕ РЅР°РґРѕ СЃРґРµР»Р°С‚СЊ РїСЂРѕРёР·РІРѕРґРЅСѓСЋ РґР»СЏ С†РµРЅС‚СЂР°Р»СЊРЅРѕР№ С„СѓРЅРєС†РёРё
-#         Р•СЃР»Рё РґР»РёРЅР° СЃР»РѕРІР°СЂСЏ dictionary СЂР°РІРЅР° РѕРґРЅРѕРјСѓ, С‚Рѕ РЅР°РґРѕ СЃРґРµР»Р°С‚СЊ СѓСЃР»РѕРІРёРµ РЅР° РіСЂР°РЅРёС†Сѓ РѕС‚СЂРµР·РєР° РёР»Рё РЅР° СЃС‚РѕСЂРѕРЅСѓ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР° РёР»Рё РїР°СЂР°Р»Р»РµР»РµРїРёРїРµРґР°
-#         Р•СЃР»Рё РґР»РёРЅР° СЃР»РѕРІР°СЂСЏ dictionary СЂР°РІРЅР° РґРІСѓРј Рё РґР»РёРЅР° РјР°СЃСЃРёРІР° indepVrbls СЂР°РІРЅР° РґРІСѓРј, С‚Рѕ РЅР°РґРѕ СЃРґРµР»Р°С‚СЊ СѓСЃР»РѕРІРёРµ РЅР° СѓРіРѕР» РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°
-#         Р•СЃР»Рё РґР»РёРЅР° СЃР»РѕРІР°СЂСЏ dictionary СЂР°РІРЅР° РґРІСѓРј Р° РґР»РёРЅР° РјР°СЃСЃРёРІР° indepVrbls СЂР°РІРЅР° С‚СЂРµРј, С‚Рѕ РЅР°РґРѕ СЃРґРµР»Р°С‚СЊ СѓСЃР»РѕРІРёРµ РЅР° СЂРµР±СЂРѕ
-#         Р•СЃР»Рё РґР»РёРЅР° СЃР»РѕРІР°СЂСЏ dictionary СЂР°РІРЅР° С‚СЂРµРј, С‚Рѕ РЅР°РґРѕ СЃРґРµР»Р°С‚СЊ СѓСЃР»РѕРІРёРµ РЅР° СѓРіРѕР» РїР°СЂР°Р»Р»РµР»РµРїРёРїРµРґР°
+# Эта функция должна правильно определить параметры для передачи их в функцию generateCodeForDerivative()
+#         Если dictionary пуст, то надо сделать производную для центральной функции
+#         Если длина словаря dictionary равна одному, то надо сделать условие на границу отрезка или на сторону прямоугольника или параллелепипеда
+#         Если длина словаря dictionary равна двум и длина массива indepVrbls равна двум, то надо сделать условие на угол прямоугольника
+#         Если длина словаря dictionary равна двум а длина массива indepVrbls равна трем, то надо сделать условие на ребро
+#         Если длина словаря dictionary равна трем, то надо сделать условие на угол параллелепипеда
         dcg = DerivativeCodeGenerator()
         boundaryConditionCount = len(tupleList)
         
@@ -53,17 +53,17 @@ class BoundaryFunctionCodeGenerator:
                 indepVarIndexList.extend([userIndepVariables.index(parsedDrivativeExpression[i+1])])
                 orderList.extend([parsedDrivativeExpression[i+3]])
         
-#         РЈСЃР»РѕРІРёРµ РґР»СЏ РіРµРЅРµСЂРёСЂРѕРІР°РЅРёСЏ РїСЂРѕРёР·РІРѕРґРЅС‹С… РІ С†РµРЅС‚СЂР°Р»СЊРЅС‹С… С„СѓРЅРєС†РёСЏС…
+#         Условие для генерирования производных в центральных функциях
         if boundaryConditionCount == 0:    
             boundaryIndicator = -1
             parsedMathFunction = 'empty string'
             derivative = dcg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, boundaryIndicator)
-#         РЈСЃР»РѕРІРёРµ РґР»СЏ РѕР±С‹С‡РЅРѕР№ РіСЂР°РЅРёС†С‹
+#         Условие для обычной границы
         elif boundaryConditionCount == 1:
             boundaryIndicator = tupleList[0][0]
             parsedMathFunction = tupleList[0][1][varIndex]
             derivative = dcg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, boundaryIndicator)
-#         РЈСЃР»РѕРІРёРµ РЅР° СѓРіРѕР» РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР° РёР»Рё РїР°СЂР°Р»Р»РµР»РµРїРёРїРµРґР° РёР»Рё РЅР° СЂРµР±СЂРѕ РїР°СЂР°Р»Р»РµР»РµРїРёРїРµРґР°        
+#         Условие на угол прямоугольника или параллелепипеда или на ребро параллелепипеда        
         elif boundaryConditionCount == 2 or boundaryConditionCount == 3:
             derivativeLR = list([])
             for index in indepVarIndexList:
@@ -83,7 +83,7 @@ class BoundaryFunctionCodeGenerator:
             
             if len(derivativeLR) == 1:
                 derivative = derivativeLR[0]
-#             РњРѕР¶РЅРѕ РЅР°РїРёСЃР°С‚СЊ else, РїРѕС‚РѕРјСѓ С‡С‚Рѕ СЃС‡РёС‚Р°РµРј, С‡С‚Рѕ РїСЂРѕРёР·РІРѕРґРЅС‹Рµ РјРѕРіСѓС‚ Р±СЂР°С‚СЊСЃСЏ РјР°РєСЃРёРјСѓРј РІС‚РѕСЂРѕРіРѕ РїРѕСЂСЏРґРєР°
+#             Можно написать else, потому что считаем, что производные могут браться максимум второго порядка
             else:
                 if derivativeLR[0] != '0.0' and derivativeLR[1] != '0.0':
                     derivative = '(0.5 * ' + derivativeLR[0] + ' + 0.5 * ' + derivativeLR[1] + ')'
@@ -93,7 +93,7 @@ class BoundaryFunctionCodeGenerator:
                     derivative = '(0.5 * ' + derivativeLR[0] + ')'
                 else:
                     derivative = '0.0'
-#         РћС‚РјРµС‡Р°РµРј СЃР»СѓС‡Р°Р№, РєРѕРіРґР° РІ Р·РЅР°РјРµРЅР°С‚РµР»Рµ РїРѕР»СѓС‡РёР»СЃСЏ РЅСѓР»СЊ РїСЂРё Р°РїРїСЂРѕРєСЃРёРјР°С†РёРё РїСЂРѕРёР·РІРѕРґРЅРѕР№.
+#         Отмечаем случай, когда в знаменателе получился нуль при аппроксимации производной.
         if derivative == '0.0' and outputList[-1] == ' / ':
             raise SyntaxError("An approximation for mixed derivative" + ''.join(parsedDrivativeExpression) + ", that stands in the denominator, was identically equal to zero during the process of generating function for boundary condition!")
         outputList.extend([derivative])
@@ -117,9 +117,9 @@ class BoundaryFunctionCodeGenerator:
         return string
     
     def generateRightHandSideCode(self, blockNumber, leftHandSide, rightHandSide, userIndepVariables, vrbls, params, tupleList = list([])):
-#         tupleList --- СЌС‚Рѕ СЃРїРёСЃРѕРє, СЃРѕРґРµСЂР¶Р°С‰РёР№ РѕС‚ 1 РґРѕ 3 РєРѕСЂС‚РµР¶РµР№ (РќРѕРјРµСЂ РіСЂР°РЅРёС†С‹, Р РђРЎРџРђР РЎР•РќРќР«Р• РіСЂР°РЅРёС‡РЅС‹Рµ СѓСЃР»РѕРІРёСЏ)
-#         rightHandSide -- СЂР°СЃРїР°СЂСЃРµРЅРЅР°СЏ РїСЂР°РІР°СЏ С‡Р°СЃС‚СЊ СѓСЂР°РІРЅРµРЅРёСЏ, РјР°СЃСЃРёРІ СЃС‚СЂРѕРє.
-#         РР·РјРµРЅРёР» СЌС‚Сѓ С„СѓРЅРєС†РёСЋ, РЅРѕ РЅРµ РёР·РјРµРЅРёР» С„СѓРЅРєС†РёСЋ, РєРѕС‚РѕСЂР°СЏ РµРµ РІС‹Р·С‹РІР°РµС‚!!!!!!!
+#         tupleList --- это список, содержащий от 1 до 3 кортежей (Номер границы, РАСПАРСЕННЫЕ граничные условия)
+#         rightHandSide -- распарсенная правая часть уравнения, массив строк.
+#         Изменил эту функцию, но не изменил функцию, которая ее вызывает!!!!!!!
         varIndex = vrbls.index(leftHandSide)
         result = '\t result[idx + ' + str(varIndex) + '] = '
         outputList = list([result])
@@ -149,9 +149,9 @@ class BoundaryFunctionCodeGenerator:
         return string
 
 class DerivativeCodeGenerator:
-# Р­С‚РѕС‚ РєР»Р°СЃСЃ РѕС‚РІРµС‡Р°РµС‚ Р·Р° РіРµРЅРµСЂРёСЂРѕРІР°РЅРёРµ РєРѕРґР° РґР»СЏ РїСЂРѕРёР·РІРѕРґРЅС‹С…
+# Этот класс отвечает за генерирование кода для производных
     def __factorial(self, number):
-# Р’С‹С‡РёСЃР»СЏРµС‚ С„Р°РєС‚РѕСЂРёР°Р»
+# Вычисляет факториал
         if number == 0:
             return 1
         elif number < 0:
@@ -165,14 +165,14 @@ class DerivativeCodeGenerator:
             return product
         
     def __NewtonBinomCoefficient(self, n, k):
-# Р’С‹С‡РёСЃР»СЏРµС‚ Р±РёРЅРѕРјРёР°Р»СЊРЅС‹Рµ РєРѕСЌС„С„РёС†РёРµРЅС‚С‹ Р·Р°С‚РµРј, С‡С‚РѕР±С‹ РїРѕС‚РѕРј РёС… РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РєР°Рє РєРѕСЌС„С„РёС†РёРµРЅС‚С‹ РґР»СЏ РєРѕРЅРµС‡РЅС‹С… СЂР°Р·РЅРѕСЃС‚РµР№
+# Вычисляет биномиальные коэффициенты затем, чтобы потом их использовать как коэффициенты для конечных разностей
         if n < k:
             raise AttributeError("n souldn't be less then k!")
         return self.__factorial(n) / (self.__factorial(k) * self.__factorial(n-k))
                               
     def __createIndicesList(self, derivativeOrder):
-# Рў.Рє. РґР»СЏ CentralFunction СѓРјРµРµРј РіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ Р°РїРїСЂРѕРєСЃРёРјР°С†РёРё РїСЂРѕРёР·РІРѕРґРЅС‹С… Р»СЋР±РѕРіРѕ РїРѕСЂСЏРґРєР°, С‚Рѕ СЌС‚Рё Р°РїРїСЂРѕРєСЃРёРјР°С†РёРё СЃРѕРґРµСЂР¶Р°С‚ РјРЅРѕРіРѕ
-# СЃР»Р°РіР°РµРјС‹С…, РєР°Р¶РґРѕРµ РёР· РєРѕС‚РѕСЂС‹С… РёРјРµРµС‚ СЃРІРѕР№ РёРЅРґРµРєСЃ
+# Т.к. для CentralFunction умеем генерировать аппроксимации производных любого порядка, то эти аппроксимации содержат много
+# слагаемых, каждое из которых имеет свой индекс
         leftIndex = derivativeOrder // 2
         rightIndex = -(derivativeOrder - leftIndex)
         reverseList = [i for i in range(rightIndex,leftIndex + 1)]
@@ -186,8 +186,8 @@ class DerivativeCodeGenerator:
         return indicesListAsString
     
     def __createCoefficientList(self, derivativeOrder):
-# Рў.Рє. РґР»СЏ CentralFunction СѓРјРµРµРј РіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ Р°РїРїСЂРѕРєСЃРёРјР°С†РёРё РїСЂРѕРёР·РІРѕРґРЅС‹С… Р»СЋР±РѕРіРѕ РїРѕСЂСЏРґРєР°, С‚Рѕ СЌС‚Рё Р°РїРїСЂРѕРєСЃРёРјР°С†РёРё СЃРѕРґРµСЂР¶Р°С‚ РјРЅРѕРіРѕ
-# СЃР»Р°РіР°РµРјС‹С…, РїРµСЂРµРґ РєР°Р¶РґС‹Рј РёР· РєРѕС‚РѕСЂС‹С… РёРјРµРµС‚СЃСЏ СЃРІРѕР№ РєРѕСЌС„С„РёС†РёРµРЅС‚
+# Т.к. для CentralFunction умеем генерировать аппроксимации производных любого порядка, то эти аппроксимации содержат много
+# слагаемых, перед каждым из которых имеется свой коэффициент
         numberList = [self.__NewtonBinomCoefficient(derivativeOrder, k) for k in range(0, derivativeOrder + 1)]
         stringList = []
         for number in numberList:
@@ -195,7 +195,7 @@ class DerivativeCodeGenerator:
         return stringList
     
     def __commonMixedDerivativeAlternative(self, blockNumber, increment, indepVar_Order_Stride_List, varIndex):
-# РЎРїРѕСЃРѕР± РіРµРЅРµСЂРёСЂРѕРІР°РЅРёСЏ РєРѕРґР° РґР»СЏ СЃРјРµС€Р°РЅРЅРѕР№ РїСЂРѕРёР·РІРѕРґРЅРѕР№ РґР»СЏ CentralFunction Рё РёРЅРѕРіРґР° РґР»СЏ РіСЂР°РЅРёС†РЅС‹С… С„СѓРЅРєС†РёР№
+# Способ генерирования кода для смешанной производной для CentralFunction и иногда для границных функций
         length = len(indepVar_Order_Stride_List)
         if length == 2:
             first = 'source[idx + (' + indepVar_Order_Stride_List[0][2] + ' + ' + indepVar_Order_Stride_List[1][2] + ') * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
@@ -208,8 +208,8 @@ class DerivativeCodeGenerator:
             raise SyntaxError("Order of some mixed partial derivative greater than 2. I don't know how to work with it!")
     
     def __specialMixedDerivativeAlternative(self, parsedMathFunction, increment, strideList, generalOrder, fullIndepVarList, indepVarIndex):
-#         indepVarIndex --- СЌС‚Рѕ РёРЅРґРµРєСЃ РЅРµР·Р°РІРёСЃРёРјРѕР№ РїРµСЂРµРјРµРЅРЅРѕР№ РІ РјР°СЃСЃРёРІРµ РІСЃРµС… С‚Р°РєРёС… РїРµСЂРµРјРµРЅРЅС‹С…; СЌС‚Рѕ РёРЅРґРµРєСЃ С‚РѕР№ РїРµСЂРµРјРµРЅРЅРѕР№, РїСЂРѕРёР·РІРѕРґРЅР°СЏ РїРѕ РєРѕС‚РѕСЂРѕР№
-#         РІС…РѕРґРёС‚ РІ СЃРјРµС€Р°РЅРЅСѓСЋ РїСЂРѕРёР·РІРѕРґРЅСѓСЋ РІС‚РѕСЂРѕРіРѕ РїРѕСЂСЏРґРєР°, РЅРѕ РЅРµ С‚РѕР№ РїРµСЂРµРјРµРЅРЅРѕР№, РґР»СЏ РєРѕС‚РѕСЂРѕР№ РЅР°РїРёСЃР°РЅРѕ РєСЂР°РµРІРѕРµ СѓСЃР»РѕРІРёРµ РќРµР№РјР°РЅР°.
+#         indepVarIndex --- это индекс независимой переменной в массиве всех таких переменных; это индекс той переменной, производная по которой
+#         входит в смешанную производную второго порядка, но не той переменной, для которой написано краевое условие Неймана.
         if indepVarIndex < 0 or indepVarIndex >= len(fullIndepVarList):
             raise AttributeError("Error in argument of function __specialMixedDerivativeAlternative()! 'indepVarIndex' should be a non-negative integer and less than block dimension!")
         if generalOrder == 2:
@@ -260,7 +260,7 @@ class DerivativeCodeGenerator:
             return '(' + increment + ' * ' + '(' + finiteDifference + ')' + ')'
 
     def __specialPureDerivativeAlternative(self, blockNumber, parsedMathFunction, increment, specialIncrement, stride, strideList, order, varIndex, fullIndepVarList, leftOrRightBoundary):
-#         leftOrRightBoundary --- СЌС‚Рѕ С‡РёСЃР»Рѕ Р»РёР±Рѕ 0 (РµСЃР»Рё РєСЂР°РµРІРѕРµ СѓСЃР»РѕРІРёРµ РЅР°Р»РѕР¶РµРЅРѕ РЅР° Р»РµРІСѓСЋ РіСЂР°РЅРёС†Сѓ) Р»РёР±Рѕ 1 (РµСЃР»Рё РєСЂР°РµРІРѕРµ СѓСЃР»РѕРІРёРµ РЅР°Р»РѕР¶РµРЅРѕ РЅР° РїСЂР°РІСѓСЋ РіСЂР°РЅРёС†Сѓ)
+#         leftOrRightBoundary --- это число либо 0 (если краевое условие наложено на левую границу) либо 1 (если краевое условие наложено на правую границу)
         if leftOrRightBoundary != 0 and leftOrRightBoundary != 1:
             raise AttributeError("Error in argument of function __specialPureDerivativeAlternative()! 'leftOrRightBoundary' should be equal either to 0 or to 1!")
         
@@ -344,17 +344,17 @@ class DerivativeCodeGenerator:
             raise SyntaxError('Mixed partial derivative has very high order (greater then 2)!')
                   
 class FunctionCodeGenerator:
-# Р“РµРЅРµСЂРёСЂСѓРµС‚ РІС‹С…РѕРґРЅСѓСЋ СЃС‚СЂРѕРєСѓ РґР»СЏ Р·Р°РїРёСЃРё РІ С„Р°Р№Р»
+# Генерирует выходную строку для записи в файл
     def generateAllDefinitions(self, parameterCount, indepVariables, DList, allBlockOffsetList, allBlockSizeLists, cellsizeList):
 # allBlockSizeLists = [[Block0SizeX, Block0SizeY, Block0SizeZ], [Block1SizeX, Block1SizeY, Block1SizeZ]}, ...]
 # allBlockOffsetList = [[Block0OffsetX, Block0OffsetY, Block0OffsetZ], [Block1OffsetX, Block1OffsetY, Block1OffsetZ]}, ...]
 # cellsizeList= [Block0CELLSIZE, Block1CELLSIZE, ...]
-# allStrideLists --- СЌС‚Рѕ СЃРїРёСЃРѕРє strideРћР’ РґР»СЏ РєР°Р¶РґРѕРіРѕ Р±Р»РѕРєР°: [[block0StrideX,block0StrideY,block0StrideZ],[block1StrideX,Y,Z], ...]
-# allCountLists --- Р°РЅР°Р»РѕРіРёС‡РЅС‹Р№ СЃРїРёСЃРѕРє, С‚РѕР»СЊРєРѕ РґР»СЏ countРћР’
+# allStrideLists --- это список strideОВ для каждого блока: [[block0StrideX,block0StrideY,block0StrideZ],[block1StrideX,Y,Z], ...]
+# allCountLists --- аналогичный список, только для countОВ
 # DList = [DX,DY,DZ]
 # D2List = [DX2,DY2,DZ2]
 # DM2List = [DXM2,DYM2,DZM2]
-#         РўСЂРµР±СѓРµРј, С‡С‚РѕР±С‹ РґР»РёРЅС‹ РІСЃРµС… РјР°СЃСЃРёРІРѕРІ Р±С‹Р»Рё РѕРґРёРЅР°РєРѕРІС‹
+#         Требуем, чтобы длины всех массивов были одинаковы
         if len(DList) != len(indepVariables):
             raise AttributeError("A list 'gridStep' should be consist of values for ALL independent variables!")
         a = set({len(allBlockSizeLists), len(cellsizeList), len(allBlockOffsetList)})
@@ -370,7 +370,7 @@ class FunctionCodeGenerator:
             DM1List.append(round(1 / d))
             DM2List.append(round(1 / d2))
         
-#         Р’С‹С‡РёСЃР»СЏРµРј РІСЃРµ СЃС‚СЂР°Р№РґС‹ Рё РєР°СѓРЅС‚С‹    
+#         Вычисляем все страйды и каунты    
         allStrideLists = list([])
         allCountLists = list([])
         for blockNumber, blockSizeList in enumerate(allBlockSizeLists):
@@ -388,7 +388,7 @@ class FunctionCodeGenerator:
                     strideList.append(countList[0] * countList[1])
             allStrideLists.append(strideList)
         
-#         РЎРѕР·РґР°РµРј РґРµС„Р°Р№РЅС‹
+#         Создаем дефайны
         definitions = list()
         for (indepVar, d, d2, dm1, dm2) in zip(indepVariables, DList, D2List, DM1List, DM2List):
             definitions.append('#define D' + indepVar.upper() + ' ' + str(d) + '\n')
@@ -406,7 +406,7 @@ class FunctionCodeGenerator:
         return ''.join(definitions)
         
     def __determineNameOfBoundary(self, boundaryNumber):
-# Р­С‚Р° С„СѓРЅРєС†РёСЏ СЃРѕР·РґР°РЅР° РёСЃРєР»СЋС‡РёС‚РµР»СЊРЅРѕ РґР»СЏ РєСЂР°СЃРѕС‚С‹ Рё РїРѕРЅСЏС‚РЅРѕСЃС‚Рё РІС‹РІРѕРґР°. РџРѕ РЅРѕРјРµСЂСѓ РіСЂР°РЅРёС†С‹ РѕРїСЂРµРґРµР»СЏРµС‚ РµРµ СѓСЂР°РІРЅРµРЅРёРµ.
+# Эта функция создана исключительно для красоты и понятности вывода. По номеру границы определяет ее уравнение.
         boundaryNames = dict({0 : 'x = 0', 1 : 'x = x_max', 2 : 'y = 0', 3 : 'y = y_max', 4 : 'z = 0', 5 : 'z = z_max'})
         if boundaryNumber in boundaryNames:
             return boundaryNames[boundaryNumber]
@@ -419,14 +419,14 @@ class FunctionCodeGenerator:
 #         idx = "\tint idx = (idxZ*Block" + strBlockNumber + "StrideZ*Block" + strBlockNumber + "StrideY + idxY*Block" + strBlockNumber + "StrideY + idxX)*Block" + strBlockNumber + "CELLSIZE;\n"
         signatureStart = 'void ' + name + '(double* result, double* source, double t,'
         signatureMiddle = ' int idx' + indepVariableList[0].upper() + ','
-#         Р”РµР»Р°РµРј СЃСЂРµР· РЅСѓР»РµРІРѕРіРѕ СЌР»РµРјРµРЅС‚Р°, С‚.Рє. РµРіРѕ СѓР¶Рµ СѓС‡Р»Рё
+#         Делаем срез нулевого элемента, т.к. его уже учли
         for indepVar in indepVariableList[1:]:
             signatureMiddle = signatureMiddle + ' int idx' + indepVar.upper() + ','
         signatureEnd = ' double* params, double** ic){\n'
         signature = signatureStart + signatureMiddle + signatureEnd
           
         idx = '\t int idx = ( idx' + indepVariableList[0].upper()
-#         РћРїСЏС‚СЊ СЃСЂРµР·Р°РµРј РЅСѓР»РµРІРѕР№ СЌР»РµРјРµРЅС‚, С‚.Рє. РµРіРѕ С‚РѕР¶Рµ СѓР¶Рµ СѓС‡Р»Рё
+#         Опять срезаем нулевой элемент, т.к. его тоже уже учли
         changedStrideList = strideList[1:]
         for i,indepVar in enumerate(indepVariableList[1:]):
             idx = idx + ' + idx' + indepVar.upper() + ' * ' + changedStrideList[i]
@@ -435,11 +435,11 @@ class FunctionCodeGenerator:
         return list([signature,idx])
     
     def generateCentralFunctionCode(self, block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params):
-#         defaultIndepVrbls РѕС‚Р»РёС‡Р°РµС‚СЃСЏ Р»РёС€СЊ РєРѕР»РёС‡РµСЃС‚РІРѕРј СЌР»РµРјРµРЅС‚РѕРІ userIndepVariables, С‚.Рє. СЃС‡РёС‚Р°РµРј, С‡С‚Рѕ РїРµСЂРµРјРµРЅРЅС‹Рµ РјРѕРіСѓС‚ РЅР°Р·С‹РІР°С‚СЊСЃСЏ С‚РѕР»СЊРєРѕ x,y,z.
+#         defaultIndepVrbls отличается лишь количеством элементов userIndepVariables, т.к. считаем, что переменные могут называться только x,y,z.
         function = list([])
         function.extend(['\n//=========================CENTRAL FUNCTION FOR BLOCK WITH NUMBER ' +str(blockNumber)+'========================//\n\n'])
         strideList = list([])
-#         Р—РґРµСЃСЊ РёСЃРїРѕР»СЊР·СѓРµС‚СЃСЏ defaultIndepVrbls, РїРѕС‚РѕРјСѓ С‡С‚Рѕ РґРѕРіРѕРІРѕСЂРёР»РёСЃСЊ РіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ СЃРёРіРЅР°С‚СѓСЂС‹ С„СѓРЅРєС†РёР№ СЃ РѕРґРёРЅР°РєРѕРІС‹Рј РєРѕР»РёС‡РµСЃС‚РІРѕРј РїР°СЂР°РјРµС‚СЂРѕРІ.
+#         Здесь используется defaultIndepVrbls, потому что договорились генерировать сигнатуры функций с одинаковым количеством параметров.
         for indepVar in defaultIndepVariables:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
             
@@ -449,7 +449,7 @@ class FunctionCodeGenerator:
         parser = MathExpressionParser()
         variables = parser.getVariableList(estrList)
         
-#         Р’Рѕ РІСЃРµ РїР°СЂСЃРµСЂС‹ РЅРµРѕР±С…РѕРґРёРјРѕ РїРµСЂРµРґР°РІР°С‚СЊ РёРјРµРЅРЅРѕ userIndepVariables!
+#         Во все парсеры необходимо передавать именно userIndepVariables!
         b = BoundaryFunctionCodeGenerator()    
         for i,equationString in enumerate(estrList):
             equationRightHandSide = parser.parseMathExpression(equationString, variables, params, userIndepVariables)
@@ -460,12 +460,12 @@ class FunctionCodeGenerator:
     
     def __generateDirichlet(self, blockNumber, name, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionList):
         strideList = list([])
-#         Р—РґРµСЃСЊ РёСЃРїРѕР»СЊР·СѓРµРј defaultIndepVariables, С‚.Рє. СЃРёРіРЅР°С‚СѓСЂС‹ Сѓ РІСЃРµС… РіРµРЅРµСЂРёСЂСѓРµРјС‹С… С„СѓРЅРєС†РёР№ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕРґРёРЅР°РєРѕРІС‹.
+#         Здесь используем defaultIndepVariables, т.к. сигнатуры у всех генерируемых функций должны быть одинаковы.
         for indepVar in defaultIndepVariables:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
             
         function = self.__generateFunctionSignature(blockNumber, name, defaultIndepVariables, strideList)
-#         Рђ Р·РґРµСЃСЊ РёСЃРїРѕР»СЊР·СѓРµРј userIndepVariables.        
+#         А здесь используем userIndepVariables.        
         indepVarValueList = list([])
         for indepVar in userIndepVariables:
             indepVarValueList.extend(['idx' + indepVar.upper()])
@@ -473,7 +473,7 @@ class FunctionCodeGenerator:
         
         b = BoundaryFunctionCodeGenerator()
         if len(parsedBoundaryConditionList) > 1:
-#             РҐРѕС‚СЏ СЌС‚Рѕ Р±СЂРµРґ, РїРѕС‚РѕРјСѓ С‡С‚Рѕ СЏ С…РѕС‡Сѓ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ СЌС‚Сѓ С„СѓРЅРєС†РёСЋ РґР»СЏ РіРµРЅРµСЂРёСЂРѕРІР°РЅРёСЏ СѓСЃР»РѕРІРёР№ РЅР° СѓРіР»С‹ Рё СЂРµР±СЂР°
+#             Хотя это бред, потому что я хочу использовать эту функцию для генерирования условий на углы и ребра
             raise AttributeError("Error in function __generateDirichlet(): argument 'parsedBoundaryConditionList' should contain only 1 element!")
         for i,boundary in enumerate(parsedBoundaryConditionList[0][1]):
             boundaryExpression = b.generateBoundaryValueCode(boundary, userIndepVariables, indepVarValueList)
@@ -484,16 +484,16 @@ class FunctionCodeGenerator:
         return ''.join(function)
         
     def __generateNeumann(self, blockNumber, name, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionList): 
-#         parsedBoundaryConditionList --- СЌС‚Рѕ СЃРїРёСЃРѕРє, СЃРѕРґРµСЂР¶Р°С‰РёР№ РѕС‚ 1 РґРѕ 3 РєРѕСЂС‚РµР¶РµР№ (РќРѕРјРµСЂ РіСЂР°РЅРёС†С‹, Р РђРЎРџРђР РЎР•РќРќР«Р• РіСЂР°РЅРёС‡РЅС‹Рµ СѓСЃР»РѕРІРёСЏ)
-#         parsedEstrList --- СЃРїРёСЃРѕРє, СЌР»РµРјРµРЅС‚С‹ РєРѕС‚РѕСЂРѕРіРѕ --- СЂР°СЃРїР°СЂСЃРµРЅРЅС‹Рµ РїСЂР°РІС‹Рµ С‡Р°СЃС‚Рё РІСЃРµС… СѓСЂР°РІРЅРµРЅРёР№
+#         parsedBoundaryConditionList --- это список, содержащий от 1 до 3 кортежей (Номер границы, РАСПАРСЕННЫЕ граничные условия)
+#         parsedEstrList --- список, элементы которого --- распарсенные правые части всех уравнений
         strideList = list([])
-#         Р—РґРµСЃСЊ РёСЃРїРѕР»СЊР·СѓРµРј defaultIndepVariables, С‚.Рє. СЃРёРіРЅР°С‚СѓСЂС‹ Сѓ РІСЃРµС… РіРµРЅРµСЂРёСЂСѓРµРјС‹С… С„СѓРЅРєС†РёР№ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ РѕРґРёРЅР°РєРѕРІС‹.
+#         Здесь используем defaultIndepVariables, т.к. сигнатуры у всех генерируемых функций должны быть одинаковы.
         for indepVar in defaultIndepVariables:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
         
         function = self.__generateFunctionSignature(blockNumber, name, defaultIndepVariables, strideList)
         
-#         Рђ Р·РґРµСЃСЊ РёСЃРїРѕР»СЊР·СѓРµРј userIndepVariables.
+#         А здесь используем userIndepVariables.
         b = BoundaryFunctionCodeGenerator()
         for i,equation in enumerate(parsedEstrList):
             function.extend([b.generateRightHandSideCode(blockNumber, variables[i], equation, userIndepVariables, variables, params, parsedBoundaryConditionList)])
@@ -502,9 +502,9 @@ class FunctionCodeGenerator:
         return ''.join(function)
     
     def __rectangleNearSegment(self, ribCoordinateMin, ribCoordinateMax, rectCoordinateList):
-# РћРїСЂРµРґРµР»СЏРµС‚, Р»РµР¶РёС‚ Р»Рё С‡Р°СЃС‚СЊ СЃС‚РѕСЂРѕРЅС‹ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР° РЅР° РѕС‚СЂРµР·РєРµ. Р’РѕР·РІСЂР°С‰Р°РµС‚ 0, РµСЃР»Рё РЅРµ Р»РµР¶РёС‚,
-# 1, РµСЃР»Рё Р»РµР¶РёС‚ РЅРµ РїРѕР»РЅРѕСЃС‚СЊСЋ, 2, РµСЃР»Рё Р»РµР¶РёС‚ РїРѕР»РЅРѕСЃС‚СЊСЋ.
-# rectCoordinateList СЃРѕРґРµСЂР¶РёС‚ С‡РµС‚С‹СЂРµ РєРѕРѕСЂРґРёРЅР°С‚С‹ -- СѓРіР»С‹ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°
+# Определяет, лежит ли часть стороны прямоугольника на отрезке. Возвращает 0, если не лежит,
+# 1, если лежит не полностью, 2, если лежит полностью.
+# rectCoordinateList содержит четыре координаты -- углы прямоугольника
         coord0 = list(rectCoordinateList[0])
         coord1 = list(rectCoordinateList[1])
         coord2 = list(rectCoordinateList[2])
@@ -513,8 +513,8 @@ class FunctionCodeGenerator:
         reducedRibCoordinateMax = list(ribCoordinateMax)
         reducedRectCoordList = list([coord0, coord1, coord2, coord3])
         
-#         РўР°Рє РєР°Рє РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРє Рё СЂРµР±СЂРѕ Р»РµР¶Р°С‚ РІ РѕРґРЅРѕР№ РїР»РѕСЃРєРѕСЃС‚Рё, РїР°СЂР°Р»Р»РµР»СЊРЅРѕР№ РѕРґРЅРѕР№ РёР· РєРѕРѕСЂРґРёРЅР°С‚РЅС‹С… РїР»РѕСЃРєРѕСЃС‚РµР№,
-#         С‚Рѕ РѕРґРЅР° РєРѕРјРїРѕРЅРµРЅС‚Р° Сѓ РІСЃРµС… С‚РѕС‡РµРє РѕРґРёРЅР°РєРѕРІР°СЏ, РїРѕСЌС‚РѕРјСѓ СЃРІРѕРґРёРј СЃРёС‚СѓР°С†РёСЋ Рє РґРІСѓРјРµСЂРЅРѕР№, СѓРґР°Р»СЏСЏ РѕРґРёРЅР°РєРѕРІСѓСЋ РєРѕРјРїРѕРЅРµРЅС‚Сѓ
+#         Так как прямоугольник и ребро лежат в одной плоскости, параллельной одной из координатных плоскостей,
+#         то одна компонента у всех точек одинаковая, поэтому сводим ситуацию к двумерной, удаляя одинаковую компоненту
         for i in range(0,3):
             if coord0[i] == coord1[i] == coord2[i] == coord3[i]:
                 for coordinate in reducedRectCoordList:
@@ -522,12 +522,12 @@ class FunctionCodeGenerator:
                 reducedRibCoordinateMin.pop(i)
                 reducedRibCoordinateMax.pop(i)
                 break
-#         РЈ РєРѕРѕСЂРґРёРЅР°С‚ СЂРµР±СЂР° С‚РѕР»СЊРєРѕ РѕРґРЅР° РєРѕРјРїРѕРЅРµРЅС‚Р° СЂР°Р·Р»РёС‡РЅР°, РµРµ Рё РёС‰РµРј
+#         У координат ребра только одна компонента различна, ее и ищем
         index = 0
         for i in range(0,2):
             if reducedRibCoordinateMin[i] != reducedRibCoordinateMax[i]:
                 index = i
-#         РЎС‡РёС‚Р°РµРј РєРѕР»РёС‡РµСЃС‚РІРѕ СѓРіР»РѕРІ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°, РїСЂРёРЅР°РґР»РµР¶Р°С‰РёС… СЂРµР±СЂСѓ
+#         Считаем количество углов прямоугольника, принадлежащих ребру
 #         countOfGoodPoints = 0
         goodPoints = list()
         differentCoord = list()
@@ -542,8 +542,8 @@ class FunctionCodeGenerator:
         return tuple((goodPoints, differentCoord))
     
     def __segmentsIntersects(self, segment1, segment2):
-#         segment1, segment2 --- РѕРґРЅРѕРјРµСЂРЅС‹Рµ РѕС‚СЂРµР·РєРё, РІРѕРІСЃРµ РЅРµРѕР±СЏР·Р°С‚РµР»СЊРЅРѕ, С‡С‚Рѕ segmentI[0] <= segmentI[1], I = 1,2!
-#         Р”РµР»Р°РµРј С‚Р°Рє, С‡С‚РѕР±С‹ РІ РѕР±РѕРёС… РѕС‚СЂРµР·РєР°С… Р»РµРІР°СЏ РіСЂР°РЅРёС†Р° Р±С‹Р»Р° <= РїСЂР°РІРѕР№
+#         segment1, segment2 --- одномерные отрезки, вовсе необязательно, что segmentI[0] <= segmentI[1], I = 1,2!
+#         Делаем так, чтобы в обоих отрезках левая граница была <= правой
         if len(segment1) != 2 or len(segment2) != 2:
             raise AttributeError("Lists 'segment1' and 'segment2' in __segmentIntersections() should contain exactly two elements!")
         if segment1[0] > segment1[1]:
@@ -560,24 +560,24 @@ class FunctionCodeGenerator:
             return False
     
     def __determineAllPairsOfConditions(self, resultCondList1, resultCondList2, defaultBoundaryConditions):
-#         Р”Р»СЏ РєР°Р¶РґРѕРіРѕ РёР· СѓСЃР»РѕРІРёР№ РІ resultCondList1 РёС‰РµС‚ РІСЃРµ СѓСЃР»РѕРІРёСЏ РёР· resultCondList2
+#         Для каждого из условий в resultCondList1 ищет все условия из resultCondList2
         outputConditionList = list()
         for boundaryCond1 in resultCondList1:
-#             Р­С‚Рѕ СЃРїРёСЃРѕРє РѕС‚СЂРµР·РєРѕРІ, РїРµСЂРµСЃРµРєР°СЋС‰РёС…СЃСЏ СЃ РѕС‚СЂРµР·РєРѕРј РґР»СЏ boundaryCond1. Р”СЂСѓРі СЃ РґСЂСѓРіРѕРј РѕРЅРё РЅРµ РїРµСЂРµСЃРµРєР°СЋС‚СЃСЏ,
-#             РїРѕСЌС‚РѕРјСѓ РёС… РјРѕР¶РЅРѕ СѓРїРѕСЂСЏРґРѕС‡РёС‚СЊ РїРѕ Р»РµРІРѕР№ РіСЂР°РЅРёС†Рµ.
+#             Это список отрезков, пересекающихся с отрезком для boundaryCond1. Друг с другом они не пересекаются,
+#             поэтому их можно упорядочить по левой границе.
             listOfSegments = list()
-#             РњРѕР¶РµС‚ РїРѕР»СѓС‡РёС‚СЃСЏ С‚Р°Рє, С‡С‚Рѕ РІ resultCondList1 Р»РµР¶РёС‚ С…РѕС‚СЏ Р±С‹ РѕРґРЅРѕ РєСЂР°РµРІРѕРµ СѓСЃР»РѕРІРёРµ,
-#             Р° РІ resultCondList2 РЅРёС‡РµРіРѕ РЅРµС‚. РўРѕРіРґР° РЅР°РґРѕ СЃРіРµРЅРµСЂРёС‚СЊ РїР°СЂСѓ СЃ РґРµС„РѕР»С‚РЅС‹Рј РєСЂР°РµРІС‹Рј СѓСЃР»РѕРІРёРµРј.
+#             Может получится так, что в resultCondList1 лежит хотя бы одно краевое условие,
+#             а в resultCondList2 ничего нет. Тогда надо сгенерить пару с дефолтным краевым условием.
             if len(resultCondList2) > 0:
                 for boundaryCond2 in resultCondList2:
                     if self.__segmentsIntersects(boundaryCond1[3], boundaryCond2[3]):
                         listOfSegments.extend([boundaryCond2[3]])
                         outputConditionList.extend([((boundaryCond1[0],boundaryCond1[4]), (boundaryCond2[0],boundaryCond2[4]))])
-    #                 РЎРѕСЂС‚РёСЂСѓРµРј РјР°СЃСЃРёРІ РѕС‚СЂРµР·РєРѕРІ РїРѕ Р»РµРІРѕР№ РіСЂР°РЅРёС†Рµ
+    #                 Сортируем массив отрезков по левой границе
                     listOfSegments.sort(key = lambda lst : lst[0])
                     length = len(listOfSegments)
-    #                 РРґРµРј РїРѕ РІСЃРµРјСѓ СЃРїРёСЃРєСѓ РѕС‚СЂРµР·РєРѕРІ Рё РµСЃР»Рё РµСЃС‚СЊ С…РѕС‚СЏ Р±С‹ 2 РЅРµ РєР°СЃР°СЋС‰РёС…СЃСЏ РѕС‚СЂРµР·РєР°,
-    #                 С‚Рѕ СЃРѕСЃС‚Р°РІР»СЏРµРј РїР°СЂСѓ (РіСЂР°РЅРёС‡РЅРѕРµ СѓСЃР»РѕРІРёРµ, РґРµС„РѕР»С‚РЅРѕРµ РіСЂР°РЅРёС‡РЅРѕРµ СѓСЃР»РѕРІРёРµ)
+    #                 Идем по всему списку отрезков и если есть хотя бы 2 не касающихся отрезка,
+    #                 то составляем пару (граничное условие, дефолтное граничное условие)
                     if length > 0:
                         if listOfSegments[0][0] <= boundaryCond1[3][0] and listOfSegments[length - 1][1] >= boundaryCond1[3][1]:
                             for i,segment in enumerate(listOfSegments):
@@ -593,14 +593,14 @@ class FunctionCodeGenerator:
         return outputConditionList
     
     def __algorithForRib(self, ribCoordinateMin, ribCoordinateMax, boundary1CondList, boundary2CondList, defaultBoundaryConditions):
-# Р¤СѓРЅРєС†РёСЏ РІРѕР·РІСЂР°С‰Р°РµС‚ СЃРїРёСЃРѕРє РєРѕСЂС‚РµР¶РµР№ --- РїР°СЂ СѓСЃР»РѕРІРёР№.
-# ribCoordinateMin = (x,y,z_min), ribCoordinateMax = (x,y,z_max) РёР»Рё x_min x_max РёР»Рё y_min y_max
-# РљР°Р¶РґС‹Р№ РёР· СЃРїРёСЃРєРѕРІ РёРјРµРµС‚ РІРёРґ [(СЂР°СЃРїР°СЂСЃРµРЅРЅРѕРµ СѓСЃР»РѕРІРёРµ 1, [4 РєРѕРѕСЂРґРёРЅР°С‚С‹ СѓРіР»РѕРІ С‡Р°СЃС‚Рё 1 РіСЂР°РЅРёС†С‹], РўРёРї СѓСЃР»РѕРІРёСЏ),
-#                              (СЂР°СЃРїР°СЂСЃРµРЅРЅРѕРµ СѓСЃР»РѕРІРёРµ 2, [4 РєРѕРѕСЂРґРёРЅР°С‚С‹ СѓРіР»РѕРІ С‡Р°СЃС‚Рё 2 РіСЂР°РЅРёС†С‹], РўРёРї СѓСЃР»РѕРІРёСЏ), ...]
-#         РЁР°Рі 1: РѕРїСЂРµРґРµР»РёС‚СЊ РІСЃРµ СѓСЃР»РѕРІРёСЏ, СЃРјРµР¶РЅС‹Рµ СЃ СЂРµР±СЂРѕРј, РЅР° РєР°Р¶РґРѕР№ РёР· РіСЂР°РЅРёС†
+# Функция возвращает список кортежей --- пар условий.
+# ribCoordinateMin = (x,y,z_min), ribCoordinateMax = (x,y,z_max) или x_min x_max или y_min y_max
+# Каждый из списков имеет вид [(распарсенное условие 1, [4 координаты углов части 1 границы], Тип условия),
+#                              (распарсенное условие 2, [4 координаты углов части 2 границы], Тип условия), ...]
+#         Шаг 1: определить все условия, смежные с ребром, на каждой из границ
         result1CondList = list()
         result2CondList = list()
-#         Р”Р»СЏ РєР°Р¶РґРѕРіРѕ РёР· СЃРїРёСЃРєРѕРІ boundary1CondList Рё boundary2CondList СЃРѕР·РґР°Р»Рё СЃРїРёСЃРєРё СѓСЃР»РѕРІРёР№, РєРѕС‚СЂС‹Рµ СЃРјРµР¶РЅС‹ СЃ СЂРµР±СЂРѕРј
+#         Для каждого из списков boundary1CondList и boundary2CondList создали списки условий, котрые смежны с ребром
         generalResultCondList = list([result1CondList, result2CondList])
         
         generalCondList = list([boundary1CondList, boundary2CondList])
@@ -608,20 +608,20 @@ class FunctionCodeGenerator:
             for boundaryCondition in boundaryCondList:
                 pointsOnRib = self.__rectangleNearSegment(ribCoordinateMin, ribCoordinateMax, boundaryCondition[1])
                 if len(pointsOnRib[0]) == 2:
-#                     (РЎР°РјРё СѓСЃР»РѕРІРёСЏ, РєРѕРѕСЂРґРёРЅР°С‚С‹ СѓРіР»РѕРІ, СЃРїРёСЃРѕРє РєРѕРѕСЂРґРёРЅР°С‚ СѓРіР»РѕРІ РЅР° СЂРµР±СЂРµ, РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕРґРЅРѕРјРµСЂРЅРѕРіРѕ РѕС‚СЂРµР·РєР°, РўРёРї СѓСЃР»РѕРІРёСЏ)
+#                     (Сами условия, координаты углов, список координат углов на ребре, координаты одномерного отрезка, Тип условия)
                     resultCondList.extend([(boundaryCondition[0], boundaryCondition[1], pointsOnRib[0], pointsOnRib[1], boundaryCondition[2])])
         
-#         РЁР°Рі 2: С‚РµРїРµСЂСЊ СЃРѕСЃС‚Р°РІР»СЏРµРј РІСЃРµРІРѕР·РјРѕР¶РЅС‹Рµ РїР°СЂС‹ СѓСЃР»РѕРІРёР№ (РЈСЃР»РѕРІРёРµ РЅР° 1 РіСЂР°РЅРёС†Сѓ, СѓСЃР»РѕРІРёРµ РЅР° 2 РіСЂР°РЅРёС†Сѓ):
-#         РґР»СЏ РєР°Р¶РґРѕРіРѕ СѓСЃР»РѕРІРёСЏ РїРµСЂРІРѕР№ РіСЂР°РЅРёС†С‹ Р±РµСЂРµРј РІСЃРµ РїРѕРґС…РѕРґСЏС‰РёРµ СѓСЃР»РѕРІРёСЏ РІС‚РѕСЂРѕР№, Рё РЅР°РѕР±РѕСЂРѕС‚.
-#         РџРѕС‚РѕРј РёС… РѕР±СЉРµРґРёРЅСЏРµРј Рё РІРѕР·РІСЂР°С‰Р°РµРј РІ РІРёРґРµ СЃРїРёСЃРєР°.
+#         Шаг 2: теперь составляем всевозможные пары условий (Условие на 1 границу, условие на 2 границу):
+#         для каждого условия первой границы берем все подходящие условия второй, и наоборот.
+#         Потом их объединяем и возвращаем в виде списка.
         finalResultCondList1 = self.__determineAllPairsOfConditions(generalResultCondList[0], generalResultCondList[1], defaultBoundaryConditions)
         finalResultCondList2 = self.__determineAllPairsOfConditions(generalResultCondList[1], generalResultCondList[0], defaultBoundaryConditions)
-#         РќР°РґРѕ, С‡С‚РѕР±С‹ РїРµСЂРІС‹Рј СЌР»РµРјРµРЅС‚РѕРј РєРѕСЂС‚РµР¶Р° Р±С‹Р»Рѕ СѓСЃР»РѕРІРёРµ РёР· generalResultCondList[0], РїРѕСЌС‚РѕРјСѓ РїРµСЂРµРІРѕСЂР°С‡РёРІР°РµРј РєРѕСЂС‚РµР¶Рё РІ finalResultCondList2
+#         Надо, чтобы первым элементом кортежа было условие из generalResultCondList[0], поэтому переворачиваем кортежи в finalResultCondList2
         for idx,pair in enumerate(finalResultCondList2):
             tmp = list(finalResultCondList2.pop(idx))
             tmp.reverse()
             finalResultCondList2.insert(idx, tuple(tmp))
-#         РСЃРєР»СЋС‡Р°РµРј РёР· РІС‚РѕСЂРѕРіРѕ СЃРїРёСЃРєР° РІСЃРµ РїР°СЂС‹, РєРѕС‚РѕСЂС‹Рµ СѓР¶Рµ РїСЂРёСЃСѓС‚СЃС‚РІСѓСЋС‚ РІ РїРµСЂРІРѕРј СЃРїРёСЃРєРµ.
+#         Исключаем из второго списка все пары, которые уже присутствуют в первом списке.
         for pairTuple in finalResultCondList1:
             if pairTuple in finalResultCondList2:
                 finalResultCondList1.remove(pairTuple)
@@ -629,26 +629,26 @@ class FunctionCodeGenerator:
         return a
     
     def __createBoundaryCoordinates(self, xyzList):
-#         Р¤СѓРЅРєС†РёСЏ РїРѕ СЃРїРёСЃРєСѓ xyzList С„РѕСЂРјРёСЂСѓРµС‚ РІ РґРІСѓРјРµСЂРЅРѕРј СЃР»СѓС‡Р°Рµ 2 С‚РѕС‡РєРё РіСЂР°РЅРёС†С‹, РІ 3 РјРµСЂРЅРѕРј СЃР»СѓС‡Р°Рµ -- 4 С‚РѕС‡РєРё РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°.
-#         xyzList --- СЃРїРёСЃРѕРє РІРёРґР° [[xFrom, xTo],[yFrom, yTo],[zFrom, zTo]]
+#         Функция по списку xyzList формирует в двумерном случае 2 точки границы, в 3 мерном случае -- 4 точки прямоугольника.
+#         xyzList --- список вида [[xFrom, xTo],[yFrom, yTo],[zFrom, zTo]]
         length = len(xyzList)
         if length == 1:
             return xyzList[0]
         elif length >= 2:
             coordinates = []
-#             Р”РµРєР°СЂС‚РѕРІРѕ РїСЂРѕРёР·РІРµРґРµРЅРёРµ РґРІСѓС… СЃРїРёСЃРєРѕРІ. Р’ СЂРµР·СѓР»СЊС‚Р°С‚Рµ -- СЃРїРёСЃРѕРє РєРѕСЂС‚РµР¶РµР№!
+#             Декартово произведение двух списков. В результате -- список кортежей!
             for point in itertools.product(*xyzList):
                 coordinates.append(point)
-#             РўР°РєРёРј РѕР±СЂР°Р·РѕРј СѓСЃС‚СЂР°РЅСЏРµРј Р»РёС€РЅРёРµ РєРѕСЂС‚РµР¶Рё
+#             Таким образом устраняем лишние кортежи
             return list(set(coordinates))
         else:
-            raise AttributeError("Р’ Р·Р°РґР°С‡Рµ РїСЂРёСЃСѓС‚СЃС‚РІСѓРµС‚ Р±РѕР»РµРµ С‡РµРј 3 РЅРµР·Р°РІРёСЃРёРјС‹С… РїРµСЂРµРјРµРЅРЅС‹С…!")
+            raise AttributeError("В задаче присутствует более чем 3 независимых переменных!")
                     
     def __generateAngleAndRibFunctions(self, blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary):
-#         blockRanges --- СЌС‚Рѕ СЃР»РѕРІР°СЂСЊ {'min' : [x_min,y_min,z_min], 'max' : [x_max,y_max,z_max]}
-#         parsedBoundaryConditionDictionary --- СЌС‚Рѕ СЃР»РѕРІР°СЂСЊ РІРёРґР° {РќРѕРјРµСЂ РіСЂР°РЅРёС†С‹ : [(СЂР°СЃРїР°СЂСЃРµРЅРЅРѕРµ СѓСЃР»РѕРІРёРµ 1, [4 РёР»Рё 2 РєРѕРѕСЂРґРёРЅР°С‚С‹ РєСЂР°РµРІ С‡Р°СЃС‚Рё 1 РіСЂР°РЅРёС†С‹], РўРёРї СѓСЃР»РѕРІРёСЏ),
-#                                                                                  (СЂР°СЃРїР°СЂСЃРµРЅРЅРѕРµ СѓСЃР»РѕРІРёРµ 2, [4 РёР»Рё 2 РєРѕРѕСЂРґРёРЅР°С‚С‹ РєСЂР°РµРІ С‡Р°СЃС‚Рё 2 РіСЂР°РЅРёС†С‹], РўРёРї СѓСЃР»РѕРІРёСЏ), ...]}
-#         Р’ РґРІСѓРјРµСЂРЅРѕРј СЃР»СѓС‡Р°Рµ [РєРѕРѕСЂРґРёРЅР°С‚С‹ РєСЂР°РµРІ С‡Р°СЃС‚Рё 1 РіСЂР°РЅРёС†С‹] СЃРѕРґРµСЂР¶Р°С‚ РґРІРµ С‚РѕС‡РєРё, Р° РІ С‚СЂРµС…РјРµСЂРЅРѕРј --- С‡РµС‚С‹СЂРµ
+#         blockRanges --- это словарь {'min' : [x_min,y_min,z_min], 'max' : [x_max,y_max,z_max]}
+#         parsedBoundaryConditionDictionary --- это словарь вида {Номер границы : [(распарсенное условие 1, [4 или 2 координаты краев части 1 границы], Тип условия),
+#                                                                                  (распарсенное условие 2, [4 или 2 координаты краев части 2 границы], Тип условия), ...]}
+#         В двумерном случае [координаты краев части 1 границы] содержат две точки, а в трехмерном --- четыре
         output = list([])
         
         defuaultBoundaryConditionValues = list([])
@@ -656,13 +656,13 @@ class FunctionCodeGenerator:
             defuaultBoundaryConditionValues.extend(['0.0'])
         
         blockDimension = len(userIndepVariables)
-#         Р”РІСѓРјРµСЂРЅС‹Р№ СЃР»СѓС‡Р°Р№
+#         Двумерный случай
         if blockDimension == 2:
             angles = [(0,2),(0,3),(1,2),(1,3)]
             anglesCoordinates = [(blockRanges['min'][0], blockRanges['min'][1]),(blockRanges['min'][0], blockRanges['max'][1]),
                                  (blockRanges['max'][0], blockRanges['min'][1]),(blockRanges['max'][0], blockRanges['max'][1])]
-#             Р”Р»СЏ РєР°Р¶РґРѕРіРѕ СѓРіР»Р° РёС‰СѓС‚СЃСЏ РіСЂР°РЅРёС‡РЅС‹Рµ СѓСЃР»РѕРІРёСЏ, Р·Р°РґР°РЅРЅС‹Рµ РїРѕР»СЊР·РѕРІР°С‚РµР»РµРј. Р•СЃР»Рё РЅР°С…РѕРґСЏС‚СЃСЏ, С‚Рѕ РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РѕРЅРё,
-#             Р° РёРЅР°С‡Рµ РёСЃРїРѕР»СЊР·СѓСЋС‚СЃСЏ РґРµС„РѕР»С‚РЅС‹Рµ
+#             Для каждого угла ищутся граничные условия, заданные пользователем. Если находятся, то используются они,
+#             а иначе используются дефолтные
             for i,angle in enumerate(angles):
                 
                 if angle == (0,3):
@@ -673,7 +673,7 @@ class FunctionCodeGenerator:
                     index = 3
                 elif angle == (0,2):
                     index = 4
-#                 Р”РµР»Р°РµС‚СЃСЏ РїСЂРµРѕР±СЂР°Р·РѕРІР°РЅРёРµ РІ РјРЅРѕР¶РµСЃС‚РІРѕ РїРѕС‚РѕРјСѓ, С‡С‚Рѕ РґР»СЏ РјРЅРѕР¶РµСЃС‚РІ РѕРїСЂРµРґРµР»РµРЅР° РѕРїРµСЂР°С†РёСЏ isdisjoint()
+#                 Делается преобразование в множество потому, что для множеств определена операция isdisjoint()
                 c = set([anglesCoordinates[i]])
                 
                 bound1CondValue = defuaultBoundaryConditionValues
@@ -687,7 +687,7 @@ class FunctionCodeGenerator:
                         a = set(boundCondition[1])
                         if not a.isdisjoint(c):
                             bound1CondValue = boundCondition[0]
-#                             Р—Р°РїРѕРјРёРЅР°РµРј С‚РёРїС‹ СѓСЃР»РѕРІРёР№, С‡С‚РѕР±С‹ РїРѕС‚РѕРј РіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ Р»РёР±Рѕ Р”РёСЂРёС…Р»Рµ Р»РёР±Рѕ РќРµР№РјР°РЅР°!
+#                             Запоминаем типы условий, чтобы потом генерировать либо Дирихле либо Неймана!
                             type1 = boundCondition[2]
                             if type1 != 0 and type1 != 1:
                                 raise AttributeError("Type of boundary condition should be equal either 0 or 1!")
@@ -706,7 +706,7 @@ class FunctionCodeGenerator:
                 boundaryName1 = self.__determineNameOfBoundary(angle[0])
                 boundaryName2 = self.__determineNameOfBoundary(angle[1])
                 if bound1CondValue == defuaultBoundaryConditionValues and bound2CondValue == defuaultBoundaryConditionValues:
-#                     Р“РµРЅРµСЂРёСЂСѓРµС‚СЃСЏ С„СѓРЅРєС†РёСЏ РґР»СЏ СѓРіР»Р° РїРѕ-СѓРјРѕР»С‡Р°РЅРёСЋ; РЅРёС‡РµРіРѕ РІ РјР°СЃСЃРёРІ РЅРµ Р·Р°РїРёСЃС‹РІР°РµС‚СЃСЏ, С‚.Рє. РґРµС„РѕР»С‚РЅРѕРµ Р·РЅР°С‡РµРЅРёРµ СѓР¶Рµ Р·Р°РїРёСЃР°РЅРѕ
+#                     Генерируется функция для угла по-умолчанию; ничего в массив не записывается, т.к. дефолтное значение уже записано
                     output.extend(['//Default boundary condition for ANGLE between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n'])
                     boundaryConditionList = list([tuple((angle[0], bound1CondValue)), tuple((angle[1], bound2CondValue))])
                     nameForAngle = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForAngle' + str(angle[0]) + '_' + str(angle[1])
@@ -729,7 +729,7 @@ class FunctionCodeGenerator:
                 arrWithFunctionNames.pop(index)
                 arrWithFunctionNames.insert(index, nameForAngle)
         
-#         Рђ РІ С‚СЂРµС…РјРµСЂРЅРѕРј СЃР»СѓС‡Р°Рµ РїРѕРєР° С‡С‚Рѕ РЅРµ СѓС‡С‚РµРЅ РјР°СЃСЃРёРІ arrWithFunctionNames       
+#         А в трехмерном случае пока что не учтен массив arrWithFunctionNames       
         elif blockDimension == 3:
             ribs = [(0,2),(0,3),(0,4),(0,5),(1,2),(1,3),(1,4),(1,5),(2,4),(2,5),(3,4),(3,5)]
             ribsCoordinates = [[(blockRanges['min'][0], blockRanges['min'][1], blockRanges['min'][2]), (blockRanges['min'][0], blockRanges['min'][1], blockRanges['max'][2])],
@@ -753,8 +753,8 @@ class FunctionCodeGenerator:
                     boundary2CondList = parsedBoundaryConditionDictionary[rib[1]]
                     pairsOfBoundaryCondition = self.__algorithForRib(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundary1CondList, boundary2CondList, defuaultBoundaryConditionValues)
                 elif rib[0] in parsedBoundaryConditionDictionary and rib[1] not in parsedBoundaryConditionDictionary:
-#                     Р—РґРµСЃСЊ РЅР°РґРѕ СЃРЅР°С‡Р°Р»Р° РѕРїСЂРµРґРµР»РёС‚СЊ С‚Рµ РіСЂР°РЅРёС†С‹, РєРѕС‚РѕСЂС‹Рµ РєР°СЃР°СЋС‚СЃСЏ СЂРµР±СЂР°, Рё РґР»СЏ РєР°Р¶РґРѕР№ РёР· РЅРёС…
-#                     СЃРіРµРЅРµСЂРёС‚СЊ С„СѓРЅРєС†РёСЋ
+#                     Здесь надо сначала определить те границы, которые касаются ребра, и для каждой из них
+#                     сгенерить функцию
                     for boundaryCondition in parsedBoundaryConditionDictionary[rib[0]]:
                         if len(self.__rectangleNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
                             pairsOfBoundaryCondition.append(((boundaryCondition[0],boundaryCondition[2]), (defuaultBoundaryConditionValues,1)))
@@ -857,7 +857,7 @@ class FunctionCodeGenerator:
     
 #     def generateBoundaryFunctionsCode(self, blockNumber, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params):
 # #         includes = '#include <Math.h>\n#include <stdlib.h>\n\n'
-# #         boundaryConditionList РёРјРµРµС‚ СЃС‚СЂСѓРєС‚СѓСЂСѓ [{'values':[], 'type':С‚РёРї, 'side':РЅРѕРјРµСЂ РіСЂР°РЅРёС†С‹, 'ranges':[[xFrom,xTo],[y],[z]]}]
+# #         boundaryConditionList имеет структуру [{'values':[], 'type':тип, 'side':номер границы, 'ranges':[[xFrom,xTo],[y],[z]]}]
 #         outputFile = list(['\n//=============================NON-DEFAULT BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'])
 #         parser = MathExpressionParser()
 #         variables = parser.getVariableList(estrList)
@@ -874,7 +874,7 @@ class FunctionCodeGenerator:
 #         boundaryNumberList = list([])
 #         parsedBoundaryConditionDictionary = dict({})
 #         boundaryCount = len(userIndepVariables) * 2
-# #         Р­С‚РѕС‚ СЃР»РѕРІР°СЂСЊ Р±СѓРґРµС‚ РїРѕРјРѕРіР°С‚СЊ РїСЂР°РІРёР»СЊРЅРѕ РЅСѓРјРµСЂРѕРІР°С‚СЊ СЃРёС€РЅС‹Рµ С„СѓРЅРєС†РёРё
+# #         Этот словарь будет помогать правильно нумеровать сишные функции
 #         countOfGeneratedFunction = dict({})
 #         for boundaryCondition in boundaryConditionList:
 #             
@@ -885,7 +885,7 @@ class FunctionCodeGenerator:
 #                 countOfGeneratedFunction.update({boundaryNumber: 0})
 #                 
 #             coordList = boundaryCondition['ranges']
-# #             Р•СЃР»Рё СЃР»СѓС‡Р°Р№ РґРІСѓРјРµСЂРЅС‹Р№, С‚Рѕ С„РѕСЂРјРёСЂСѓРµРј РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕС‚СЂРµР·РєРѕРІ, РµСЃР»Рё С‚СЂРµС…РјРµСЂРЅС‹Р№ -- С‚Рѕ РєРѕРѕСЂРґРёРЅР°С‚С‹ СѓРіР»РѕРІ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°
+# #             Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
 #             boundaryCoordList = self.__createBoundaryCoordinates(coordList)
 #             
 #             if boundaryNumber >= boundaryCount:
@@ -986,8 +986,8 @@ class FunctionCodeGenerator:
 
 
     def __computeSideLength2D(self, blockRanges, Side):
-#         blockRanges --- СЃР»РѕРІР°СЂСЊ {"min": [x,y,z], "max": [x,y,z]}
-#         side --- РЅРѕРјРµСЂ СЃС‚РѕСЂРѕРЅС‹, РґР»РёРЅСѓ РєРѕС‚РѕСЂРѕР№ РЅР°РґРѕ РІС‹С‡РёСЃР»РёС‚СЊ       
+#         blockRanges --- словарь {"min": [x,y,z], "max": [x,y,z]}
+#         side --- номер стороны, длину которой надо вычислить       
         if Side == 0 or Side == 1:
             return blockRanges["max"][1] - blockRanges["min"][1]
         elif Side == 2 or Side == 3:
@@ -999,9 +999,9 @@ class FunctionCodeGenerator:
 #         segment = [(x1,y1),(x2,y2)]
         if len(segment) != 2 or len(segment[0]) != 2 or len(segment[1]) != 2:
             raise AttributeError("List 'segment' in __computeSegmentLength2D() should contain exactly two elements!")
-#         С‚.Рє. РѕС‚СЂРµР·РєРё РїР°СЂР°Р»Р»РµР»СЊРЅС‹ РѕСЃСЏРј РєРѕСЂРґРёРЅР°С‚, С‚Рѕ РјРѕР¶РЅРѕ РґРµР»Р°С‚СЊ С‚Р°Рє
+#         т.к. отрезки параллельны осям кординат, то можно делать так
         reducedSegment = []
-#         Р”РІСѓРјРµСЂРЅС‹Р№ СЃР»СѓС‡Р°Р№ СЃРІРѕРґРёС‚СЃСЏ Рє РѕРґРЅРѕРјРµСЂРЅРѕРјСѓ
+#         Двумерный случай сводится к одномерному
         if segment[0][0] == segment[1][0]:
             reducedSegment = [min([segment[0][1], segment[1][1]]), max([segment[0][1], segment[1][1]])]
         elif segment[0][1] == segment[1][1]:
@@ -1014,7 +1014,7 @@ class FunctionCodeGenerator:
         parser = MathExpressionParser()
         variables = parser.getVariableList(estrList)
         
-#         Р­С‚Рѕ РґРµС„РѕР»С‚РЅС‹Рµ РЅРµР№РјР°РЅРѕРІСЃРєРёРµ РєСЂР°РµРІС‹Рµ СѓСЃР»РѕРІРёСЏ
+#         Это дефолтные неймановские краевые условия
         defuaultBoundaryConditionValues = list([])
         for var in variables:
             defuaultBoundaryConditionValues.extend(['0.0'])
@@ -1031,7 +1031,7 @@ class FunctionCodeGenerator:
         boundaryNumberList = list([])
         parsedBoundaryConditionDictionary = dict({})
         boundaryCount = len(userIndepVariables) * 2
-#         Р­С‚РѕС‚ СЃР»РѕРІР°СЂСЊ Р±СѓРґРµС‚ РїРѕРјРѕРіР°С‚СЊ РїСЂР°РІРёР»СЊРЅРѕ РЅСѓРјРµСЂРѕРІР°С‚СЊ СЃРёС€РЅС‹Рµ С„СѓРЅРєС†РёРё
+#         Этот словарь будет помогать правильно нумеровать сишные функции
         countOfGeneratedFunction = dict({})
         for boundaryCondition in boundaryConditionList:
             
@@ -1042,7 +1042,7 @@ class FunctionCodeGenerator:
                 countOfGeneratedFunction.update({side: 0})
                 
             coordList = boundaryCondition['ranges']
-#             Р•СЃР»Рё СЃР»СѓС‡Р°Р№ РґРІСѓРјРµСЂРЅС‹Р№, С‚Рѕ С„РѕСЂРјРёСЂСѓРµРј РєРѕРѕСЂРґРёРЅР°С‚С‹ РѕС‚СЂРµР·РєРѕРІ, РµСЃР»Рё С‚СЂРµС…РјРµСЂРЅС‹Р№ -- С‚Рѕ РєРѕРѕСЂРґРёРЅР°С‚С‹ СѓРіР»РѕРІ РїСЂСЏРјРѕСѓРіРѕР»СЊРЅРёРєР°
+#             Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
             boundaryCoordList = self.__createBoundaryCoordinates(coordList)
             
             if side >= boundaryCount:
@@ -1066,9 +1066,9 @@ class FunctionCodeGenerator:
             boundaryName = self.__determineNameOfBoundary(side)
             if side in parsedBoundaryConditionDictionary:
                 if dimension == 2:
-#                 Р•СЃР»Рё РЅСѓР¶РЅРѕ, РєР»Р°РґРµРј РёРјСЏ РіСЂР°РЅРёС‡РЅРѕР№ С„СѓРЅРєС†РёРё РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ РІ РјР°СЃСЃРёРІ
+#                 Если нужно, кладем имя граничной функции по умолчанию в массив
                     sideLen = self.__computeSideLength2D(blockRanges, side)
-#                 РЎСѓРјРјР° РґР»РёРЅ РІСЃРµС… РѕС‚СЂРµР·РєРѕРІ РЅР° СЃС‚РѕСЂРѕРЅРµ side, РЅР° РєРѕС‚РѕСЂС‹Рµ РЅР°Р»РѕР¶РµРЅС‹ СѓСЃР»РѕРІРёСЏ
+#                 Сумма длин всех отрезков на стороне side, на которые наложены условия
                     totalLen = 0
                     for condition in parsedBoundaryConditionDictionary[side]:
                         totalLen += self.__computeSegmentLength2D(condition[1])
@@ -1078,7 +1078,7 @@ class FunctionCodeGenerator:
                         name = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
                         outputFile.extend([self.__generateNeumann(blockNumber, name, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple)])
                         arrWithFunctionNames.append(name)
-#                 Р“РµРЅРµСЂРёСЂСѓРµРј С„СѓРЅРєС†РёРё РґР»СЏ РІСЃРµС… Р·Р°РґР°РЅРЅС‹С… СѓСЃР»РѕРІРёР№ Рё РєР»Р°РґРµРј РёС… РёРјРµРЅР° РІ РјР°СЃСЃРёРІ
+#                 Генерируем функции для всех заданных условий и кладем их имена в массив
                 counter = 0
                 for condition in parsedBoundaryConditionDictionary[side]:
                     parsedBoundaryConditionTuple = list([tuple((side, condition[0]))])
@@ -1127,11 +1127,11 @@ class FunctionCodeGenerator:
 
     
     def generateAllBoundaries(self, block, blockNumber, arrWithFunctionNames, estrList, bounds, defaultIndepVariables, userIndepVariables, params):
-# Р­С‚Р° С„СѓРЅРєС†РёСЏ РґРѕР»Р¶РЅР° РґР»СЏ Р±Р»РѕРєР° block СЃРіРµРЅРµСЂРёСЂРѕРІР°С‚СЊ РІСЃРµ РЅСѓР¶РЅС‹Рµ С„СѓРЅРєС†РёРё.
-# РњР°СЃСЃРёРІ bounds РёРјРµРµС‚ С‚Сѓ Р¶Рµ СЃС‚СЂСѓРєС‚СѓСЂСѓ Рё СЃРјС‹СЃР», С‡С‚Рѕ Рё РІ РєР»Р°СЃСЃРµ Model
+# Эта функция должна для блока block сгенерировать все нужные функции.
+# Массив bounds имеет ту же структуру и смысл, что и в классе Model
         boundaryFunctions = list()
         blockDimension = block.dimension
-#         Offset -- СЌС‚Рѕ СЃРјРµС‰РµРЅРёРµ Р±Р»РѕРєР°, Size -- РґР»РёРЅР° РіСЂР°РЅРёС†С‹, РїРѕСЌС‚РѕРјСѓ РіСЂР°РЅРёС†С‹ Р±Р»РѕРєР° -- СЌС‚Рѕ [Offset, Offset + Size]
+#         Offset -- это смещение блока, Size -- длина границы, поэтому границы блока -- это [Offset, Offset + Size]
         minRanges = [block.offsetX]
         maxRanges = [block.offsetX + block.sizeX]
         if blockDimension >= 2:
@@ -1141,11 +1141,11 @@ class FunctionCodeGenerator:
             minRanges = minRanges + [block.offsetZ]
             maxRanges = maxRanges + [block.offsetZ + block.sizeZ]
         blockRanges = dict({'min' : minRanges, 'max' : maxRanges})
-#        РќР°РґРѕ СЃС„РѕСЂРјРёСЂРѕРІР°С‚СЊ СЃС‚СЂСѓРєС‚СѓСЂСѓ boundaryConditionList = [{'values':[], 'type':С‚РёРї, 'side':РЅРѕРјРµСЂ РіСЂР°РЅРёС†С‹, 'ranges':[[xFrom,xTo],[y],[z]]}]
+#        Надо сформировать структуру boundaryConditionList = [{'values':[], 'type':тип, 'side':номер границы, 'ranges':[[xFrom,xTo],[y],[z]]}]
         boundaryConditionList = list()
         boundRegions = block.boundRegions
         for region in boundRegions:
-#             С‚РµСЂРјРёРЅРѕР»РѕРіРёСЏ, СЃРІСЏР·Р°РЅРЅР°СЏ СЃ boundRegions, РЅРµРёР·РІРµСЃС‚РЅР°
+#             терминология, связанная с boundRegions, неизвестна
             boundNumber = region.boundNumber
             if boundNumber >= len(bounds):
                 raise AttributeError("Non-existent number of boundary condition is set for some of boundary regions in array 'Blocks'!")
@@ -1180,8 +1180,8 @@ class FunctionCodeGenerator:
                     boundaryRanges = [[region.xfrom, region.xto], [region.yfrom, region.yto], [block.offsetZ + block.sizeZ, block.offsetZ + block.sizeZ]]
 
             bound = bounds[boundNumber]
-#             Р•СЃР»Рё СѓСЃР»РѕРІРёРµ Р”РёСЂРёС…Р»Рµ, С‚Рѕ РёСЃРїРѕР»СЊР·СѓРµРј РїСЂРѕРёР·РІРѕРґРЅС‹Рµ РїРѕ t,
-#             РµСЃР»Рё РќРµР№РјР°РЅРѕРІСЃРєРѕРµ СѓСЃР»РѕРІРёРµ --- С‚Рѕ СЃР°РјРё Р·РЅР°С‡РµРЅРёСЏ.
+#             Если условие Дирихле, то используем производные по t,
+#             если Неймановское условие --- то сами значения.
             boundaryType = bound.btype
             if boundaryType == 0:
                 values = bound.derivative
@@ -1190,13 +1190,13 @@ class FunctionCodeGenerator:
                 
             boundaryCondition = dict({'values': values, 'type': boundaryType, 'side': side, 'ranges': boundaryRanges})
             boundaryConditionList.append(boundaryCondition)
-#         РўРµРїРµСЂСЊ РЅР°РґРѕ РІС‹Р·РІР°С‚СЊ С„СѓРЅРєС†РёСЋ, РіРµРЅРµСЂРёСЂСѓСЋС‰СѓСЋ РіСЂР°РЅРёС‡РЅС‹Рµ СѓСЃР»РѕРІРёСЏ РґР»СЏ РґР°РЅРЅРѕРіРѕ Р±Р»РѕРєР°
+#         Теперь надо вызвать функцию, генерирующую граничные условия для данного блока
 #         boundaryFunctions.append(self.generateBoundaryFunctionsCode(blockNumber, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params))
         boundaryFunctions.append(self.__generateBoundaryFuncsForBlockInProperOrder(blockNumber, arrWithFunctionNames, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params))
         return ''.join(boundaryFunctions)
     
     def __generateParamFunction(self, params, paramValues):
-#         params -- РјР°СЃСЃРёРІ РёРјРµРЅ РїР°СЂР°РјРµС‚СЂРѕРІ, paramValues -- СЃР»РѕРІР°СЂСЊ Р·РЅР°С‡РµРЅРёР№
+#         params -- массив имен параметров, paramValues -- словарь значений
         paramCount = len(params)
         paramValuesCount = len(paramValues)
         if paramCount != paramValuesCount:
@@ -1214,8 +1214,8 @@ class FunctionCodeGenerator:
         return ''.join(output)
     
     def __generatePointInitial(self, countOfEquations, initial, initialNumber, indepVariableList):
-#         Р¤СѓРЅРєС†РёСЏ РіРµРЅРµСЂРёСЂСѓСЋС‚ С‚РѕС‡РµС‡РЅСѓСЋ РЅР°С‡Р°Р»СЊРЅСѓСЋ С„СѓРЅРєС†РёСЋ СЃ РЅРѕРјРµСЂРѕРј initialNumber.
-#         changedValueList --- Р±СѓРґРµС‚ СЃРѕРґРµСЂР¶Р°С‚СЊ СЃС‚СЂРѕРєРё, РєРѕС‚РѕСЂС‹Рµ РїСЂРѕСЃС‚Рѕ РЅР°РґРѕ РїРѕРґСЃС‚Р°РІРёС‚СЊ РІ РЅСѓР¶РЅРѕРµ РјРµСЃС‚Рѕ Рё РЅРµ РЅР°РґРѕ РїР°СЂСЃРёС‚СЊ.
+#         Функция генерируют точечную начальную функцию с номером initialNumber.
+#         changedValueList --- будет содержать строки, которые просто надо подставить в нужное место и не надо парсить.
         pointFunction = list()
 #         changedValueList = list()
         valueList = initial.values
@@ -1235,12 +1235,12 @@ class FunctionCodeGenerator:
 #         
         pointFunction.append("void Initial"+str(initialNumber)+"(double* cellstart, double x, double y, double z){\n")
         t = re.compile('t')
-#         Р¤СѓРЅРєС†РёСЏ, РєРѕС‚РѕСЂР°СЏ РІ РІС‹СЂР°Р¶РµРЅРёРё match.group() Р·Р°РјРµРЅСЏРµС‚ РІСЃРµ 't' РЅР° '0.0'
+#         Функция, которая в выражении match.group() заменяет все 't' на '0.0'
         repl = lambda match: t.sub('0.0', match.group())
         for k,value in enumerate(valueList):
-#             Рў.Рє. РЅР°С‡Р°Р»СЊРЅС‹Рµ СѓСЃР»РѕРІРёСЏ РЅРµ РґРѕР»Р¶РЅС‹ Р·Р°РІРёСЃРµС‚СЊ РѕС‚ t, РµРіРѕ РЅР°РґРѕ РІРµР·РґРµ Р·Р°РјРµРЅРёС‚СЊ РЅР° 0
+#             Т.к. начальные условия не должны зависеть от t, его надо везде заменить на 0
 #             newValue = value.replace('t','0.0')
-#             Р­С‚РѕС‚ РІР°СЂРёР°РЅС‚ Р·Р°РјРµС‰Р°РµС‚ РЅРµ РІСЃРµРіРґР° РїСЂР°РІРёР»СЊРЅРѕ! РЅР°РґРѕ РїРµСЂРµРґРµР»Р°С‚СЊ.
+#             Этот вариант замещает не всегда правильно! надо переделать.
             newValue = re.sub('\(.*?\)',repl,value)
             pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
         pointFunction.append("}\n\n")
@@ -1249,7 +1249,7 @@ class FunctionCodeGenerator:
     def __generateFillFunctionForBlock(self, blockNumber, countOfInitials, indepVariableList):
         fillFunction = list()
         strBlockNum = str(blockNumber)
-#         otherParameters Р±СѓРґСѓС‚ РІСЃС‚Р°РІР»СЏС‚СЊСЃСЏ РІ СЃС‚СЂРѕРєСѓ signature, РµСЃР»Рё СЌС‚Рѕ РїРѕС‚СЂРµР±СѓРµС‚СЃСЏ.
+#         otherParameters будут вставляться в строку signature, если это потребуется.
 #         otherParameters = ", int Block" + strBlockNum + "CountX, int Block" + strBlockNum + "CountY, int Block" + strBlockNum + "CountZ, int Block" + strBlockNum + "OffsetX, int Block" + strBlockNum + "OffsetY, int Block" + strBlockNum + "OffsetZ"
         signature = "void Block" + strBlockNum + "FillInitialValues(double* result, int* initType){\n"
         fillFunction.append(signature)
@@ -1259,7 +1259,7 @@ class FunctionCodeGenerator:
             index = str(i)
             fillFunction.append("\tinitFuncArray[" + index + "] = Initial" + index + ";\n")
         
-#         Р’ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СЂР°Р·РјРµСЂРЅРѕСЃС‚Рё Р±Р»РѕРєР° РіРµРЅРµСЂРёСЂСѓРµС‚СЃСЏ 1, 2 РёР»Рё 3 С†РёРєР»Р° for
+#         В зависимости от размерности блока генерируется 1, 2 или 3 цикла for
         dimension = len(indepVariableList)
         if dimension == 3:
             fillFunction.append("\tfor(int idxZ = 0; idxZ<Block" + strBlockNum + "CountZ; idxZ++)\n")
@@ -1325,7 +1325,7 @@ class FunctionCodeGenerator:
         return ''.join(output)
 
     def generateInitials(self, blocks, initials, DirichletBoundaries, equations):
-#         initials --- РјР°СЃСЃРёРІ [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
+#         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
         countOfEquations = len(equations[0].system)
         output = list(["//===================PARAMETERS==========================//\n\n"])
         output.append(self.__generateParamFunction(equations[0].params, equations[0].paramValues[0]))
@@ -1336,7 +1336,7 @@ class FunctionCodeGenerator:
         for initialNumber,initial in enumerate(reducedInitials):
             output.append(self.__generatePointInitial(countOfEquations, initial, initialNumber, indepVariableList))
         
-#         Р’С‹Р±СЂР°СЃС‹РІР°РµРј Р»РёС€РЅРёРµ РїРѕР»СЏ (РїСЂРѕСЃС‚Рѕ РїСЂРёРІРѕРґРёРј РІРёРґ СЃР»РѕРІР°СЂРµР№ РґР»СЏ РіСЂР°РЅРёС‡РЅС‹С… СѓСЃР»РѕРІРёР№ Рє РІРёРґСѓ СЃР»РѕРІР°СЂРµР№ РґР»СЏ РЅР°С‡Р°Р»СЊРЅС‹С… СѓСЃР»РѕРІРёР№)
+#         Выбрасываем лишние поля (просто приводим вид словарей для граничных условий к виду словарей для начальных условий)
 #         reducedDirichletBoundaries = list([])    
 #         for dirichletBoundary in DirichletBoundaries:
 #             reducedDirichletBoundary = {"Name" : dirichletBoundary["Name"], "Values" : dirichletBoundary["Values"]}
@@ -1350,8 +1350,8 @@ class FunctionCodeGenerator:
         return ''.join(output)                     
 
     def generateAllFunctions(self, blocks, equations, bounds, initials, gridStep):
-#         Р’Р°Р¶РЅС‹Р№ РјРѕРјРµРЅС‚: РІСЃРµРіРґР° РїСЂРµРґРїРѕР»Р°РіР°РµС‚СЃСЏ, С‡С‚Рѕ РјР°СЃСЃРёРІ equations СЃРѕРґРµСЂР¶РёС‚ С‚РѕР»СЊРєРѕ 1 СѓСЂР°РІРЅРµРЅРёРµ.
-#         gridStep --- СЃРїРёСЃРѕРє [gridStepX, gridStepY, gridStepZ]
+#         Важный момент: всегда предполагается, что массив equations содержит только 1 уравнение.
+#         gridStep --- список [gridStepX, gridStepY, gridStepZ]
         userIndepVariables = equations[0].vars
         defaultIndepVariables = ['x','y','z']
         params = equations[0].params
@@ -1362,7 +1362,7 @@ class FunctionCodeGenerator:
         allBlockSizeList = list([])
         allBlockOffsetList = list([])
         for block in blocks:
-#             РљРѕР»РёС‡РµСЃС‚РІРѕ СѓСЂР°РІРЅРµРЅРёР№ СЃРёСЃС‚РµРјС‹ --- РєР°Рє СЂР°Р· Рё РµСЃС‚СЊ cellsize
+#             Количество уравнений системы --- как раз и есть cellsize
             cellsizeList.append(len(equations[block.defaultEquation].system))
             if dim == 1:
                 blockSizeList = [block.sizeX,0,0]
@@ -1390,7 +1390,7 @@ class FunctionCodeGenerator:
             estrList = equations[block.defaultEquation].system
             cf = self.generateCentralFunctionCode(block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params)
             
-#             Р­С‚РѕС‚ РјР°СЃСЃРёРІ РїРѕС‚РѕРј Р±СѓРґРµС‚ РёСЃРїРѕР»СЊР·РѕРІР°РЅ РґР»СЏ РіРµРЅРµСЂРёСЂРѕРІР°РЅРёСЏ С„СѓРЅРєС†РёРё-Р·Р°РїРѕР»РЅРёС‚РµР»СЏ 
+#             Этот массив потом будет использован для генерирования функции-заполнителя 
             if dim == 1:
                 arrWithFunctionNames = ["Block" + str(blockNumber) + "CentralFunction"]
             elif dim == 2:
@@ -1410,4 +1410,4 @@ class FunctionCodeGenerator:
          
         return outputStr
     
-           
+#            Комментарий новый
