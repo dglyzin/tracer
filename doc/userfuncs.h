@@ -17,7 +17,7 @@ void Block0FillInitialValues(double* result, int* initType);
 void getInitFuncArray(initfunc_fill_ptr_t** ppInitFuncs);
 void releaseInitFuncArray(initfunc_fill_ptr_t* InitFuncs);
 
-void getFuncArray(func_ptr_t** ppFuncs);
+void getFuncArray(func_ptr_t** ppFuncs, int blockIdx);
 void releaseFuncArray(func_ptr_t* Funcs);
 
 void initDefaultParams(double **pparams, int* pparamscount);
