@@ -1198,7 +1198,7 @@ class FunctionCodeGenerator:
         return ''.join(boundaryFunctions)
     
     def __generateParamFunction(self, params, paramValues):
-#         params -- массив имен параметров, paramValues -- словарь значений
+        #params -- массив имен параметров, paramValues -- словарь значений
         paramCount = len(params)
         paramValuesCount = len(paramValues)
         if paramCount != paramValuesCount:
@@ -1216,33 +1216,33 @@ class FunctionCodeGenerator:
         return ''.join(output)
     
     def __generatePointInitial(self, countOfEquations, initial, initialNumber, indepVariableList):
-#         Функция генерируют точечную начальную функцию с номером initialNumber.
-#         changedValueList --- будет содержать строки, которые просто надо подставить в нужное место и не надо парсить.
+        #Функция генерируют точечную начальную функцию с номером initialNumber.
+        #changedValueList --- будет содержать строки, которые просто надо подставить в нужное место и не надо парсить.
         pointFunction = list()
-#         changedValueList = list()
+        #changedValueList = list()
         valueList = initial.values
         if len(valueList) != countOfEquations:
             raise AttributeError("Component's count of some initial condition is not corresponds to component's count of unknown vector-function!")
-#         for value in valueList:
-#             changedValue = value
-#             for i,indepVariable in enumerate(indepVariableList):
-#                 if i == 0:
-#                     new = 'x'
-#                 elif i == 1:
-#                     new = 'y'
-#                 else:
-#                     new = 'z'
-#                 changedValue = changedValue.replace(indepVariable, new)
-#             changedValueList.append(changedValue)
-#         
+        #for value in valueList:
+        #changedValue = value
+        #for i,indepVariable in enumerate(indepVariableList):
+        #    if i == 0:
+        #                new = 'x'
+        #             elif i == 1:
+        #                     new = 'y'
+        #                 else:
+        #                     new = 'z'
+        #                 changedValue = changedValue.replace(indepVariable, new)
+        #             changedValueList.append(changedValue)
+         
         pointFunction.append("void Initial"+str(initialNumber)+"(double* cellstart, double x, double y, double z){\n")
         t = re.compile('t')
-#         Функция, которая в выражении match.group() заменяет все 't' на '0.0'
+        #Функция, которая в выражении match.group() заменяет все 't' на '0.0'
         repl = lambda match: t.sub('0.0', match.group())
         for k,value in enumerate(valueList):
-#             Т.к. начальные условия не должны зависеть от t, его надо везде заменить на 0
-#             newValue = value.replace('t','0.0')
-#             Этот вариант замещает не всегда правильно! надо переделать.
+            #Т.к. начальные условия не должны зависеть от t, его надо везде заменить на 0
+            #newValue = value.replace('t','0.0')
+            #Этот вариант замещает не всегда правильно! надо переделать.
             newValue = re.sub('\(.*?\)',repl,value)
             pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
         pointFunction.append("}\n\n")
@@ -1251,8 +1251,8 @@ class FunctionCodeGenerator:
     def __generateFillFunctionForBlock(self, blockNumber, countOfInitials, indepVariableList):
         fillFunction = list()
         strBlockNum = str(blockNumber)
-#         otherParameters будут вставляться в строку signature, если это потребуется.
-#         otherParameters = ", int Block" + strBlockNum + "CountX, int Block" + strBlockNum + "CountY, int Block" + strBlockNum + "CountZ, int Block" + strBlockNum + "OffsetX, int Block" + strBlockNum + "OffsetY, int Block" + strBlockNum + "OffsetZ"
+        #otherParameters будут вставляться в строку signature, если это потребуется.
+        #otherParameters = ", int Block" + strBlockNum + "CountX, int Block" + strBlockNum + "CountY, int Block" + strBlockNum + "CountZ, int Block" + strBlockNum + "OffsetX, int Block" + strBlockNum + "OffsetY, int Block" + strBlockNum + "OffsetZ"
         signature = "void Block" + strBlockNum + "FillInitialValues(double* result, int* initType){\n"
         fillFunction.append(signature)
         
@@ -1261,7 +1261,7 @@ class FunctionCodeGenerator:
             index = str(i)
             fillFunction.append("\tinitFuncArray[" + index + "] = Initial" + index + ";\n")
         
-#         В зависимости от размерности блока генерируется 1, 2 или 3 цикла for
+        #В зависимости от размерности блока генерируется 1, 2 или 3 цикла for
         dimension = len(indepVariableList)
         if dimension == 3:
             fillFunction.append("\tfor(int idxZ = 0; idxZ<Block" + strBlockNum + "CountZ; idxZ++)\n")
@@ -1284,12 +1284,12 @@ class FunctionCodeGenerator:
         fillFunction.append(spaces + idx)
         fillFunction.append(spaces + "int type = initType[idx];\n")
         fillFunction.append(spaces + "initFuncArray[type](" + params + ");}\n")
-#         fillFunction.append("\tfor(int idxZ = 0; idxZ<Block" + strBlockNum + "CountZ; idxZ++)\n")
-#         fillFunction.append("\t\tfor(int idxY = 0; idxY<Block" + strBlockNum + "CountY; idxY++)\n")
-#         fillFunction.append("\t\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n")
-#         fillFunction.append("\t\t\t\tint idx = (idxZ*Block" + strBlockNum + "CountY*Block" + strBlockNum + "CountX + idxY*Block" + strBlockNum + "CountX + idxX)*Block" + strBlockNum + "CELLSIZE;\n")
-#         fillFunction.append("\t\t\t\tint type = initType[idx];\n")
-#         fillFunction.append("\t\t\t\tinitFuncArray[type](result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, Block" + strBlockNum + "OffsetZ + idxZ*DZ);\n\t\t\t}\n")
+        #fillFunction.append("\tfor(int idxZ = 0; idxZ<Block" + strBlockNum + "CountZ; idxZ++)\n")
+        #fillFunction.append("\t\tfor(int idxY = 0; idxY<Block" + strBlockNum + "CountY; idxY++)\n")
+        #fillFunction.append("\t\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n")
+        #fillFunction.append("\t\t\t\tint idx = (idxZ*Block" + strBlockNum + "CountY*Block" + strBlockNum + "CountX + idxY*Block" + strBlockNum + "CountX + idxX)*Block" + strBlockNum + "CELLSIZE;\n")
+        #fillFunction.append("\t\t\t\tint type = initType[idx];\n")
+        #fillFunction.append("\t\t\t\tinitFuncArray[type](result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, Block" + strBlockNum + "OffsetZ + idxZ*DZ);\n\t\t\t}\n")
         
         fillFunction.append("}\n\n")
         
@@ -1327,7 +1327,7 @@ class FunctionCodeGenerator:
         return ''.join(output)
 
     def generateInitials(self, blocks, initials, DirichletBoundaries, equations):
-#         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
+        #initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
         countOfEquations = len(equations[0].system)
         output = list(["//===================PARAMETERS==========================//\n\n"])
         output.append(self.__generateParamFunction(equations[0].params, equations[0].paramValues[0]))
@@ -1338,10 +1338,10 @@ class FunctionCodeGenerator:
         for initialNumber,initial in enumerate(reducedInitials):
             output.append(self.__generatePointInitial(countOfEquations, initial, initialNumber, indepVariableList))
         
-#         Выбрасываем лишние поля (просто приводим вид словарей для граничных условий к виду словарей для начальных условий)
-#         reducedDirichletBoundaries = list([])    
-#         for dirichletBoundary in DirichletBoundaries:
-#             reducedDirichletBoundary = {"Name" : dirichletBoundary["Name"], "Values" : dirichletBoundary["Values"]}
+        #Выбрасываем лишние поля (просто приводим вид словарей для граничных условий к виду словарей для начальных условий)
+        #reducedDirichletBoundaries = list([])    
+        #for dirichletBoundary in DirichletBoundaries:
+        #reducedDirichletBoundary = {"Name" : dirichletBoundary["Name"], "Values" : dirichletBoundary["Values"]}
         
         countOfInitials = len(reducedInitials)
         for blockNumber, block in enumerate(blocks):
@@ -1352,8 +1352,8 @@ class FunctionCodeGenerator:
         return ''.join(output)                     
 
     def generateAllFunctions(self, blocks, equations, bounds, initials, gridStep):
-#         Важный момент: всегда предполагается, что массив equations содержит только 1 уравнение.
-#         gridStep --- список [gridStepX, gridStepY, gridStepZ]
+        #Важный момент: всегда предполагается, что массив equations содержит только 1 уравнение.
+        #gridStep --- список [gridStepX, gridStepY, gridStepZ]
         userIndepVariables = equations[0].vars
         defaultIndepVariables = ['x','y','z']
         params = equations[0].params
@@ -1364,7 +1364,7 @@ class FunctionCodeGenerator:
         allBlockSizeList = list([])
         allBlockOffsetList = list([])
         for block in blocks:
-#             Количество уравнений системы --- как раз и есть cellsize
+            #Количество уравнений системы --- как раз и есть cellsize
             cellsizeList.append(len(equations[block.defaultEquation].system))
             if dim == 1:
                 blockSizeList = [block.sizeX,0,0]
@@ -1392,7 +1392,7 @@ class FunctionCodeGenerator:
             estrList = equations[block.defaultEquation].system
             cf = self.generateCentralFunctionCode(block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params)
             
-#             Этот массив потом будет использован для генерирования функции-заполнителя 
+            #Этот массив потом будет использован для генерирования функции-заполнителя 
             if dim == 1:
                 arrWithFunctionNames = ["Block" + str(blockNumber) + "CentralFunction"]
             elif dim == 2:
@@ -1402,7 +1402,7 @@ class FunctionCodeGenerator:
                                         "Block" + str(blockNumber) + "DefaultNeumannBoundForVertex0_3",
                                         "Block" + str(blockNumber) + "DefaultNeumannBoundForVertex1_3"]
             
-#             dbf = self.generateDefaultBoundaryFunction(block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params)
+            #dbf = self.generateDefaultBoundaryFunction(block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params)
             bf = self.generateAllBoundaries(block, blockNumber, arrWithFunctionNames, estrList, bounds, defaultIndepVariables, userIndepVariables, params)
             totalArrWithFunctionNames += arrWithFunctionNames
             outputStr += cf + bf
@@ -1411,6 +1411,4 @@ class FunctionCodeGenerator:
         outputStr += final
          
         return outputStr
-    
-#            Комментарий новый
-# Новый комментарий
+   
