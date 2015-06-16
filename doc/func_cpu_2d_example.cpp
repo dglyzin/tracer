@@ -225,14 +225,14 @@ void getBlock1BoundFuncArray(func_ptr_t** ppBoundFuncs){
 }
 
 
-void getBoundFuncArray(func_ptr_t** ppBoundFuncs, int blockIdx){
+void getFuncArray(func_ptr_t** ppBoundFuncs, int blockIdx){
     if (blockIdx == 0)
         getBlock0BoundFuncArray(ppBoundFuncs);
     if (blockIdx == 1)
         getBlock1BoundFuncArray(ppBoundFuncs);
 }
 
-void releaseBoundFuncArray(func_ptr_t* BoundFuncs){
+void releaseFuncArray(func_ptr_t* BoundFuncs){
 	free(BoundFuncs);
 }
 
