@@ -440,7 +440,7 @@ class Model(QObject):
             gen = FunctionCodeGenerator()
             #приходится опять формировать словарь из gridStep'ов, т.к. ф-я принимает именно его. Но это легко исправить.
             outputStr = gen.generateAllFunctions(self.blocks, self.equations, self.bounds, self.initials, [self.gridStepX, self.gridStepY, self.gridStepZ])
-        except SyntaxError as ex:
+        except Exception as ex:
             print(ex)
         else:
             f = open(cppFileName,'w')
