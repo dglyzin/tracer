@@ -205,6 +205,10 @@ class BinaryModel(object):
         print "Cell size:", self.paramsArr[0], "Halo size: ", self.paramsArr[1]
 
     def fillBinaryBlocks(self):
+        print "Welcome to Blocks Data filler"
+        print "following is the function mapping"
+        print self.functionMaps
+        
         self.blockCount = len(self.dmodel.blocks)
         self.blockCountArr = np.zeros(1, dtype=np.int32)
         self.blockCountArr[0] = self.blockCount
@@ -341,11 +345,13 @@ class BinaryModel(object):
             if icDim == 1:
                 self.interconnect1dFill(icIdx)
 
-
+    
+    #this will only work if saveFuncs was called and self.functionMaps are filled
     def saveDomain(self, fileName):
         print "saving domain..."
         #computing
         self.fillBinarySettings()
+        #this will only work if saveFuncs was called and self.functionMaps are filled
         self.fillBinaryBlocks()
         self.fillBinaryInterconnects()
 
@@ -372,7 +378,7 @@ class BinaryModel(object):
     
     
     def saveFuncs(self, fileName):
-        self.dmodel.createCPP(fileName)
+        self.functionMaps = self.dmodel.createCPPandGetFunctionMaps(fileName)
 
     def compileFuncs(self, fileName):
         dirName = os.path.abspath(os.path.dirname(fileName))

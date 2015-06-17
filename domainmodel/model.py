@@ -434,17 +434,18 @@ class Model(QObject):
         d = DerivativeHandler()
         return d.orderOfSystem(self.equations[0].system,self.equations[0].params, self.equations[0].vars)
 
-    def createCPP(self,cppFileName):
+    def createCPPandGetFunctionMaps(self,cppFileName):
         #generator1
         try:
             gen = FunctionCodeGenerator()
             #приходится опять формировать словарь из gridStep'ов, т.к. ф-я принимает именно его. Но это легко исправить.
-            outputStr = gen.generateAllFunctions(self.blocks, self.equations, self.bounds, self.initials, [self.gridStepX, self.gridStepY, self.gridStepZ])
+            outputStr, functionMaps = gen.generateAllFunctions(self.blocks, self.equations, self.bounds, self.initials, [self.gridStepX, self.gridStepY, self.gridStepZ])
         except Exception as ex:
             print(ex)
         else:
             f = open(cppFileName,'w')
             f.write(outputStr)
             f.close()
+        return functionMaps
         #generator2
         #generateCfromDict(self.toDict(),cppFileName)
