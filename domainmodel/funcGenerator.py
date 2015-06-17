@@ -927,30 +927,28 @@ class FunctionCodeGenerator:
 #         outputFile.extend(self.__generateVertexAndRibFunctions(blockNumber, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary))
 #         return ''.join(outputFile)
     
-#     def generateDefaultBoundaryFunction(self, block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params):
-#         defaultFunctions = list([])
-#         parser = MathExpressionParser()
-#         variables = parser.getVariableList(estrList)
-#             
-#         parsedEstrList = list([])
-#         for equation in estrList:
-#             parsedEstrList.extend([parser.parseMathExpression(equation, variables, params, userIndepVariables)])
-#             
-# #         defuaultBoundaryConditionValues = list([])
-#         defuaultBoundaryConditionValues = len(variables) * ['0.0']
-# #         for var in variables:
-# #             defuaultBoundaryConditionValues.extend(['0.0'])
-#                 
-#         defaultFunctions.extend(['\n//=========================DEFAULT BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' +str(blockNumber)+'========================//\n\n'])
-#                 
-#         boundaryCount = len(userIndepVariables) * 2
-#         for i in range(0,boundaryCount):
-#             boundaryName = self.__determineNameOfBoundary(i)
-#             defaultFunctions.extend(['//Default boundary condition for boundary ' + boundaryName + '\n'])
-#             nameForSide = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(i)
-#             defaultBoundaryConditionList = list([tuple((i, defuaultBoundaryConditionValues))])
-#             defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForSide, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])
-#             
+    def generateDefaultBoundaryFunction(self, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params):
+        defaultFunctions = list()
+        parser = MathExpressionParser()
+        variables = parser.getVariableList(estrList)
+             
+        parsedEstrList = list([])
+        for equation in estrList:
+            parsedEstrList.extend([parser.parseMathExpression(equation, variables, params, userIndepVariables)])
+             
+        defuaultBoundaryConditionValues = len(variables) * ['0.0']
+        
+        intro = '\n//=========================DEFAULT BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' +str(blockNumber)+'========================//\n\n'       
+        defaultFunctions.append(intro)
+                 
+        boundaryCount = len(userIndepVariables) * 2
+        for i in range(0,boundaryCount):
+            boundaryName = self.__determineNameOfBoundary(i)
+            defaultFunctions.append('//Default boundary condition for boundary ' + boundaryName + '\n')
+            nameForSide = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(i)
+            defaultBoundaryConditionList = list([tuple((i, defuaultBoundaryConditionValues))])
+            defaultFunctions.append(self.__generateNeumann(blockNumber, nameForSide, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList))
+             
 #         if len(userIndepVariables) == 2:
 #             Vertexs = [(0,2),(0,3),(1,2),(1,3)]
 #             for Vertex in Vertexs:
@@ -960,7 +958,7 @@ class FunctionCodeGenerator:
 #                 defaultBoundaryConditionList = list([tuple((Vertex[0], defuaultBoundaryConditionValues)), tuple((Vertex[1], defuaultBoundaryConditionValues))])
 #                 nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
 #                 defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForVertex, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])
-#                     
+#                      
 # #             defaultFunctions.extend([self.__generateVertexOrRib(blockNumber, nameForVertex, parsedEstrList, variables, indepVrbls, params, defaultBoundaryConditionList)])
 #         elif len(userIndepVariables) == 3:
 #             ribs = [(0,2),(0,3),(0,4),(0,5),(1,2),(1,3),(1,4),(1,5),(2,4),(2,5),(3,4),(3,5)]
@@ -980,9 +978,9 @@ class FunctionCodeGenerator:
 #                 defaultBoundaryConditionList = list([tuple((Vertex[0], defuaultBoundaryConditionValues)), tuple((Vertex[1], defuaultBoundaryConditionValues)), tuple((Vertex[2], defuaultBoundaryConditionValues))])
 #                 nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1]) + '_' + str(Vertex[2])
 #                 defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForVertex, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])
-#         
-#         return ''.join(defaultFunctions)
-#     
+         
+        return ''.join(defaultFunctions)
+     
 
 
     def __computeSideLength2D(self, blockRanges, Side):
@@ -1010,14 +1008,11 @@ class FunctionCodeGenerator:
         return reducedSegment[1] - reducedSegment[0]
     
     def __generateBoundaryFuncsForBlockInProperOrder(self, blockNumber, arrWithFunctionNames, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params):
-        outputFile = list(['\n//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'])
+        outputFile = list(self.generateDefaultBoundaryFunction(blockNumber, estrList, defaultIndepVariables, userIndepVariables, params))
+        intro = '\n//=============================NON-DEFAULT BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
+        outputFile.append(intro)
         parser = MathExpressionParser()
         variables = parser.getVariableList(estrList)
-        
-#         Это дефолтные неймановские краевые условия
-        defuaultBoundaryConditionValues = list([])
-        for var in variables:
-            defuaultBoundaryConditionValues.extend(['0.0'])
         
         parsedEstrList = list([])
         for equation in estrList:
@@ -1028,7 +1023,7 @@ class FunctionCodeGenerator:
             if len(boundaryCondition['values']) != numberOfVariables:
                 raise SyntaxError("The dimension of unknow vector-function is " + str(numberOfVariables) + ", but one of the input boundary conditions has other number of components!")
         
-        boundaryNumberList = list([])
+        sideList = list([])
         parsedBoundaryConditionDictionary = dict({})
         boundaryCount = len(userIndepVariables) * 2
 #         Этот словарь будет помогать правильно нумеровать сишные функции
@@ -1036,6 +1031,7 @@ class FunctionCodeGenerator:
         for boundaryCondition in boundaryConditionList:
             
             side = boundaryCondition['side']
+            boundNumber = boundaryCondition['boundNumber']
             if side in countOfGeneratedFunction:
                 countOfGeneratedFunction[side] += 1
             else:
@@ -1056,72 +1052,55 @@ class FunctionCodeGenerator:
                 parsedBoundaryCondition.extend([parser.parseMathExpression(boundary, params, indepVarsForBoundaryFunction)])
             
             if side in parsedBoundaryConditionDictionary:
-                parsedBoundaryConditionDictionary[side].append((parsedBoundaryCondition, boundaryCoordList, boundaryCondition['type']))
+                parsedBoundaryConditionDictionary[side].append((parsedBoundaryCondition, boundaryCoordList, boundaryCondition['type'], boundNumber))
             else:
-                boundaryNumberList.extend([side])
-                parsedBoundaryConditionDictionary.update({side : [(parsedBoundaryCondition, boundaryCoordList, boundaryCondition['type'])]})
+                sideList.extend([side])
+                parsedBoundaryConditionDictionary.update({side : [(parsedBoundaryCondition, boundaryCoordList, boundaryCondition['type'], boundNumber)]})
         
         dimension = len(userIndepVariables)
         properSequenceOfSides = [2,3,0,1]    
 #         for side in range(0, boundaryCount):
         for side in properSequenceOfSides:
             boundaryName = self.__determineNameOfBoundary(side)
-            if side in parsedBoundaryConditionDictionary:
-                if dimension == 2:
-#                 Если нужно, кладем имя граничной функции по умолчанию в массив
-                    sideLen = self.__computeSideLength2D(blockRanges, side)
-#                 Сумма длин всех отрезков на стороне side, на которые наложены условия
-                    totalLen = 0
-                    for condition in parsedBoundaryConditionDictionary[side]:
-                        totalLen += self.__computeSegmentLength2D(condition[1])
-                    if sideLen > totalLen:
-                        outputFile.extend(['//Default boundary condition for boundary ' + boundaryName + '\n'])
-                        parsedBoundaryConditionTuple = list([tuple((side, defuaultBoundaryConditionValues))])
-                        name = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
-                        outputFile.extend([self.__generateNeumann(blockNumber, name, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple)])
-                        arrWithFunctionNames.append(name)
+            defaultFuncName = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
+            arrWithFunctionNames.append(defaultFuncName)
+#                 if dimension == 2:
+# #                 Если нужно, кладем имя граничной функции по умолчанию в массив
+#                     sideLen = self.__computeSideLength2D(blockRanges, side)
+# #                 Сумма длин всех отрезков на стороне side, на которые наложены условия
+#                     totalLen = 0
+#                     for condition in parsedBoundaryConditionDictionary[side]:
+#                         totalLen += self.__computeSegmentLength2D(condition[1])
+#                     if sideLen > totalLen:
+#                         outputFile.append('//Default boundary condition for boundary ' + boundaryName + '\n')
+#                         parsedBoundaryConditionTuple = list([tuple((side, defuaultBoundaryConditionValues))])
+#                         name = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
+#                         outputFile.append(self.__generateNeumann(blockNumber, name, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple))
+#                         arrWithFunctionNames.append(name)
 #                 Генерируем функции для всех заданных условий и кладем их имена в массив
+            if side in parsedBoundaryConditionDictionary:
                 counter = 0
+    #                 Это список номеров граничных условий для данной стороны side. Нужен для исключения повторяющихся функций,
+    #                 т.к. на одну сторону в разных местах м.б. наложено одно и то же условие
+                boundNumberList = list()
                 for condition in parsedBoundaryConditionDictionary[side]:
-                    parsedBoundaryConditionTuple = list([tuple((side, condition[0]))])
-                    if dimension == 1 or dimension == 2:
-                        outputFile.extend(['//Non-default boundary condition for boundary ' + boundaryName + '\n'])
-                        if condition[2] == 0:
-                            name = 'Block' + str(blockNumber) + 'DirichletBound' + str(side) + '_' + str(counter)
-                            outputFile.extend([self.__generateDirichlet(blockNumber, name, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple)])
-                            arrWithFunctionNames.append(name)
-                        else:
-                            name = 'Block' + str(blockNumber) + 'NeumannBound' + str(side) + '_' + str(counter)
-                            outputFile.extend([self.__generateNeumann(blockNumber, name, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple)])
-                            arrWithFunctionNames.append(name)
-                    elif dimension == 3:
-                        raise AttributeError("Three dimensional case!")
-                    counter += 1
-        
-            else:
-                outputFile.extend(['//Default boundary condition for boundary ' + boundaryName + '\n'])
-                parsedBoundaryConditionTuple = list([tuple((side, defuaultBoundaryConditionValues))])
-                name = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
-                outputFile.extend([self.__generateNeumann(blockNumber, name, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple)])
-                arrWithFunctionNames.append(name)
-#             boundaryName = self.__determineNameOfBoundary(side)
-#             dimension = len(userIndepVariables)
-#             if dimension >= 1:
-#                 xRangeForName = "xfrom = " + str(coordList[0][0]) + ", xto = " + str(coordList[0][1])
-#                 rangesForName = xRangeForName
-#             if dimension >= 2:
-#                 yRangeForName = "yfrom = " + str(coordList[1][0]) + ", yto = " + str(coordList[1][1])
-#                 rangesForName = rangesForName + ', ' + yRangeForName
-#             if dimension == 3:
-#                 zRangeForName = "zfrom = " + str(coordList[2][0]) + ", zto = " + str(coordList[2][1])
-#                 rangesForName = rangesForName + ', ' + zRangeForName
-#             outputFile.extend(['//Non-default boundary condition for boundary ' + boundaryName + ' with ranges ' + rangesForName + '\n'])
-#             if side >= boundaryCount:
-#                 raise SyntaxError('An attempt to impose the condition for boundary with non-existent number ' + str(side) + '! Maximal number of boundaies is equal ' + str(boundaryCount) + '!')
-#             if boundaryCondition['type'] == 0:
-#                 outputFile.extend([self.__generateDirichlet(blockNumber, 'Block' + str(blockNumber) + 'DirichletBound' + str(side) + '_' + str(countOfGeneratedFunction[side]), defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple)])
-#             else:
-#                 outputFile.extend([self.__generateNeumann(blockNumber, 'Block' + str(blockNumber) + 'NeumannBound' + str(side) + '_' + str(countOfGeneratedFunction[side]), parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple)])
+    #                     Если для граничного условия с таким номером функцию еще не создавали, то создать, иначе - не надо.
+                    if condition[3] not in boundNumberList:
+                        boundNumberList.append(condition[3])
+                        parsedBoundaryConditionTuple = list([tuple((side, condition[0]))])
+                        if dimension == 1 or dimension == 2:
+                            outputFile.append('//Non-default boundary condition for boundary ' + boundaryName + '\n')
+                            if condition[2] == 0:
+                                name = 'Block' + str(blockNumber) + 'DirichletBound' + str(side) + '_' + str(counter)
+                                outputFile.append(self.__generateDirichlet(blockNumber, name, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple))
+                                arrWithFunctionNames.append(name)
+                            else:
+                                name = 'Block' + str(blockNumber) + 'NeumannBound' + str(side) + '_' + str(counter)
+                                outputFile.append(self.__generateNeumann(blockNumber, name, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple))
+                                arrWithFunctionNames.append(name)
+                        elif dimension == 3:
+                            raise AttributeError("Three-dimensional case!")
+                        counter += 1
         
         outputFile.extend(self.__generateVertexAndRibFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary))
         return ''.join(outputFile)
@@ -1143,11 +1122,10 @@ class FunctionCodeGenerator:
             minRanges = minRanges + [block.offsetZ]
             maxRanges = maxRanges + [block.offsetZ + block.sizeZ]
         blockRanges = dict({'min' : minRanges, 'max' : maxRanges})
-#        Надо сформировать структуру boundaryConditionList = [{'values':[], 'type':тип, 'side':номер границы, 'ranges':[[xFrom,xTo],[y],[z]]}]
+#        Надо сформировать структуру boundaryConditionList = [{'values':[], 'type':тип, 'side':номер границы, 'boundNumber': номер условия, 'ranges':[[xFrom,xTo],[y],[z]]}]
         boundaryConditionList = list()
         boundRegions = block.boundRegions
         for region in boundRegions:
-#             терминология, связанная с boundRegions, неизвестна
             boundNumber = region.boundNumber
             if boundNumber >= len(bounds):
                 raise AttributeError("Non-existent number of boundary condition is set for some of boundary regions in array 'Blocks'!")
@@ -1190,7 +1168,7 @@ class FunctionCodeGenerator:
             elif boundaryType == 1:
                 values = bound.values
                 
-            boundaryCondition = dict({'values': values, 'type': boundaryType, 'side': side, 'ranges': boundaryRanges})
+            boundaryCondition = dict({'values': values, 'type': boundaryType, 'side': side, 'boundNumber': boundNumber, 'ranges': boundaryRanges})
             boundaryConditionList.append(boundaryCondition)
 #         Теперь надо вызвать функцию, генерирующую граничные условия для данного блока
 #         boundaryFunctions.append(self.generateBoundaryFunctionsCode(blockNumber, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params))
@@ -1430,7 +1408,8 @@ class FunctionCodeGenerator:
         return ''.join(output)
     
     def __generateGetBoundFuncArray(self, totalArrWithFunctionNames, countOfBlocks, dimension):
-        output = list()
+        intro = "\n//===================================FILL FUNCTIONS===========================//\n\n"
+        output = list(intro)
         for blockNumber in range(0, countOfBlocks):
             arrWithFunctionNames = totalArrWithFunctionNames[blockNumber]
             output.append("void getBlock" + str(blockNumber) + "BoundFuncArray(func_ptr_t** ppBoundFuncs){\n")
@@ -1447,7 +1426,7 @@ class FunctionCodeGenerator:
             output.append("\tgetBlock0BoundFuncArray(ppBoundFuncs);\n")
         else:
             for blockNumber in range(0, countOfBlocks):
-                output.append("\tif (blockIdx == 0)\n\t\tgetBlock" + str(blockNumber) + "BoundFuncArray(ppBoundFuncs);\n")
+                output.append("\tif (blockIdx == " + str(blockNumber) + ")\n\t\tgetBlock" + str(blockNumber) + "BoundFuncArray(ppBoundFuncs);\n")
         output.append("}\n\n")
         output.append("void releaseBoundFuncArray(func_ptr_t* BoundFuncs){\n\tfree(BoundFuncs);\n}\n\n")
         
