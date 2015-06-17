@@ -34,8 +34,8 @@ def createBinaries(InputFile):
         partModel = partitionAndMap(model)
 
     bm = BinaryModel(partModel)
-    bm.saveDomain(OutputDataFile)
     bm.saveFuncs(OutputFuncFile)
+    bm.saveDomain(OutputDataFile)
     bm.compileFuncs(OutputFuncFile)
     bm.createRunFile(OutputRunFile,OutputDataFile)
 
