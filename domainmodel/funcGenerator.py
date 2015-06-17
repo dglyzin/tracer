@@ -1070,12 +1070,24 @@ class FunctionCodeGenerator:
         #     0          1
         #     |          |
         #     ---side 3---        
-        #functionMap = {"e02":0, }
+        
+        #dictionary to return to binarymodel
+        blockFunctionMap = {"center":0, "e02":1, "e12":2, "e03":3, "e13":4 } 
+        #counter for elements in blockFunctionMap including subdictionaries
+        bfmLen = 5
         #for side in range(0, boundaryCount):
         for side in properSequenceOfSides:
+            #subdictionary for every side 
+            sideMap = {}
+            sideName = "side"+str(side)
+                        
             boundaryName = self.__determineNameOfBoundary(side)
             defaultFuncName = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
             arrWithFunctionNames.append(defaultFuncName)
+            #every time we append a name to arrWithFunctionNames we should also  
+            sideMap = {"default":bfmLen}
+            bfmLen += 1
+            
 #                 if dimension == 2:
 # #                 Если нужно, кладем имя граничной функции по умолчанию в массив
 #                     sideLen = self.__computeSideLength2D(blockRanges, side)
@@ -1089,14 +1101,14 @@ class FunctionCodeGenerator:
 #                         name = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
 #                         outputFile.append(self.__generateNeumann(blockNumber, name, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple))
 #                         arrWithFunctionNames.append(name)
-#                 Генерируем функции для всех заданных условий и кладем их имена в массив
+            #Генерируем функции для всех заданных условий и кладем их имена в массив
             if side in parsedBoundaryConditionDictionary:
                 counter = 0
-    #                 Это список номеров граничных условий для данной стороны side. Нужен для исключения повторяющихся функций,
-    #                 т.к. на одну сторону в разных местах м.б. наложено одно и то же условие
+                #Это список номеров граничных условий для данной стороны side. Нужен для исключения повторяющихся функций,
+                #т.к. на одну сторону в разных местах м.б. наложено одно и то же условие
                 boundNumberList = list()
                 for condition in parsedBoundaryConditionDictionary[side]:
-    #                     Если для граничного условия с таким номером функцию еще не создавали, то создать, иначе - не надо.
+                    #Если для граничного условия с таким номером функцию еще не создавали, то создать, иначе - не надо.
                     if condition[3] not in boundNumberList:
                         boundNumberList.append(condition[3])
                         parsedBoundaryConditionTuple = list([tuple((side, condition[0]))])
@@ -1110,21 +1122,26 @@ class FunctionCodeGenerator:
                                 name = 'Block' + str(blockNumber) + 'NeumannBound' + str(side) + '_' + str(counter)
                                 outputFile.append(self.__generateNeumann(blockNumber, name, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple))
                                 arrWithFunctionNames.append(name)
+                            sideMap.update({"userBound"+str(condition[3]):bfmLen})
+                            bfmLen += 1
                         elif dimension == 3:
                             raise AttributeError("Three-dimensional case!")
                         counter += 1
+            
+            blockFunctionMap.update({sideName:sideMap}) 
+            
         
         outputFile.extend(self.__generateVertexAndRibFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary))
-        return ''.join(outputFile)
+        return ''.join(outputFile), blockFunctionMap
     
 
     
     def generateAllBoundaries(self, block, blockNumber, arrWithFunctionNames, estrList, bounds, defaultIndepVariables, userIndepVariables, params):
-# Эта функция должна для блока block сгенерировать все нужные функции.
-# Массив bounds имеет ту же структуру и смысл, что и в классе Model
+        # Эта функция должна для блока block сгенерировать все нужные функции.
+        # Массив bounds имеет ту же структуру и смысл, что и в классе Model
         boundaryFunctions = list()
         blockDimension = block.dimension
-#         Offset -- это смещение блока, Size -- длина границы, поэтому границы блока -- это [Offset, Offset + Size]
+        #Offset -- это смещение блока, Size -- длина границы, поэтому границы блока -- это [Offset, Offset + Size]
         minRanges = [block.offsetX]
         maxRanges = [block.offsetX + block.sizeX]
         if blockDimension >= 2:
@@ -1134,7 +1151,7 @@ class FunctionCodeGenerator:
             minRanges = minRanges + [block.offsetZ]
             maxRanges = maxRanges + [block.offsetZ + block.sizeZ]
         blockRanges = dict({'min' : minRanges, 'max' : maxRanges})
-#        Надо сформировать структуру boundaryConditionList = [{'values':[], 'type':тип, 'side':номер границы, 'boundNumber': номер условия, 'ranges':[[xFrom,xTo],[y],[z]]}]
+        #Надо сформировать структуру boundaryConditionList = [{'values':[], 'type':тип, 'side':номер границы, 'boundNumber': номер условия, 'ranges':[[xFrom,xTo],[y],[z]]}]
         boundaryConditionList = list()
         boundRegions = block.boundRegions
         for region in boundRegions:
@@ -1172,8 +1189,8 @@ class FunctionCodeGenerator:
                     boundaryRanges = [[region.xfrom, region.xto], [region.yfrom, region.yto], [block.offsetZ + block.sizeZ, block.offsetZ + block.sizeZ]]
 
             bound = bounds[boundNumber]
-#             Если условие Дирихле, то используем производные по t,
-#             если Неймановское условие --- то сами значения.
+            #Если условие Дирихле, то используем производные по t,
+            #если Неймановское условие --- то сами значения.
             boundaryType = bound.btype
             if boundaryType == 0:
                 values = bound.derivative
@@ -1182,10 +1199,12 @@ class FunctionCodeGenerator:
                 
             boundaryCondition = dict({'values': values, 'type': boundaryType, 'side': side, 'boundNumber': boundNumber, 'ranges': boundaryRanges})
             boundaryConditionList.append(boundaryCondition)
-#         Теперь надо вызвать функцию, генерирующую граничные условия для данного блока
-#         boundaryFunctions.append(self.generateBoundaryFunctionsCode(blockNumber, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params))
-        boundaryFunctions.append(self.__generateBoundaryFuncsForBlockInProperOrder(blockNumber, arrWithFunctionNames, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params))
-        return ''.join(boundaryFunctions)
+        #Теперь надо вызвать функцию, генерирующую граничные условия для данного блока
+        #boundaryFunctions.append(self.generateBoundaryFunctionsCode(blockNumber, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params))
+        blockBoundaryFunctions, blockFunctionMap = self.__generateBoundaryFuncsForBlockInProperOrder(blockNumber, arrWithFunctionNames, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params)
+        boundaryFunctions.append(blockBoundaryFunctions)
+        
+        return ''.join(boundaryFunctions), blockFunctionMap
     
     def __generateParamFunction(self, params, paramValues):
 #         params -- массив имен параметров, paramValues -- словарь значений
@@ -1510,6 +1529,7 @@ class FunctionCodeGenerator:
         outputStr += self.generateInitials(blocks, initials, bounds, equations)
         
         totalArrWithFunctionNames = list()
+        functionMaps = []
         for blockNumber,block in enumerate(blocks):
             estrList = equations[block.defaultEquation].system
             cf = self.generateCentralFunctionCode(block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params)
@@ -1524,13 +1544,14 @@ class FunctionCodeGenerator:
                                         "Block" + str(blockNumber) + "DefaultNeumannBoundForVertex0_3",
                                         "Block" + str(blockNumber) + "DefaultNeumannBoundForVertex1_3"]
             
-#             dbf = self.generateDefaultBoundaryFunction(block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params)
-            bf = self.generateAllBoundaries(block, blockNumber, arrWithFunctionNames, estrList, bounds, defaultIndepVariables, userIndepVariables, params)
+            #dbf = self.generateDefaultBoundaryFunction(block, blockNumber, estrList, defaultIndepVariables, userIndepVariables, params)
+            bf, blockFunctionMap  = self.generateAllBoundaries(block, blockNumber, arrWithFunctionNames, estrList, bounds, defaultIndepVariables, userIndepVariables, params)
             totalArrWithFunctionNames.append(arrWithFunctionNames)
+            functionMaps.append(blockFunctionMap)
             outputStr += cf + bf
             
         final = self.__generateGetBoundFuncArray(totalArrWithFunctionNames, len(blocks), len(userIndepVariables))
         outputStr += final
          
-        return outputStr
+        return outputStr , functionMaps
     
