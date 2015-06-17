@@ -85,10 +85,10 @@
             "Name": "Dirichlet example1", 
             "Type": 0, 
             "Values": [
-                "-10.0*cos(sin(20*t) + t^4)"
+                "t^7 + tan(8.0*t) + sin(x)"
             ],
 			"Derivative": [
-                "10.0*sin(sin(20*t) + t^4)*(4*t^3 + 20*cos(20*t))"
+                "7*t^6 + 8.0/((cos(8.0*t))^2)"
             ]
         }
     ], 
@@ -96,13 +96,13 @@
 		{
             "Name": "Initial values 2", 
             "Values": [
-                "sin(x) + 10.0"               
+                "y*tan(x)"               
             ]
         },
 		{
             "Name": "Initial values 3", 
             "Values": [
-                "0.3 * exp(tan(y + x))"               
+                "log(x + sin(y))"               
             ]
         }
     ], 
