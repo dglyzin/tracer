@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import itertools
-import re
 from equationParser import MathExpressionParser
 # from Cheetah.Tests.CheetahWrapper import OUTPUT
 
@@ -106,15 +105,14 @@ class BoundaryFunctionCodeGenerator:
             if expressionList[0] == '^':
                 self.__generateCodeForPower(parsedMathFunction[j-1], outputList, expressionList)
             elif expressionList in operatorList:
-                outputList.extend([' ' + expressionList + ' '])
+                outputList.append(' ' + expressionList + ' ')
             elif expressionList in userIndepVariables:
                 ind = userIndepVariables.index(expressionList)
-                outputList.extend(independentVariableValueList[ind])
+                outputList.append(independentVariableValueList[ind])
             else:
-                outputList.extend(expressionList)
+                outputList.append(expressionList)
      
-        string = ''.join(outputList)
-        return string
+        return ''.join(outputList)
     
     def generateRightHandSideCode(self, blockNumber, leftHandSide, rightHandSide, userIndepVariables, vrbls, params, tupleList = list([])):
 #         tupleList --- это список, содержащий от 1 до 3 кортежей (Номер границы, РАСПАРСЕННЫЕ граничные условия)
@@ -1026,7 +1024,7 @@ class FunctionCodeGenerator:
         sideList = list([])
         parsedBoundaryConditionDictionary = dict({})
         boundaryCount = len(userIndepVariables) * 2
-        #Этот словарь будет помогать правильно нумеровать сишные функции
+#         Этот словарь будет помогать правильно нумеровать сишные функции
         countOfGeneratedFunction = dict({})
         for boundaryCondition in boundaryConditionList:
             
@@ -1038,7 +1036,7 @@ class FunctionCodeGenerator:
                 countOfGeneratedFunction.update({side: 0})
                 
             coordList = boundaryCondition['ranges']
-            #Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
+#             Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
             boundaryCoordList = self.__createBoundaryCoordinates(coordList)
             
             if side >= boundaryCount:
@@ -1070,8 +1068,8 @@ class FunctionCodeGenerator:
         #     0          1
         #     |          |
         #     ---side 3---        
-        #functionMap = {"e02":0, }
-        #for side in range(0, boundaryCount):
+        #functionMap = {"e02":0, }   
+#         for side in range(0, boundaryCount):
         for side in properSequenceOfSides:
             boundaryName = self.__determineNameOfBoundary(side)
             defaultFuncName = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
@@ -1207,12 +1205,48 @@ class FunctionCodeGenerator:
     
     
 
-    def __generateAllPointInitials(self, initials, bounds, countOfEquations, indepVariableList):
+    def __replaceTimeToZeroInInitialCondition(self, DirichletConditionForParsing, parameters, indepVariableList):
+#         Заменяет в условии Дирихле, которое хотим сделать начальным условием, переменную t на 0.0;
+#         DirichletConditionForParsing -- функция, в которой выполняется замена. Она здесь -- в виде массива лексем уже.
+        operations = ['+','-','*','/']
+        prevOperationsAndBoundaries = operations + ['(']
+        postOperationsAndBoundaries = operations + [')']
+        lastIndexInList = len(DirichletConditionForParsing) - 1
+        for idx,element in enumerate(DirichletConditionForParsing):
+            if element == 't':
+                doReplace = False
+#                 Если в строке стоит лишь 't'
+                if lastIndexInList == 0:
+                    return '0.0'
+                else:
+                    if idx == 0:
+                        if len(DirichletConditionForParsing[idx + 1]) == 1 and DirichletConditionForParsing[idx + 1] in operations:
+                            doReplace = True
+                        elif len(DirichletConditionForParsing[idx + 1]) != 1 and DirichletConditionForParsing[idx + 1][0] == '^':
+                            doReplace = True
+                    elif idx == lastIndexInList and DirichletConditionForParsing[idx - 1] in operations:
+                        doReplace = True
+                    else:
+                        prevElement = DirichletConditionForParsing[idx - 1]
+                        postElement = DirichletConditionForParsing[idx + 1]
+                        if prevElement in prevOperationsAndBoundaries or postElement in postOperationsAndBoundaries:
+                            doReplace = True
+                        elif len(postElement) > 1 and postElement[0] == '^':
+                            doReplace = True
+                if doReplace:
+                    DirichletConditionForParsing.pop(idx)
+                    DirichletConditionForParsing.insert(idx, '0.0')
+        
+        return DirichletConditionForParsing
+
+    def __generateAllPointInitials(self, initials, bounds, countOfEquations, indepVariableList, params):
 #         Генерирует все точечные начальные функции и возвращает строку из них; возвращает массив, содержащий имена начальных функций и
 #         массив, содержащий имена граничных функций Дирихле.
 #         Индекс в этом массиве имени каждой сгенерированной начальной функции совпадает с индексом соответствующего начального условия
 #         в массиве файла .json
 #         Все для начальных условий
+        parser = MathExpressionParser()
+        b = BoundaryFunctionCodeGenerator()
         allFunctions = list()
         listWithInitialFunctionNames = list()
         for initialNumber, initial in enumerate(initials):
@@ -1223,11 +1257,12 @@ class FunctionCodeGenerator:
             name = "Initial"+str(initialNumber)
             listWithInitialFunctionNames.append(name)
             pointFunction.append("void " + name + "(double* cellstart, double x, double y, double z){\n")
-            t = re.compile('t')
-    #         Функция, которая в выражении match.group() заменяет все 't' на '0.0'
-            repl = lambda match: t.sub('0.0', match.group())
+            
+            indepVarsForInitialFunction = indepVariableList + ['t']
             for k,value in enumerate(valueList):
-                newValue = re.sub('\(.*?\)',repl,value)
+                parsedInitial = parser.parseMathExpression(value, params, indepVarsForInitialFunction)
+                parsedInitialAfterReplacing = self.__replaceTimeToZeroInInitialCondition(parsedInitial, params, indepVarsForInitialFunction)
+                newValue = b.generateBoundaryValueCode(parsedInitialAfterReplacing, indepVariableList, indepVarsForInitialFunction)
                 pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
             pointFunction.append("}\n\n")
             allFunctions.append(''.join(pointFunction))
@@ -1242,11 +1277,12 @@ class FunctionCodeGenerator:
                 name = "DirichletInitial" + str(boundNumber)
                 listWithDirichletFunctionNames.append(name)
                 pointFunction.append("void " + name + "(double* cellstart, double x, double y, double z){\n")
-                t = re.compile('t')
-        #         Функция, которая в выражении match.group() заменяет все 't' на '0.0'
-#                 repl = lambda match: t.sub('0.0', match.group())
+                
+                indepVarsForInitialFunction = indepVariableList + ['t']
                 for k,value in enumerate(valueList):
-                    newValue = re.sub('\(.*?\)',repl,value)
+                    parsedInitial = parser.parseMathExpression(value, params, indepVarsForInitialFunction)
+                    parsedInitialAfterReplacing = self.__replaceTimeToZeroInInitialCondition(parsedInitial, params, indepVarsForInitialFunction)
+                    newValue = b.generateBoundaryValueCode(parsedInitialAfterReplacing, indepVariableList, indepVarsForInitialFunction)
                     pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
                 pointFunction.append("}\n\n")
                 allFunctions.append(''.join(pointFunction))
@@ -1453,6 +1489,7 @@ class FunctionCodeGenerator:
         output.append("//===================INITIAL CONDITIONS==========================//\n\n")
 #         reducedInitials = initials + DirichletBoundaries
         indepVariableList = equations[0].vars
+        params = equations[0].params
 #         for initialNumber,initial in enumerate(reducedInitials):
 #             output.append(self.__generatePointInitial(countOfEquations, initial, initialNumber, indepVariableList))
 #         
@@ -1461,7 +1498,7 @@ class FunctionCodeGenerator:
 #         for dirichletBoundary in DirichletBoundaries:
 #             reducedDirichletBoundary = {"Name" : dirichletBoundary["Name"], "Values" : dirichletBoundary["Values"]}
         
-        pointInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames = self.__generateAllPointInitials(initials, bounds, countOfEquations, indepVariableList)
+        pointInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames = self.__generateAllPointInitials(initials, bounds, countOfEquations, indepVariableList, params)
         output.append(pointInitials)
         output.append(self.__generateFillInitValFuncsForAllBlocks(blocks, bounds, listWithInitialFunctionNames, listWithDirichletFunctionNames, indepVariableList))
         
