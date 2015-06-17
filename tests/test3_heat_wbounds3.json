@@ -36,7 +36,7 @@
             "DefaultInitial": 3, 
             "BoundRegions": [
                 {
-                    "BoundNumber": 1, 
+                    "BoundNumber": 0, 
                     "Side": 0, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
@@ -44,18 +44,26 @@
                     "yto": 0.25                    
                 },
                 {
-                    "BoundNumber": 1, 
-                    "Side": 1, 
+                    "BoundNumber": 2, 
+                    "Side": 0, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 1.75, 
                     "yto": 2.0                    
                 },
                 {
-                    "BoundNumber": 0, 
+                    "BoundNumber": 1, 
                     "Side": 2, 
                     "xfrom": 0.25, 
                     "xto": 0.75, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0                    
+                },
+				{
+                    "BoundNumber": 3, 
+                    "Side": 2, 
+                    "xfrom": 0.0, 
+                    "xto": 0.25, 
                     "yfrom": 0.0, 
                     "yto": 0.0                    
                 }
@@ -85,36 +93,36 @@
             "DefaultInitial": 1, 
             "BoundRegions": [
                 {
-                    "BoundNumber": 1, 
-                    "Side": 0, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.25                    
-                },
-                {
-                    "BoundNumber": 1, 
+                    "BoundNumber": 3, 
                     "Side": 1, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
-                    "yfrom": 1.75, 
-                    "yto": 2.0                    
+                    "yfrom": 3.0, 
+                    "yto": 3.25                    
+                },
+                {
+                    "BoundNumber": 1, 
+                    "Side": 3, 
+                    "xfrom": 2.5, 
+                    "xto": 3.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0                    
                 }
             ], 
             "InitialRegions": [
 			    {
 			        "InitialNumber": 0,
-				    "xfrom": 0.0, 
-                    "xto": 0.5, 
-                    "yfrom": 0.0, 
-                    "yto": 0.25
+				    "xfrom": 2.0, 
+                    "xto": 2.5, 
+                    "yfrom": 3.0, 
+                    "yto": 3.25
 			    },
 				{
 			        "InitialNumber": 3,
-				    "xfrom": 0.0, 
-                    "xto": 0.5, 
-                    "yfrom": 0.0, 
-                    "yto": 0.25
+				    "xfrom": 2.5, 
+                    "xto": 3.0, 
+                    "yfrom": 3.0, 
+                    "yto": 5.0
 			    }
 			]
         }
@@ -146,23 +154,37 @@
     ], 
     "Bounds": [
         {
-            "Name": "Dirichlet example", 
+            "Name": "Dirichlet example1", 
             "Type": 0, 
             "Values": [
-                "-10.0"
+                "-10.0*(t)"
             ],
 			"Derivative": [
-                "0.0"
+                "-10.0"
             ]
         },
         {
-            "Name": "Dirichlet example", 
+            "Name": "Dirichlet example2", 
             "Type": 0, 
             "Values": [
-                "100.0"
+                "exp(100.0*t)"
             ],
 			"Derivative": [
-                "0.0"
+                "100.0*exp(100.0*t)"
+            ]
+        },
+		{
+            "Name": "Neumann example1", 
+            "Type": 1, 
+            "Values": [
+                "100.0 + sin(cos(t + 23.0))"
+            ]
+        },
+		{
+            "Name": "Neumann example2", 
+            "Type": 1, 
+            "Values": [
+                "exp(sin(t^2))"
             ]
         }
     ], 
