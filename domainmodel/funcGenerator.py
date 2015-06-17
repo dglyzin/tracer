@@ -1007,7 +1007,7 @@ class FunctionCodeGenerator:
     
     def __generateBoundaryFuncsForBlockInProperOrder(self, blockNumber, arrWithFunctionNames, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params):
         outputFile = list(self.generateDefaultBoundaryFunction(blockNumber, estrList, defaultIndepVariables, userIndepVariables, params))
-        intro = '\n//=============================NON-DEFAULT BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
+        intro = '\n//=============================OTHER BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputFile.append(intro)
         parser = MathExpressionParser()
         variables = parser.getVariableList(estrList)
@@ -1324,8 +1324,11 @@ class FunctionCodeGenerator:
             countOfInitialsForBlock = len(listOfInitialIndices)
 #              Для данного блока определяется список индексов функций Дирихле в массиве listWithDirichletFunctionNames            
             setOfDirichletIndices = set([])
+            countOfBoundaries = len(bounds)
             for boundRegion in block.boundRegions:
                 boundNumber = boundRegion.boundNumber
+                if boundNumber >= countOfBoundaries:
+                    raise AttributeError("In some of bound regions the value of bound number greater or equal to count of boundaries!")
                 if bounds[boundNumber].btype == 0:
                     setOfDirichletIndices.add(boundNumber)
             countOfDirichletForBlock = len(setOfDirichletIndices)

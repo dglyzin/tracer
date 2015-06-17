@@ -2,9 +2,9 @@
 from pyparsing import Literal, Word, nums, alphas, Group, Forward, Optional, OneOrMore, Suppress, restOfLine, ZeroOrMore
 
 class CorrectnessController:
-#     Ñî ñòåïåíÿìè íå âñå ïðîâåðåíî, íàïðèìåð âûðàæåíèå "V'= a^2d + D[W,{z,2}]" ðàñïàðñèòñÿ äî ['a','^','2'] è âñå ôóíêöèè ñîçäàäóòñÿ!
+#     Ð¡Ð¾ ÑÑ‚ÐµÐ¿ÐµÐ½ÑÐ¼Ð¸ Ð½Ðµ Ð²ÑÐµ Ð¿Ñ€Ð¾Ð²ÐµÑ€ÐµÐ½Ð¾, Ð½Ð°Ð¿Ñ€Ð¸Ð¼ÐµÑ€ Ð²Ñ‹Ñ€Ð°Ð¶ÐµÐ½Ð¸Ðµ "V'= a^2d + D[W,{z,2}]" Ñ€Ð°ÑÐ¿Ð°Ñ€ÑÐ¸Ñ‚ÑÑ Ð´Ð¾ ['a','^','2'] Ð¸ Ð²ÑÐµ Ñ„ÑƒÐ½ÐºÑ†Ð¸Ð¸ ÑÐ¾Ð·Ð´Ð°Ð´ÑƒÑ‚ÑÑ!
     def emptyControl(self, stringForControl):
-#         Ïðîâåðÿåò, íå ïóñòà ëè ñòðîêà; åñëè â ñòðîêå óðàâíåíèå, òî íå ñòîèò ëè ïîñëå èëè äî çíàêà = ïóñòîòà.
+#         ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÑ‚, Ð½Ðµ Ð¿ÑƒÑÑ‚Ð° Ð»Ð¸ ÑÑ‚Ñ€Ð¾ÐºÐ°; ÐµÑÐ»Ð¸ Ð² ÑÑ‚Ñ€Ð¾ÐºÐµ ÑƒÑ€Ð°Ð²Ð½ÐµÐ½Ð¸Ðµ, Ñ‚Ð¾ Ð½Ðµ ÑÑ‚Ð¾Ð¸Ñ‚ Ð»Ð¸ Ð¿Ð¾ÑÐ»Ðµ Ð¸Ð»Ð¸ Ð´Ð¾ Ð·Ð½Ð°ÐºÐ° = Ð¿ÑƒÑÑ‚Ð¾Ñ‚Ð°.
         if len(stringForControl) == 0:
             raise SyntaxError("Some equation or boundary condition was defined by empty string!")
         if stringForControl.startswith('=') or stringForControl.startswith("'"):
@@ -93,10 +93,14 @@ class ParsePatternCreater:
     def __createParsePatternForMathFunction(self, parameterList, independentVariableList):
         real = Word(nums + '.')
         
-        parameter = Literal(parameterList[0])
-        for par in parameterList:
-            parameter = parameter^Literal(par)
+        countOfParams = len(parameterList)
+        if countOfParams > 0:
+            parameter = Literal(parameterList[0])
+            for par in parameterList:
+                parameter = parameter^Literal(par)
         
+        if len(independentVariableList) == 0:
+            raise AttributeError("Count of independent variables should be greater than 0!")
         indepVariable = Literal(independentVariableList[0])
         for var in independentVariableList:
             indepVariable = indepVariable^Literal(var)
@@ -104,7 +108,10 @@ class ParsePatternCreater:
         funcSignature = Literal('exp')^Literal('sin')^Literal('cos')^Literal('tan')^Literal('sinh')^Literal('tanh')^Literal('sqrt')^Literal('log')
         unaryOperation = Literal('-')^funcSignature
         binaryOperation = Literal('+')^Literal('-')^Literal('*')^Literal('/')^Literal('^')
-        operand = real^indepVariable^parameter
+        if countOfParams > 0:
+            operand = real^indepVariable^parameter
+        else:
+            operand = real^indepVariable
     
         recursiveUnaryOperation = Forward()
         recursiveUnaryOperation << (Literal('(')^unaryOperation) + Optional(recursiveUnaryOperation)
@@ -174,7 +181,7 @@ class MathExpressionParser:
         variableList = list([])
         for equationString in equationStringList:
             if equationString.find("=") == -1:
-                raise SyntaxError("An expression " + equationString + " plays the role of equation in the system but doesn't contain the symbol '='!")
+                raise SyntaxError("Some equation in the system either doesn't contain the symbol '=' or is an empty string!")
             controller.emptyControl(equationString)
             variableList.extend(parsePattern.parseString(equationString).asList())
         return variableList
