@@ -1014,7 +1014,7 @@ class FunctionCodeGenerator:
         parser = MathExpressionParser()
         variables = parser.getVariableList(estrList)
         
-#         Это дефолтные неймановские краевые условия
+        #Это дефолтные неймановские краевые условия
         defuaultBoundaryConditionValues = list([])
         for var in variables:
             defuaultBoundaryConditionValues.extend(['0.0'])
@@ -1031,7 +1031,7 @@ class FunctionCodeGenerator:
         boundaryNumberList = list([])
         parsedBoundaryConditionDictionary = dict({})
         boundaryCount = len(userIndepVariables) * 2
-#         Этот словарь будет помогать правильно нумеровать сишные функции
+        #Этот словарь будет помогать правильно нумеровать сишные функции
         countOfGeneratedFunction = dict({})
         for boundaryCondition in boundaryConditionList:
             
@@ -1042,7 +1042,7 @@ class FunctionCodeGenerator:
                 countOfGeneratedFunction.update({side: 0})
                 
             coordList = boundaryCondition['ranges']
-#             Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
+            #Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
             boundaryCoordList = self.__createBoundaryCoordinates(coordList)
             
             if side >= boundaryCount:
@@ -1062,15 +1062,27 @@ class FunctionCodeGenerator:
                 parsedBoundaryConditionDictionary.update({side : [(parsedBoundaryCondition, boundaryCoordList, boundaryCondition['type'])]})
         
         dimension = len(userIndepVariables)
-        properSequenceOfSides = [2,3,0,1]    
-#         for side in range(0, boundaryCount):
+        properSequenceOfSides = [2,3,0,1]
+        #  ***x->
+        #  *  
+        #  |  ---side 2---
+        #  y  |          |
+        #     s          s
+        #     i          i
+        #     d          d
+        #     e          e
+        #     0          1
+        #     |          |
+        #     ---side 3---        
+        #functionMap = {"e02":0, }
+        #for side in range(0, boundaryCount):
         for side in properSequenceOfSides:
             boundaryName = self.__determineNameOfBoundary(side)
             if side in parsedBoundaryConditionDictionary:
                 if dimension == 2:
-#                 Если нужно, кладем имя граничной функции по умолчанию в массив
+                    #Если нужно, кладем имя граничной функции по умолчанию в массив
                     sideLen = self.__computeSideLength2D(blockRanges, side)
-#                 Сумма длин всех отрезков на стороне side, на которые наложены условия
+                    #Сумма длин всех отрезков на стороне side, на которые наложены условия
                     totalLen = 0
                     for condition in parsedBoundaryConditionDictionary[side]:
                         totalLen += self.__computeSegmentLength2D(condition[1])
@@ -1080,7 +1092,7 @@ class FunctionCodeGenerator:
                         name = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
                         outputFile.extend([self.__generateNeumann(blockNumber, name, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionTuple)])
                         arrWithFunctionNames.append(name)
-#                 Генерируем функции для всех заданных условий и кладем их имена в массив
+                #Генерируем функции для всех заданных условий и кладем их имена в массив
                 counter = 0
                 for condition in parsedBoundaryConditionDictionary[side]:
                     parsedBoundaryConditionTuple = list([tuple((side, condition[0]))])
