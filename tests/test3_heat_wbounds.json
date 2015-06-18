@@ -126,16 +126,18 @@
             "Type": 0, 
             "Values": [
                 "0.0"
+            ],
+            "Derivative": [
+                "0.0"
             ]
         },
         {
             "Name": "Dirichlet example", 
             "Type": 0, 
             "Values": [
-                "100.0"
-                "-10.0"
+                "100.0"             
             ],
-			"Derivative": [
+            "Derivative": [
                 "0.0"
             ]
         },
@@ -144,10 +146,6 @@
             "Type": 0, 
             "Values": [
                 "100.0"
-            ],
-			"Derivative": [
-                "0.0"
-                "-10.0"
             ],
 			"Derivative": [
                 "0.0"

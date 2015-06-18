@@ -24,6 +24,8 @@ import subprocess
 #import copy
 #from model import Model
 
+from bound import bdict
+
 devType = {"cpu":0, "gpu":1}
 
 class BinaryModel(object):
@@ -54,47 +56,44 @@ class BinaryModel(object):
             xstart, xend = initReg.getXrange(self.dmodel.gridStepX)
             ystart, yend = initReg.getYrange(self.dmodel.gridStepY)            
             funcArr[ystart:yend, xstart:xend] = initFuncNum             
-        
+                
         print "Used init nums:", usedInitNums
         
         #3 overwrite with values that come from Dirichlet bounds
         #3.1 collect dirichlet bound numbers that are used in this block
         usedIndices += len(usedInitNums)
-        usedBoundNums = []
+        usedDirBoundNums = []
         for boundReg in block.boundRegions:
-            if not (boundReg.boundNumber in usedBoundNums):
-                usedBoundNums.append(boundReg.boundNumber) 
+            if not (boundReg.boundNumber in usedDirBoundNums):
+                if (self.dmodel.bounds[boundReg.boundNumber].btype == bdict["dirichlet"]):
+                    usedDirBoundNums.append(boundReg.boundNumber) 
         
-        print "Used bound nums:", usedBoundNums
+        usedDirBoundNums.sort()
+        print "Used Dirichlet bound nums:", usedDirBoundNums
         
         
         
         #3.2 fill them
-        #this is a way with duplications, should be removed
-        initFuncNum=usedIndices
         for boundReg in block.boundRegions:
-            #this was a way without duplications
-            #initFuncNum = usedIndices + usedBoundNums.index(boundReg.boundNumber)
+            if (self.dmodel.bounds[boundReg.boundNumber].btype == bdict["dirichlet"]):
+                initFuncNum = usedIndices + usedDirBoundNums.index(boundReg.boundNumber)
+                if boundReg.side == 0:       
+                    idxX = 0         
+                    ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
+                    funcArr[ystart:yend, idxX] = initFuncNum                
+                elif boundReg.side == 1:
+                    idxX = xc - 1
+                    ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
+                    funcArr[ystart:yend, idxX] = initFuncNum                    
+                elif boundReg.side == 2:
+                    idxY =  0
+                    xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)                
+                    funcArr[idxY, xstart:xend] = initFuncNum
+                elif boundReg.side == 3:
+                    idxY = yc-1
+                    xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
+                    funcArr[idxY, xstart:xend] = initFuncNum
             
-            
-            if boundReg.side == 0:       
-                idxX = 0         
-                ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
-                funcArr[ystart:yend, idxX] = initFuncNum                
-            elif boundReg.side == 1:
-                idxX = xc - 1
-                ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
-                funcArr[ystart:yend, idxX] = initFuncNum                    
-            elif boundReg.side == 2:
-                idxY =  0
-                xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)                
-                funcArr[idxY, xstart:xend] = initFuncNum
-            elif boundReg.side == 3:
-                idxY = yc-1
-                xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
-                funcArr[idxY, xstart:xend] = initFuncNum
-            #remove 
-            initFuncNum+=1
 
     def fill3dInitFuncs(self, funcArr, block, blockSize):
         pass
