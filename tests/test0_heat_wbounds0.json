@@ -9,7 +9,7 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 5, 
+    "FinishTime": 25, 
     "TimeStep": 0.00001, 
     "SaveInterval": 0.1, 
     "Solver": 0,
@@ -35,7 +35,15 @@
             "DefaultEquation": 0, 
             "DefaultInitial": 1, 
             "BoundRegions": [], 
-            "InitialRegions": []
+            "InitialRegions": [
+			    {
+			        "InitialNumber": 1,
+				    "xfrom": 0.0, 
+                    "xto": 0.5, 
+                    "yfrom": 0.0, 
+                    "yto": 0.25
+			    }
+			]
         }
     ], 
     "Interconnects": [], 
@@ -63,24 +71,39 @@
             ]
         }
     ], 
-    "Bounds": [], 
-    "Initials": [
-		{
-            "Name": "Initial values 1", 
+    "Bounds": [
+        {
+            "Name": "Dirichlet example1", 
+            "Type": 0, 
             "Values": [
-                "sin(x) + 10.0"               
+                "100.0"
+            ],
+			"Derivative": [
+                "0.0"
             ]
         },
 		{
+            "Name": "Dirichlet example2", 
+            "Type": 0, 
+            "Values": [
+                "0.0"
+            ],
+			"Derivative": [
+                "0.0"
+            ]
+        }
+    ], 
+    "Initials": [
+		{
             "Name": "Initial values 2", 
             "Values": [
-                "0.3 * exp(tan(y + x))"               
+                "250.0"               
             ]
         },
 		{
             "Name": "Initial values 3", 
             "Values": [
-                "20.0*x + y"               
+                "0.0"               
             ]
         }
     ], 

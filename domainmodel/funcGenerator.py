@@ -1200,7 +1200,8 @@ class FunctionCodeGenerator:
             for initialRegion in block.initialRegions:
                 if initialRegion.initialNumber >= totalCountOfInitials:
                     raise AttributeError("Number of initial condition in some initial region of some block shouldn't be greater or equal to count of initials!")
-                listOfInitialIndices.append(initialRegion.initialNumber)
+                if initialRegion.initialNumber != defaultInitialIndex:
+                    listOfInitialIndices.append(initialRegion.initialNumber)
             countOfInitialsForBlock = len(listOfInitialIndices)
 #              Для данного блока определяется список индексов функций Дирихле в массиве listWithDirichletFunctionNames            
             setOfDirichletIndices = set([])
@@ -1255,86 +1256,6 @@ class FunctionCodeGenerator:
             allFillFunctions.append(''.join(fillFunction))
         return ''.join(allFillFunctions)
 
-#     def __generatePointInitial(self, countOfEquations, initial, initialNumber, indepVariableList):
-# #         Функция генерирует точечную начальную функцию с номером initialNumber.
-# #         changedValueList --- будет содержать строки, которые просто надо подставить в нужное место и не надо парсить.
-#         pointFunction = list()
-# #         changedValueList = list()
-#         valueList = initial.values
-#         if len(valueList) != countOfEquations:
-#             raise AttributeError("Component's count of some initial condition is not corresponds to component's count of unknown vector-function!")
-# #         for value in valueList:
-# #             changedValue = value
-# #             for i,indepVariable in enumerate(indepVariableList):
-# #                 if i == 0:
-# #                     new = 'x'
-# #                 elif i == 1:
-# #                     new = 'y'
-# #                 else:
-# #                     new = 'z'
-# #                 changedValue = changedValue.replace(indepVariable, new)
-# #             changedValueList.append(changedValue)
-# #         
-#         pointFunction.append("void Initial"+str(initialNumber)+"(double* cellstart, double x, double y, double z){\n")
-#         t = re.compile('t')
-# #         Функция, которая в выражении match.group() заменяет все 't' на '0.0'
-#         repl = lambda match: t.sub('0.0', match.group())
-#         for k,value in enumerate(valueList):
-# #             Т.к. начальные условия не должны зависеть от t, его надо везде заменить на 0
-# #             newValue = value.replace('t','0.0')
-# #             Этот вариант замещает не всегда правильно! надо переделать.
-#             newValue = re.sub('\(.*?\)',repl,value)
-#             pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
-#         pointFunction.append("}\n\n")
-#         return ''.join(pointFunction)
-    
-#     def __generateFillFunctionForBlock(self, blockNumber, countOfInitials, indepVariableList):
-#         fillFunction = list()
-#         strBlockNum = str(blockNumber)
-# #         otherParameters будут вставляться в строку signature, если это потребуется.
-# #         otherParameters = ", int Block" + strBlockNum + "CountX, int Block" + strBlockNum + "CountY, int Block" + strBlockNum + "CountZ, int Block" + strBlockNum + "OffsetX, int Block" + strBlockNum + "OffsetY, int Block" + strBlockNum + "OffsetZ"
-#         signature = "void Block" + strBlockNum + "FillInitialValues(double* result, int* initType){\n"
-#         fillFunction.append(signature)
-#         
-#         fillFunction.append("\tinitfunc_ptr_t initFuncArray[" + str(countOfInitials) + "];\n")
-#         for i in range(0, countOfInitials):
-#             index = str(i)
-#             fillFunction.append("\tinitFuncArray[" + index + "] = Initial" + index + ";\n")
-#         
-# #         В зависимости от размерности блока генерируется 1, 2 или 3 цикла for
-#         dimension = len(indepVariableList)
-#         if dimension == 3:
-#             fillFunction.append("\tfor(int idxZ = 0; idxZ<Block" + strBlockNum + "CountZ; idxZ++)\n")
-#             fillFunction.append("\t\tfor(int idxY = 0; idxY<Block" + strBlockNum + "CountY; idxY++)\n")
-#             fillFunction.append("\t\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n")
-#             spaces = "\t\t\t\t"
-#             idx = "int idx = (idxZ*Block" + strBlockNum + "CountY*Block" + strBlockNum + "CountX + idxY*Block" + strBlockNum + "CountX + idxX)*Block" + strBlockNum + "CELLSIZE;\n"
-#             params = "result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, Block" + strBlockNum + "OffsetZ + idxZ*DZ"  
-#         elif dimension == 2:
-#             fillFunction.append("\tfor(int idxY = 0; idxY<Block" + strBlockNum + "CountY; idxY++)\n")
-#             fillFunction.append("\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n")
-#             spaces = "\t\t\t"
-#             idx = "int idx = (idxY*Block" + strBlockNum + "CountX + idxX)*Block" + strBlockNum + "CELLSIZE;\n"
-#             params = "result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, 0"
-#         else:
-#             fillFunction.append("\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n")
-#             spaces = "\t\t"
-#             idx = "int idx = idxX*Block" + strBlockNum + "CELLSIZE;\n"
-#             params = "result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, 0, 0"
-#         fillFunction.append(spaces + idx)
-#         fillFunction.append(spaces + "int type = initType[idx];\n")
-#         fillFunction.append(spaces + "initFuncArray[type](" + params + ");}\n")
-# #         fillFunction.append("\tfor(int idxZ = 0; idxZ<Block" + strBlockNum + "CountZ; idxZ++)\n")
-# #         fillFunction.append("\t\tfor(int idxY = 0; idxY<Block" + strBlockNum + "CountY; idxY++)\n")
-# #         fillFunction.append("\t\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n")
-# #         fillFunction.append("\t\t\t\tint idx = (idxZ*Block" + strBlockNum + "CountY*Block" + strBlockNum + "CountX + idxY*Block" + strBlockNum + "CountX + idxX)*Block" + strBlockNum + "CELLSIZE;\n")
-# #         fillFunction.append("\t\t\t\tint type = initType[idx];\n")
-# #         fillFunction.append("\t\t\t\tinitFuncArray[type](result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, Block" + strBlockNum + "OffsetZ + idxZ*DZ);\n\t\t\t}\n")
-#         
-#         fillFunction.append("}\n\n")
-#         
-#         return ''.join(fillFunction)
-    
 
 
     def __generateGetInitFuncArray(self, countOfBlocks):
