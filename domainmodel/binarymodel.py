@@ -42,7 +42,7 @@ class BinaryModel(object):
         xc = blockSize[0]
         yc = blockSize[1]
         #1 fill default conditions
-        funcArr[:] = block.defaultInitial
+        funcArr[:] = 0#block.defaultInitial
         usedIndices = 0
         #2 fill user-defined conditions
         #2.1 collect user-defines initial conditions that are used in this block
