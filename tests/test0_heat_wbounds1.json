@@ -85,10 +85,10 @@
             "Name": "Dirichlet example1", 
             "Type": 0, 
             "Values": [
-                "t^7 + tan(8.0*t) + sin(x)"
+                "100.0"
             ],
 			"Derivative": [
-                "7*t^6 + 8.0/((cos(8.0*t))^2)"
+                "0.0"
             ]
         }
     ], 

@@ -182,6 +182,16 @@
             "Values": [
                 "exp(sin(t^2))"
             ]
+        },
+		{
+            "Name": "Dirichlet example3", 
+            "Type": 0, 
+            "Values": [
+                "t"
+            ],
+			"Derivative": [
+                "1.0"
+            ]
         }
     ], 
     "Initials": [
