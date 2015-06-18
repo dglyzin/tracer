@@ -1374,7 +1374,7 @@ class FunctionCodeGenerator:
             for blockNumber in range(0, countOfBlocks):
                 output.append("\tif (blockIdx == " + str(blockNumber) + ")\n\t\tgetBlock" + str(blockNumber) + "BoundFuncArray(ppBoundFuncs);\n")
         output.append("}\n\n")
-        output.append("void releaseBoundFuncArray(func_ptr_t* BoundFuncs){\n\tfree(BoundFuncs);\n}\n\n")
+        output.append("void releaseFuncArray(func_ptr_t* BoundFuncs){\n\tfree(BoundFuncs);\n}\n\n")
         
         return ''.join(output)
 
