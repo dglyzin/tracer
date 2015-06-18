@@ -9,7 +9,7 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 5.0, 
+    "FinishTime": 25, 
     "TimeStep": 0.00001, 
     "SaveInterval": 0.1, 
     "Solver": 0,
@@ -29,25 +29,41 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 3.0, 
+                "x": 1.0, 
                 "y": 2.0
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
+            "DefaultInitial": 1, 
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
-                    "Side": 3, 
-                    "xfrom": 1.0, 
-                    "xto": 3.0, 
+                    "Side": 2, 
+                    "xfrom": 0.0, 
+                    "xto": 1.0, 
                     "yfrom": 0.0, 
                     "yto": 0.0                    
                 },
-                {
+				{
+                    "BoundNumber": 1, 
+                    "Side": 0, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 2.0                    
+                },
+				{
+                    "BoundNumber": 1, 
+                    "Side": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 2.0                    
+                },
+				{
                     "BoundNumber": 1, 
                     "Side": 3, 
                     "xfrom": 0.0, 
-                    "xto": 1.5, 
+                    "xto": 1.0, 
                     "yfrom": 0.0, 
                     "yto": 0.0                    
                 }
@@ -85,23 +101,32 @@
             "Name": "Dirichlet example1", 
             "Type": 0, 
             "Values": [
-                "5.0"
+                "100.0"
             ],
 			"Derivative": [
                 "0.0"
             ]
         },
 		{
-            "Name": "Neumann example1", 
-            "Type": 1, 
+            "Name": "Dirichlet example2", 
+            "Type": 0, 
             "Values": [
-                "-1.0"
+                "0.0"
+            ],
+			"Derivative": [
+                "0.0"
             ]
         }
     ], 
     "Initials": [
-        {
-            "Name": "Initial values 0", 
+		{
+            "Name": "Initial values 2", 
+            "Values": [
+                "250.0"               
+            ]
+        },
+		{
+            "Name": "Initial values 3", 
             "Values": [
                 "0.0"               
             ]
