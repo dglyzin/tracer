@@ -1118,8 +1118,8 @@ class FunctionCodeGenerator:
                     for idx, value in enumerate(values):
                         values.pop(idx)
                         values.insert(idx, '-(' + value + ')')
-                
-            boundaryCondition = dict({'values': values, 'type': boundaryType, 'side': side, 'boundNumber': boundNumber, 'ranges': boundaryRanges})
+            outputValues = list(values)    
+            boundaryCondition = dict({'values': outputValues, 'type': boundaryType, 'side': side, 'boundNumber': boundNumber, 'ranges': boundaryRanges})
             boundaryConditionList.append(boundaryCondition)
         #Теперь надо вызвать функцию, генерирующую граничные условия для данного блока
         #boundaryFunctions.append(self.generateBoundaryFunctionsCode(blockNumber, blockRanges, boundaryConditionList, estrList, defaultIndepVariables, userIndepVariables, params))
