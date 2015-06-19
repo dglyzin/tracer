@@ -62,9 +62,11 @@ class ParsePatternCreater:
         real = Word(nums + '.')
         integer = Word(nums)
         
-        parameter = Literal(parameterList[0])
-        for par in parameterList:
-            parameter = parameter^Literal(par)
+        countOfParams = len(parameterList)
+        if countOfParams > 0:
+            parameter = Literal(parameterList[0])
+            for par in parameterList:
+                parameter = parameter^Literal(par)
             
         variable = Literal(variableList[0])
         for var in variableList:
@@ -78,7 +80,10 @@ class ParsePatternCreater:
         funcSignature = Literal('exp')^Literal('sin')^Literal('cos')^Literal('tan')^Literal('sinh')^Literal('tanh')^Literal('sqrt')^Literal('log')
         unaryOperation = Literal('-')^funcSignature
         binaryOperation = Literal('+')^Literal('-')^Literal('*')^Literal('/')^Literal('^')
-        operand = variable^parameter^Group(derivative)^real
+        if countOfParams > 0:
+            operand = variable^parameter^Group(derivative)^real
+        else:
+            operand = variable^Group(derivative)^real
     
         recursiveUnaryOperation = Forward()
         recursiveUnaryOperation << (Literal('(')^unaryOperation) + Optional(recursiveUnaryOperation)

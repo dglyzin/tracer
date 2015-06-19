@@ -74,18 +74,8 @@
             "System": [
                 "U'=D[U,{x,2}]+ D[U,{y,2}]"
             ], 
-            "Params": [
-                "a", 
-                "b", 
-                "mu"
-            ], 
-            "ParamValues": [
-                {
-                    "a": 0.65, 
-                    "mu": 0.025, 
-                    "b": 2
-                }
-            ]
+            "Params": [], 
+            "ParamValues": []
         }
     ], 
     "Bounds": [

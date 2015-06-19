@@ -54,31 +54,31 @@ class BoundaryFunctionCodeGenerator:
         
 #         Условие для генерирования производных в центральных функциях
         if boundaryConditionCount == 0:    
-            boundaryIndicator = -1
+            side = -1
             parsedMathFunction = 'empty string'
-            derivative = dcg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, boundaryIndicator)
+            derivative = dcg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)
 #         Условие для обычной границы
         elif boundaryConditionCount == 1:
-            boundaryIndicator = tupleList[0][0]
+            side = tupleList[0][0]
             parsedMathFunction = tupleList[0][1][varIndex]
-            derivative = dcg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, boundaryIndicator)
+            derivative = dcg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)
 #         Условие на угол прямоугольника или параллелепипеда или на ребро параллелепипеда        
         elif boundaryConditionCount == 2 or boundaryConditionCount == 3:
             derivativeLR = list([])
             for index in indepVarIndexList:
                 if index == tupleList[0][0] // 2:
                     parsedMathFunction = tupleList[0][1][varIndex]
-                    boundaryIndicator = tupleList[0][0]                        
+                    side = tupleList[0][0]                        
                 elif index == tupleList[1][0] // 2:
                     parsedMathFunction = tupleList[1][1][varIndex]
-                    boundaryIndicator = tupleList[1][0]
+                    side = tupleList[1][0]
                 elif boundaryConditionCount == 3 and index == tupleList[2][0] // 2:
                     parsedMathFunction = tupleList[2][1][varIndex]
-                    boundaryIndicator = tupleList[2][0]
+                    side = tupleList[2][0]
                 else:
-                    boundaryIndicator = -1
+                    side = -1
                     parsedMathFunction = 'empty string'
-                derivativeLR.extend([dcg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, boundaryIndicator)])   
+                derivativeLR.extend([dcg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)])   
             
             if len(derivativeLR) == 1:
                 derivative = derivativeLR[0]
@@ -193,7 +193,7 @@ class DerivativeCodeGenerator:
         return stringList
     
     def __commonMixedDerivativeAlternative(self, blockNumber, increment, indepVar_Order_Stride_List, varIndex):
-# Способ генерирования кода для смешанной производной для CentralFunction и иногда для границных функций
+# Способ генерирования кода для смешанной производной для CentralFunction и иногда для граничных функций
         length = len(indepVar_Order_Stride_List)
         if length == 2:
             first = 'source[idx + (' + indepVar_Order_Stride_List[0][2] + ' + ' + indepVar_Order_Stride_List[1][2] + ') * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
@@ -238,6 +238,18 @@ class DerivativeCodeGenerator:
         else:
             raise SyntaxError("The highest derivative order of the system greater than 2! I don't know how to generate boundary function in this case!")
         
+#     def __singularMixedDerivativeAlternative1(self, blockNumber, increment, indicesList, varIndex, totalDerivOrder):
+# #         Вариант генерирования аппроксимации частной производной для угловой клетки в случае соединения блоков    
+#         if totalDerivOrder == 2:
+#             first = 'source[idx' + indicesList[0] + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
+#             second = ' - source[idx' + indicesList[1] + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
+#             third = ' - source[idx' + indicesList[2] + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
+#             fourth = ' + source[idx' + indicesList[3] + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
+#             finiteDifference = first + second + third + fourth
+#             return '(' + increment + ' * ' + '(' + finiteDifference + ')' + ')'
+#         else:
+#             raise SyntaxError("Order of some mixed partial derivative greater than 2. I don't know how to work with it!")
+        
     def __commonPureDerivativeAlternative(self, blockNumber, increment, stride, order, varIndex):
         if order == 1:
             toLeft = 'source[idx - ' + stride + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
@@ -280,7 +292,38 @@ class DerivativeCodeGenerator:
         else:
             raise SyntaxError("The highest derivative order of the system greater than 2! I don't know how to generate boundary function in this case!")
     
-    def generateCodeForDerivative(self, blockNumber, varIndex, indepVarList, indepVarIndexList, derivativeOrderList, userIndepVariables, parsedMathFunction, boundaryIndicator):
+#     def __creatreIndicesList(self, angle, blockNumber, derivativeIndepVarList, userIndepVarList):
+# #         Создает список индексов для генерирования смешанной производной 2 порядка
+# #         angle --- это номер угла блока: здесь y=0 --- вверху
+# #         1---2
+# #         |   |
+# #         3---4
+# #         Расстановка независимых переменных в derivativeIndepVarList в лексикографическом порядке (т.е. x всегда левее y, y - левее z и т.д.)
+#         if userIndepVarList.index(derivativeIndepVarList[0]) > userIndepVarList.index(derivativeIndepVarList[1]):
+#             derivativeIndepVarList.reverse()
+#         indicesList = []
+#         if angle == 1:
+#             indicesList.append(' + (Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[0].upper() + ' + Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper() + ')')
+#             indicesList.append(' + Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper())
+#             indicesList.append(' + Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[0].upper())
+#             indicesList.append('0')
+#         elif angle == 2:
+#             indicesList.append(' + Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper())
+#             indicesList.append(' - (Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[0].upper() + ' - Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper() + ')')
+#             indicesList.append('0')
+#             indicesList.append(' - Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[0].upper())
+#         elif angle == 3:
+#             indicesList.append(' + Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[0].upper())
+#             indicesList.append('0')
+#             indicesList.append(' + (Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[0].upper() + ' - Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper() + ')')
+#             indicesList.append(' - Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper())
+#         elif angle == 4:
+#             indicesList.append('0')
+#             indicesList.append(' - Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[0].upper())
+#             indicesList.append(' - Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper())
+#             indicesList.append(' - (Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[0].upper() + ' + Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper() + ')')
+    
+    def generateCodeForDerivative(self, blockNumber, varIndex, indepVarList, indepVarIndexList, derivativeOrderList, userIndepVariables, parsedMathFunction, side):
         strideList = list([])
         for indepVar in userIndepVariables:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
@@ -295,9 +338,9 @@ class DerivativeCodeGenerator:
             for o in derivativeOrderList:
                 order = order + int(o)
             
-            if boundaryIndicator % 2 == 0 and indepVarIndexList[0] == boundaryIndicator / 2:
+            if side % 2 == 0 and indepVarIndexList[0] == side / 2:
                 return self.__specialPureDerivativeAlternative(blockNumber, parsedMathFunction, increment, specialIncrement, stride, strideList, order, varIndex, userIndepVariables, 1)
-            elif (boundaryIndicator - 1) % 2 == 0 and indepVarIndexList[0] == (boundaryIndicator - 1) / 2:
+            elif (side - 1) % 2 == 0 and indepVarIndexList[0] == (side - 1) / 2:
                 return self.__specialPureDerivativeAlternative(blockNumber, parsedMathFunction, increment, specialIncrement, stride, strideList, order, varIndex, userIndepVariables, 0)
             else:
                 return self.__commonPureDerivativeAlternative(blockNumber, increment, stride, order, varIndex)
@@ -315,9 +358,9 @@ class DerivativeCodeGenerator:
                 tup = tuple((indepVar, derivativeOrderList[i], 'Block' + str(blockNumber) + 'Stride' + indepVar.upper()))
                 indepVar_Order_Stride.extend([tup])
                 
-            bCond1 = boundaryIndicator == 0 or boundaryIndicator == 1
-            bCond2 = boundaryIndicator == 2 or boundaryIndicator == 3
-            bCond3 = boundaryIndicator == 4 or boundaryIndicator == 5
+            bCond1 = side == 0 or side == 1
+            bCond2 = side == 2 or side == 3
+            bCond3 = side == 4 or side == 5
             indepVarCond1 = (indepVarList[0] == userIndepVariables[0] and indepVarList[1] == userIndepVariables[1]) or (indepVarList[1] == userIndepVariables[0] and indepVarList[0] == userIndepVariables[1])
             blockDimension = len(userIndepVariables)
             if blockDimension > 2:
@@ -873,8 +916,6 @@ class FunctionCodeGenerator:
 #                 defaultFunctions.extend([self.__generateNeumann(blockNumber, nameForVertex, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, defaultBoundaryConditionList)])     
         return ''.join(defaultFunctions)
      
-
-
     def __computeSideLength2D(self, blockRanges, Side):
 #         blockRanges --- словарь {"min": [x,y,z], "max": [x,y,z]}
 #         side --- номер стороны, длину которой надо вычислить       
@@ -1012,8 +1053,6 @@ class FunctionCodeGenerator:
         outputFile.extend(self.__generateVertexAndRibFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, defaultIndepVariables, userIndepVariables, params, parsedBoundaryConditionDictionary))
         return ''.join(outputFile), blockFunctionMap
     
-
-    
     def generateAllBoundaries(self, block, blockNumber, arrWithFunctionNames, estrList, bounds, defaultIndepVariables, userIndepVariables, params):
         # Эта функция должна для блока block сгенерировать все нужные функции.
         # Массив bounds имеет ту же структуру и смысл, что и в классе Model
@@ -1085,25 +1124,25 @@ class FunctionCodeGenerator:
         return ''.join(boundaryFunctions), blockFunctionMap
     
     def __generateParamFunction(self, params, paramValues):
-#         params -- массив имен параметров, paramValues -- словарь значений
-        paramCount = len(params)
-        paramValuesCount = len(paramValues)
-        if paramCount != paramValuesCount:
-            raise AttributeError("Count of parameter values is not corresponds to count of parameters!")
-        
+#         params -- массив имен параметров, paramValues -- массив словарей значений
         output = list(["void initDefaultParams(double** pparams, int* pparamscount){\n"])
-        output.append("\t*pparamscount = PAR_COUNT;\n")
-        output.append("\t*pparams = (double *) malloc(sizeof(double)*PAR_COUNT);\n")
+        if len(paramValues) > 0:
+            paramCount = len(params)
+            paramValuesCount = len(paramValues[0])
+            if paramCount != paramValuesCount:
+                raise AttributeError("Count of parameter values is not corresponds to count of parameters!")
+            output.append("\t*pparamscount = PAR_COUNT;\n")
+            output.append("\t*pparams = (double *) malloc(sizeof(double)*PAR_COUNT);\n")
+            
+            for index,param in enumerate(params):
+                output.append("\t(*pparams)[" + str(index) + "] = " + str(paramValues[param]) + ";\n")
         
-        for index,param in enumerate(params):
-            output.append("\t(*pparams)[" + str(index) + "] = " + str(paramValues[param]) + ";\n")
-        
-        output.append("}\n\nvoid releaseParams(double *params){\n\tfree(params);\n}\n\n")
+            output.append("}\n\nvoid releaseParams(double *params){\n\tfree(params);\n}\n\n")
+        else:
+            output.append("}\n\nvoid releaseParams(double *params){}\n\n")
         
         return ''.join(output)
     
-    
-
     def __replaceTimeToZeroInInitialCondition(self, DirichletConditionForParsing, parameters, indepVariableList):
 #         Заменяет в условии Дирихле, которое хотим сделать начальным условием, переменную t на 0.0;
 #         DirichletConditionForParsing -- функция, в которой выполняется замена. Она здесь -- в виде массива лексем уже.
@@ -1256,8 +1295,6 @@ class FunctionCodeGenerator:
             allFillFunctions.append(''.join(fillFunction))
         return ''.join(allFillFunctions)
 
-
-
     def __generateGetInitFuncArray(self, countOfBlocks):
         strCountOfBlocks = str(countOfBlocks)
         output = list(["void getInitFuncArray(initfunc_fill_ptr_t** ppInitFuncs){\n"])
@@ -1303,7 +1340,7 @@ class FunctionCodeGenerator:
 #         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
         countOfEquations = len(equations[0].system)
         output = list(["//===================PARAMETERS==========================//\n\n"])
-        output.append(self.__generateParamFunction(equations[0].params, equations[0].paramValues[0]))
+        output.append(self.__generateParamFunction(equations[0].params, equations[0].paramValues))
         output.append("//===================INITIAL CONDITIONS==========================//\n\n")
         
         indepVariableList = equations[0].vars
