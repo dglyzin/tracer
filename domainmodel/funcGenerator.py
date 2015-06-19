@@ -1135,7 +1135,7 @@ class FunctionCodeGenerator:
             output.append("\t*pparams = (double *) malloc(sizeof(double)*PAR_COUNT);\n")
             
             for index,param in enumerate(params):
-                output.append("\t(*pparams)[" + str(index) + "] = " + str(paramValues[param]) + ";\n")
+                output.append("\t(*pparams)[" + str(index) + "] = " + str(paramValues[0][param]) + ";\n")
         
             output.append("}\n\nvoid releaseParams(double *params){\n\tfree(params);\n}\n\n")
         else:
