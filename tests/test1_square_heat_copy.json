@@ -9,17 +9,17 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 50,
-    "TimeStep":   0.0001, 
+    "FinishTime": 2.0, 
+    "TimeStep": 0.000001, 
     "SaveInterval": 0.1, 
-    "Solver": 2,
-    "SolverAbsTolerance": 0.0001,
-    "SolverRelTolerance": 0.0001,
+    "Solver": 0,
+    "SolverAbsTolerance": 0.001,
+    "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.1, 
-        "y": 0.1, 
+        "x": 0.01, 
+        "y": 0.01, 
         "z": 1
-    },  
+    }, 
     "Blocks": [
         {
             "Name": "MainBlock", 
@@ -29,12 +29,29 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 100.0, 
-                "y": 100.0
+                "x": 1.0, 
+                "y": 1.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [], 
+            "BoundRegions": [
+		{
+                    "BoundNumber": 0, 
+                    "Side": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 1.0                    
+                },
+                {
+                    "BoundNumber": 0, 
+                    "Side": 0, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 1.0                    
+                }
+            ], 
             "InitialRegions": []
         }
     ], 
@@ -49,26 +66,24 @@
             "System": [
                 "U'=D[U,{x,2}]+ D[U,{y,2}]"
             ], 
-            "Params": [
-                "a", 
-                "b", 
-                "mu"
-            ], 
-            "ParamValues": [
-                {
-                    "a": 0.65, 
-                    "mu": 0.025, 
-                    "b": 2
-                }
-            ]
+            "Params": [],
+            "ParamValues": []
         }
     ], 
-    "Bounds": [], 
+    "Bounds": [
+	{
+            "Name": "Neumann example1", 
+            "Type": 1,
+            "Values": [
+                "1.0"
+            ]
+        }
+        ], 
     "Initials": [
         {
-            "Name": "Initial values", 
+            "Name": "Initial values 0", 
             "Values": [
-                "((x>=50.0)&&(y>=50.0))?40.0:0.0"
+                "0.0"               
             ]
         }
     ], 

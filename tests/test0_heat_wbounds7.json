@@ -9,7 +9,7 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 25.0, 
+    "FinishTime": 100.0, 
     "TimeStep": 0.00001, 
     "SaveInterval": 0.1, 
     "Solver": 0,
