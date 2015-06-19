@@ -1113,6 +1113,11 @@ class FunctionCodeGenerator:
                 values = bound.derivative
             elif boundaryType == 1:
                 values = bound.values
+#                 Исправление понятия Неймановского условия
+                if side == 0 or side == 2 or side == 4:
+                    for idx, value in enumerate(values):
+                        values.pop(idx)
+                        values.insert(idx, '-(' + value + ')')
                 
             boundaryCondition = dict({'values': values, 'type': boundaryType, 'side': side, 'boundNumber': boundNumber, 'ranges': boundaryRanges})
             boundaryConditionList.append(boundaryCondition)
