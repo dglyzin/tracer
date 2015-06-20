@@ -140,7 +140,7 @@ for i in range(2, argc):
 
   plt.pcolormesh(X, Y, layer)
   
-  filename = '' + sys.argv[i].split(".")[0] + '.' + sys.argv[i].split(".")[1] + '.png'
+  filename = '' + sys.argv[i].split(".bin")[0] + '.png'
   pp = filename
   plt.savefig(pp, format='png')
   
