@@ -10,11 +10,11 @@
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
     "FinishTime": 1, 
-    "TimeStep": 1e-06, 
+    "TimeStep": 0.000001, 
     "SaveInterval": 0.1, 
-    "Solver": 0, 
-    "SolverAbsTolerance": 0.001, 
-    "SolverRelTolerance": 0.001, 
+    "Solver": 0,
+    "SolverAbsTolerance": 0.001,
+    "SolverRelTolerance": 0.001,
     "GridStep": {
         "x": 0.01, 
         "y": 0.01, 
@@ -41,55 +41,55 @@
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
-                    "yto": 2.0
-                }, 
+                    "yto": 2.0                    
+                },
                 {
                     "BoundNumber": 1, 
                     "Side": 1, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
-                    "yto": 2.0
-                }, 
+                    "yto": 2.0                    
+                },
                 {
                     "BoundNumber": 0, 
                     "Side": 2, 
                     "xfrom": 0.0, 
                     "xto": 1.0, 
                     "yfrom": 0.0, 
-                    "yto": 0.0
-                }, 
+                    "yto": 0.0                    
+                },
                 {
                     "BoundNumber": 1, 
                     "Side": 3, 
                     "xfrom": 0.0, 
                     "xto": 1.0, 
                     "yfrom": 0.0, 
-                    "yto": 0.0
-                }, 
+                    "yto": 0.0                    
+                },
                 {
                     "BoundNumber": 0, 
                     "Side": 0, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
-                    "yto": 1.0
-                }, 
+                    "yto": 1.0                    
+                },
                 {
                     "BoundNumber": 0, 
                     "Side": 1, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
-                    "yto": 1.0
-                }, 
+                    "yto": 1.0                    
+                },
                 {
                     "BoundNumber": 0, 
                     "Side": 3, 
                     "xfrom": 0.0, 
                     "xto": 1.0, 
                     "yfrom": 0.0, 
-                    "yto": 0.0
+                    "yto": 0.0                    
                 }
             ], 
             "InitialRegions": []
@@ -104,12 +104,12 @@
                 "y"
             ], 
             "System": [
-                "U'=D[U,{x,2}]+D[U,{y,2}]"
+                "U'=D[U,{x,2}]+ D[U,{y,2}]"
             ], 
             "Params": [
                 "a", 
-                "mu", 
-                "b"
+                "b", 
+                "mu"
             ], 
             "ParamValues": [
                 {
@@ -126,38 +126,38 @@
             "Type": 0, 
             "Values": [
                 "0.0"
-            ], 
+            ],
             "Derivative": [
                 "0.0"
             ]
-        }, 
+        },
+        {
+            "Name": "Dirichlet example", 
+            "Type": 0, 
+            "Values": [
+                "100.0"             
+            ],
+            "Derivative": [
+                "0.0"
+            ]
+        },
         {
             "Name": "Dirichlet example", 
             "Type": 0, 
             "Values": [
                 "100.0"
-            ], 
-            "Derivative": [
+            ],
+			"Derivative": [
                 "0.0"
             ]
-        }, 
+        },
         {
             "Name": "Dirichlet example", 
             "Type": 0, 
             "Values": [
                 "100.0"
-            ], 
-            "Derivative": [
-                "0.0"
-            ]
-        }, 
-        {
-            "Name": "Dirichlet example", 
-            "Type": 0, 
-            "Values": [
-                "100.0"
-            ], 
-            "Derivative": [
+            ],
+			"Derivative": [
                 "0.0"
             ]
         }
@@ -166,7 +166,7 @@
         {
             "Name": "Initial values", 
             "Values": [
-                "0.0"
+                "0.0"               
             ]
         }
     ], 
@@ -175,15 +175,10 @@
             "Name": "cnode1", 
             "CpuCount": 1, 
             "GpuCount": 3
-        }, 
-        {
-            "Name": "cnode2", 
-            "CpuCount": 1, 
-            "GpuCount": 3
         }
     ], 
     "Mapping": {
-        "IsMapped": "true", 
+        "IsMapped": true, 
         "BlockMapping": [
             [
                 0, 
