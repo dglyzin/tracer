@@ -34,65 +34,17 @@
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [
-                {
-                    "BoundNumber": 0, 
-                    "Side": 3, 
-                    "xfrom": 1.0, 
-                    "xto": 2.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
-                },
-                {
-                    "BoundNumber": 1, 
-                    "Side": 3, 
-                    "xfrom": 0.0, 
-                    "xto": 1.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
-                },
-                {
-                    "BoundNumber": 2, 
-                    "Side": 3, 
-                    "xfrom": 2.0, 
-                    "xto": 3.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
-                },
-				{
-                    "BoundNumber": 4, 
-                    "Side": 0, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 0.0, 
-                    "yto": 1.0                    
-                },
-                {
-                    "BoundNumber": 3, 
-                    "Side": 0, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 1.0, 
-                    "yto": 2.0                    
-                },
-				{
-                    "BoundNumber": 5, 
-                    "Side": 2, 
-                    "xfrom": 1.5, 
-                    "xto": 3.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
-                },
-				{
-                    "BoundNumber": 6, 
-                    "Side": 1, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 0.0, 
-                    "yto": 1.5                    
-                }
-            ], 
-            "InitialRegions": []
+            "BoundRegions": [], 
+            "InitialRegions": [
+	      {
+		"InitialNumber": 1,
+		"xfrom": 0.75, 
+                "xto": 2.25, 
+                "yfrom": 0.5, 
+                "yto": 1.5
+		
+	      }
+	     ]
         }
     ], 
     "Interconnects": [], 
@@ -106,85 +58,22 @@
             "System": [
                 "U'=D[U,{x,2}]+ D[U,{y,2}]"
             ], 
-            "Params": [
-                "a", 
-                "b", 
-                "mu"
-            ], 
-            "ParamValues": [
-                {
-                    "a": 0.65, 
-                    "mu": 0.025, 
-                    "b": 2
-                }
-            ]
+            "Params": [], 
+            "ParamValues": []
         }
     ], 
-    "Bounds": [
-        {
-            "Name": "Dirichlet example1", 
-            "Type": 0, 
-            "Values": [
-                "3.0"
-            ],
-			"Derivative": [
-                "0.0"
-            ]
-        },
-		{
-            "Name": "Neumann example1", 
-            "Type": 1, 
-            "Values": [
-                "-1.0"
-            ]
-        },
-		{
-            "Name": "Neumann example2", 
-            "Type": 1, 
-            "Values": [
-                "1.0"
-            ]
-        },
-		{
-            "Name": "Neumann example3", 
-            "Type": 1, 
-            "Values": [
-                "2.0"
-            ]
-        },
-		{
-            "Name": "Neumann example4", 
-            "Type": 1, 
-            "Values": [
-                "3.0"
-            ]
-        },
-		{
-            "Name": "Dirichlet example2", 
-            "Type": 0, 
-            "Values": [
-                "-1.0"
-            ],
-			"Derivative": [
-                "0.0"
-            ]
-        },
-		{
-            "Name": "Dirichlet example3", 
-            "Type": 0, 
-            "Values": [
-                "-2.0"
-            ],
-			"Derivative": [
-                "0.0"
-            ]
-        }
-    ], 
+    "Bounds": [], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
                 "0.0"               
+            ]
+        },
+        {
+            "Name": "Initial values 1", 
+            "Values": [
+                "40.0"               
             ]
         }
     ], 
