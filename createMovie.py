@@ -1,19 +1,25 @@
+# -*- coding: utf-8 -*-
+'''
+один входной аргумент - json файл, для которого уже выполнены расчеты
+рядом с этим файлом будет создана папка с такимо же именем, в которую будут закачаны все 
+вычисления, после чего будет для каждого файла нарисована картинка, а затем все 
+склеено в видеофайл.
+'''
 import struct
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-from matplotlib.backends.backend_pdf import PdfPages
 import subprocess
 
 from domainmodel.model import Model
 import getpass
 import paramiko, socket
-
-def ololo():
-    argc = len(sys.argv) - 1
+from os import listdir
+  
     
-    dom = open(unicode(sys.argv[1]), 'rb')
-    ##dom = open('projectOut.dom', 'rb')
+def generatePng(projectDir):    
+    #reading dom file
+    dom = open(projectDir+"/project.dom", 'rb')    
     m254, = struct.unpack('b', dom.read(1))
     versionMajor, = struct.unpack('b', dom.read(1))
     versionMinor, = struct.unpack('b', dom.read(1))
@@ -39,8 +45,6 @@ def ololo():
     blockCount, = struct.unpack('i', dom.read(4))
     
     info = []
-    
-    
     for index in range(blockCount) :
         dimension, = struct.unpack('i', dom.read(4))
         node, = struct.unpack('i', dom.read(4))
@@ -67,12 +71,17 @@ def ololo():
         
         total = blockInfo[3] * blockInfo[4] * blockInfo[5]
         dom.read(2 * 2 * total)
-    
-    
     dom.close()
+    #dom file read
     
-    z = sys.argv[argc]
+    #get sorted binary file list
+    unsortedBinFileList =  [ f for f in listdir(projectDir) if f.endswith(".bin") ]
+    binTime = np.array([float(f.split('.bin')[0].split('project-')[1])  for f in unsortedBinFileList])    
+    print np.argsort(binTime)
+    binFileList = [ unsortedBinFileList[idx] for idx in np.argsort(binTime)]
+    print binFileList
     
+    #
     minZ = 0
     maxZ = 0
     
@@ -115,8 +124,8 @@ def ololo():
     data = np.zeros((countZ, countY, countX, cellSize), dtype=np.float64)
     
     
-    for i in range(2, argc):
-        bin = open(unicode(sys.argv[i]), 'rb')
+    for idx, binFile in enumerate(binFileList):
+        bin = open(projectDir+"/"+binFile, 'rb')
         m253, = struct.unpack('b', bin.read(1))
         versionMajor, = struct.unpack('b', bin.read(1))
         versionMinor, = struct.unpack('b', bin.read(1))
@@ -136,23 +145,26 @@ def ololo():
             blockData = np.fromfile(bin, dtype=np.float64, count=total)
             blockData = blockData.reshape(countZBlock, countYBlock, countXBlock, cellSize);
             data[coordZBlock : coordZBlock + countZBlock, coordYBlock : coordYBlock + countYBlock, coordXBlock : coordXBlock + countXBlock, :] = blockData[:, :, :, :]
+        bin.close()
         
         xs = np.arange(0, countX)*dx
         ys = np.arange(0, countY)*dy
     
     
         X,Y = np.meshgrid(xs,ys)
-        layer = data[int(z),:,:,0]
+        layer = data[0,:,:,0]
     
         plt.pcolormesh(X, Y, layer)
       
-        filename = 'image-' + str(i-1) + '.png'
-        pp = filename
-        plt.savefig(pp, format='png')
-      
-        print 'save #', i-1, filename
-        #pp.close()
+        filename = projectDir+"/image-" + str(idx) + ".png"        
+        plt.savefig(filename, format='png')        
+        print 'save #', idx, binFile, "->", filename
+        plt.clf()
+        
 
+    
+    
+    
 
 def getDataFromCluster(jsonFile, projectDir):
     model = Model()
@@ -184,59 +196,52 @@ def getDataFromCluster(jsonFile, projectDir):
         else:
             print "Project folder OK."
         cftp=client.open_sftp()
-        cftp.get(remoteProjFolder+"", projectDir)
-        cftp.close()
-        '''
-        #3 Run jsontobin on json
-        print 'Running preprocessor:'
-        print 'python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/project.json'
-        stdin, stdout, stderr = client.exec_command('python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/project.json')
-        print stdout.read()
-
-        #4 Run Solver binary on created files
-        print "Checking if solver executable at "+conn.solverExecutable+" exists..."
-        stdin, stdout, stderr = client.exec_command('test -f '+conn.solverExecutable)
-        if stdout.channel.recv_exit_status():
-            print "Please provide correct path to the solver executable."
-            return
-        else:
-            print "Solver executable found."
-
-        stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/project.sh')
-        print stdout.read()
-        print stderr.read()
-
-
+        cftp.get(remoteProjFolder+"/project.dom", projectDir+"/project.dom")
+        binFileList = [ f for f in cftp.listdir(remoteProjFolder) if f.endswith(".bin") ]
+        print "Copying", len(binFileList), "files from cluster"
+        for binFile in binFileList:
+            cftp.get(remoteProjFolder+"/"+binFile, projectDir+"/"+binFile)
+        print "Done"     
+        cftp.close()        
         client.close()
-        '''
+        
     #Обрабатываю исключения
     except paramiko.ssh_exception.AuthenticationException:
         return 1, u'Неверный логин или пароль'
     except socket.error:
         return 1, u'Указан неправильный адрес или порт'
     except paramiko.ssh_exception.SSHException:
-        return 1, u'Ошибка в протоколе SSH'
-    
+        return 1, u'Ошибка в протоколе SSH'    
     return 0, "Success!"
 
 def createDir(projectDir):
     PIPE = subprocess.PIPE
     subprocess.Popen("mkdir "+projectDir, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
 
+def createVideoFile(projectDir):
+    print "Creating video file:"
+    command = "avconv -r 5 -i "+projectDir+"/image-%d.png -b:v 1000k "+projectDir+"/project.mp4"
+    print command
+    PIPE = subprocess.PIPE
+    subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
+    print "Done" 
+
+
 
 def createMovie(jsonFile):
     projectDir = jsonFile.split('.json')[0]
     createDir(projectDir)
-    errCode, message =  getDataFromCluster(jsonFile, projectDir)
+    errCode, message = 0,"" # getDataFromCluster(jsonFile, projectDir)
     if errCode!=0:
         print message
         return errCode
-    
+    generatePng(projectDir)
+    createVideoFile(projectDir)
 
 if __name__ == "__main__":
     if len(sys.argv)==1:
         print "Please specify a json file to read"
-    else:         
+    else:
         jsonFile = sys.argv[1]
         createMovie(jsonFile)
         
