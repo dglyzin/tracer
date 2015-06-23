@@ -4,7 +4,7 @@ def getCellCountAlongLine(lengthInCoords, step):
     count = lengthInCoords/step#+1
     return int(count)
 
-def factorial(self, number):
+def factorial(number):
 # Вычисляет факториал
     if number == 0:
         return 1
@@ -18,13 +18,13 @@ def factorial(self, number):
             i = i + 1
         return product
     
-def NewtonBinomCoefficient(self, n, k):
+def NewtonBinomCoefficient(n, k):
 # Вычисляет биномиальные коэффициенты затем, чтобы потом их использовать как коэффициенты для конечных разностей
     if n < k:
         raise AttributeError("n souldn't be less then k!")
     return factorial(n) / (factorial(k) * factorial(n-k))
     
-def generateCodeForMathFunction(self, parsedMathFunction, userIndepVariables, independentVariableValueList):
+def generateCodeForMathFunction(parsedMathFunction, userIndepVariables, independentVariableValueList):
 # Генерирует сишный код для какой-то математической функции. userIndepVariables - те переменные, которые ввел юзер,
 # independentVariableValueList - те выражения, которые должны быть подставлены вместо них;
 # parsedMathFunction - распарсенная с помощью equationParser математическая функция
