@@ -34,4 +34,6 @@ class Equation(object):
             ("Params", self.params),
             ("ParamValues", self.paramValues)
         ])   
+		if len(self.paramValues) > 1:
+			propDict.setdefault("DefaulParamsIndex", self.defaultParamsIndex)
         return propDict  
