@@ -26,7 +26,8 @@ from compnode import Compnode
 import numpy as np
 from DerivHandler import DerivativeHandler
 #generators
-from newFuncGenerator import FunctionCodeGenerator
+# from newFuncGenerator import FunctionCodeGenerator
+from newFuncGenerator import FuncGenerator
 from libGenerateC import generateCfromDict
 
 
@@ -437,8 +438,10 @@ class Model(QObject):
     def createCPPandGetFunctionMaps(self,cppFileName):
         #generator1
         try:
-            gen = FunctionCodeGenerator(self.equations, self.blocks, self.initials, self.bounds, [self.gridStepX, self.gridStepY, self.gridStepZ])
-            outputStr, functionMaps = gen.generateAllFunctions()#self.blocks, self.equations, self.bounds, self.initials, [self.gridStepX, self.gridStepY, self.gridStepZ])
+            #gen = FunctionCodeGenerator(self.equations, self.blocks, self.initials, self.bounds, [self.gridStepX, self.gridStepY, self.gridStepZ])
+            #outputStr, functionMaps = gen.generateAllFunctions()#self.blocks, self.equations, self.bounds, self.initials, [self.gridStepX, self.gridStepY, self.gridStepZ])
+            gen = FuncGenerator(self.equations, self.blocks, self.initials, self.bounds, [self.gridStepX, self.gridStepY, self.gridStepZ])
+            outputStr, functionMaps = gen.generateAllFunctions()
         except Exception as ex:
             print(ex)
         else:
