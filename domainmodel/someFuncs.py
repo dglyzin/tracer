@@ -44,7 +44,7 @@ def generateCodeForMathFunction(parsedMathFunction, userIndepVariables, independ
      
     return ''.join(outputList)
 
-def determineNameOfBoundary(self, side):
+def determineNameOfBoundary(side):
 # Эта функция создана исключительно для красоты и понятности файла Functions.cpp. По номеру границы определяет ее уравнение.
         boundaryNames = dict({0 : 'x = 0', 1 : 'x = x_max', 2 : 'y = 0', 3 : 'y = y_max', 4 : 'z = 0', 5 : 'z = z_max'})
         if side in boundaryNames:
