@@ -437,7 +437,7 @@ class Model(QObject):
     def createCPPandGetFunctionMaps(self,cppFileName):
         #generator1
         try:
-            gen = FunctionCodeGenerator()
+            gen = FunctionCodeGenerator()#self.equations, self.blocks, self.initials, self.bounds, [self.gridStepX, self.gridStepY, self.gridStepZ])
             #приходится опять формировать словарь из gridStep'ов, т.к. ф-я принимает именно его. Но это легко исправить.
             outputStr, functionMaps = gen.generateAllFunctions(self.blocks, self.equations, self.bounds, self.initials, [self.gridStepX, self.gridStepY, self.gridStepZ])
         except Exception as ex:
