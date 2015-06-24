@@ -231,7 +231,7 @@ def createVideoFile(projectDir):
 def createMovie(jsonFile):
     projectDir = jsonFile.split('.json')[0]
     createDir(projectDir)
-    errCode, message = 0,"" # getDataFromCluster(jsonFile, projectDir)
+    errCode, message = getDataFromCluster(jsonFile, projectDir)
     if errCode!=0:
         print message
         return errCode

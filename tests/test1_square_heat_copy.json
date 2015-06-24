@@ -5,19 +5,19 @@
         "Username": "tester", 
         "Password": "tester", 
         "Workspace": "/home/tester/Tracer1", 
-        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
+        "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 1.0, 
+    "FinishTime": 50.0, 
     "TimeStep": 0.00001, 
-    "SaveInterval": 0.0, 
+    "SaveInterval": 1.0, 
     "Solver": 2,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.1, 
-        "y": 0.1, 
+        "x": 0.01, 
+        "y": 0.01, 
         "z": 1
     }, 
     "Blocks": [
@@ -35,22 +35,8 @@
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [
-                {
-                    "BoundNumber": 0, 
-                    "Side": 3, 
-                    "xfrom": 1.0, 
-                    "xto": 2.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
-                },
-                {
-                    "BoundNumber": 1, 
-                    "Side": 3, 
-                    "xfrom": 0.0, 
-                    "xto": 1.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
-                },
+                
+
                 {
                     "BoundNumber": 2, 
                     "Side": 3, 
@@ -106,18 +92,8 @@
             "System": [
                 "U'=D[U,{x,2}]+ D[U,{y,2}]"
             ], 
-            "Params": [
-                "a", 
-                "b", 
-                "mu"
-            ], 
-            "ParamValues": [
-                {
-                    "a": 0.65, 
-                    "mu": 0.025, 
-                    "b": 2
-                }
-            ]
+            "Params": [], 
+            "ParamValues": []
         }
     ], 
     "Bounds": [
