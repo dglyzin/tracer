@@ -123,6 +123,44 @@ def generatePng(projectDir):
     
     data = np.zeros((countZ, countY, countX, cellSize), dtype=np.float64)
     
+    maxValue = sys.float_info.min
+    minValue = sys.float_info.max
+    
+    for idx, binFile in enumerate(binFileList):
+        bin = open(projectDir+"/"+binFile, 'rb')
+        m253, = struct.unpack('b', bin.read(1))
+        versionMajor, = struct.unpack('b', bin.read(1))
+        versionMinor, = struct.unpack('b', bin.read(1))
+        time, = struct.unpack('d', bin.read(8))
+    
+        for j in range( len(info) ) :
+            countZBlock = info[j][5]
+            countYBlock = info[j][4]
+            countXBlock = info[j][3]
+        
+            coordZBlock = info[j][2] - offsetZ
+            coordYBlock = info[j][1] - offsetY
+            coordXBlock = info[j][0] - offsetX
+        
+            total = countZBlock * countYBlock * countXBlock * cellSize
+        
+            blockData = np.fromfile(bin, dtype=np.float64, count=total)
+            blockData = blockData.reshape(countZBlock, countYBlock, countXBlock, cellSize);
+            data[coordZBlock : coordZBlock + countZBlock, coordYBlock : coordYBlock + countYBlock, coordXBlock : coordXBlock + countXBlock, :] = blockData[:, :, :, :]
+        bin.close()
+        
+        tmpMaxValue = np.max(data)
+        tmpMinValue = np.min(data)
+        
+        if tmpMaxValue > maxValue:
+            maxValue = tmpMaxValue
+            
+        if tmpMinValue < minValue:
+            minValue = tmpMinValue
+
+
+
+ 
     
     for idx, binFile in enumerate(binFileList):
         bin = open(projectDir+"/"+binFile, 'rb')
@@ -154,7 +192,8 @@ def generatePng(projectDir):
         X,Y = np.meshgrid(xs,ys)
         layer = data[0,:,:,0]
     
-        plt.pcolormesh(X, Y, layer)
+        plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
+        plt.colorbar()
       
         filename = projectDir+"/image-" + str(idx) + ".png"        
         plt.savefig(filename, format='png')        
