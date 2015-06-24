@@ -17,14 +17,14 @@ class Equation(object):
         self.name = edict["Name"]
         self.vars = edict["Vars"]
         self.system = edict["System"]
-		if len(edict["Params"]) != 0 and len(edict["ParamValues"]) == 0:
-		    raise AttributeError("The system has some parameters, but their values was not specified!")
-		if len(edict["Params"]) == 0 and len(edict["ParamValues"]) != 0:
-		    raise AttributeError("The system hasn't any parameters, but the field ParamValues is not empty!")
-		self.params = edict["Params"]
+        if len(edict["Params"]) != 0 and len(edict["ParamValues"]) == 0:
+            raise AttributeError("The system has some parameters, but their values was not specified!")
+        if len(edict["Params"]) == 0 and len(edict["ParamValues"]) != 0:
+            raise AttributeError("The system hasn't any parameters, but the field ParamValues is not empty!")
+        self.params = edict["Params"]
         self.paramValues = edict["ParamValues"]
-		if len(self.paramValues) > 1:
-			self.defaultParamsIndex = edict["DefaulParamsIndex"]
+        if len(self.paramValues) > 1:
+            self.defaultParamsIndex = edict["DefaulParamsIndex"]
    
     def getPropertiesDict(self):          
         propDict = OrderedDict([            
@@ -34,6 +34,6 @@ class Equation(object):
             ("Params", self.params),
             ("ParamValues", self.paramValues)
         ])   
-		if len(self.paramValues) > 1:
-			propDict.setdefault("DefaulParamsIndex", self.defaultParamsIndex)
+        if len(self.paramValues) > 1:
+            propDict.setdefault("DefaulParamsIndex", self.defaultParamsIndex)
         return propDict  
