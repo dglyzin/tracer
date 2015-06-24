@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import itertools
+
 def getCellCountAlongLine(lengthInCoords, step):
     count = lengthInCoords/step#+1
     return int(count)
@@ -51,3 +53,20 @@ def determineNameOfBoundary(side):
             return boundaryNames[side]
         else:
             raise AttributeError("Error in function __determineNameOfBoundary(): argument 'boundaryNumber' should take only integer values from 0 to 5!")
+        
+def convertRangesToBoundaryCoordinates(xyzList):
+#         xyzList --- список вида [[xFrom, xTo], [yFrom, yTo], [zFrom, zTo]]
+#         Функция по списку xyzList формирует в двумерном случае 2 точки границы [(x1,y1), (x2,y2)],
+#         в 3 мерном случае -- 4 точки прямоугольника [(x1,y1), (x2,y2), (x3,y3), (x4,y4)].
+        length = len(xyzList)
+        if length == 1:
+            return xyzList[0]
+        elif length >= 2:
+            coordinates = []
+#             Декартово произведение двух списков. В результате -- список кортежей!
+            for point in itertools.product(*xyzList):
+                coordinates.append(point)
+#             Таким образом устраняем лишние кортежи
+            return list(set(coordinates))
+        else:
+            raise AttributeError("Dimension of geometric space should not be greater than 3!")
