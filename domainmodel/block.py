@@ -28,6 +28,7 @@ class Block(object):
         
         self.defaultEquation = 0
         self.defaultInitial = 0
+		self.equationRegions = []
         self.boundRegions = []
         self.initialRegions = []
 
@@ -93,6 +94,7 @@ class Block(object):
             ("DefaultEquation", self.defaultEquation),
             ("DefaultInitial", self.defaultInitial),
             ("BoundRegions", [bdict.getPropertiesDict(self.dimension) for bdict in  self.boundRegions]),
-            ("InitialRegions", [idict.getPropertiesDict(self.dimension) for idict in  self.initialRegions])
+            ("InitialRegions", [idict.getPropertiesDict(self.dimension) for idict in  self.initialRegions]),
+			("EquationRegions", [edict.getPropertiesDict(self.dimension) for edict in  self.equationRegions])
         ])   
         return propDict
