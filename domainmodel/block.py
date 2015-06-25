@@ -70,7 +70,9 @@ class Block(object):
         for boundDict in bdict["BoundRegions"]:
             self.boundRegions.append(BoundRegion(boundDict,self.dimension))
         for initDict in bdict["InitialRegions"]:
-            self.initialRegions.append(InitialRegion(initDict,self.dimension))                
+            self.initialRegions.append(InitialRegion(initDict,self.dimension))
+        for equatDict in bdict["EquationRegions"]:
+            self.equationRegions.append(EquationRegion(equatDict,self.dimension))		
         
         
      

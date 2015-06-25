@@ -33,33 +33,65 @@
                 "y": 2.0
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
-            "BoundRegions": [], 
-            "InitialRegions":[
-			  {
-			"InitialNumber": 1,
-			"xfrom": 0.75, 
+            "DefaultInitial": 0,
+			"EquationRegions":[
+				{
+					"EquationNumber": 1,
+					"xfrom": 0.75, 
 					"xto": 2.25, 
 					"yfrom": 0.5, 
 					"yto": 1.5
-			
-			  }
-			  ]
+				}
+			],
+            "BoundRegions": [], 
+            "InitialRegions":[
+				{
+					"InitialNumber": 1,
+					"xfrom": 0.75, 
+					"xto": 2.25, 
+					"yfrom": 0.5, 
+					"yto": 1.5
+				}
+			]
         }
     ], 
     "Interconnects": [], 
     "Equations": [
         {
-            "Name": "Flat Brusselator", 
+            "Name": "Heat", 
             "Vars": [
                 "x", 
                 "y"
             ], 
             "System": [
-                "U'=D[U,{x,2}]+ D[U,{y,2}]"
+                "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
             ], 
-            "Params": [], 
-            "ParamValues": []
+            "Params": [
+				"a"
+			], 
+            "ParamValues": [
+				{
+					"a": 2
+				}
+			]
+        },
+		{
+            "Name": "Heat", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
+            ], 
+            "Params": [
+				"a"
+			], 
+            "ParamValues": [
+				{
+					"a": 3
+				}
+			]
         }
     ], 
     "Bounds": [], 

@@ -79,3 +79,40 @@ class InitialRegion(object):
             propDict.update({"zfrom":self.zfrom})
             propDict.update({"zto":self.zto})
         return propDict  
+
+		
+class EquationRegion(object):
+    def __init__(self, bdict, dimension):
+        self.equationNumber = bdict["EquationNumber"]        
+        self.xfrom = bdict["xfrom"]
+        self.xto = bdict["xto"]
+        if dimension>1:            
+            self.yfrom = bdict["yfrom"]
+            self.yto = bdict["yto"]
+        if dimension>2:
+            self.zfrom = bdict["zfrom"]
+            self.zto = bdict["zto"]
+        
+    def getXrange(self, dx):
+        return int(self.xfrom/dx),int(self.xto/dx)  
+    
+    def getYrange(self, dy):
+        return int(self.yfrom/dy),int(self.yto/dy)
+    
+    def getZrange(self, dz):
+        return int(self.zfrom/dz),int(self.zto/dz)     
+    
+    
+    def getPropertiesDict(self, dimension):
+        propDict = OrderedDict([            
+            ("EquationNumber", self.equationNumber),
+            ("xfrom", self.xfrom),
+            ("xto", self.xto)
+        ])   
+        if dimension>1:            
+            propDict.update({"yfrom":self.yfrom})
+            propDict.update({"yto":self.yto})
+        if dimension>2:
+            propDict.update({"zfrom":self.zfrom})
+            propDict.update({"zto":self.zto})
+        return propDict
