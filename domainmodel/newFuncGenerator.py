@@ -40,6 +40,17 @@ class FuncGenerator:
          
         return outputStr , functionMaps
 
+# class BoundCondition:
+#     def __init__(self, values, btype, side, ranges, boundNumber):
+#         self.values = values
+#         self.type = btype
+#         self.side = side
+#         self.ranges = ranges
+#         self.boundNumber = boundNumber
+#         
+#     def createSpecialProperties(self, parser, params, indepVars):
+#         self.boundaryCoordinates = convertRangesToBoundaryCoordinates(self.ranges)
+
 class abstractGenerator(object):
 # Генерирует выходную строку для записи в файл
     def __init__(self, equations, blocks, initials, bounds, gridStep):
@@ -178,7 +189,7 @@ class abstractGenerator(object):
                 indepVarsForInitialFunction = self.userIndepVars + ['t']
                 for k,value in enumerate(valueList):
                     parsedInitial = parser.parseMathExpression(value, self.params, indepVarsForInitialFunction)
-                    parsedInitialAfterReplacing = self.__replaceTimeToZeroInInitialCondition(parsedInitial)
+                    parsedInitialAfterReplacing = self.replaceTimeToZeroInInitialCondition(parsedInitial)
                     newValue = generateCodeForMathFunction(parsedInitialAfterReplacing, self.userIndepVars, indepVarsForInitialFunction)
                     pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
                 pointFunction.append("}\n\n")
@@ -187,7 +198,7 @@ class abstractGenerator(object):
                 listWithDirichletFunctionNames.append("empty")
         return ''.join(allFunctions), listWithInitialFunctionNames, listWithDirichletFunctionNames
     
-    def __replaceTimeToZeroInInitialCondition(self, DirichletConditionForParsing):
+    def replaceTimeToZeroInInitialCondition(self, DirichletConditionForParsing):
 #         Заменяет в условии Дирихле, которое хотим сделать начальным условием, переменную t на 0.0;
 #         DirichletConditionForParsing -- функция, в которой выполняется замена. Она здесь -- в виде массива лексем уже.
         operations = ['+','-','*','/']
@@ -286,7 +297,7 @@ class abstractGenerator(object):
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
             
         function.extend(['//Central function for '+str(len(self.userIndepVars))+'d model for block with number ' + str(blockNumber) + '\n'])    
-        function.extend(self.__generateFunctionSignature(blockNumber, 'Block' + str(blockNumber) + 'CentralFunction', strideList))
+        function.extend(self.generateFunctionSignature(blockNumber, 'Block' + str(blockNumber) + 'CentralFunction', strideList))
             
         parser = MathExpressionParser()
         variables = parser.getVariableList(self.system)
@@ -300,7 +311,7 @@ class abstractGenerator(object):
         
         return ''.join(function) + '\n'
 
-    def __generateFunctionSignature(self, blockNumber, name, strideList):
+    def generateFunctionSignature(self, blockNumber, name, strideList):
         signatureStart = 'void ' + name + '(double* result, double* source, double t,'
         signatureMiddle = ' int idx' + self.defaultIndepVars[0].upper() + ','
 #         Делаем срез нулевого элемента, т.к. его уже учли
@@ -333,14 +344,14 @@ class abstractGenerator(object):
             indepVarsForBoundaryFunction.remove(self.userIndepVars[side // 2])
             indepVarsForBoundaryFunction.extend(['t'])
             
-            parsedBoundaryCondition = list([])
-            for boundary in boundaryCondition['values']:
-                parsedBoundaryCondition.extend([parser.parseMathExpression(boundary, self.params, indepVarsForBoundaryFunction)])
+            parsedValues = list([])
+            for condition in boundaryCondition['values']:
+                parsedValues.extend([parser.parseMathExpression(condition, self.params, indepVarsForBoundaryFunction)])
             
             if side in parsedBoundaryConditionDictionary:
-                parsedBoundaryConditionDictionary[side].append((parsedBoundaryCondition, boundaryCoordinates, boundaryCondition['type'], boundaryCondition['boundNumber']))
+                parsedBoundaryConditionDictionary[side].append((parsedValues, boundaryCoordinates, boundaryCondition['type'], boundaryCondition['boundNumber']))
             else:
-                parsedBoundaryConditionDictionary.update({side : [(parsedBoundaryCondition, boundaryCoordinates, boundaryCondition['type'], boundaryCondition['boundNumber'])]})
+                parsedBoundaryConditionDictionary.update({side : [(parsedValues, boundaryCoordinates, boundaryCondition['type'], boundaryCondition['boundNumber'])]})
 
         parsedEquationsList = list([])
         for equation in self.system:
@@ -354,7 +365,7 @@ class abstractGenerator(object):
         for indepVar in self.defaultIndepVars:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
             
-        function = self.__generateFunctionSignature(blockNumber, name, strideList)
+        function = self.generateFunctionSignature(blockNumber, name, strideList)
 #         А здесь используем userIndepVariables.        
         indepVarValueList = list([])
         for indepVar in self.userIndepVars:
@@ -379,7 +390,7 @@ class abstractGenerator(object):
         for indepVar in self.defaultIndepVars:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
         
-        function = self.__generateFunctionSignature(blockNumber, name, strideList)
+        function = self.generateFunctionSignature(blockNumber, name, strideList)
 #         А здесь используем userIndepVariables.
         b = RHSCodeGenerator()
         for i, equation in enumerate(parsedEquationsList):
@@ -436,12 +447,12 @@ class generator1D(abstractGenerator):
 
         pointInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames = self.generateAllPointInitials()
         output.append(pointInitials)
-        output.append(self.__generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
+        output.append(self.generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
         output.append(self.generateGetInitFuncArray())
         
         return ''.join(output)  
     
-    def __generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
+    def generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
 #         Для каждого блока создает функцию-заполнитель с именем BlockIFillInitialValues (I-номер блока)
         totalCountOfInitials = len(listWithInitialFunctionNames)
         allFillFunctions = list()
@@ -487,7 +498,7 @@ class generator1D(abstractGenerator):
             boundaryConditionList.append(boundaryCondition)
         return blockRanges, boundaryConditionList
     
-    def __generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
+    def generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
         defaultFunctions = list()
         parser = MathExpressionParser()
         variables = parser.getVariableList(self.system)
@@ -510,7 +521,7 @@ class generator1D(abstractGenerator):
         variables = parser.getVariableList(self.system)
         parsedBoundaryConditionDictionary, parsedEquationsList = self.createPBCDandPEL(boundaryConditionList, parser, variables)
         
-        outputStr = list(self.__generateDefaultBoundaryFunction(blockNumber, parsedEquationsList))
+        outputStr = list(self.generateDefaultBoundaryFunction(blockNumber, parsedEquationsList))
         intro = '\n//=============================OTHER BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputStr.append(intro)
         
@@ -528,9 +539,9 @@ class generator1D(abstractGenerator):
         #     ---side 3---        
         
         #dictionary to return to binarymodel
-        blockFunctionMap = {"center":0, "e02":1, "e12":2, "e03":3, "e13":4 } 
+        blockFunctionMap = {"center":0, "e0":1, "e1":2} 
         #counter for elements in blockFunctionMap including subdictionaries
-        bfmLen = 5
+        bfmLen = 3
         #for side in range(0, boundaryCount):
         for side in properSequenceOfSides:
             #subdictionary for every side 
@@ -545,6 +556,7 @@ class generator1D(abstractGenerator):
             bfmLen += 1
             #Генерируем функции для всех заданных условий и кладем их имена в массив
             if side not in parsedBoundaryConditionDictionary:
+                blockFunctionMap.update({sideName:sideMap})
                 continue
             counter = 0
             #Это список номеров граничных условий для данной стороны side. Нужен для исключения повторяющихся функций,
@@ -598,12 +610,12 @@ class generator2D(abstractGenerator):
 
         pointInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames = self.generateAllPointInitials()
         output.append(pointInitials)
-        output.append(self.__generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
+        output.append(self.generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
         output.append(self.generateGetInitFuncArray())
         
         return ''.join(output)  
     
-    def __generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
+    def generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
 #         Для каждого блока создает функцию-заполнитель с именем BlockIFillInitialValues (I-номер блока)
         totalCountOfInitials = len(listWithInitialFunctionNames)
         allFillFunctions = list()
@@ -656,7 +668,7 @@ class generator2D(abstractGenerator):
             boundaryConditionList.append(boundaryCondition)
         return blockRanges, boundaryConditionList
     
-    def __generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
+    def generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
         defaultFunctions = list()
         parser = MathExpressionParser()
         variables = parser.getVariableList(self.system)
@@ -679,7 +691,7 @@ class generator2D(abstractGenerator):
         variables = parser.getVariableList(self.system)
         parsedBoundaryConditionDictionary, parsedEquationsList = self.createPBCDandPEL(boundaryConditionList, parser, variables)
         
-        outputStr = list(self.__generateDefaultBoundaryFunction(blockNumber, parsedEquationsList))
+        outputStr = list(self.generateDefaultBoundaryFunction(blockNumber, parsedEquationsList))
         intro = '\n//=============================OTHER BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputStr.append(intro)
         
@@ -738,10 +750,10 @@ class generator2D(abstractGenerator):
                 bfmLen += 1
                 counter += 1
             blockFunctionMap.update({sideName:sideMap}) 
-        outputStr.extend(self.__generateVertexFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBoundaryConditionDictionary))
+        outputStr.extend(self.generateVertexFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBoundaryConditionDictionary))
         return ''.join(outputStr), blockFunctionMap
     
-    def __generateVertexFunctions(self, blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBoundaryConditionDictionary):
+    def generateVertexFunctions(self, blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBoundaryConditionDictionary):
 #         blockRanges --- это словарь {'min' : [x_min,y_min,z_min], 'max' : [x_max,y_max,z_max]}
 #         parsedBoundaryConditionDictionary --- это словарь вида {Номер границы : [(распарсенное условие 1, [4 или 2 координаты краев части 1 границы], Тип условия),
 #                                                                                  (распарсенное условие 2, [4 или 2 координаты краев части 2 границы], Тип условия), ...]}
@@ -836,12 +848,12 @@ class generator3D(abstractGenerator):
 
         pointInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames = self.generateAllPointInitials()
         output.append(pointInitials)
-        output.append(self.__generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
+        output.append(self.generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
         output.append(self.generateGetInitFuncArray())
         
         return ''.join(output) 
     
-    def __generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
+    def generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
 #         Для каждого блока создает функцию-заполнитель с именем BlockIFillInitialValues (I-номер блока)
         totalCountOfInitials = len(listWithInitialFunctionNames)
         allFillFunctions = list()
@@ -899,7 +911,7 @@ class generator3D(abstractGenerator):
             boundaryConditionList.append(boundaryCondition)
         return blockRanges, boundaryConditionList
     
-    def __generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
+    def generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
         defaultFunctions = list()
         parser = MathExpressionParser()
         variables = parser.getVariableList(self.system)
@@ -931,7 +943,7 @@ class generator3D(abstractGenerator):
         variables = parser.getVariableList(self.system)
         parsedBoundaryConditionDictionary, parsedEquationsList = self.createPBCDandPEL(boundaryConditionList, parser, variables)
         
-        outputStr = list(self.__generateDefaultBoundaryFunction(blockNumber, parsedEquationsList))
+        outputStr = list(self.generateDefaultBoundaryFunction(blockNumber, parsedEquationsList))
         intro = '\n//=============================OTHER BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputStr.append(intro)
         
@@ -980,10 +992,10 @@ class generator3D(abstractGenerator):
                 raise AttributeError("Three-dimensional case is difficult!")
                 counter += 1
             blockFunctionMap.update({sideName:sideMap}) 
-        outputStr.extend(self.__generateVertexAndRibFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBoundaryConditionDictionary))
+        outputStr.extend(self.generateVertexAndRibFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBoundaryConditionDictionary))
         return ''.join(outputStr), blockFunctionMap
     
-    def __generateVertexAndRibFunctions(self, blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, parsedBoundaryConditionDictionary):
+    def generateVertexAndRibFunctions(self, blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, parsedBoundaryConditionDictionary):
 #         blockRanges --- это словарь {'min' : [x_min,y_min,z_min], 'max' : [x_max,y_max,z_max]}
 #         parsedBoundaryConditionDictionary {Номер границы : [(распарсенное условие 1, [4 или 2 координаты краев части 1 границы], Тип условия),
 #                                                             (распарсенное условие 2, [4 или 2 координаты краев части 2 границы], Тип условия), ...]}
@@ -1011,16 +1023,16 @@ class generator3D(abstractGenerator):
             if rib[0] in parsedBoundaryConditionDictionary and rib[1] in parsedBoundaryConditionDictionary:
                 boundary1CondList = parsedBoundaryConditionDictionary[rib[0]]
                 boundary2CondList = parsedBoundaryConditionDictionary[rib[1]]
-                pairsOfBoundaryCondition = self.__algorithmForRib(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundary1CondList, boundary2CondList, defuaultBoundaryConditionValues)
+                pairsOfBoundaryCondition = self.algorithmForRib(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundary1CondList, boundary2CondList, defuaultBoundaryConditionValues)
             elif rib[0] in parsedBoundaryConditionDictionary and rib[1] not in parsedBoundaryConditionDictionary:
 #                     Здесь надо сначала определить те границы, которые касаются ребра, и для каждой из них
 #                     сгенерить функцию
                 for boundaryCondition in parsedBoundaryConditionDictionary[rib[0]]:
-                    if len(self.__rectVertexNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
+                    if len(self.rectVertexNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
                         pairsOfBoundaryCondition.append(((boundaryCondition[0],boundaryCondition[2]), (defuaultBoundaryConditionValues,1)))
             elif rib[0] not in parsedBoundaryConditionDictionary and rib[1] in parsedBoundaryConditionDictionary:
                 for boundaryCondition in parsedBoundaryConditionDictionary[rib[1]]:
-                    if len(self.__rectVertexNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
+                    if len(self.rectVertexNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
                         pairsOfBoundaryCondition.append(((defuaultBoundaryConditionValues,1), (boundaryCondition[0],boundaryCondition[2])))
             else:
                 continue
@@ -1115,7 +1127,7 @@ class generator3D(abstractGenerator):
 
         return output
     
-    def __rectVertexNearSegment(self, ribCoordinateMin, ribCoordinateMax, rectCoordinateList):
+    def rectVertexNearSegment(self, ribCoordinateMin, ribCoordinateMax, rectCoordinateList):
 # Определяет, лежит ли часть стороны прямоугольника на отрезке. Возвращает 0, если не лежит,
 # 1, если лежит не полностью, 2, если лежит полностью.
 # rectCoordinateList содержит четыре координаты -- углы прямоугольника
@@ -1153,7 +1165,7 @@ class generator3D(abstractGenerator):
         
         return tuple((goodPoints, differentCoord))
     
-    def __computeSideLength2D(self, blockRanges, Side):
+    def computeSideLength2D(self, blockRanges, Side):
 #         blockRanges --- словарь {"min": [x,y,z], "max": [x,y,z]}
 #         side --- номер стороны, длину которой надо вычислить       
         if Side == 0 or Side == 1:
@@ -1163,10 +1175,10 @@ class generator3D(abstractGenerator):
         else:
             raise AttributeError("Side should be 0, 1, 2 or 3!")
      
-    def __computeSegmentLength2D(self, segment):
+    def computeSegmentLength2D(self, segment):
 #         segment = [(x1,y1),(x2,y2)]
         if len(segment) != 2 or len(segment[0]) != 2 or len(segment[1]) != 2:
-            raise AttributeError("List 'segment' in __computeSegmentLength2D() should contain exactly two elements!")
+            raise AttributeError("List 'segment' in computeSegmentLength2D() should contain exactly two elements!")
 #         т.к. отрезки параллельны осям кординат, то можно делать так
         reducedSegment = []
 #         Двумерный случай сводится к одномерному
@@ -1177,7 +1189,7 @@ class generator3D(abstractGenerator):
              
         return reducedSegment[1] - reducedSegment[0]
         
-    def __segmentsIntersects(self, segment1, segment2):
+    def segmentsIntersects(self, segment1, segment2):
 #         segment1, segment2 --- одномерные отрезки, вовсе необязательно, что segmentI[0] <= segmentI[1], I = 1,2!
 #         Делаем так, чтобы в обоих отрезках левая граница была <= правой
         if len(segment1) != 2 or len(segment2) != 2:
@@ -1195,7 +1207,7 @@ class generator3D(abstractGenerator):
         else:
             return False
      
-    def __determineAllPairsOfConditions(self, resultCondList1, resultCondList2, defaultBoundaryConditions):
+    def determineAllPairsOfConditions(self, resultCondList1, resultCondList2, defaultBoundaryConditions):
 #         Для каждого из условий в resultCondList1 ищет все условия из resultCondList2
         outputConditionList = list()
         for boundaryCond1 in resultCondList1:
@@ -1206,7 +1218,7 @@ class generator3D(abstractGenerator):
 #             а в resultCondList2 ничего нет. Тогда надо сгенерить пару с дефолтным краевым условием.
             if len(resultCondList2) > 0:
                 for boundaryCond2 in resultCondList2:
-                    if self.__segmentsIntersects(boundaryCond1[3], boundaryCond2[3]):
+                    if self.segmentsIntersects(boundaryCond1[3], boundaryCond2[3]):
                         listOfSegments.extend([boundaryCond2[3]])
                         outputConditionList.extend([((boundaryCond1[0],boundaryCond1[4]), (boundaryCond2[0],boundaryCond2[4]))])
     #                 Сортируем массив отрезков по левой границе
@@ -1228,7 +1240,7 @@ class generator3D(abstractGenerator):
                 outputConditionList.extend([((boundaryCond1[0],boundaryCond1[4]), (defaultBoundaryConditions,1))])
         return outputConditionList
      
-    def __algorithmForRib(self, ribCoordinateMin, ribCoordinateMax, boundary1CondList, boundary2CondList, defaultBoundaryConditions):
+    def algorithmForRib(self, ribCoordinateMin, ribCoordinateMax, boundary1CondList, boundary2CondList, defaultBoundaryConditions):
 # Функция возвращает список кортежей --- пар условий.
 # ribCoordinateMin = (x,y,z_min), ribCoordinateMax = (x,y,z_max) или x_min x_max или y_min y_max
 # Каждый из списков имеет вид [(распарсенное условие 1, [4 координаты углов части 1 границы], Тип условия),
@@ -1242,7 +1254,7 @@ class generator3D(abstractGenerator):
         generalCondList = list([boundary1CondList, boundary2CondList])
         for (boundaryCondList, resultCondList) in zip(generalCondList, generalResultCondList):
             for boundaryCondition in boundaryCondList:
-                pointsOnRib = self.__rectVertexNearSegment(ribCoordinateMin, ribCoordinateMax, boundaryCondition[1])
+                pointsOnRib = self.rectVertexNearSegment(ribCoordinateMin, ribCoordinateMax, boundaryCondition[1])
                 if len(pointsOnRib[0]) == 2:
 #                     (Сами условия, координаты углов, список координат углов на ребре, координаты одномерного отрезка, Тип условия)
                     resultCondList.extend([(boundaryCondition[0], boundaryCondition[1], pointsOnRib[0], pointsOnRib[1], boundaryCondition[2])])
@@ -1250,8 +1262,8 @@ class generator3D(abstractGenerator):
 #         Шаг 2: теперь составляем всевозможные пары условий (Условие на 1 границу, условие на 2 границу):
 #         для каждого условия первой границы берем все подходящие условия второй, и наоборот.
 #         Потом их объединяем и возвращаем в виде списка.
-        finalResultCondList1 = self.__determineAllPairsOfConditions(generalResultCondList[0], generalResultCondList[1], defaultBoundaryConditions)
-        finalResultCondList2 = self.__determineAllPairsOfConditions(generalResultCondList[1], generalResultCondList[0], defaultBoundaryConditions)
+        finalResultCondList1 = self.determineAllPairsOfConditions(generalResultCondList[0], generalResultCondList[1], defaultBoundaryConditions)
+        finalResultCondList2 = self.determineAllPairsOfConditions(generalResultCondList[1], generalResultCondList[0], defaultBoundaryConditions)
 #         Надо, чтобы первым элементом кортежа было условие из generalResultCondList[0], поэтому переворачиваем кортежи в finalResultCondList2
         for idx,pair in enumerate(finalResultCondList2):
             tmp = list(finalResultCondList2.pop(idx))
