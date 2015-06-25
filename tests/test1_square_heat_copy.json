@@ -9,9 +9,9 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 10.0, 
+    "FinishTime": 0.5, 
     "TimeStep": 0.00001, 
-    "SaveInterval": 0.04, 
+    "SaveInterval": 0.002, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
@@ -44,7 +44,7 @@
                     "yto": 0.0                    
                 },
                 {
-                    "BoundNumber": 1, 
+                    "BoundNumber": 2, 
                     "Side": 0, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
@@ -52,7 +52,7 @@
                     "yto": 1.0                    
                 },
                 {
-                    "BoundNumber": 1, 
+                    "BoundNumber": 2, 
                     "Side": 1, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
@@ -88,22 +88,23 @@
     ], 
     "Bounds": [
         {
-            "Name": "Dirichlet example1", 
-            "Type": 0, 
+            "Name": "Neumann example1", 
+            "Type": 1, 
             "Values": [
-                "100.0"
-            ],
-            "Derivative": [
-                "0.0"
+                "1.0"
             ]
         },
         {
-            "Name": "Dirichlet example2", 
-            "Type": 0, 
+            "Name": "Neumann example2", 
+            "Type": 1, 
             "Values": [
-                "0.0"
-            ],
-            "Derivative": [
+                "-1.0"
+            ]
+        },
+        {
+            "Name": "Neumann example3", 
+            "Type": 1, 
+            "Values": [
                 "0.0"
             ]
         }
