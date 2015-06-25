@@ -726,6 +726,7 @@ class generator2D(abstractGenerator):
             bfmLen += 1
             #Генерируем функции для всех заданных условий и кладем их имена в массив
             if side not in parsedBoundaryConditionDictionary:
+                blockFunctionMap.update({sideName:sideMap})
                 continue
             counter = 0
             #Это список номеров граничных условий для данной стороны side. Нужен для исключения повторяющихся функций,
@@ -978,6 +979,7 @@ class generator3D(abstractGenerator):
             bfmLen += 1
             #Генерируем функции для всех заданных условий и кладем их имена в массив
             if side not in parsedBoundaryConditionDictionary:
+                blockFunctionMap.update({sideName:sideMap})
                 continue
             counter = 0
             #Это список номеров граничных условий для данной стороны side. Нужен для исключения повторяющихся функций,
