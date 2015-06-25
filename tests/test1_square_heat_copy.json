@@ -9,15 +9,15 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 0.5, 
-    "TimeStep": 0.00001, 
+    "FinishTime": 1.0, 
+    "TimeStep": 0.000001, 
     "SaveInterval": 0.002, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.01, 
-        "y": 0.01, 
+        "x": 0.005, 
+        "y": 0.005, 
         "z": 1
     }, 
     "Blocks": [
@@ -33,7 +33,8 @@
                 "y": 1.0
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
+            "DefaultInitial": 0,
+            "EquationRegions": [],
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
@@ -44,12 +45,28 @@
                     "yto": 1.0                    
                 },
                 {
-                    "BoundNumber": 0, 
+                    "BoundNumber": 1, 
                     "Side": 1, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
                     "yto": 1.0                    
+                },
+                {
+                    "BoundNumber": 2, 
+                    "Side": 2, 
+                    "xfrom": 0.0, 
+                    "xto": 1.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0                    
+                },
+                {
+                    "BoundNumber": 3, 
+                    "Side": 3, 
+                    "xfrom": 0.0, 
+                    "xto": 1.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0                    
                 }
             ], 
             "InitialRegions": []
@@ -64,10 +81,16 @@
                 "y"
             ], 
             "System": [
-                "U'=D[U,{x,2}]+ D[U,{y,2}]"
+                "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
             ], 
-            "Params": [], 
-            "ParamValues": []
+            "Params": [
+	        "a"
+            ], 
+            "ParamValues": [
+                {
+                    "a": 2
+                }   
+            ]
         }
     ], 
     "Bounds": [
@@ -75,21 +98,28 @@
             "Name": "Neumann example1", 
             "Type": 1, 
             "Values": [
-                "sin(t)"
+                "sin(10*3.1415*(1-y))"
             ]
         },
         {
             "Name": "Neumann example2", 
             "Type": 1, 
             "Values": [
-                "-cos(t)"
+                "sin(10*3.1415*y)"
             ]
         },
         {
             "Name": "Neumann example3", 
             "Type": 1, 
             "Values": [
-                "0.0"
+                "sin(10*3.1415*(1-x))"
+            ]
+        },
+        {
+            "Name": "Neumann example4", 
+            "Type": 1, 
+            "Values": [
+                "sin(10*3.1415*x)"
             ]
         }
     ], 
