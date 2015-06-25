@@ -40,16 +40,20 @@ class FuncGenerator:
          
         return outputStr , functionMaps
 
-# class BoundCondition:
-#     def __init__(self, values, btype, side, ranges, boundNumber):
-#         self.values = values
-#         self.type = btype
-#         self.side = side
-#         self.ranges = ranges
-#         self.boundNumber = boundNumber
-#         
-#     def createSpecialProperties(self, parser, params, indepVars):
-#         self.boundaryCoordinates = convertRangesToBoundaryCoordinates(self.ranges)
+class BoundCondition:
+    def __init__(self, values, btype, side, ranges, boundNumber):
+        self.values = values
+        self.btype = btype
+        self.side = side
+        self.ranges = ranges
+        self.boundNumber = boundNumber
+         
+    def createSpecialProperties(self, mathParser, params, indepVars):
+        self.boundaryCoordinates = convertRangesToBoundaryCoordinates(self.ranges)
+        
+        self.parsedValues = list()
+        for value in self.values:
+            self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))
 
 class abstractGenerator(object):
 # Генерирует выходную строку для записи в файл
@@ -330,34 +334,48 @@ class abstractGenerator(object):
         return list([signature,idx])
     
     def createPBCDandPEL(self, boundaryConditionList, parser, variables):
-# Создает список распарсенных краевых условий (parsedBoundaryConditionDictionary) и список распарсенных уравнений (parsedEquationsList)  
-        parsedBoundaryConditionDictionary = dict()
-        for boundaryCondition in boundaryConditionList:
-            side = boundaryCondition['side']
+# Создает список распарсенных краевых условий (parsedBConditionDict) и список распарсенных уравнений (parsedEquationsList)  
+#         parsedBoundaryConditionDictionary = dict()
+#         for boundaryCondition in boundaryConditionList:
+#             side = boundaryCondition['side']
+# # Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
+# # boundaryCoordinates отличается от ranges тем, что ranges -- это то как задал границу юзер,
+# # а boundaryCoordinates -- координаты крайних точек границы в геометрическом смысле
+#             ranges = boundaryCondition['ranges']
+#             boundaryCoordinates = convertRangesToBoundaryCoordinates(ranges)
+#             
+#             indepVarsForBoundaryFunction = list(self.userIndepVars)
+#             indepVarsForBoundaryFunction.remove(self.userIndepVars[side // 2])
+#             indepVarsForBoundaryFunction.extend(['t'])
+#             
+#             parsedValues = list()
+#             for condition in boundaryCondition['values']:
+#                 parsedValues.append(parser.parseMathExpression(condition, self.params, indepVarsForBoundaryFunction))
+#             
+#             if side in parsedBoundaryConditionDictionary:
+#                 parsedBoundaryConditionDictionary[side].append((parsedValues, boundaryCoordinates, boundaryCondition['type'], boundaryCondition['boundNumber']))
+#             else:
+#                 parsedBoundaryConditionDictionary.update({side : [(parsedValues, boundaryCoordinates, boundaryCondition['type'], boundaryCondition['boundNumber'])]})
+        parsedBConditionDict = dict()
+        for bCond in boundaryConditionList:
 # Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
 # boundaryCoordinates отличается от ranges тем, что ranges -- это то как задал границу юзер,
-# а boundaryCoordinates -- координаты крайних точек границы в геометрическом смысле
-            ranges = boundaryCondition['ranges']
-            boundaryCoordinates = convertRangesToBoundaryCoordinates(ranges)
-            
+# а boundaryCoordinates -- координаты крайних точек границы в геометрическом смысле        
             indepVarsForBoundaryFunction = list(self.userIndepVars)
-            indepVarsForBoundaryFunction.remove(self.userIndepVars[side // 2])
+            indepVarsForBoundaryFunction.remove(self.userIndepVars[bCond.side // 2])
             indepVarsForBoundaryFunction.extend(['t'])
             
-            parsedValues = list([])
-            for condition in boundaryCondition['values']:
-                parsedValues.extend([parser.parseMathExpression(condition, self.params, indepVarsForBoundaryFunction)])
-            
-            if side in parsedBoundaryConditionDictionary:
-                parsedBoundaryConditionDictionary[side].append((parsedValues, boundaryCoordinates, boundaryCondition['type'], boundaryCondition['boundNumber']))
+            bCond.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
+            if bCond.side in parsedBConditionDict:
+                parsedBConditionDict[bCond.side].append(bCond)
             else:
-                parsedBoundaryConditionDictionary.update({side : [(parsedValues, boundaryCoordinates, boundaryCondition['type'], boundaryCondition['boundNumber'])]})
-
+                parsedBConditionDict.update({bCond.side : [bCond]})
+            
         parsedEquationsList = list([])
         for equation in self.system:
             parsedEquationsList.extend([parser.parseMathExpression(equation, variables, self.params, self.userIndepVars)])
         
-        return parsedBoundaryConditionDictionary, parsedEquationsList
+        return parsedBConditionDict, parsedEquationsList
     
     def generateDirichlet(self, blockNumber, name, parsedBoundaryConditionList):
         strideList = list([])
@@ -485,17 +503,18 @@ class generator1D(abstractGenerator):
 # Если условие Дирихле, то используем производные по t,
 # если Неймановское условие --- то сами значения.
             if bound.btype == 0:
-                values = bound.derivative
+                values = list(bound.derivative)
             elif bound.btype == 1:
-                values = bound.values
+                values = list(bound.values)
 #           Исправление понятия Неймановского условия
                 if region.side == 0:
                     for idx, value in enumerate(values):
                         values.pop(idx)
                         values.insert(idx, '-(' + value + ')')
-            outputValues = list(values)    
-            boundaryCondition = {'values': outputValues, 'type': bound.btype, 'side': region.side, 'boundNumber': region.boundNumber, 'ranges': boundaryRanges}
-            boundaryConditionList.append(boundaryCondition)
+            NeumannValues = list(values) 
+            bCond = BoundCondition(NeumannValues, bound.btype, region.side, boundaryRanges, region.boundNumber)   
+#             boundaryCondition = {'values': NeumannValues, 'type': bound.btype, 'side': region.side, 'boundNumber': region.boundNumber, 'ranges': boundaryRanges}
+            boundaryConditionList.append(bCond)
         return blockRanges, boundaryConditionList
     
     def generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
@@ -519,8 +538,7 @@ class generator1D(abstractGenerator):
     def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockRanges, boundaryConditionList):
         parser = MathExpressionParser()
         variables = parser.getVariableList(self.system)
-        parsedBoundaryConditionDictionary, parsedEquationsList = self.createPBCDandPEL(boundaryConditionList, parser, variables)
-        
+        parsedBConditionDict, parsedEquationsList = self.createPBCDandPEL(boundaryConditionList, parser, variables)
         outputStr = list(self.generateDefaultBoundaryFunction(blockNumber, parsedEquationsList))
         intro = '\n//=============================OTHER BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputStr.append(intro)
@@ -555,21 +573,21 @@ class generator1D(abstractGenerator):
             sideMap = {"default":bfmLen}
             bfmLen += 1
             #Генерируем функции для всех заданных условий и кладем их имена в массив
-            if side not in parsedBoundaryConditionDictionary:
+            if side not in parsedBConditionDict:
                 blockFunctionMap.update({sideName:sideMap})
                 continue
             counter = 0
             #Это список номеров граничных условий для данной стороны side. Нужен для исключения повторяющихся функций,
             #т.к. на одну сторону в разных местах м.б. наложено одно и то же условие
             boundNumberList = list()
-            for condition in parsedBoundaryConditionDictionary[side]:
+            for condition in parsedBConditionDict[side]:
                 #Если для граничного условия с таким номером функцию еще не создавали, то создать, иначе - не надо.
-                if condition[3] in boundNumberList:
+                if condition.boundNumber in boundNumberList:
                     continue
-                boundNumberList.append(condition[3])
-                parsedBoundaryConditionTuple = list([tuple((side, condition[0]))])
+                boundNumberList.append(condition.boundNumber)
+                parsedBoundaryConditionTuple = list([tuple((side, condition.parsedValues))])
                 outputStr.append('//Non-default boundary condition for boundary ' + boundaryName + '\n')
-                if condition[2] == 0:
+                if condition.btype == 0:
                     name = 'Block' + str(blockNumber) + 'DirichletBound' + str(side) + '_' + str(counter)
                     outputStr.append(self.generateDirichlet(blockNumber, name, parsedBoundaryConditionTuple))
                     arrWithFunctionNames.append(name)
@@ -577,7 +595,7 @@ class generator1D(abstractGenerator):
                     name = 'Block' + str(blockNumber) + 'NeumannBound' + str(side) + '_' + str(counter)
                     outputStr.append(self.generateNeumann(blockNumber, name, parsedEquationsList, variables, parsedBoundaryConditionTuple))
                     arrWithFunctionNames.append(name)
-                sideMap.update({"userBound"+str(condition[3]):bfmLen})
+                sideMap.update({"userBound"+str(condition.boundNumber):bfmLen})
                 bfmLen += 1
                 counter += 1
             blockFunctionMap.update({sideName:sideMap}) 
@@ -655,17 +673,17 @@ class generator2D(abstractGenerator):
             #Если условие Дирихле, то используем производные по t,
             #если Неймановское условие --- то сами значения.
             if bound.btype == 0:
-                values = bound.derivative
+                values = list(bound.derivative)
             elif bound.btype == 1:
-                values = bound.values
+                values = list(bound.values)
 #                 Исправление понятия Неймановского условия
                 if region.side == 0 or region.side == 2:
                     for idx, value in enumerate(values):
                         values.pop(idx)
                         values.insert(idx, '-(' + value + ')')
-            outputValues = list(values)    
-            boundaryCondition = {'values': outputValues, 'type': bound.btype, 'side': region.side, 'boundNumber': region.boundNumber, 'ranges': boundaryRanges}
-            boundaryConditionList.append(boundaryCondition)
+            NeumannValues = list(values) 
+            bCond = BoundCondition(NeumannValues, bound.btype, region.side, boundaryRanges, region.boundNumber)
+            boundaryConditionList.append(bCond)
         return blockRanges, boundaryConditionList
     
     def generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
@@ -689,7 +707,7 @@ class generator2D(abstractGenerator):
     def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockRanges, boundaryConditionList):
         parser = MathExpressionParser()
         variables = parser.getVariableList(self.system)
-        parsedBoundaryConditionDictionary, parsedEquationsList = self.createPBCDandPEL(boundaryConditionList, parser, variables)
+        parsedBConditionDict, parsedEquationsList = self.createPBCDandPEL(boundaryConditionList, parser, variables)
         
         outputStr = list(self.generateDefaultBoundaryFunction(blockNumber, parsedEquationsList))
         intro = '\n//=============================OTHER BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
@@ -725,36 +743,36 @@ class generator2D(abstractGenerator):
             sideMap = {"default":bfmLen}
             bfmLen += 1
             #Генерируем функции для всех заданных условий и кладем их имена в массив
-            if side not in parsedBoundaryConditionDictionary:
+            if side not in parsedBConditionDict:
                 blockFunctionMap.update({sideName:sideMap})
                 continue
             counter = 0
             #Это список номеров граничных условий для данной стороны side. Нужен для исключения повторяющихся функций,
             #т.к. на одну сторону в разных местах м.б. наложено одно и то же условие
             boundNumberList = list()
-            for condition in parsedBoundaryConditionDictionary[side]:
+            for condition in parsedBConditionDict[side]:
                 #Если для граничного условия с таким номером функцию еще не создавали, то создать, иначе - не надо.
-                if condition[3] in boundNumberList:
+                if condition.boundNumber in boundNumberList:
                     continue
-                boundNumberList.append(condition[3])
-                parsedBoundaryConditionTuple = list([tuple((side, condition[0]))])
+                boundNumberList.append(condition.boundNumber)
+                parsedBoundaryConditionTuple = list([tuple((side, condition.parsedValues))])
                 outputStr.append('//Non-default boundary condition for boundary ' + boundaryName + '\n')
-                if condition[2] == 0:
+                if condition.btype == 0:
                     name = 'Block' + str(blockNumber) + 'DirichletBound' + str(side) + '_' + str(counter)
-                    outputStr.append(self.generateDirichlet(blockNumber, name,parsedBoundaryConditionTuple))
+                    outputStr.append(self.generateDirichlet(blockNumber, name, parsedBoundaryConditionTuple))
                     arrWithFunctionNames.append(name)
                 else:
                     name = 'Block' + str(blockNumber) + 'NeumannBound' + str(side) + '_' + str(counter)
                     outputStr.append(self.generateNeumann(blockNumber, name, parsedEquationsList, variables, parsedBoundaryConditionTuple))
                     arrWithFunctionNames.append(name)
-                sideMap.update({"userBound"+str(condition[3]):bfmLen})
+                sideMap.update({"userBound"+str(condition.boundNumber):bfmLen})
                 bfmLen += 1
                 counter += 1
             blockFunctionMap.update({sideName:sideMap}) 
-        outputStr.extend(self.generateVertexFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBoundaryConditionDictionary))
+        outputStr.extend(self.generateVertexFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBConditionDict))
         return ''.join(outputStr), blockFunctionMap
     
-    def generateVertexFunctions(self, blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBoundaryConditionDictionary):
+    def generateVertexFunctions(self, blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBConditionDict):
 #         blockRanges --- это словарь {'min' : [x_min,y_min,z_min], 'max' : [x_max,y_max,z_max]}
 #         parsedBoundaryConditionDictionary --- это словарь вида {Номер границы : [(распарсенное условие 1, [4 или 2 координаты краев части 1 границы], Тип условия),
 #                                                                                  (распарсенное условие 2, [4 или 2 координаты краев части 2 границы], Тип условия), ...]}
@@ -777,24 +795,24 @@ class generator2D(abstractGenerator):
             type1 = 1
             type2 = 1
             
-            if Vertex[0] in parsedBoundaryConditionDictionary:
-                bound1CondList = parsedBoundaryConditionDictionary[Vertex[0]]
+            if Vertex[0] in parsedBConditionDict:
+                bound1CondList = parsedBConditionDict[Vertex[0]]
                 for boundCondition in bound1CondList:
-                    a = set(boundCondition[1])
+                    a = set(boundCondition.boundaryCoordinates)
                     if not a.isdisjoint(c):
-                        bound1CondValue = boundCondition[0]
+                        bound1CondValue = boundCondition.parsedValues
 #                             Запоминаем типы условий, чтобы потом генерировать либо Дирихле либо Неймана!
-                        type1 = boundCondition[2]
+                        type1 = boundCondition.btype
                         if type1 != 0 and type1 != 1:
                             raise AttributeError("Type of boundary condition should be equal either 0 or 1!")
                         break
-            if Vertex[1] in parsedBoundaryConditionDictionary:
-                bound2CondList = parsedBoundaryConditionDictionary[Vertex[1]]
+            if Vertex[1] in parsedBConditionDict:
+                bound2CondList = parsedBConditionDict[Vertex[1]]
                 for boundCondition in bound2CondList:
-                    a = set(boundCondition[1])
+                    a = set(boundCondition.boundaryCoordinates)
                     if not a.isdisjoint(c):
-                        bound2CondValue = boundCondition[0]
-                        type2 = boundCondition[2]
+                        bound2CondValue = boundCondition.parsedValues
+                        type2 = boundCondition.btype
                         if type2 != 0 and type2 != 1:
                             raise AttributeError("Type of boundary condition should be equal either 0 or 1!")
                         break
@@ -899,17 +917,17 @@ class generator3D(abstractGenerator):
             #Если условие Дирихле, то используем производные по t,
             #если Неймановское условие --- то сами значения.
             if bound.btype == 0:
-                values = bound.derivative
+                values = list(bound.derivative)
             elif bound.btype == 1:
-                values = bound.values
+                values = list(bound.values)
 #                 Исправление понятия Неймановского условия
                 if region.side == 0 or region.side == 2 or region.side == 4:
                     for idx, value in enumerate(values):
                         values.pop(idx)
                         values.insert(idx, '-(' + value + ')')
-            outputValues = list(values)    
-            boundaryCondition = {'values': outputValues, 'type': bound.btype, 'side': region.side, 'boundNumber': region.boundNumber, 'ranges': boundaryRanges}
-            boundaryConditionList.append(boundaryCondition)
+            NeumannValues = list(values) 
+            bCond = BoundCondition(NeumannValues, bound.btype, region.side, boundaryRanges, region.boundNumber)
+            boundaryConditionList.append(bCond)
         return blockRanges, boundaryConditionList
     
     def generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
@@ -987,10 +1005,10 @@ class generator3D(abstractGenerator):
             boundNumberList = list()
             for condition in parsedBoundaryConditionDictionary[side]:
                 #Если для граничного условия с таким номером функцию еще не создавали, то создать, иначе - не надо.
-                if condition[3] in boundNumberList:
+                if condition.boundNumber in boundNumberList:
                     continue
-                boundNumberList.append(condition[3])
-                parsedBoundaryConditionTuple = list([tuple((side, condition[0]))])
+                boundNumberList.append(condition.boundNumber)
+                parsedBoundaryConditionTuple = list([tuple((side, condition.parsedValues))])
                 raise AttributeError("Three-dimensional case is difficult!")
                 counter += 1
             blockFunctionMap.update({sideName:sideMap}) 
