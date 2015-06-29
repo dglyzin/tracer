@@ -98,28 +98,28 @@
             "Name": "Neumann example1", 
             "Type": 1, 
             "Values": [
-                "sin(10*3.1415*(1-y))"
+                "sin(2*3.1415*y)"
             ]
         },
         {
             "Name": "Neumann example2", 
             "Type": 1, 
             "Values": [
-                "sin(10*3.1415*y)"
+                "sin(2*3.1415*y)"
             ]
         },
         {
             "Name": "Neumann example3", 
             "Type": 1, 
             "Values": [
-                "sin(10*3.1415*(1-x))"
+                "sin(2*3.1415*x)"
             ]
         },
         {
             "Name": "Neumann example4", 
             "Type": 1, 
             "Values": [
-                "sin(10*3.1415*x)"
+                "sin(2*3.1415*x)"
             ]
         }
     ], 
