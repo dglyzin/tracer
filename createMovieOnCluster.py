@@ -8,14 +8,21 @@
 
 import struct
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import sys
 import subprocess
 
 from domainmodel.model import Model
 import getpass
-import paramiko, socket
+#import paramiko, socket
 from os import listdir
+
+import multiprocessing as mp
+from multiprocessing import Pool
+
+import time
 
 def readDomFile(projectDir):
     #reading dom file
@@ -73,7 +80,7 @@ def readDomFile(projectDir):
         dom.read(2 * 2 * total)
     dom.close()
     
-    return info
+    return info, cellSize, dx, dy, dz
 
 
 
@@ -83,16 +90,179 @@ def getSortedBinaryFileList(projectDir):
     binTime = np.array([float(f.split('.bin')[0].split('project-')[1])  for f in unsortedBinFileList])    
     #print np.argsort(binTime)
     binFileList = [ unsortedBinFileList[idx] for idx in np.argsort(binTime)]
-    print binFileList
+    #print binFileList
     
     return binFileList
   
   
   
+  
+def calcAreaCharacteristics(info):
+    minZ = 0
+    maxZ = 0
+    
+    minY = 0
+    maxY = 0
+    
+    minX = 0
+    maxX = 0
+    
+    for i in range( len(info) ) :
+        if info[i][2] < minZ :
+            minZ = info[i][2]
+    
+        if info[i][2] + info[i][5] > maxZ :
+            maxZ = info[i][2] + info[i][5]
+    
+        if info[i][1] < minY :
+            minY = info[i][1]
+    
+        if info[i][1] + info[i][4] > maxY :
+            maxY = info[i][1] + info[i][4]
+    
+        if info[i][0] < minX :
+            minX = info[i][2]
+    
+        if info[i][0] + info[i][3] > maxX :
+            maxX = info[i][0] + info[i][3]
+    
+    
+    countZ = maxZ - minZ
+    countY = maxY - minY
+    countX = maxX - minX
+    
+    
+    offsetZ = -minZ
+    offsetY = -minY
+    offsetX = -minX
+    
+    return countZ, countY, countX, offsetZ, offsetY, offsetX
+  
+  
+  
+  
+  
+def readBinFile(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize):
+    data = np.zeros((countZ, countY, countX, cellSize), dtype=np.float64)
+    
+    bin = open(projectDir+"/"+binFile, 'rb')
+    m253, = struct.unpack('b', bin.read(1))
+    versionMajor, = struct.unpack('b', bin.read(1))
+    versionMinor, = struct.unpack('b', bin.read(1))
+    time, = struct.unpack('d', bin.read(8))
+
+    for j in range( len(info) ) :
+        countZBlock = info[j][5]
+        countYBlock = info[j][4]
+        countXBlock = info[j][3]
+    
+        coordZBlock = info[j][2] - offsetZ
+        coordYBlock = info[j][1] - offsetY
+        coordXBlock = info[j][0] - offsetX
+    
+        total = countZBlock * countYBlock * countXBlock * cellSize
+    
+        blockData = np.fromfile(bin, dtype=np.float64, count=total)
+        blockData = blockData.reshape(countZBlock, countYBlock, countXBlock, cellSize);
+        data[coordZBlock : coordZBlock + countZBlock, coordYBlock : coordYBlock + countYBlock, coordXBlock : coordXBlock + countXBlock, :] = blockData[:, :, :, :]
+    bin.close()
+    
+    return data
+  
+  
+  
+  
+  
+def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize):
+    maxValue = sys.float_info.min
+    minValue = sys.float_info.max
+    
+    for idx, binFile in enumerate(binFileList):
+        data = readBinFile(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
+       
+        tmpMaxValue = np.max(data)
+        tmpMinValue = np.min(data)
+        
+        if tmpMaxValue > maxValue:
+            maxValue = tmpMaxValue
+            
+        if tmpMinValue < minValue:
+            minValue = tmpMinValue
+           
+    return maxValue, minValue
+  
+  
+  
+  
+def createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx):
+   #for idx, binFile in enumerate(binFileList):
+    data = readBinFile(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
+    
+    xs = np.arange(0, countX)*dx
+    ys = np.arange(0, countY)*dy
+
+
+    X,Y = np.meshgrid(xs,ys)
+    layer = data[0,:,:,0]
+
+    plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
+    plt.colorbar()
+  
+    filename = projectDir+"image-" + str(idx) + ".png"        
+    plt.savefig(filename, format='png')        
+    #print 'save #', idx, binFile, "->", filename
+    plt.clf()
+        
+        
+        
+        
+def createVideoFile(projectDir):
+    print "Creating video file:"
+    command = "avconv -r 5 -i "+projectDir+"image-%d.png -b:v 1000k "+projectDir+"project.mp4"
+    print command
+    PIPE = subprocess.PIPE
+    subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
+    print "Done" 
+
+  
+  
+  
+def createMovie(projectDir):
+    info, cellSize, dx, dy, dz = readDomFile(projectDir)
+    
+    countZ, countY, countX, offsetZ, offsetY, offsetX = calcAreaCharacteristics(info)
+    
+    binFileList = getSortedBinaryFileList(projectDir)
+    
+    t1 = time.time()
+    maxValue, minValue = calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
+    t2 = time.time()
+    print "Расчет минимума / максимума: ", t2 - t1
+    
+    print maxValue, minValue
+    
+    #t1 = time.time()
+    #pool = mp.Pool(processes=16)
+    #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
+    #t2 = time.time()
+    #print "Создание изображений: ", t2 - t1
+    
+    #for idx, binFile in enumerate(binFileList):
+        #createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)
+    
+    #createVideoFile(projectDir)
+  
+  
+  
 if __name__ == "__main__":
+    t1 = time.time()
+    
     if len(sys.argv)==1:
-        print "Please specify a json file to read"
+        print "Please specify a project directory"
     else:
-        jsonFile = sys.argv[1]
-        #createMovie(jsonFile)
-        getSortedBinaryFileList(jsonFile)
+        projectDir = sys.argv[1]
+        createMovie(projectDir)
+        
+    t2 = time.time()
+    
+    print "Общее время выполнения: ", t2 - t1

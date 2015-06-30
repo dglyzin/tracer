@@ -38,35 +38,35 @@
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
-                    "Side": 0, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
+                    "Side": 3, 
+                    "xfrom": 0.3, 
+                    "xto": 0.7, 
                     "yfrom": 0.0, 
-                    "yto": 1.0                    
+                    "yto": 0.0                    
                 },
                 {
                     "BoundNumber": 1, 
-                    "Side": 1, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
+                    "Side": 2, 
+                    "xfrom": 0.3, 
+                    "xto": 0.7, 
                     "yfrom": 0.0, 
-                    "yto": 1.0                    
+                    "yto": 0.0                    
                 },
                 {
                     "BoundNumber": 2, 
-                    "Side": 2, 
+                    "Side": 0, 
                     "xfrom": 0.0, 
-                    "xto": 1.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
+                    "xto": 0.0, 
+                    "yfrom": 0.3, 
+                    "yto": 0.7                    
                 },
                 {
-                    "BoundNumber": 3, 
-                    "Side": 3, 
+                    "BoundNumber": 2, 
+                    "Side": 1, 
                     "xfrom": 0.0, 
-                    "xto": 1.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
+                    "xto": 0.0, 
+                    "yfrom": 0.3, 
+                    "yto": 0.7                    
                 }
             ], 
             "InitialRegions": []
@@ -88,38 +88,37 @@
             ], 
             "ParamValues": [
                 {
-                    "a": 2
+                    "a": 1.0
                 }   
             ]
         }
     ], 
     "Bounds": [
         {
+            "Name": "Dirichlet example1", 
+            "Type": 0, 
+            "Values": [
+                "2*sin(10*3.1415*t)"
+            ],
+	    "Derivative": [
+                "2*10*3.1415*cos(10*3.1415*t)"
+            ]
+        },
+        {
+            "Name": "Dirichlet example1", 
+            "Type": 0, 
+            "Values": [
+                "-2*sin(10*3.1415*t)"
+            ],
+	    "Derivative": [
+                "-2*10*3.1415*cos(10*3.1415*t)"
+            ]
+        },
+        {
             "Name": "Neumann example1", 
             "Type": 1, 
             "Values": [
-                "sin(2*3.1415*y)"
-            ]
-        },
-        {
-            "Name": "Neumann example2", 
-            "Type": 1, 
-            "Values": [
-                "sin(2*3.1415*y)"
-            ]
-        },
-        {
-            "Name": "Neumann example3", 
-            "Type": 1, 
-            "Values": [
-                "sin(2*3.1415*x)"
-            ]
-        },
-        {
-            "Name": "Neumann example4", 
-            "Type": 1, 
-            "Values": [
-                "sin(2*3.1415*x)"
+                "-1.0"
             ]
         }
     ], 
