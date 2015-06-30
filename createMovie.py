@@ -16,12 +16,16 @@ import getpass
 import paramiko, socket
 from os import listdir
   
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import cm
 #from matplotlib import colorbar
   
 def savePng(filename, X, Y, layer, minTemp, maxTemp):
     figure = Figure()
+    canvas = FigureCanvas(figure)
     axes = figure.add_subplot(111)
     figure.subplots_adjust(right=0.8)
     cbaxes = figure.add_axes([0.85, 0.15, 0.05, 0.7])
@@ -36,7 +40,9 @@ def savePng(filename, X, Y, layer, minTemp, maxTemp):
 
     figure.colorbar(cb, cax=cbaxes)
     ###    
+    canvas.draw()
     figure.savefig(filename, format='png')            
+    figure.clear()
   
 def generatePng(projectDir):    
     #reading dom file
