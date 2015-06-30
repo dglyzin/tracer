@@ -7,7 +7,7 @@
 '''
 import struct
 import numpy as np
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import sys
 import subprocess
 
@@ -16,7 +16,28 @@ import getpass
 import paramiko, socket
 from os import listdir
   
-    
+from matplotlib.figure import Figure
+from matplotlib import cm
+#from matplotlib import colorbar
+  
+def savePng(filename, X, Y, layer, minTemp, maxTemp):
+    figure = Figure()
+    axes = figure.add_subplot(111)
+    figure.subplots_adjust(right=0.8)
+    cbaxes = figure.add_axes([0.85, 0.15, 0.05, 0.7])
+
+    cmap=cm.jet
+    minTemp = layer.min()
+    maxTemp = layer.max()
+
+    cb = axes.pcolormesh(X, Y, layer, vmin=minTemp, vmax=maxTemp, cmap=cmap)
+    axes.axis([X.min(), X.max(), Y.min(), Y.max()])
+    axes.set_aspect('equal')
+
+    figure.colorbar(cb, cax=cbaxes)
+    ###    
+    figure.savefig(filename, format='png')            
+  
 def generatePng(projectDir):    
     #reading dom file
     dom = open(projectDir+"/project.dom", 'rb')    
@@ -191,14 +212,13 @@ def generatePng(projectDir):
     
         X,Y = np.meshgrid(xs,ys)
         layer = data[0,:,:,0]
-    
-        plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
-        plt.colorbar()
-      
+        
         filename = projectDir+"/image-" + str(idx) + ".png"        
-        plt.savefig(filename, format='png')        
+        savePng(filename, X, Y, layer, tmpMinValue, tmpMaxValue)
+        
+        
         print 'save #', idx, binFile, "->", filename
-        plt.clf()
+        
         
 
     
@@ -269,13 +289,13 @@ def createVideoFile(projectDir):
 
 def createMovie(jsonFile):
     projectDir = jsonFile.split('.json')[0]
-    createDir(projectDir)
-    errCode, message = getDataFromCluster(jsonFile, projectDir)
-    if errCode!=0:
-        print message
-        return errCode
+    #createDir(projectDir)
+    #errCode, message = getDataFromCluster(jsonFile, projectDir)
+    #if errCode!=0:
+    #    print message
+    #    return errCode
     generatePng(projectDir)
-    createVideoFile(projectDir)
+    #createVideoFile(projectDir)
 
 if __name__ == "__main__":
     if len(sys.argv)==1:
