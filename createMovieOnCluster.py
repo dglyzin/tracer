@@ -10,7 +10,9 @@ import struct
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
-import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib import cm
 import sys
 import subprocess
 
@@ -23,6 +25,31 @@ import multiprocessing as mp
 from multiprocessing import Pool
 
 import time
+
+def savePng(filename, X, Y, layer, maxValue, minValue):
+    figure = Figure()
+    canvas = FigureCanvas(figure)
+    axes = figure.add_subplot(111)
+    figure.subplots_adjust(right=0.8)
+    cbaxes = figure.add_axes([0.85, 0.15, 0.05, 0.7])
+
+    cmap=cm.jet
+    #minTemp = layer.min()
+    #maxTemp = layer.max()
+
+    cb = axes.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue, cmap=cmap)
+    axes.axis([X.min(), X.max(), Y.min(), Y.max()])
+    axes.set_aspect('equal')
+
+    figure.colorbar(cb, cax=cbaxes)
+    ###    
+    canvas.draw()
+    figure.savefig(filename, format='png')            
+    figure.clear()
+    
+    
+    
+    
 
 def readDomFile(projectDir):
     #reading dom file
@@ -205,13 +232,15 @@ def createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offset
     X,Y = np.meshgrid(xs,ys)
     layer = data[0,:,:,0]
 
-    plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
-    plt.colorbar()
+    #plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
+    #plt.colorbar()
   
     filename = projectDir+"image-" + str(idx) + ".png"        
-    plt.savefig(filename, format='png')        
+    #plt.savefig(filename, format='png')        
     #print 'save #', idx, binFile, "->", filename
-    plt.clf()
+    #plt.clf()
+    
+    savePng(filename, X, Y, layer, maxValue, minValue)
         
         
         
@@ -241,16 +270,16 @@ def createMovie(projectDir):
     
     print maxValue, minValue
     
-    #t1 = time.time()
-    #pool = mp.Pool(processes=16)
-    #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
-    #t2 = time.time()
-    #print "Создание изображений: ", t2 - t1
+    t1 = time.time()
+    pool = mp.Pool(processes=4)
+    [pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
+    t2 = time.time()
+    print "Создание изображений: ", t2 - t1
     
     #for idx, binFile in enumerate(binFileList):
         #createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)
     
-    #createVideoFile(projectDir)
+    createVideoFile(projectDir)
   
   
   
