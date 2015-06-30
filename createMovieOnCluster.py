@@ -221,7 +221,7 @@ def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, o
   
   
   
-def createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx):
+def createPng( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) ):
    #for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     
@@ -272,12 +272,15 @@ def createMovie(projectDir):
     
     t1 = time.time()
     pool = mp.Pool(processes=4)
-    [pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
+    #pool = mp.Semaphore(4)
+    pool.map(createPng, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
+    #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
     t2 = time.time()
-    print "Создание изображений: ", t2 - t1
+    
     
     #for idx, binFile in enumerate(binFileList):
-        #createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)
+    #    createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)
+    print "Создание изображений: ", t2 - t1
     
     createVideoFile(projectDir)
   
