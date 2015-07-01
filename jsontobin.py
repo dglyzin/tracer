@@ -36,8 +36,8 @@ def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, c
     bm = BinaryModel(partModel)
     bm.saveFuncs(OutputFuncFile)
     bm.saveDomain(OutputDataFile)
-    bm.compileFuncs(OutputFuncFile)
-    bm.createRunFile(OutputRunFile,OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
+    bm.compileFuncs(OutputFuncFile)    
+    bm.createRunFile(OutputRunFile,OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFileName)
 
                 
 if __name__=='__main__':

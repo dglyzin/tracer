@@ -388,11 +388,13 @@ class BinaryModel(object):
 
 
     def createRunFile(self, OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
+        print "generating launcher script..."
         flag = 0
         if finishTimeProvided: flag+=1
         else: finishTime = -1.1
         if continueEnabled: flag +=2
         else: continueFileName = "n_a"
+        print OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName
         
         runFile = open(OutputRunFile, "w")
         conn = self.dmodel.connection
