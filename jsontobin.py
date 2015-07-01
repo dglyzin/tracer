@@ -25,6 +25,9 @@ def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, c
     OutputDataFile = projectName+".dom"
     OutputFuncFile = projectName+".cpp"
     OutputRunFile = projectName+".sh"
+
+    #TODO find last bin file if continueEnabled and not continueFnameProvided
+
     model = Model()
     model.loadFromFile(inputFile)
     print "Max derivative order is ", model.getMaxDerivOrder()
@@ -36,8 +39,8 @@ def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, c
     bm = BinaryModel(partModel)
     bm.saveFuncs(OutputFuncFile)
     bm.saveDomain(OutputDataFile)
-    bm.compileFuncs(OutputFuncFile)    
-    bm.createRunFile(OutputRunFile,OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFileName)
+    bm.compileFuncs(OutputFuncFile)
+    bm.createRunFile(OutputRunFile,OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
 
                 
 if __name__=='__main__':
