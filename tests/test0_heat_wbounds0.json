@@ -43,7 +43,8 @@
                     "yfrom": 0.5, 
                     "yto": 1.5
 			    }
-			]
+			],
+	    "EquationRegions":[]
         }
     ], 
     "Interconnects": [], 

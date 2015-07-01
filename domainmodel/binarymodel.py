@@ -387,13 +387,19 @@ class BinaryModel(object):
         print "compilation finished"
 
 
-    def createRunFile(self, OutputRunFile, DomFileName):
+    def createRunFile(self, OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
+        flag = 0
+        if finishTimeProvided: flag+=1
+        else: finishTime = -1.1
+        if continueEnabled: flag +=2
+        else: continueFileName = "n_a"
+        
         runFile = open(OutputRunFile, "w")
         conn = self.dmodel.connection
         projFolder = conn.workspace+"/"+self.dmodel.projectName
         nodeCount = self.dmodel.getNodeCount()
         runFile.write("echo Welcome to generated kernel launcher!\n")
         runFile.write("export LD_LIBRARY_PATH="+projFolder+":$LD_LIBRARY_PATH\n")
-        runFile.write("srun -N "+str(nodeCount)+ " -p debug "+conn.solverExecutable+" "+DomFileName+"\n")
+        runFile.write("srun -N "+str(nodeCount)+ " -p debug "+conn.solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
         runFile.close()
 

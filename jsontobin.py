@@ -11,13 +11,13 @@
 
 model -> mapped model -> domain.dom+funcs.cpp+run.sh
 '''
-import sys
+import argparse
 from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel
 from domainmodel.decomposer import partitionAndMap
 
-def createBinaries(InputFile):    
-    projectName = InputFile.split('.json')[0]
+def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
+    projectName = inputFile.split('.json')[0]
     if projectName == '':
         print "Bad file name"
         return
@@ -26,7 +26,7 @@ def createBinaries(InputFile):
     OutputFuncFile = projectName+".cpp"
     OutputRunFile = projectName+".sh"
     model = Model()
-    model.loadFromFile(InputFile)
+    model.loadFromFile(inputFile)
     print "Max derivative order is ", model.getMaxDerivOrder()
     if model.isMapped:
         partModel = model
@@ -37,12 +37,25 @@ def createBinaries(InputFile):
     bm.saveFuncs(OutputFuncFile)
     bm.saveDomain(OutputDataFile)
     bm.compileFuncs(OutputFuncFile)
-    bm.createRunFile(OutputRunFile,OutputDataFile)
+    bm.createRunFile(OutputRunFile,OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
 
                 
 if __name__=='__main__':
-    if len(sys.argv)==1:
-        print "Please specify a json file to read"
-    else:
-        InputFile = sys.argv[1]  
-        createBinaries(InputFile)
+    parser = argparse.ArgumentParser(description='Processing json file on a remote cluster.', epilog = "Have fun!")
+    #mandatory argument, json filename
+    parser.add_argument('fileName', type = str, help = "local json file to process")
+    #optional argument, exactly one float to override json finish time
+    parser.add_argument('-finish', type=float, help = "new finish time to override json value")
+    #optional argument with one or no argument, filename to continue computations from
+    #if no filename is provided with this option, the last state is taken
+    parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
+    args = parser.parse_args()
+  
+    inputFile = args.fileName
+    finishTime = args.finish
+    finishTimeProvided = not (finishTime is None)
+    continueFileName = args.cont  
+    continueEnabled = not (continueFileName is None)
+    continueFnameProvided = not (continueFileName == "/")
+    
+    createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
