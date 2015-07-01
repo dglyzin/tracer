@@ -16,8 +16,12 @@ from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel
 from domainmodel.decomposer import partitionAndMap
 
+from fileutils import getSortedBinFileList
+import os
+
 def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
-    projectName = inputFile.split('.json')[0]
+    projectDir = os.path.dirname(inputFile)
+    projectName, _ = os.path.splitext(inputFile)    
     if projectName == '':
         print "Bad file name"
         return
@@ -26,7 +30,8 @@ def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, c
     OutputFuncFile = projectName+".cpp"
     OutputRunFile = projectName+".sh"
 
-    #TODO find last bin file if continueEnabled and not continueFnameProvided
+    if continueEnabled and not continueFnameProvided:
+        continueFileName = getSortedBinFileList(projectDir)[-1]
 
     model = Model()
     model.loadFromFile(inputFile)

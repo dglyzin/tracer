@@ -25,6 +25,7 @@ import multiprocessing as mp
 from multiprocessing import Pool
 
 import time
+from fileutils import getSortedBinFileList
 
 def savePng(filename, X, Y, layer, maxValue, minValue, currentTime):
     figure = Figure()
@@ -113,18 +114,6 @@ def readDomFile(projectDir):
     return info, cellSize, dx, dy, dz
 
 
-
-def getSortedBinaryFileList(projectDir):
-    #get sorted binary file list
-    unsortedBinFileList =  [ f for f in listdir(projectDir) if f.endswith(".bin") ]
-    binTime = np.array([float(f.split('.bin')[0].split('project-')[1])  for f in unsortedBinFileList])    
-    #print np.argsort(binTime)
-    binFileList = [ unsortedBinFileList[idx] for idx in np.argsort(binTime)]
-    #print binFileList
-    
-    return binFileList
-  
-  
   
   
 def calcAreaCharacteristics(info):
@@ -273,7 +262,7 @@ def createMovie(projectDir):
     print command
     subprocess.call(command, shell=True)
     
-    binFileList = getSortedBinaryFileList(projectDir)
+    binFileList = getSortedBinFileList(projectDir)
     
     t1 = time.time()
     maxValue, minValue = calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)

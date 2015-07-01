@@ -21,7 +21,7 @@ matplotlib.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import cm
-#from matplotlib import colorbar
+from fileutils import getSortedBinFileList
   
 def savePng(filename, X, Y, layer, minTemp, maxTemp):
     figure = Figure()
@@ -101,12 +101,7 @@ def generatePng(projectDir):
     dom.close()
     #dom file read
     
-    #get sorted binary file list
-    unsortedBinFileList =  [ f for f in listdir(projectDir) if f.endswith(".bin") ]
-    binTime = np.array([float(f.split('.bin')[0].split('project-')[1])  for f in unsortedBinFileList])    
-    print np.argsort(binTime)
-    binFileList = [ unsortedBinFileList[idx] for idx in np.argsort(binTime)]
-    print binFileList
+    binFileList =  getSortedBinFileList(projectDir)
     
     #
     minZ = 0
