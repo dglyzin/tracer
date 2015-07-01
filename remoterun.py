@@ -15,7 +15,7 @@ import paramiko
 
 from domainmodel.model import Model
 
-def remoteProjectRun(InputFile):
+def remoteProjectRun(InputFile, cleanRemoteFolder):
     #2 Get connection data and copy json to the cluster
     model = Model()
     model.loadFromFile(InputFile)
@@ -47,8 +47,11 @@ def remoteProjectRun(InputFile):
             stdin, stdout, stderr = client.exec_command('mkdir  '+projFolder)
             print "Folder created."
         else:
-            stdin, stdout, stderr = client.exec_command('rm -rf '+projFolder+'/*')
-            print "Folder cleaned."
+            if cleanRemoteFolder:  
+                stdin, stdout, stderr = client.exec_command('rm -rf '+projFolder+'/*')
+                print "Folder cleaned."                
+            else:
+                print "Folder exists, no cleaning ordered."                      
         cftp=client.open_sftp()
         cftp.put(InputFile, projFolder+"/project.json")
         cftp.close()
@@ -85,32 +88,14 @@ def remoteProjectRun(InputFile):
 
 
 
-    '''projectName = "brusselator_1block"
-    InputFile = projectName+".json"
-    OutputDataFile = projectName+".dom"
-    OutputFuncFile = projectName+".cpp"
-    model = Model()
-    model.loadFromFile(InputFile)
-    print "Max derivative order is ", model.getMaxDerivOrder()
-    if model.isMapped:
-        partModel = model
-    else:
-        partModel = partitionAndMap(model)
-
-    bm = BinaryModel(partModel)
-    bm.saveDomain(OutputDataFile)
-    bm.saveFuncs(OutputFuncFile)
-    bm.compileFuncs(OutputFuncFile)
-    #model.saveBinaryData(OutputDataFile, OutputFuncFile)
-'''
-
 
 if __name__=='__main__':
+    cleanRemoteFolder = True
     #1 Get file name from command line
     if len(sys.argv)==1:
         print "Please specify a json file to read"
     else:
         InputFile = sys.argv[1]
-        remoteProjectRun(InputFile)
+        remoteProjectRun(InputFile, cleanRemoteFolder)
 ##    remoteProjectRun("brus_test.json")
 
