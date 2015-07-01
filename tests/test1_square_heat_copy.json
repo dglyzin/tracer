@@ -9,15 +9,15 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 1.0, 
+    "FinishTime": 10.0, 
     "TimeStep": 0.000001, 
-    "SaveInterval": 0.002, 
+    "SaveInterval": 0.005, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.005, 
-        "y": 0.005, 
+        "x": 0.01, 
+        "y": 0.01, 
         "z": 1
     }, 
     "Blocks": [
@@ -35,40 +35,7 @@
             "DefaultEquation": 0, 
             "DefaultInitial": 0,
             "EquationRegions": [],
-            "BoundRegions": [
-                {
-                    "BoundNumber": 0, 
-                    "Side": 3, 
-                    "xfrom": 0.3, 
-                    "xto": 0.7, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
-                },
-                {
-                    "BoundNumber": 1, 
-                    "Side": 2, 
-                    "xfrom": 0.3, 
-                    "xto": 0.7, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
-                },
-                {
-                    "BoundNumber": 2, 
-                    "Side": 0, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 0.3, 
-                    "yto": 0.7                    
-                },
-                {
-                    "BoundNumber": 2, 
-                    "Side": 1, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 0.3, 
-                    "yto": 0.7                    
-                }
-            ], 
+            "BoundRegions": [], 
             "InitialRegions": []
         }
     ], 
@@ -81,52 +48,30 @@
                 "y"
             ], 
             "System": [
-                "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
+                "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}]+D[U,{y,2}])",
+                "V'=b*U-U*U*V+c*(D[V,{x,2}]+D[V,{y,2}])"
             ], 
             "Params": [
-	        "a"
+	        "a",
+	        "b",
+	        "c"
             ], 
             "ParamValues": [
                 {
-                    "a": 1.0
+                    "a": 1.0,
+                    "b": 3.4,
+                    "c": 0.002
                 }   
             ]
         }
     ], 
-    "Bounds": [
-        {
-            "Name": "Dirichlet example1", 
-            "Type": 0, 
-            "Values": [
-                "2*sin(10*3.1415*t)"
-            ],
-	    "Derivative": [
-                "2*10*3.1415*cos(10*3.1415*t)"
-            ]
-        },
-        {
-            "Name": "Dirichlet example1", 
-            "Type": 0, 
-            "Values": [
-                "-2*sin(10*3.1415*t)"
-            ],
-	    "Derivative": [
-                "-2*10*3.1415*cos(10*3.1415*t)"
-            ]
-        },
-        {
-            "Name": "Neumann example1", 
-            "Type": 1, 
-            "Values": [
-                "-5.0"
-            ]
-        }
-    ], 
+    "Bounds": [], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
-                "0.0"               
+                "0.5+y",
+                "1+5*x"
             ]
         }
     ], 

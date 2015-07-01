@@ -26,10 +26,13 @@ from multiprocessing import Pool
 
 import time
 
-def savePng(filename, X, Y, layer, maxValue, minValue):
+def savePng(filename, X, Y, layer, maxValue, minValue, currentTime):
     figure = Figure()
     canvas = FigureCanvas(figure)
-    axes = figure.add_subplot(111)
+    
+    t = str(currentTime)
+    
+    axes = figure.add_subplot(111, title=t)
     figure.subplots_adjust(right=0.8)
     cbaxes = figure.add_axes([0.85, 0.15, 0.05, 0.7])
 
@@ -240,7 +243,10 @@ def createPng( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offs
     #print 'save #', idx, binFile, "->", filename
     #plt.clf()
     
-    savePng(filename, X, Y, layer, maxValue, minValue)
+    t = binFile.split("-")[1]
+    t = t.split(".bin")[0]
+    
+    savePng(filename, X, Y, layer, maxValue, minValue, t)
         
         
         
@@ -249,8 +255,10 @@ def createVideoFile(projectDir):
     print "Creating video file:"
     command = "avconv -r 5 -i "+projectDir+"image-%d.png -b:v 1000k "+projectDir+"project.mp4"
     print command
-    PIPE = subprocess.PIPE
-    subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
+    #PIPE = subprocess.PIPE
+    #proc = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
+    #proc.wait()
+    subprocess.call(command, shell=True)
     print "Done" 
 
   
@@ -261,17 +269,19 @@ def createMovie(projectDir):
     
     countZ, countY, countX, offsetZ, offsetY, offsetX = calcAreaCharacteristics(info)
     
+    command = "rm " + projectDir + "image-*.png " + projectDir + "project.mp4"
+    print command
+    subprocess.call(command, shell=True)
+    
     binFileList = getSortedBinaryFileList(projectDir)
     
     t1 = time.time()
     maxValue, minValue = calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     t2 = time.time()
-    print "Расчет минимума / максимума: ", t2 - t1
-    
-    print maxValue, minValue
+    #print "Расчет минимума / максимума: ", t2 - t1
     
     t1 = time.time()
-    pool = mp.Pool(processes=4)
+    pool = mp.Pool(processes=16)
     #pool = mp.Semaphore(4)
     pool.map(createPng, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
     #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
@@ -280,7 +290,7 @@ def createMovie(projectDir):
     
     #for idx, binFile in enumerate(binFileList):
     #    createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)
-    print "Создание изображений: ", t2 - t1
+    #print "Создание изображений: ", t2 - t1
     
     createVideoFile(projectDir)
   
