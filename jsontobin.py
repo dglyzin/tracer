@@ -66,5 +66,5 @@ if __name__=='__main__':
     continueFileName = args.cont  
     continueEnabled = not (continueFileName is None)
     continueFnameProvided = not (continueFileName == "/")
-    
+    print "jsontobin input!", inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName
     createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
