@@ -78,7 +78,7 @@ def remoteProjectRun(inputFile, continueEnabled, optionalArgs):
         command = 'python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/'+remoteProjectFileName
         
         print command, optionalArgs
-        stdin, stdout, stderr = client.exec_command(command)
+        stdin, stdout, stderr = client.exec_command(command+optionalArgs)
         print stdout.read()
 
         #4 Run Solver binary on created files
