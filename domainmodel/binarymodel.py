@@ -103,6 +103,7 @@ class BinaryModel(object):
         pass
 
     def fill2dCompFuncs(self, funcArr, block, functionMap, blockSize):
+        print functionMap
         xc = blockSize[0]
         yc = blockSize[1]
         print "Filling 2d main function array."
@@ -111,7 +112,10 @@ class BinaryModel(object):
         if haloSize>1:
             raise AttributeError("Halosize>1 is not supported yet")
         #1 fill center funcs
-        funcArr[:] = functionMap["centerDefault"]
+        if "center_default" in functionMap:
+            funcArr[:] = functionMap["center_default"]
+        
+            
         for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["center"]:
             xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
             yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
@@ -124,7 +128,7 @@ class BinaryModel(object):
                 
         #side 0
         for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side0"]:            
-            yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
+            yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)            
             funcArr[yfromIdx:ytoIdx, 0] = funcIdx
         #side 1
         for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side1"]:            
@@ -135,7 +139,7 @@ class BinaryModel(object):
             xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
             funcArr[0, xfromIdx:xtoIdx] = funcIdx        
         #side 3
-        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side2"]:
+        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side3"]:
             xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
             funcArr[yc-1, xfromIdx:xtoIdx] = funcIdx
         

@@ -16,8 +16,8 @@
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.01, 
-        "y": 0.01, 
+        "x": 0.15, 
+        "y": 0.15, 
         "z": 1
     },
     "Params": [
@@ -248,6 +248,11 @@
     "Mapping": {
         "IsMapped": true, 
         "BlockMapping": [
+            [
+                0, 
+                "cpu", 
+                0
+            ],
             [
                 0, 
                 "cpu", 
