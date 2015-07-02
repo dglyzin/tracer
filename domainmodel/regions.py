@@ -19,15 +19,7 @@ class BoundRegion(object):
             self.zfrom = bdict["zfrom"]
             self.zto = bdict["zto"]
     
-    def getXrange(self, dx):
-        return int(self.xfrom/dx),int(self.xto/dx)  
-    
-    def getYrange(self, dy):
-        return int(self.yfrom/dy),int(self.yto/dy)
-    
-    def getZrange(self, dz):
-        return int(self.zfrom/dz),int(self.zto/dz)    
-    
+       
     def getPropertiesDict(self, dimension):
         propDict = OrderedDict([            
             ("BoundNumber", self.boundNumber),
@@ -56,15 +48,7 @@ class InitialRegion(object):
             self.zfrom = bdict["zfrom"]
             self.zto = bdict["zto"]
         
-    def getXrange(self, dx):
-        return int(self.xfrom/dx),int(self.xto/dx)  
-    
-    def getYrange(self, dy):
-        return int(self.yfrom/dy),int(self.yto/dy)
-    
-    def getZrange(self, dz):
-        return int(self.zfrom/dz),int(self.zto/dz)     
-    
+     
     
     def getPropertiesDict(self, dimension):
         propDict = OrderedDict([            
@@ -80,7 +64,6 @@ class InitialRegion(object):
             propDict.update({"zto":self.zto})
         return propDict  
 
-		
 class EquationRegion(object):
     def __init__(self, bdict, dimension):
         self.equationNumber = bdict["EquationNumber"]        
@@ -93,16 +76,7 @@ class EquationRegion(object):
             self.zfrom = bdict["zfrom"]
             self.zto = bdict["zto"]
         
-    def getXrange(self, dx):
-        return int(self.xfrom/dx),int(self.xto/dx)  
-    
-    def getYrange(self, dy):
-        return int(self.yfrom/dy),int(self.yto/dy)
-    
-    def getZrange(self, dz):
-        return int(self.zfrom/dz),int(self.zto/dz)     
-    
-    
+      
     def getPropertiesDict(self, dimension):
         propDict = OrderedDict([            
             ("EquationNumber", self.equationNumber),

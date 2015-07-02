@@ -451,3 +451,13 @@ class Model(QObject):
         return functionMaps
         #generator2
         #generateCfromDict(self.toDict(),cppFileName)
+        
+        
+    def getXrange(self, block, xfrom, xto):
+        return int(xfrom/self.gridStepX),int(xto/self.gridStepX)  
+    
+    def getYrange(self, block, yfrom, yto):
+        return int(yfrom/self.gridStepY),int(yto/self.gridStepY)
+    
+    def getZrange(self, block, zfrom, zto):
+        return int(zfrom/self.gridStepZ),int(zto/self.gridStepZ)

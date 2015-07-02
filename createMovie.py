@@ -21,7 +21,7 @@ matplotlib.use('Agg')
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import cm
-from fileutils import getSortedBinFileList
+from fileUtils import getSortedBinFileList
   
 def savePng(filename, X, Y, layer, minTemp, maxTemp):
     figure = Figure()
