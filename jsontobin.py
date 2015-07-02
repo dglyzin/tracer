@@ -21,7 +21,8 @@ import os
 
 def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
     projectDir = os.path.dirname(inputFile)
-    projectName, _ = os.path.splitext(inputFile)    
+    projectName, _ = os.path.splitext(inputFile)   
+    projectTitle = os.path.basename(projectName)
     if projectName == '':
         print "Bad file name"
         return
@@ -31,9 +32,14 @@ def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, c
     OutputRunFile = projectName+".sh"
 
     #we want to find the last computed state to continue if user does not provide filename but tell us to continue
+    print projectDir
     if continueEnabled and not continueFnameProvided:
-        continueFileName = getSortedBinFileList(projectDir)[-1]
-
+        try:
+            continueFileName = os.path.join(projectDir, getSortedBinFileList(projectDir, projectTitle)[-1])
+        except:
+            print "No bin file to continue from!"
+            return
+	  
     model = Model()
     model.loadFromFile(inputFile)
     print "Max derivative order is ", model.getMaxDerivOrder()
