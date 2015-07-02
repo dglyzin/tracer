@@ -111,6 +111,8 @@ class Model(QObject):
         self.blocks = []
         self.interconnects = []
         self.equations = []
+        self.params = []
+        self.paramValues = []
         self.bounds = []
         self.initials = []
         self.compnodes = []
@@ -129,6 +131,7 @@ class Model(QObject):
             self.gridStepX = 1.0
             self.gridStepY = 1.0
             self.gridStepZ = 1.0
+            self.defaultParamsIndex = -1
         else:
             self.projectName = projdict["ProjectName"]
             self.startTime = projdict["StartTime"]
@@ -138,6 +141,12 @@ class Model(QObject):
             self.solverIndex = projdict["Solver"]
             self.solverAtol = projdict["SolverAbsTolerance"]
             self.solverRtol = projdict["SolverRelTolerance"]
+            self.params = projdict["Params"]
+            self.paramValues = projdict["ParamValues"]
+            if len(self.paramValues) == 1:
+                self.defaultParamsIndex = 0
+            elif len(self.paramValues) > 1:
+                self.defaultParamsIndex = projdict["DefaultParamsIndex"]
             self.gridStepX = projdict["GridStep"]["x"]
             self.gridStepY = projdict["GridStep"]["y"]
             self.gridStepZ = projdict["GridStep"]["z"]
@@ -225,6 +234,9 @@ class Model(QObject):
                             ("y", self.gridStepY),
                             ("z", self.gridStepZ)
                          ]) ),
+            ("DefaultParamsIndex", self.defaultParamsIndex)
+            ("Params", self.params)
+            ("ParamValues", self.paramValues)
 
             ("Blocks", [block.getPropertiesDict() for block in self.blocks] ),
             ("Interconnects", [ic.getPropertiesDict() for ic in self.interconnects] ),
@@ -440,7 +452,8 @@ class Model(QObject):
         try:
             #gen = FunctionCodeGenerator(self.equations, self.blocks, self.initials, self.bounds, [self.gridStepX, self.gridStepY, self.gridStepZ])
             #outputStr, functionMaps = gen.generateAllFunctions()#self.blocks, self.equations, self.bounds, self.initials, [self.gridStepX, self.gridStepY, self.gridStepZ])
-            gen = FuncGenerator(self.equations, self.blocks, self.initials, self.bounds, [self.gridStepX, self.gridStepY, self.gridStepZ])
+            gridStep = [self.gridStepX, self.gridStepY, self.gridStepZ]
+            gen = FuncGenerator(self.equations, self.blocks, self.initials, self.bounds, gridStep, self.params, self.paramValues, self.defaultParamsIndex)
             outputStr, functionMaps = gen.generateAllFunctions()
         except Exception as ex:
             print(ex)
