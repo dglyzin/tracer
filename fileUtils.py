@@ -2,6 +2,8 @@
 from os import listdir
 import numpy as np
 
+defaultProjFname = 'project'
+  
 def getSortedBinFileList(projectDir, title):
     #get sorted binary file list
     unsortedBinFileList =  [ f for f in listdir(projectDir) if f.endswith(".bin") ]

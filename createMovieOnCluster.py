@@ -25,7 +25,7 @@ import multiprocessing as mp
 from multiprocessing import Pool
 
 import time
-from fileutils import getSortedBinFileList
+from fileutils import getSortedBinFileList, defaultProjFname
 
 def savePng(filename, X, Y, layer, maxValue, minValue, currentTime):
     figure = Figure()
@@ -262,7 +262,7 @@ def createMovie(projectDir):
     print command
     subprocess.call(command, shell=True)
     
-    binFileList = getSortedBinFileList(projectDir)
+    binFileList = getSortedBinFileList(projectDir, defaultProjFname)
     
     t1 = time.time()
     maxValue, minValue = calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
