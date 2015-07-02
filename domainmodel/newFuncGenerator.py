@@ -25,7 +25,7 @@ class FuncGenerator:
         for blockNumber, block in enumerate(self.generator.blocks):
             systemsForCentralFuncs, numsForSystems, totalBCondLst, blockFunctionMap = self.generator.getBlockInfo(block, blockNumber)
             cf, arrWithFunctionNames = self.generator.generateCentralFunctionCode(block, blockNumber, systemsForCentralFuncs, numsForSystems)
-            bf = self.generator.generateBoundsAndIcs(block, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst)
+            bf = self.generator.generateBoundsAndIcs(blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst)
             
             totalArrWithFunctionNames.append(arrWithFunctionNames)
             functionMaps.append(blockFunctionMap)
@@ -632,8 +632,8 @@ class generator2D(abstractGenerator):
         blockSquare = block.sizeX * block.sizeY
         reservedSquare = 0
         for eqRegion in block.equationRegions:
-            cond1 = eqRegion.xfrom == eqRegion.xto and (eqRegion.xto == block.offsetX or eqRegion.xto == block.offsetX + block.sizeX)
-            cond2 = eqRegion.yfrom == eqRegion.yto and (eqRegion.yto == block.offsetY or eqRegion.yto == block.offsetY + block.sizeY)
+            cond1 = eqRegion.xfrom == eqRegion.xto and (eqRegion.xto == 0.0 or eqRegion.xto == block.sizeX)
+            cond2 = eqRegion.yfrom == eqRegion.yto and (eqRegion.yto == 0.0 or eqRegion.yto == block.sizeY)
             reservedSquare += RectSquare([eqRegion.xfrom, eqRegion.xto], [eqRegion.yfrom, eqRegion.yto])
             if eqRegion.equationNumber not in numsForSystems and not cond1 and not cond2:
                 systemsForCentralFuncs.append(self.equations[eqRegion.equationNumber])
@@ -659,33 +659,33 @@ class generator2D(abstractGenerator):
     def createListOfBCondsForSide(self, block, blockNumber, side):
         if side == 2:
             cellLen = self.gridStep[1]
-            sideMaxRange = block.offsetX + block.sizeX
-            sideMinRange = block.offsetX
-            currentSideValue = block.offsetY
+            sideMaxRange = block.sizeX
+            sideMinRange = 0.0
+            currentSideValue = 0.0
             sideIndicator = lambda eqRegion: eqRegion.yfrom
             stepFrom = lambda eqRegion: eqRegion.xfrom
             stepTo = lambda eqRegion: eqRegion.xto
         elif side == 3:
             cellLen = self.gridStep[1]
-            sideMaxRange = block.offsetX + block.sizeX
-            sideMinRange = block.offsetX
-            currentSideValue = block.offsetY + block.sizeY
+            sideMaxRange = block.sizeX
+            sideMinRange = 0.0
+            currentSideValue = block.sizeY
             sideIndicator = lambda eqRegion: eqRegion.yto
             stepFrom = lambda eqRegion: eqRegion.xfrom
             stepTo = lambda eqRegion: eqRegion.xto
         elif side == 0:
             cellLen = self.gridStep[0]
-            sideMaxRange = block.offsetY + block.sizeY
-            sideMinRange = block.offsetY
-            currentSideValue = block.offsetX
+            sideMaxRange = block.sizeY
+            sideMinRange = 0.0
+            currentSideValue = 0.0
             sideIndicator = lambda eqRegion: eqRegion.xfrom
             stepFrom = lambda eqRegion: eqRegion.yfrom
             stepTo = lambda eqRegion: eqRegion.yto
         elif side == 1:
             cellLen = self.gridStep[0]
-            sideMaxRange = block.offsetY + block.sizeY
-            sideMinRange = block.offsetY
-            currentSideValue = block.offsetX + block.sizeX
+            sideMaxRange = block.sizeY
+            sideMinRange = 0.0
+            currentSideValue = block.sizeX
             sideIndicator = lambda eqRegion: eqRegion.xto
             stepFrom = lambda eqRegion: eqRegion.yfrom
             stepTo = lambda eqRegion: eqRegion.yto
@@ -833,7 +833,7 @@ class generator2D(abstractGenerator):
             defaultFunctions.append(self.generateNeumann(blockNumber, nameForSide, parsedEquationsList, variables, defaultBoundaryConditionList))    
         return ''.join(defaultFunctions)
     
-    def generateBoundsAndIcs(self, block, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst):
+    def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst):
         #  ***x->
         #  *  
         #  |  ---side 2---
