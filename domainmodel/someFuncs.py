@@ -70,3 +70,8 @@ def convertRangesToBoundaryCoordinates(xyzList):
             return list(set(coordinates))
         else:
             raise AttributeError("Dimension of geometric space should not be greater than 3!")
+
+def RectSquare(xlist, ylist):
+        l1 = abs(xlist[0] - xlist[1])
+        l2 = abs(ylist[0] - ylist[1])
+        return l2 * l1
