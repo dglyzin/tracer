@@ -1,5 +1,17 @@
 # -*- coding: utf-8 -*-
 '''
+Аргументы:
+1. json-файл проекта
+2.
+Если этот аргумент не указан, то вычисления начинаются с нуля
+иначе продолжается либо с последнего существующего, либо с явно указанного
+-cont
+-cont=<bin state filename to continue>
+3. 
+-finish=255
+время для окончания вычислений, замещает время из json
+
+
 Модуль импортирует входной json
 Покдлючается к удаленной машине
 Копирует туда этот же json и напускает на него jsontobin
@@ -7,18 +19,23 @@
 
 model -> mapped model -> domain.dom+funcs.cpp+run.sh
 '''
+remoteRunScriptName='project.sh'
+remoteProjectFileName='project.json'
+
+
 
 import sys
 import socket
 import getpass
 import paramiko
+import argparse
 
 from domainmodel.model import Model
 
-def remoteProjectRun(InputFile):
+def remoteProjectRun(inputFile, continueEnabled, optionalArgs):
     #2 Get connection data and copy json to the cluster
     model = Model()
-    model.loadFromFile(InputFile)
+    model.loadFromFile(inputFile)
     conn = model.connection
     if conn.password == "":
         print "Please enter password for user "+ model.connection.username+":"
@@ -47,16 +64,21 @@ def remoteProjectRun(InputFile):
             stdin, stdout, stderr = client.exec_command('mkdir  '+projFolder)
             print "Folder created."
         else:
-            stdin, stdout, stderr = client.exec_command('rm -rf '+projFolder+'/*')
-            print "Folder cleaned."
+            if not continueEnabled:  
+                stdin, stdout, stderr = client.exec_command('rm -rf '+projFolder+'/*')
+                print "Folder cleaned."                
+            else:
+                print "Folder exists, no cleaning needed."                      
         cftp=client.open_sftp()
-        cftp.put(InputFile, projFolder+"/project.json")
+        cftp.put(inputFile, projFolder+"/"+remoteProjectFileName)
         cftp.close()
-
+        
         #3 Run jsontobin on json
         print 'Running preprocessor:'
-        print 'python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/project.json'
-        stdin, stdout, stderr = client.exec_command('python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/project.json')
+        command = 'python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/'+remoteProjectFileName
+        
+        print command, optionalArgs
+        stdin, stdout, stderr = client.exec_command(command+optionalArgs)
         print stdout.read()
 
         #4 Run Solver binary on created files
@@ -68,7 +90,7 @@ def remoteProjectRun(InputFile):
         else:
             print "Solver executable found."
 
-        stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/project.sh')
+        stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName)
         print stdout.read()
         print stderr.read()
 
@@ -85,32 +107,36 @@ def remoteProjectRun(InputFile):
 
 
 
-    '''projectName = "brusselator_1block"
-    InputFile = projectName+".json"
-    OutputDataFile = projectName+".dom"
-    OutputFuncFile = projectName+".cpp"
-    model = Model()
-    model.loadFromFile(InputFile)
-    print "Max derivative order is ", model.getMaxDerivOrder()
-    if model.isMapped:
-        partModel = model
-    else:
-        partModel = partitionAndMap(model)
 
-    bm = BinaryModel(partModel)
-    bm.saveDomain(OutputDataFile)
-    bm.saveFuncs(OutputFuncFile)
-    bm.compileFuncs(OutputFuncFile)
-    #model.saveBinaryData(OutputDataFile, OutputFuncFile)
-'''
+if __name__=='__main__':    
+    parser = argparse.ArgumentParser(description='Processing json file on a remote cluster.', epilog = "Have fun!")
+    #mandatory argument, json filename
+    parser.add_argument('fileName', type = str, help = "local json file to process")
+    #optional argument, exactly one float to override json finish time
+    parser.add_argument('-finish', type=float, help = "new finish time to override json value")
+    #optional argument with one or no argument, filename to continue computations from
+    #if no filename is provided with this option, the last state is taken
+    parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
+    args = parser.parse_args()
+    
+    
+    inputFile = args.fileName
+    finishTime = args.finish
+    finishTimeProvided = not (finishTime is None)
+    continueFileName = args.cont  
+    continueEnabled = not (continueFileName is None)
+    continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
+    
+  
+    optionalArgs=''
+    if finishTimeProvided:
+        optionalArgs+=" -finish "+str(finishTime)
+    if continueEnabled:
+        optionalArgs+=" -cont"
+        if continueFnameProvided:
+            optionalArgs+=" "+continueFileName
+    
+       
+    remoteProjectRun(inputFile, continueEnabled, optionalArgs)
 
-
-if __name__=='__main__':
-    #1 Get file name from command line
-    if len(sys.argv)==1:
-        print "Please specify a json file to read"
-    else:
-        InputFile = sys.argv[1]
-        remoteProjectRun(InputFile)
-##    remoteProjectRun("brus_test.json")
 

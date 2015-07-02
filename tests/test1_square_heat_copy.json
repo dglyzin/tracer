@@ -9,9 +9,9 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 0.5, 
-    "TimeStep": 0.00001, 
-    "SaveInterval": 0.002, 
+    "FinishTime": 10.0, 
+    "TimeStep": 0.000001, 
+    "SaveInterval": 0.005, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
@@ -33,25 +33,9 @@
                 "y": 1.0
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
-            "BoundRegions": [
-                {
-                    "BoundNumber": 0, 
-                    "Side": 0, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 0.0, 
-                    "yto": 1.0                    
-                },
-                {
-                    "BoundNumber": 0, 
-                    "Side": 1, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 0.0, 
-                    "yto": 1.0                    
-                }
-            ], 
+            "DefaultInitial": 0,
+            "EquationRegions": [],
+            "BoundRegions": [], 
             "InitialRegions": []
         }
     ], 
@@ -64,40 +48,30 @@
                 "y"
             ], 
             "System": [
-                "U'=D[U,{x,2}]+ D[U,{y,2}]"
+                "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}]+D[U,{y,2}])",
+                "V'=b*U-U*U*V+c*(D[V,{x,2}]+D[V,{y,2}])"
             ], 
-            "Params": [], 
-            "ParamValues": []
-        }
-    ], 
-    "Bounds": [
-        {
-            "Name": "Neumann example1", 
-            "Type": 1, 
-            "Values": [
-                "sin(t)"
-            ]
-        },
-        {
-            "Name": "Neumann example2", 
-            "Type": 1, 
-            "Values": [
-                "-cos(t)"
-            ]
-        },
-        {
-            "Name": "Neumann example3", 
-            "Type": 1, 
-            "Values": [
-                "0.0"
+            "Params": [
+	        "a",
+	        "b",
+	        "c"
+            ], 
+            "ParamValues": [
+                {
+                    "a": 1.0,
+                    "b": 3.4,
+                    "c": 0.002
+                }   
             ]
         }
     ], 
+    "Bounds": [], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
-                "0.0"               
+                "0.5+y",
+                "1+5*x"
             ]
         }
     ], 
