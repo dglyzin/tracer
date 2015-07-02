@@ -16,7 +16,7 @@ from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel
 from domainmodel.decomposer import partitionAndMap
 
-from fileutils import getSortedBinFileList
+from fileUtils import getSortedBinFileList
 import os
 
 def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
@@ -30,6 +30,7 @@ def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, c
     OutputFuncFile = projectName+".cpp"
     OutputRunFile = projectName+".sh"
 
+    #we want to find the last computed state to continue if user does not provide filename but tell us to continue
     if continueEnabled and not continueFnameProvided:
         continueFileName = getSortedBinFileList(projectDir)[-1]
 
@@ -45,7 +46,7 @@ def createBinaries(inputFile, finishTimeProvided, finishTime, continueEnabled, c
     bm.saveFuncs(OutputFuncFile)
     bm.saveDomain(OutputDataFile)
     bm.compileFuncs(OutputFuncFile)
-    bm.createRunFile(OutputRunFile,OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
+    bm.createRunFile(OutputRunFile,OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFileName)
 
                 
 if __name__=='__main__':

@@ -394,7 +394,7 @@ class BinaryModel(object):
         else: finishTime = -1.1
         if continueEnabled: flag +=2
         else: continueFileName = "n_a"
-        print OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName
+        #print OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName
         
         runFile = open(OutputRunFile, "w")
         conn = self.dmodel.connection
