@@ -29,6 +29,8 @@ class FuncGenerator:
             
             totalArrWithFunctionNames.append(arrWithFunctionNames)
             functionMaps.append(blockFunctionMap)
+            print blockFunctionMap
+            print '\n'
             outputStr += cf + bf
             
         final = self.generator.generateGetBoundFuncArray(totalArrWithFunctionNames)
@@ -630,8 +632,8 @@ class generator2D(abstractGenerator):
         blockSquare = block.sizeX * block.sizeY
         reservedSquare = 0
         for eqRegion in block.equationRegions:
-            cond1 = eqRegion.xfrom == eqRegion.xto and eqRegion.xto == block.offsetX
-            cond2 = eqRegion.yfrom == eqRegion.yto and eqRegion.yto == block.offsetY
+            cond1 = eqRegion.xfrom == eqRegion.xto and (eqRegion.xto == block.offsetX or eqRegion.xto == block.offsetX + block.sizeX)
+            cond2 = eqRegion.yfrom == eqRegion.yto and (eqRegion.yto == block.offsetY or eqRegion.yto == block.offsetY + block.sizeY)
             reservedSquare += RectSquare([eqRegion.xfrom, eqRegion.xto], [eqRegion.yfrom, eqRegion.yto])
             if eqRegion.equationNumber not in numsForSystems and not cond1 and not cond2:
                 systemsForCentralFuncs.append(self.equations[eqRegion.equationNumber])
