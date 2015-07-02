@@ -9,17 +9,32 @@
     }, 
     "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
-    "FinishTime": 25.0, 
+    "FinishTime": 1.0, 
     "TimeStep": 0.00001, 
-    "SaveInterval": 0.1, 
-    "Solver": 0,
+    "SaveInterval": 0.0, 
+    "Solver": 2,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.01, 
-        "y": 0.01, 
+        "x": 0.15, 
+        "y": 0.15, 
         "z": 1
-    }, 
+    },
+    "Params": [
+			"a",
+			"b",
+			"c",
+			"d"
+	], 
+    "ParamValues": [
+		{
+			"a": 2,
+			"b": 3,
+			"c": 0.1,
+			"d": 100
+		}
+	],	
+	"DefaultParamsIndex": 0,
     "Blocks": [
         {
             "Name": "MainBlock", 
@@ -32,83 +47,123 @@
                 "x": 3.0, 
                 "y": 2.0
             }, 
-            "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
+            "DefaultEquation": 2, 
+            "DefaultInitial": 0,
+			"EquationRegions":[
+				{
+					"EquationNumber": 0,
+					"xfrom": 0.0, 
+					"xto": 3.0, 
+					"yfrom": 0.0, 
+					"yto": 1.0
+				},
+				{
+					"EquationNumber": 1,
+					"xfrom": 0.0, 
+					"xto": 3.0, 
+					"yfrom": 1.0, 
+					"yto": 2.0
+				}
+			],
             "BoundRegions": [
-                {
-                    "BoundNumber": 0, 
-                    "Side": 3, 
-                    "xfrom": 1.0, 
-                    "xto": 2.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
-                },
-                {
-                    "BoundNumber": 1, 
-                    "Side": 3, 
+				{
+					"BoundNumber": 2, 
+                    "Side": 0, 
                     "xfrom": 0.0, 
-                    "xto": 1.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.5, 
+                    "yto": 1.5
+				},
+				{
+					"BoundNumber": 0, 
+                    "Side": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
                     "yfrom": 0.0, 
-                    "yto": 0.0                    
-                },
-                {
-                    "BoundNumber": 2, 
-                    "Side": 3, 
-                    "xfrom": 2.0, 
-                    "xto": 3.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0                    
-                }
-            ], 
-            "InitialRegions": []
+                    "yto": 2.0
+				}
+			], 
+            "InitialRegions":[
+				{
+					"InitialNumber": 1,
+					"xfrom": 0.75, 
+					"xto": 2.25, 
+					"yfrom": 0.5, 
+					"yto": 1.5
+				}
+			]
         }
     ], 
     "Interconnects": [], 
     "Equations": [
         {
-            "Name": "Flat Brusselator", 
+            "Name": "Heat 1", 
             "Vars": [
                 "x", 
                 "y"
             ], 
             "System": [
-                "U'=D[U,{x,2}]+ D[U,{y,2}]"
+                "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
+            ]
+        },
+		{
+            "Name": "Heat 2", 
+            "Vars": [
+                "x", 
+                "y"
             ], 
-            "Params": [], 
-            "ParamValues": []
+            "System": [
+                "U'=b*(D[U,{x,2}]+ D[U,{y,2}])"
+            ]
+        },
+		{
+            "Name": "Psevdo Heat", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - d * D[U,{y,1}]"
+            ]
         }
-    ], 
+    ],
     "Bounds": [
-        {
-            "Name": "Dirichlet example1", 
+		{
+			"Name": "Neumann 1", 
+            "Type": 1, 
+            "Values": [
+                "sin(t)"
+            ]
+		},
+		{
+			"Name": "Neumann 2", 
+            "Type": 1, 
+            "Values": [
+                "cos(t)"
+            ]
+		},
+		{
+			"Name": "Dirichlet 1", 
             "Type": 0, 
             "Values": [
-                "3.0"
+                "30.0"
             ],
-			"Derivative": [
-                "0.0"
-            ]
-        },
-		{
-            "Name": "Neumann example1", 
-            "Type": 1, 
-            "Values": [
-                "-1.0"
-            ]
-        },
-		{
-            "Name": "Neumann example2", 
-            "Type": 1, 
-            "Values": [
-                "1.0"
-            ]
-        }
-    ], 
+			"Derivative":[
+				"0.0"
+			]
+		}
+	], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
                 "0.0"               
+            ]
+        },
+        {
+            "Name": "Initial values 1", 
+            "Values": [
+                "40.0"               
             ]
         }
     ], 

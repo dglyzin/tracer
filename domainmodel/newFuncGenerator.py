@@ -29,8 +29,6 @@ class FuncGenerator:
             
             totalArrWithFunctionNames.append(arrWithFunctionNames)
             functionMaps.append(blockFunctionMap)
-            print blockFunctionMap
-            print '\n'
             outputStr += cf + bf
             
         final = self.generator.generateGetBoundFuncArray(totalArrWithFunctionNames)
