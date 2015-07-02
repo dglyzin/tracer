@@ -125,11 +125,12 @@ if __name__=='__main__':
     finishTimeProvided = not (finishTime is None)
     continueFileName = args.cont  
     continueEnabled = not (continueFileName is None)
-    continueFnameProvided = not (continueFileName == "/")
+    continueFnameProvided = if continueEnabled: continueFnameProvided = not (continueFileName == "/") else: False
+    
   
     optionalArgs=''
     if finishTimeProvided:
-        optionalArgs+="-finish "+str(finishTime)
+        optionalArgs+=" -finish "+str(finishTime)
     if continueEnabled:
         optionalArgs+=" -cont"
         if continueFnameProvided:
