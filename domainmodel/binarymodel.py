@@ -53,8 +53,8 @@ class BinaryModel(object):
         #2.2 fill them    
         for initReg in block.initialRegions:    
             initFuncNum = usedIndices + usedInitNums.index(initReg.initialNumber)
-            xstart, xend = initReg.getXrange(self.dmodel.gridStepX)
-            ystart, yend = initReg.getYrange(self.dmodel.gridStepY)            
+            xstart, xend = self.dmodel.getXrange(block, initReg.xfrom, initReg.xto)
+            ystart, yend = self.dmodel.getYrange(block, initReg.yfrom, initReg.yto)            
             funcArr[ystart:yend, xstart:xend] = initFuncNum             
                 
         print "Used init nums:", usedInitNums
@@ -79,19 +79,19 @@ class BinaryModel(object):
                 initFuncNum = usedIndices + usedDirBoundNums.index(boundReg.boundNumber)
                 if boundReg.side == 0:       
                     idxX = 0         
-                    ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
+                    ystart, yend = self.dmodel.getYrange(block, boundReg.yfrom, boundReg.yto)    
                     funcArr[ystart:yend, idxX] = initFuncNum                
                 elif boundReg.side == 1:
                     idxX = xc - 1
-                    ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)                
+                    ystart, yend = self.dmodel.getYrange(block, boundReg.yfrom, boundReg.yto)           
                     funcArr[ystart:yend, idxX] = initFuncNum                    
                 elif boundReg.side == 2:
                     idxY =  0
-                    xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)                
+                    xstart, xend =self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto) 
                     funcArr[idxY, xstart:xend] = initFuncNum
                 elif boundReg.side == 3:
                     idxY = yc-1
-                    xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
+                    xstart, xend = self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto)
                     funcArr[idxY, xstart:xend] = initFuncNum
             
 
@@ -110,67 +110,36 @@ class BinaryModel(object):
         haloSize = self.dmodel.getHaloSize()
         if haloSize>1:
             raise AttributeError("Halosize>1 is not supported yet")
-        #1 default center is filled already
-        funcArr[:] = 0
+        #1 fill center funcs
+        funcArr[:] = functionMap["centerDefault"]
+        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["center"]:
+            xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
+            yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
+            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
+        #2 fill edges
         funcArr[0,0]       = functionMap["e02"]
         funcArr[0,xc-1]    = functionMap["e12"]
         funcArr[yc-1,0]    = functionMap["e03"]
         funcArr[yc-1,xc-1] = functionMap["e13"]
+                
         #side 0
-        sideIdx = 0
-        sideMap = functionMap["side"+str(sideIdx)]
-        idxX = 0
-        for idxY in range(1, yc-1):
-            funcArr[idxY,idxX] = sideMap["default"]
+        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side0"]:            
+            yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
+            funcArr[yfromIdx:ytoIdx, 0] = funcIdx
+        #side 1
+        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side1"]:            
+            yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
+            funcArr[yfromIdx:ytoIdx, xc-1] = funcIdx
+        #side 2
+        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side2"]:
+            xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
+            funcArr[0, xfromIdx:xtoIdx] = funcIdx        
+        #side 3
+        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side2"]:
+            xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
+            funcArr[yc-1, xfromIdx:xtoIdx] = funcIdx
         
-        sideIdx = 1
-        sideMap = functionMap["side"+str(sideIdx)]
-        idxX = xc-1
-        for idxY in range(1, yc-1):
-            funcArr[idxY,idxX] = sideMap["default"]
         
-        sideIdx = 2
-        sideMap = functionMap["side"+str(sideIdx)]
-        idxY = 0
-        for idxX in range(1, xc-1):
-            funcArr[idxY,idxX] = sideMap["default"]
-        
-        sideIdx = 3
-        sideMap = functionMap["side"+str(sideIdx)]
-        idxY = yc-1
-        for idxX in range(1, xc-1):
-            funcArr[idxY,idxX] = sideMap["default"]            
-            
-        #fill user-defined bounds
-        for boundReg in block.boundRegions:
-            sideMap = functionMap["side"+str(boundReg.side)]
-            curf_idx = sideMap["userBound"+str(boundReg.boundNumber)]
-            if boundReg.side == 0:                                            
-                for idxX in range(0, haloSize):
-                    ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)
-                    ystart = max(haloSize,ystart)
-                    yend =  min(yc-haloSize,yend)
-                    funcArr[ystart:yend, idxX] = curf_idx
-            elif boundReg.side == 1:
-                for idxX in range(xc - haloSize, xc):
-                    ystart, yend = boundReg.getYrange(self.dmodel.gridStepY)
-                    ystart = max(haloSize,ystart)
-                    yend =  min(yc - haloSize,yend)
-                    funcArr[ystart:yend, idxX] = curf_idx
-            elif boundReg.side == 2:
-                for idxY in range(0, haloSize):
-                    xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
-                    xstart = max(haloSize,xstart)
-                    xend =  min(xc - haloSize,xend)
-                    funcArr[idxY, xstart:xend] = curf_idx
-            elif boundReg.side == 3:
-                for idxY in range(yc - haloSize, yc):
-                    xstart, xend = boundReg.getXrange(self.dmodel.gridStepX)
-                    xstart = max(haloSize,xstart)
-                    xend =  min(xc-haloSize,xend)
-                    funcArr[idxY, xstart:xend] = curf_idx
-        
-
     def fill3dCompFuncs(self, funcArr, block, blockSize):
         pass
 
@@ -210,7 +179,7 @@ class BinaryModel(object):
         self.blockCountArr[0] = self.blockCount
         self.blockPropArrList = []
         self.blockInitFuncArrList = []
-        self.blockCompFuncArrList = []        
+        self.blockCompFuncArrList = []
         for blockIdx in range(self.blockCount):
             print "Saving block", blockIdx
             block = self.dmodel.blocks[blockIdx]

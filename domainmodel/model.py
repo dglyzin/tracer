@@ -445,22 +445,33 @@ class Model(QObject):
 
     def getMaxDerivOrder(self):
         d = DerivativeHandler()
-        return d.orderOfSystem(self.equations[0].system,self.equations[0].params, self.equations[0].vars)
+        return d.orderOfSystem(self.equations[0].system,self.params, self.equations[0].vars)
 
     def createCPPandGetFunctionMaps(self,cppFileName):
         #generator1
-        try:
+        #try:
             #gen = FunctionCodeGenerator(self.equations, self.blocks, self.initials, self.bounds, [self.gridStepX, self.gridStepY, self.gridStepZ])
             #outputStr, functionMaps = gen.generateAllFunctions()#self.blocks, self.equations, self.bounds, self.initials, [self.gridStepX, self.gridStepY, self.gridStepZ])
-            gridStep = [self.gridStepX, self.gridStepY, self.gridStepZ]
-            gen = FuncGenerator(self.equations, self.blocks, self.initials, self.bounds, gridStep, self.params, self.paramValues, self.defaultParamsIndex)
-            outputStr, functionMaps = gen.generateAllFunctions()
-        except Exception as ex:
+        print "AAAAAA!!!" , cppFileName
+        gridStep = [self.gridStepX, self.gridStepY, self.gridStepZ]
+        gen = FuncGenerator(self.equations, self.blocks, self.initials, self.bounds, gridStep, self.params, self.paramValues, self.defaultParamsIndex)
+        outputStr, functionMaps = gen.generateAllFunctions()
+        '''except Exception as ex:
             print(ex)
         else:
             f = open(cppFileName,'w')
             f.write(outputStr)
-            f.close()
+            f.close()'''
         return functionMaps
         #generator2
         #generateCfromDict(self.toDict(),cppFileName)
+        
+        
+    def getXrange(self, block, xfrom, xto):
+        return int(xfrom/self.gridStepX),int(xto/self.gridStepX)  
+    
+    def getYrange(self, block, yfrom, yto):
+        return int(yfrom/self.gridStepY),int(yto/self.gridStepY)
+    
+    def getZrange(self, block, zfrom, zto):
+        return int(zfrom/self.gridStepZ),int(zto/self.gridStepZ)
