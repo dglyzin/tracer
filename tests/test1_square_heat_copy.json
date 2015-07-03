@@ -11,7 +11,7 @@
     "StartTime": 0.0, 
     "FinishTime": 10.0, 
     "TimeStep": 0.000001, 
-    "SaveInterval": 0.005, 
+    "SaveInterval": 0.02, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
@@ -50,21 +50,21 @@
             "System": [
                 "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}]+D[U,{y,2}])",
                 "V'=b*U-U*U*V+c*(D[V,{x,2}]+D[V,{y,2}])"
-            ], 
-            "Params": [
-	        "a",
-	        "b",
-	        "c"
-            ], 
-            "ParamValues": [
-                {
-                    "a": 1.0,
-                    "b": 3.4,
-                    "c": 0.002
-                }   
             ]
         }
     ], 
+    "Params": [
+	  "a",
+	  "b",
+	  "c"
+      ], 
+      "ParamValues": [
+	  {
+	      "a": 1.0,
+	      "b": 3.4,
+	      "c": 0.002
+	  }   
+    ],
     "Bounds": [], 
     "Initials": [
         {
