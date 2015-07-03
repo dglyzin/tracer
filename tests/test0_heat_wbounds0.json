@@ -17,62 +17,98 @@
     "SolverRelTolerance": 0.001,
     "GridStep": {
         "x": 0.01, 
-        "y": 0.01, 
+        "y": 1, 
         "z": 1
-    }, 
+    },
+	"Params": [
+        "a",
+		"b"
+    ], 
+    "ParamValues": [
+        {
+            "a": 0.65,
+			"b": 3
+	    }
+    ],
+	"DefaultParamsIndex": 0,
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 2, 
+            "Dimension": 1, 
             "Offset": {
-                "x": 0.0, 
-                "y": 0.0
+                "x": 0.0
             }, 
             "Size": {
-                "x": 1.0, 
-                "y": 2.0
+                "x": 5.0
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 1, 
-            "BoundRegions": [], 
+            "DefaultInitial": 1,
+			"EquationRegions":[
+				{
+					"EquationNumber": 1,
+					"xfrom": 0.0, 
+					"xto": 2.5
+				}
+			],
+            "BoundRegions": [
+				{
+					"BoundNumber": 1, 
+                    "Side": 0
+				},
+				{
+					"BoundNumber": 0, 
+                    "Side": 1
+				}
+			], 
             "InitialRegions": [
 			    {
 			        "InitialNumber": 0,
-				    "xfrom": 0.25, 
-                    "xto": 0.75, 
-                    "yfrom": 0.5, 
-                    "yto": 1.5
+				    "xfrom": 1.0, 
+                    "xto": 3.0
 			    }
-			],
-	    "EquationRegions":[]
+			]
         }
     ], 
     "Interconnects": [], 
     "Equations": [
         {
-            "Name": "Flat Brusselator", 
+            "Name": "1D heat 1", 
             "Vars": [
-                "x", 
-                "y"
+                "x"
             ], 
             "System": [
-                "U'=D[U,{x,2}]+ D[U,{y,2}]"
+                "U'= a * D[U,{x,2}]"
+            ]
+        },
+		{
+            "Name": "1D heat 2", 
+            "Vars": [
+                "x"
             ], 
-            "Params": [
-                "a", 
-                "b", 
-                "mu"
-            ], 
-            "ParamValues": [
-                {
-                    "a": 0.65, 
-                    "mu": 0.025, 
-                    "b": 2
-                }
+            "System": [
+                "U'= b * D[U,{x,2}]"
             ]
         }
     ], 
-    "Bounds": [], 
+    "Bounds": [
+		{
+			"Name": "Neumann 1", 
+            "Type": 1, 
+            "Values": [
+                "t"
+            ]
+		},
+		{
+			"Name": "Dirichlet 1", 
+            "Type": 0, 
+            "Values": [
+                "cos(t)"
+            ],
+			"Derivative":[
+				"-sin(t)"
+			]
+		}
+	], 
     "Initials": [
 		{
             "Name": "Initial values 0", 

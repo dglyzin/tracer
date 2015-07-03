@@ -455,13 +455,13 @@ class Model(QObject):
             reviewer.ReviewInput()
             gen = FuncGenerator(self.equations, self.blocks, self.initials, self.bounds, gridStep, self.params, self.paramValues, self.defaultParamsIndex)
             outputStr, functionMaps = gen.generateAllFunctions()
-            return functionMaps
         except Exception as ex:
             print(ex)
         else:
             f = open(cppFileName,'w')
             f.write(outputStr)
             f.close()
+            return functionMaps
         #generator2
         #generateCfromDict(self.toDict(),cppFileName)
         

@@ -66,12 +66,13 @@ class Reviewer:
         for regNum, region in enumerate(Regions(block)):
             if Number(region) < 0 or Number(region) >= originalCnt:
                 raise AttributeError("INPUT_ERROR: "+string+" number is incorrect in "+string+" Region "+str(regNum)+" for block with number "+str(blockNum)+"!")
-            if region.xfrom > region.xto or dim > 1 and region.yfrom > region.yto or dim > 2 and region.zfrom > region.zto:
-                raise AttributeError("INPUT_ERROR: The value for 'from' greater than the value for 'to' in "+string+" Region "+str(regNum)+" for block with number "+str(blockNum)+"!")
-            cond1 = region.xfrom < 0 or dim > 1 and region.yfrom < 0 or dim > 2 and region.zfrom < 0
-            cond2 = region.xto > block.sizeX or dim > 1 and region.yto > block.sizeY or dim > 2 and region.zto > block.sizeZ
-            if cond1 or cond2:
-                raise AttributeError("INPUT_ERROR: Coordinates for "+string+" Region "+str(regNum)+" for block with number "+str(blockNum)+" are incorrect! Part of the Region is outside the block!")
+            if dim > 1 or string != "Bound":
+                if region.xfrom > region.xto or dim > 1 and region.yfrom > region.yto or dim > 2 and region.zfrom > region.zto:
+                    raise AttributeError("INPUT_ERROR: The value for 'from' greater than the value for 'to' in "+string+" Region "+str(regNum)+" for block with number "+str(blockNum)+"!")
+                cond1 = region.xfrom < 0 or dim > 1 and region.yfrom < 0 or dim > 2 and region.zfrom < 0
+                cond2 = region.xto > block.sizeX or dim > 1 and region.yto > block.sizeY or dim > 2 and region.zto > block.sizeZ
+                if cond1 or cond2:
+                    raise AttributeError("INPUT_ERROR: Coordinates for "+string+" Region "+str(regNum)+" for block with number "+str(blockNum)+" are incorrect! Part of the Region is outside the block!")
             if string == "Bound":
                 if region.side < 0 or dim == 1 and region.side > 1 or dim == 2 and region.side > 3 or dim == 3 and region.side > 5:
                     raise AttributeError("INPUT_ERROR: Side is incorrect in Bound Region "+str(regNum)+" for block with number "+str(blockNum)+"!")
