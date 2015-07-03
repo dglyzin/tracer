@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from equationParser import MathExpressionParser
-from someFuncs import generateCodeForMathFunction, determineNameOfBoundary, convertRangesToBoundaryCoordinates, RectSquare
+from someFuncs import generateCodeForMathFunction, determineNameOfBoundary, RectSquare
 from rhsCodeGenerator import RHSCodeGenerator
 
 class FuncGenerator:
@@ -51,8 +51,6 @@ class BoundCondition:
 # Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
 # boundaryCoordinates отличается от ranges тем, что ranges -- это то как задал границу юзер,
 # а boundaryCoordinates -- координаты крайних точек границы в геометрическом смысле 
-        self.boundaryCoordinates = convertRangesToBoundaryCoordinates(self.ranges)
-        
         self.parsedValues = list()
         for value in self.values:
             self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))
@@ -351,14 +349,37 @@ class abstractGenerator(object):
                 
                 bCond.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
 # Создание списка условий на углы. В него входят условия с уже распарсенными значениями        
-        condCntOnS2 = len(totalBCondLst[0])
-        condCntOnS3 = len(totalBCondLst[1])
-        condCntOnS0 = len(totalBCondLst[2])
-        condCntOnS1 = len(totalBCondLst[3])
-        angleCondList = [[totalBCondLst[0][0], totalBCondLst[2][0]], [totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]],
-                         [totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]], [totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]]]
-
-        return angleCondList
+        if len(self.userIndepVars) > 1:
+            condCntOnS2 = len(totalBCondLst[0])
+            condCntOnS3 = len(totalBCondLst[1])
+            condCntOnS0 = len(totalBCondLst[2])
+            condCntOnS1 = len(totalBCondLst[3])
+            angleCondList = [[totalBCondLst[0][0], totalBCondLst[2][0]], [totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]],
+                             [totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]], [totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]]]
+    
+            return angleCondList
+    
+    def setDefault(self, blockNumber, side, equation, equationNum):
+        systemLen = len(equation.system)
+        funcName = "Block" + str(blockNumber) + "DefaultNeumann__Bound" + str(side) + "_Eqn" + str(equationNum)
+        return systemLen * ['0.0'], 1, -1, funcName
+    
+    def setDirichletOrNeumann(self, bRegion, blockNumber, side, equationNum):
+        boundNumber = bRegion.boundNumber
+        btype = self.bounds[boundNumber].btype
+        if btype == 0:
+            funcName = "Block" + str(blockNumber) + "Dirichlet__Bound" + str(side) + "_" + str(boundNumber) + "_Eqn" + str(equationNum)
+            outputValues = list(self.bounds[boundNumber].derivative)
+        elif btype == 1:
+            funcName = "Block" + str(blockNumber) + "Neumann__Bound" + str(side) + "_" + str(boundNumber) + "_Eqn" + str(equationNum)
+            outputValues = list(self.bounds[boundNumber].values)
+#                 Особенность Неймановского условия
+            if side == 0 or side == 2:
+                for idx, value in enumerate(outputValues):
+                    outputValues.pop(idx)
+                    outputValues.insert(idx, '-(' + value + ')')
+        values = list(outputValues)
+        return values, btype, boundNumber, funcName
     
     def generateDirichlet(self, blockNumber, name, boundaryCondition):
         strideList = list([])
@@ -431,12 +452,9 @@ class generator1D(abstractGenerator):
         self.allBlockOffsetList = list()
         
         for block in self.blocks:
-            self.cellsizeList.append(len(self.system))
+            self.cellsizeList.append(len(equations[block.defaultEquation].system))
             self.allBlockOffsetList.append([block.offsetX, 0, 0])
             self.allBlockSizeList.append([block.sizeX, 0, 0])
-    
-    def createListWithFuncNamesForBlock(self, blockNumber):
-        return ["Block" + str(blockNumber) + "CentralFunction"]
     
     def generateInitials(self):
 #         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
@@ -467,64 +485,54 @@ class generator1D(abstractGenerator):
         return ''.join(allFillFunctions)
     
     def getBlockInfo(self, block, blockNumber):
-# Возвращает границы блока и особый список всех граничных условий
-# Offset -- это смещение блока, Size -- длина границы, поэтому границы блока -- это [Offset, Offset + Size]
-        blockRanges = dict({'min' : [block.offsetX], 'max' : [block.offsetX + block.sizeX]})
-# boundaryConditionList -- это [{'values':[], 'type':тип, 'side':номер границы, 'boundNumber': номер условия, 'ranges':[[xFrom,xTo],[y],[z]]}]
-        boundaryConditionList = list()
-        for region in block.boundRegions:
-            if region.boundNumber >= len(self.bounds):
-                raise AttributeError("Non-existent number of boundary condition is set for some boundary region in array 'Blocks'!")
-
-            if region.side == 0:
-                boundaryRanges = [[block.offsetX, block.offsetX]]
-            else:
-                boundaryRanges = [[block.offsetX + block.sizeX, block.offsetX + block.sizeX]]
-            bound = self.bounds[region.boundNumber]
-# Если условие Дирихле, то используем производные по t,
-# если Неймановское условие --- то сами значения.
-            if bound.btype == 0:
-                values = list(bound.derivative)
-            elif bound.btype == 1:
-                values = list(bound.values)
-#           Исправление понятия Неймановского условия
-                if region.side == 0:
-                    for idx, value in enumerate(values):
-                        values.pop(idx)
-                        values.insert(idx, '-(' + value + ')')
-            NeumannValues = list(values) 
-            bCond = BoundCondition(NeumannValues, bound.btype, region.side, boundaryRanges, region.boundNumber)   
-#             boundaryCondition = {'values': NeumannValues, 'type': bound.btype, 'side': region.side, 'boundNumber': region.boundNumber, 'ranges': boundaryRanges}
-            boundaryConditionList.append(bCond)
-        return blockRanges, boundaryConditionList
+        systemsForCentralFuncs = []
+        numsForSystems = []
+        blockFuncMap = {'center': []}
+        reservedSpace = 0
+        for eqRegion in block.equationRegions:
+            reservedSpace += eqRegion.xto - eqRegion.xfrom
+            cond = eqRegion.xfrom == eqRegion.xto and (eqRegion.xto == 0.0 or eqRegion.xto == block.sizeX)
+            if eqRegion.equationNumber not in numsForSystems and not cond:
+                systemsForCentralFuncs.append(self.equations[eqRegion.equationNumber])
+                numsForSystems.append(eqRegion.equationNumber)
+            if not cond:
+                blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber), eqRegion.xfrom, eqRegion.xto])
+        if block.sizeX > reservedSpace:
+            systemsForCentralFuncs.append(self.equations[block.defaultEquation])
+            blockFuncMap.update({'center_default': len(numsForSystems)})
+            numsForSystems.append(block.defaultEquation)
+        
+        totalBCondLst = list()
+        sides = [0,1]
+        for side in sides:
+            totalBCondLst.append(self.createListOfBCondsForSide(block, blockNumber, side))
+        
+        return systemsForCentralFuncs, numsForSystems, totalBCondLst, blockFuncMap
     
-    def generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
-        defaultFunctions = list()
-        parser = MathExpressionParser()
-        variables = parser.getVariableList(self.system)
-             
-        defuaultBoundaryConditionValues = len(variables) * ['0.0']
-        
-        intro = '\n//=========================DEFAULT BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' +str(blockNumber)+'========================//\n\n'       
-        defaultFunctions.append(intro)
-                 
-        for i in range(0, 2):
-            boundaryName = determineNameOfBoundary(i)
-            defaultFunctions.append('//Default boundary condition for boundary ' + boundaryName + '\n')
-            nameForSide = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(i)
-            defaultBoundaryConditionList = list([tuple((i, defuaultBoundaryConditionValues))])
-            defaultFunctions.append(self.generateNeumann(blockNumber, nameForSide, parsedEquationsList, variables, defaultBoundaryConditionList))    
-        return ''.join(defaultFunctions)
-
-    def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockRanges, boundaryConditionList):
-        parser = MathExpressionParser()
-        variables = parser.getVariableList(self.system)
-        parsedBConditionDict, parsedEquationsList = self.createPBCDandPEL(boundaryConditionList, parser, variables)
-        outputStr = list(self.generateDefaultBoundaryFunction(blockNumber, parsedEquationsList))
-        intro = '\n//=============================OTHER BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
-        outputStr.append(intro)
-        
-        properSequenceOfSides = [2,3,0,1]
+    def createListOfBCondsForSide(self, block, blockNumber, side):
+        if side == 0:
+            Range = 0.0
+            coord = lambda region: region.xfrom
+        else:
+            Range = block.sizeX
+            coord = lambda region: region.xto 
+            
+        for eqRegion in block.equationRegions:
+            if coord(eqRegion) == Range:
+                equationNum = eqRegion.equationNumber
+                break
+        else:
+            equationNum = block.defaultEquation
+        equation = self.equations[equationNum]
+        for bRegion in block.boundRegions:
+            if bRegion.side == side:
+                values, btype, boundNumber, funcName = self.setDirichletOrNeumann(bRegion, blockNumber, side, equationNum)
+                break
+        else:
+            values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equation, equationNum)
+        return [BoundCondition(values, btype, side, [], boundNumber, equationNum, equation, funcName)]
+                
+    def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, bCondLst):
         #  ***x->
         #  *  
         #  |  ---side 2---
@@ -535,52 +543,26 @@ class generator1D(abstractGenerator):
         #     e          e
         #     0          1
         #     |          |
-        #     ---side 3---        
+        #     ---side 3---  
+        parser = MathExpressionParser()
+        self.createACL(bCondLst, parser)
+        intro = '\n//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
+        outputStr = [intro]      
         
-        #dictionary to return to binarymodel
-        blockFunctionMap = {"center":0, "e0":1, "e1":2} 
-        #counter for elements in blockFunctionMap including subdictionaries
-        bfmLen = 3
-        #for side in range(0, boundaryCount):
-        for side in properSequenceOfSides:
-            #subdictionary for every side 
-            sideMap = {}
-            sideName = "side"+str(side)
-                        
+        bfmLen = len(arrWithFunctionNames)
+        for side, condition in enumerate(bCondLst):
             boundaryName = determineNameOfBoundary(side)
-            defaultFuncName = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
-            arrWithFunctionNames.append(defaultFuncName)
-            #every time we append a name to arrWithFunctionNames we should also  
-            sideMap = {"default":bfmLen}
-            bfmLen += 1
-            #Генерируем функции для всех заданных условий и кладем их имена в массив
-            if side not in parsedBConditionDict:
-                blockFunctionMap.update({sideName:sideMap})
-                continue
-            counter = 0
-            #Это список номеров граничных условий для данной стороны side. Нужен для исключения повторяющихся функций,
-            #т.к. на одну сторону в разных местах м.б. наложено одно и то же условие
-            boundNumberList = list()
-            for condition in parsedBConditionDict[side]:
-                #Если для граничного условия с таким номером функцию еще не создавали, то создать, иначе - не надо.
-                if condition.boundNumber in boundNumberList:
-                    continue
-                boundNumberList.append(condition.boundNumber)
-                parsedBoundaryConditionTuple = list([tuple((side, condition.parsedValues))])
-                outputStr.append('//Non-default boundary condition for boundary ' + boundaryName + '\n')
-                if condition.btype == 0:
-                    name = 'Block' + str(blockNumber) + 'DirichletBound' + str(side) + '_' + str(counter)
-                    outputStr.append(self.generateDirichlet(blockNumber, name, parsedBoundaryConditionTuple))
-                    arrWithFunctionNames.append(name)
-                else:
-                    name = 'Block' + str(blockNumber) + 'NeumannBound' + str(side) + '_' + str(counter)
-                    outputStr.append(self.generateNeumann(blockNumber, name, parsedEquationsList, variables, parsedBoundaryConditionTuple))
-                    arrWithFunctionNames.append(name)
-                sideMap.update({"userBound"+str(condition.boundNumber):bfmLen})
-                bfmLen += 1
-                counter += 1
-            blockFunctionMap.update({sideName:sideMap}) 
-        return ''.join(outputStr), blockFunctionMap
+            sideName = "side"+str(side)
+            outputStr.append('//Boundary condition for boundary ' + boundaryName + '\n')
+            if condition[0].btype == 0:
+                outputStr.append(self.generateDirichlet(blockNumber, condition[0].funcName, condition[0]))
+            else:
+                pBCL = [condition[0]]
+                outputStr.append(self.generateNeumann(blockNumber, condition[0].funcName, condition[0].parsedEquation, condition[0].unknownVars, pBCL))
+            blockFunctionMap.update({sideName: bfmLen})
+            arrWithFunctionNames.append(condition[0].funcName)
+            bfmLen += 1 
+        return ''.join(outputStr)
     
 class generator2D(abstractGenerator):
     def __init__(self, equations, blocks, initials, bounds, gridStep, params, paramValues, defaultParamIndex):
@@ -753,7 +735,7 @@ class generator2D(abstractGenerator):
                     values, btype, boundNumber, funcName = self.setDirichletOrNeumann(bRegion, blockNumber, side, equationNum)
                     break
             else:
-                values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equationNum)
+                values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equation, equationNum)
             bCondRanges = ranges
             condList.append(BoundCondition(values, btype, side, bCondRanges, boundNumber, equationNum, equation, funcName))
             return condList
@@ -765,7 +747,7 @@ class generator2D(abstractGenerator):
                 if bRegion.side == side and (conds[0] or conds[1] or conds[2]):
                     varMaxLst.append(bRegion)
             if len(varMaxLst) == 0:
-                values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equationNum)
+                values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equation, equationNum)
                 if side == 2 or side == 3:
                     bCondRanges = [[var_min, max(varRanges)], secRanges]
                 else:
@@ -776,7 +758,7 @@ class generator2D(abstractGenerator):
                 conds = self.SomeConditions(varMaxReg, stepFrom, stepTo, var_min, max(varRanges))
                 var_max = conds[0] * stepFrom(varMaxReg) + conds[1] * stepTo(varMaxReg) + conds[2] * max(varRanges)
                 if var_max > var_min and conds[0]:
-                    values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equationNum)
+                    values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equation, equationNum)
                     if side == 2 or side == 3:
                         bCondRanges = [[var_min, var_max], secRanges]
                     else:
@@ -791,46 +773,7 @@ class generator2D(abstractGenerator):
                     var_min = min([stepTo(varMaxReg), max(varRanges)]) + cellLen * (stepFrom(varMaxReg) == stepTo(varMaxReg))
             condList.append(BoundCondition(values, btype, side, bCondRanges, boundNumber, equationNum, equation, funcName))
         return condList
-    
-    def setDefault(self, blockNumber, side, equationNum):
-        funcName = "Block" + str(blockNumber) + "DefaultNeumann__Bound" + str(side) + "_Eqn" + str(equationNum)
-        return ['0.0','0.0'], 1, -1, funcName
-    
-    def setDirichletOrNeumann(self, eqRegion, blockNumber, side, equationNum):
-        boundNumber = eqRegion.boundNumber
-        btype = self.bounds[boundNumber].btype
-        if btype == 0:
-            funcName = "Block" + str(blockNumber) + "Dirichlet__Bound" + str(side) + "_" + str(boundNumber) + "_Eqn" + str(equationNum)
-            outputValues = list(self.bounds[boundNumber].derivative)
-        elif btype == 1:
-            funcName = "Block" + str(blockNumber) + "Neumann__Bound" + str(side) + "_" + str(boundNumber) + "_Eqn" + str(equationNum)
-            outputValues = list(self.bounds[boundNumber].values)
-#                 Особенность Неймановского условия
-            if side == 0 or side == 2:
-                for idx, value in enumerate(outputValues):
-                    outputValues.pop(idx)
-                    outputValues.insert(idx, '-(' + value + ')')
-        values = list(outputValues)
-        return values, btype, boundNumber, funcName
-    
-    def generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
-        defaultFunctions = list()
-        parser = MathExpressionParser()
-        variables = parser.getVariableList(self.system)
-        
-        defuaultBoundaryConditionValues = len(variables) * ['0.0']
-        
-        intro = '\n//=========================DEFAULT BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' +str(blockNumber)+'========================//\n\n'       
-        defaultFunctions.append(intro)
-                 
-        for i in range(0, 4):
-            boundaryName = determineNameOfBoundary(i)
-            defaultFunctions.append('//Default boundary condition for boundary ' + boundaryName + '\n')
-            nameForSide = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(i)
-            defaultBoundaryConditionList = list([tuple((i, defuaultBoundaryConditionValues))])
-            defaultFunctions.append(self.generateNeumann(blockNumber, nameForSide, parsedEquationsList, variables, defaultBoundaryConditionList))    
-        return ''.join(defaultFunctions)
-    
+  
     def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst):
         #  ***x->
         #  *  
