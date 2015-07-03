@@ -72,7 +72,9 @@ class ParsePatternCreater:
         for var in variableList:
             variable = variable^Literal(var)
         
-        indepVariable = Word(alphas + nums)
+        indepVariable = Literal('t')
+        for var in indepVariableList:
+            indepVariable = indepVariable^Literal(var)
         
         order = '{' + indepVariable + ',' + integer + '}'
         derivative = 'D['+ variable + ','+ order + ZeroOrMore(',' + order) + ']'
@@ -81,9 +83,9 @@ class ParsePatternCreater:
         unaryOperation = Literal('-')^funcSignature
         binaryOperation = Literal('+')^Literal('-')^Literal('*')^Literal('/')^Literal('^')
         if countOfParams > 0:
-            operand = variable^parameter^Group(derivative)^real
+            operand = variable^parameter^Group(derivative)^real^indepVariable
         else:
-            operand = variable^Group(derivative)^real
+            operand = variable^Group(derivative)^real^indepVariable
     
         recursiveUnaryOperation = Forward()
         recursiveUnaryOperation << (Literal('(')^unaryOperation) + Optional(recursiveUnaryOperation)
