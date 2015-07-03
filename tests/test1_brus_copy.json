@@ -7,7 +7,7 @@
         "Workspace": "/home/tester/Tracer1", 
         "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
     }, 
-    "ProjectName": "Heat_test_Frolov", 
+    "ProjectName": "Heat_test", 
     "StartTime": 0.0, 
     "FinishTime": 10.0, 
     "TimeStep": 0.000001, 
@@ -34,15 +34,7 @@
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0,
-            "EquationRegions": [
-                {
-		    "EquationNumber": 1,
-		    "xfrom": 0.4,
-		    "xto": 0.6,
-		    "yfrom": 0.4,
-		    "yto": 0.6
-                }
-            ],
+            "EquationRegions": [],
             "BoundRegions": [], 
             "InitialRegions": []
         }
@@ -56,52 +48,30 @@
                 "y"
             ], 
             "System": [
-                "U'=t1 * (D[U,{x,2}] + D[U,{y,2}])",
-                "V'=t2 * (D[V,{x,2}] + D[V,{y,2}])",
-                "M'=a + (M^2) * N - (b+1) * M + c * (D[M,{x,2}] + D[M,{y,2}])",
-                "N'=b * M - (M^2) * N + c * (D[N,{x,2}] + D[N,{y,2}])"
-            ]
-        },
-        {
-            "Name": "Flat Brusselator", 
-            "Vars": [
-                "x", 
-                "y"
-            ], 
-            "System": [
-                "U'=2.0",
-                "V'=-2.0",
-                "M'=a + (M^2) * N - (b+1) * M + c * (D[M,{x,2}] + D[M,{y,2}])",
-                "N'=b * M - (M^2) * N + c * (D[N,{x,2}] + D[N,{y,2}])"
+                "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}]+D[U,{y,2}])",
+                "V'=b*U-U*U*V+c*(D[V,{x,2}]+D[V,{y,2}])"
             ]
         }
     ], 
     "Params": [
-	  "t1",
-	  "t2",
 	  "a",
 	  "b",
 	  "c"
       ], 
       "ParamValues": [
 	  {
-	      "t1": 2.0,
-	      "t2": 0.1,
-	      "a": 0.0,
-	      "b": 1.0,
+	      "a": 1.0,
+	      "b": 3.4,
 	      "c": 0.002
-	  }
+	  }   
     ],
-    "DefaultParamsIndex": 0,
     "Bounds": [], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
-		"0.0",
-		"0.0",
-                "0.5 + y",
-                "1.0 + 5*x"
+                "0.5+y",
+                "1+5*x"
             ]
         }
     ], 
