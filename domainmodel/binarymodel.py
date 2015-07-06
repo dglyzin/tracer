@@ -35,7 +35,49 @@ class BinaryModel(object):
         self.dmodel = dmodel
 
     def fill1dInitFuncs(self, funcArr, block, blockSize):
-        pass
+        print "Filling 1d initial function array."
+        xc = blockSize[0]        
+        #1 fill default conditions
+        usedInitNums = [block.defaultInitial]
+        initFuncNum = usedInitNums.index(block.defaultInitial)         
+        funcArr[:] = initFuncNum
+                
+        #2 fill user-defined conditions
+        #2.1 collect user-defines initial conditions that are used in this block        
+        for initReg in block.initialRegions:
+            if not (initReg.initialNumber in usedInitNums):
+                usedInitNums.append(initReg.initialNumber)
+        #2.2 fill them    
+        for initReg in block.initialRegions:    
+            initFuncNum = usedInitNums.index(initReg.initialNumber)
+            xstart, xend = self.dmodel.getXrange(block, initReg.xfrom, initReg.xto)                        
+            funcArr[xstart:xend] = initFuncNum             
+                
+        print "Used init nums:", usedInitNums
+        
+        #3 overwrite with values that come from Dirichlet bounds
+        #3.1 collect dirichlet bound numbers that are used in this block
+        usedIndices = len(usedInitNums)
+        usedDirBoundNums = []
+        for boundReg in block.boundRegions:
+            if not (boundReg.boundNumber in usedDirBoundNums):
+                if (self.dmodel.bounds[boundReg.boundNumber].btype == bdict["dirichlet"]):
+                    usedDirBoundNums.append(boundReg.boundNumber) 
+        
+        usedDirBoundNums.sort()
+        print "Used Dirichlet bound nums:", usedDirBoundNums
+        #3.2 fill them
+        for boundReg in block.boundRegions:
+            if (self.dmodel.bounds[boundReg.boundNumber].btype == bdict["dirichlet"]):
+                initFuncNum = usedIndices + usedDirBoundNums.index(boundReg.boundNumber) 
+                if boundReg.side == 0:       
+                    idxX = 0                                
+                elif boundReg.side == 1:
+                    idxX = xc - 1                               
+                funcArr[idxX] = initFuncNum                    
+                
+        
+        
 
     def fill2dInitFuncs(self, funcArr, block, blockSize):
         print "Filling 2d initial function array."
@@ -99,14 +141,35 @@ class BinaryModel(object):
         pass
 
 
-    def fill1dCompFuncs(self, funcArr, block, blockSize):
-        pass
+    def fill1dCompFuncs(self, funcArr, block, functionMap, blockSize):
+        print "Filling 1d main function array."
+        print "Function mapping for this block:"
+        print functionMap
+        xc = blockSize[0]        
+        print "size:", xc
+        haloSize = self.dmodel.getHaloSize()
+        if haloSize>1:
+            raise AttributeError("Halosize>1 is not supported yet")
+        #1 fill center funcs
+        if "center_default" in functionMap:
+            funcArr[:] = functionMap["center_default"]       
+            
+        for [funcIdx, xfrom, xto] in functionMap["center"]:
+            xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)            
+            funcArr[xfromIdx:xtoIdx] = funcIdx
+        #2 fill edges
+        funcArr[0]       = functionMap["side0"]
+        funcArr[xc-1]    = functionMap["side1"]
+        
+        
+        
 
     def fill2dCompFuncs(self, funcArr, block, functionMap, blockSize):
+        print "Filling 2d main function array."
+        print "Function mapping for this block:"
         print functionMap
         xc = blockSize[0]
-        yc = blockSize[1]
-        print "Filling 2d main function array."
+        yc = blockSize[1]        
         print "size:", xc, "x", yc
         haloSize = self.dmodel.getHaloSize()
         if haloSize>1:
@@ -226,11 +289,17 @@ class BinaryModel(object):
             #2. Fill block functions
             if blockDim==1:
                 self.fill1dInitFuncs(blockInitFuncArr, block, cellCountList)
-                self.fill1dCompFuncs(blockCompFuncArr, block, cellCountList)
+                print "Initial function indices:"
+                print blockInitFuncArr
+                self.fill1dCompFuncs(blockCompFuncArr, block, self.functionMaps[blockIdx], cellCountList)
+                print "Computation function indices:"
+                print blockCompFuncArr
             elif blockDim==2:
                 self.fill2dInitFuncs(blockInitFuncArr.reshape([yc, xc]), block, cellCountList)
+                print "Initial function indices:"
                 print blockInitFuncArr.reshape([yc, xc])
                 self.fill2dCompFuncs(blockCompFuncArr.reshape([yc, xc]), block, self.functionMaps[blockIdx], cellCountList)                
+                print "Computation function indices:"
                 print blockCompFuncArr.reshape([yc, xc])
             elif blockDim==3:
                 self.fill1dFuncs(blockInitFuncArr, block, cellCountList)
@@ -239,6 +308,10 @@ class BinaryModel(object):
             self.blockInitFuncArrList.append(blockInitFuncArr)
             self.blockCompFuncArrList.append(blockCompFuncArr)
 
+
+
+    def interconnect0dFill(self, icIdx):
+        pass
 
     def interconnect1dFill(self, icIdx):
         ic = self.dmodel.interconnects[icIdx]
@@ -310,7 +383,9 @@ class BinaryModel(object):
         for icIdx in range(self.icCount):
             ic = self.dmodel.interconnects[icIdx]
             icDim = self.dmodel.blocks[ic.block1].dimension - 1
-            if icDim == 1:
+            if icDim == 0:
+                self.interconnect0dFill(icIdx)
+            elif icDim == 1:
                 self.interconnect1dFill(icIdx)
 
     
