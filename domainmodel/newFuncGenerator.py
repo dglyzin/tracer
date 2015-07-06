@@ -4,14 +4,14 @@ from someFuncs import generateCodeForMathFunction, determineNameOfBoundary, Rect
 from rhsCodeGenerator import RHSCodeGenerator
 
 class FuncGenerator:
-    def __init__(self, equations, blocks, initials, bounds, gridStep, params, paramValues, defaultParamIndex):
+    def __init__(self, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):
         dimension = len(equations[0].vars)
         if dimension == 1:
-            self.generator = generator1D(equations, blocks, initials, bounds, gridStep, params, paramValues, defaultParamIndex)
+            self.generator = generator1D(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         elif dimension == 2:
-            self.generator = generator2D(equations, blocks, initials, bounds, gridStep, params, paramValues, defaultParamIndex)
+            self.generator = generator2D(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         else:
-            self.generator = generator3D(equations, blocks, initials, bounds, gridStep, params, paramValues, defaultParamIndex)
+            self.generator = generator3D(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
     
     def generateAllFunctions(self):
 #         Важный момент: всегда предполагается, что массив equations содержит только 1 уравнение.
@@ -23,9 +23,9 @@ class FuncGenerator:
         totalArrWithFunctionNames = list()
         functionMaps = []
         for blockNumber, block in enumerate(self.generator.blocks):
-            systemsForCentralFuncs, numsForSystems, totalBCondLst, blockFunctionMap = self.generator.getBlockInfo(block, blockNumber)
+            systemsForCentralFuncs, numsForSystems, totalBCondLst, totalInterconnectLst, blockFunctionMap = self.generator.getBlockInfo(block, blockNumber)
             cf, arrWithFunctionNames = self.generator.generateCentralFunctionCode(block, blockNumber, systemsForCentralFuncs, numsForSystems)
-            bf = self.generator.generateBoundsAndIcs(blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst)
+            bf = self.generator.generateBoundsAndIcs(blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst)
             
             totalArrWithFunctionNames.append(arrWithFunctionNames)
             functionMaps.append(blockFunctionMap)
@@ -38,6 +38,7 @@ class FuncGenerator:
 
 class BoundCondition:
     def __init__(self, values, btype, side, ranges, boundNumber, equationNumber, equation, funcName):
+        self.name = "BoundCondition"
         self.values = values
         self.btype = btype
         self.side = side
@@ -59,14 +60,34 @@ class BoundCondition:
         self.parsedEquation = list()
         for equat in self.equation.system:
             self.parsedEquation.extend([mathParser.parseMathExpression(equat, self.unknownVars, params, self.equation.vars)])
+
+class Connection:
+    def __init__(self, index, side, ranges, equationNumber, equation, funcName):
+        self.name = "Connection"
+        self.index = index
+        self.side = side
+        self.ranges = ranges
+        self.equationNumber = equationNumber
+        self.equation = equation
+        self.funcName = funcName
+    
+    def createSpecialProperties(self, mathParser, params):
+# Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
+# boundaryCoordinates отличается от ranges тем, что ranges -- это то как задал границу юзер,
+# а boundaryCoordinates -- координаты крайних точек границы в геометрическом смысле 
+        self.unknownVars = mathParser.getVariableList(self.equation.system)    
+        self.parsedEquation = list()
+        for equat in self.equation.system:
+            self.parsedEquation.extend([mathParser.parseMathExpression(equat, self.unknownVars, params, self.equation.vars)])
         
 class abstractGenerator(object):
 # Генерирует выходную строку для записи в файл
-    def __init__(self, equations, blocks, initials, bounds, gridStep, params, paramValues, defaultParamsIndex):
+    def __init__(self, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamsIndex):
         self.equations = equations
         self.blocks = blocks
         self.initials = initials
         self.bounds = bounds
+        self.interconnects = interconnects
         self.gridStep = gridStep
         
         self.userIndepVars = equations[0].vars
@@ -401,7 +422,7 @@ class abstractGenerator(object):
         function.append('}\n')
         return ''.join(function)
         
-    def generateNeumann(self, blockNumber, name, parsedEquationsList, unknownVars, pBCL): 
+    def generateNeumannOrInterconnect(self, blockNumber, name, parsedEquationsList, unknownVars, pBCL): 
 #         parsedBoundaryConditionList --- это список, содержащий от 1 до 3 элементов
 #         parsedEquationsList --- список, элементы которого --- распарсенные правые части всех уравнений
         strideList = list([])
@@ -445,8 +466,8 @@ class abstractGenerator(object):
         return ''.join(output)
     
 class generator1D(abstractGenerator):
-    def __init__(self, equations, blocks, initials, bounds, gridStep, params, paramValues, defaultParamIndex):
-        super(generator1D,self).__init__(equations, blocks, initials, bounds, gridStep, params, paramValues, defaultParamIndex)
+    def __init__(self, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):
+        super(generator1D,self).__init__(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         self.cellsizeList = list()
         self.allBlockSizeList = list()
         self.allBlockOffsetList = list()
@@ -506,8 +527,10 @@ class generator1D(abstractGenerator):
         sides = [0,1]
         for side in sides:
             totalBCondLst.append(self.createListOfBCondsForSide(block, blockNumber, side))
+            
+        totalInterconnectLst = self.createListOfInterconnects(block, blockNumber)
         
-        return systemsForCentralFuncs, numsForSystems, totalBCondLst, blockFuncMap
+        return systemsForCentralFuncs, numsForSystems, totalBCondLst, totalInterconnectLst, blockFuncMap
     
     def createListOfBCondsForSide(self, block, blockNumber, side):
         if side == 0:
@@ -530,9 +553,37 @@ class generator1D(abstractGenerator):
                 break
         else:
             values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equation, equationNum)
-        return [BoundCondition(values, btype, side, [], boundNumber, equationNum, equation, funcName)]
+        return BoundCondition(values, btype, side, [], boundNumber, equationNum, equation, funcName)
+    
+    def createListOfInterconnects(self, block, blockNumber):
+        icsForBlock = []
+        for iconn in self.interconnects:
+            if iconn.block1 == blockNumber:
+                side = iconn.block1Side
+            elif iconn.block2 == blockNumber:
+                side = iconn.block2Side
+            else:
+                continue
+            index = len(icsForBlock)
+            if side == 0:
+                Range = 0.0
+                coord = lambda region: region.xfrom
+            else:
+                Range = block.sizeX
+                coord = lambda region: region.xto 
                 
-    def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, bCondLst):
+            for eqRegion in block.equationRegions:
+                if coord(eqRegion) == Range:
+                    equationNum = eqRegion.equationNumber
+                    break
+            else:
+                equationNum = block.defaultEquation
+            equation = self.equations[equationNum]
+            funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(side) + "_Eqn" + str(equationNum)
+            icsForBlock.append(Connection(index, side, [], equationNum, equation, funcName))
+        return icsForBlock
+                
+    def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, bCondLst, icsList):
         #  ***x->
         #  *  
         #  |  ---side 2---
@@ -545,28 +596,53 @@ class generator1D(abstractGenerator):
         #     |          |
         #     ---side 3---  
         parser = MathExpressionParser()
-        self.createACL(bCondLst, parser)
+#         self.createACL(bCondLst, parser)
         intro = '\n//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputStr = [intro]      
         
-        bfmLen = len(arrWithFunctionNames)
-        for side, condition in enumerate(bCondLst):
-            boundaryName = determineNameOfBoundary(side)
-            sideName = "side"+str(side)
-            outputStr.append('//Boundary condition for boundary ' + boundaryName + '\n')
-            if condition[0].btype == 0:
-                outputStr.append(self.generateDirichlet(blockNumber, condition[0].funcName, condition[0]))
+        for condition in bCondLst:
+            for iconn in icsList:
+                if iconn.side == condition.side:
+                    outputStr.append(self.generateInterconnect(iconn, parser, blockNumber, arrWithFunctionNames, blockFunctionMap))
+                    break
             else:
-                pBCL = [condition[0]]
-                outputStr.append(self.generateNeumann(blockNumber, condition[0].funcName, condition[0].parsedEquation, condition[0].unknownVars, pBCL))
-            blockFunctionMap.update({sideName: bfmLen})
-            arrWithFunctionNames.append(condition[0].funcName)
-            bfmLen += 1 
+                outputStr.append(self.generateBound(condition, parser, blockNumber, arrWithFunctionNames, blockFunctionMap))
         return ''.join(outputStr)
     
+    def generateBound(self, condition, parser, blockNumber, arrWithFunctionNames, blockFunctionMap):
+        indepVarsForBoundaryFunction = list(self.userIndepVars)
+        indepVarsForBoundaryFunction.remove(self.userIndepVars[condition.side // 2])
+        indepVarsForBoundaryFunction.extend(['t'])
+        
+        condition.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
+        boundaryName = determineNameOfBoundary(condition.side)
+        sideName = "side"+str(condition.side)
+        outputStr = '//Boundary condition for boundary ' + boundaryName + '\n'
+        if condition.btype == 0:
+            outputStr += self.generateDirichlet(blockNumber, condition.funcName, condition)
+        else:
+            pBCL = [condition]
+            outputStr += self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL)
+        bfmLen = len(blockFunctionMap)
+        blockFunctionMap.update({sideName: bfmLen})
+        arrWithFunctionNames.append(condition.funcName)
+        return outputStr
+    
+    def generateInterconnect(self, iconn, parser, blockNumber, arrWithFunctionNames, blockFunctionMap):
+        iconn.createSpecialProperties(parser, self.params)
+        boundaryName = determineNameOfBoundary(iconn.side)
+        sideName = "side"+str(iconn.side)
+        outputStr = '//Interconnect for block ' + str(blockNumber) + ' for boundary ' + boundaryName + '\n'
+        pBCL = [iconn]
+        outputStr += self.generateNeumannOrInterconnect(blockNumber, iconn.funcName, iconn.parsedEquation, iconn.unknownVars, pBCL)
+        bfmLen = len(blockFunctionMap)
+        blockFunctionMap.update({sideName: bfmLen})
+        arrWithFunctionNames.append(iconn.funcName)
+        return outputStr
+    
 class generator2D(abstractGenerator):
-    def __init__(self, equations, blocks, initials, bounds, gridStep, params, paramValues, defaultParamIndex):
-        super(generator2D,self).__init__(equations, blocks, initials, bounds, gridStep, params, paramValues, defaultParamIndex)
+    def __init__(self, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):
+        super(generator2D,self).__init__(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         self.cellsizeList = list()
         self.allBlockSizeList = list()
         self.allBlockOffsetList = list()
@@ -634,7 +710,7 @@ class generator2D(abstractGenerator):
         for side in sides:
             totalBCondLst.append(self.createListOfBCondsForSide(block, blockNumber, side))
         
-        return systemsForCentralFuncs, numsForSystems, totalBCondLst, blockFuncMap
+        return systemsForCentralFuncs, numsForSystems, totalBCondLst, [], blockFuncMap
     
     def createListOfBCondsForSide(self, block, blockNumber, side):
         if side == 2:
@@ -774,7 +850,7 @@ class generator2D(abstractGenerator):
             condList.append(BoundCondition(values, btype, side, bCondRanges, boundNumber, equationNum, equation, funcName))
         return condList
   
-    def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst):
+    def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst):
         #  ***x->
         #  *  
         #  |  ---side 2---
@@ -818,7 +894,7 @@ class generator2D(abstractGenerator):
                     outputStr.append(self.generateDirichlet(blockNumber, condition.funcName, condition))
                 else:
                     pBCL = [condition]
-                    outputStr.append(self.generateNeumann(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL))
+                    outputStr.append(self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL))
                 arrWithFunctionNames.append(condition.funcName)
                 ranges = [condition.ranges[0][0], condition.ranges[0][1], condition.ranges[1][0], condition.ranges[1][1]]
                 sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
@@ -848,13 +924,13 @@ class generator2D(abstractGenerator):
             if angleCond[0].boundNumber == angleCond[1].boundNumber == -1:
                 output.append('//Default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                 nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumann__Vertex' + funcIndex
-                output.extend([self.generateNeumann(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
                 arrWithFunctionNames.append(nameForVertex)
                 continue
             output.append('//Non-default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
             if angleCond[0].btype == angleCond[1].btype == 1:
                 nameForVertex = 'Block' + str(blockNumber) + 'Neumann__Vertex' + funcIndex
-                output.extend([self.generateNeumann(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
             elif angleCond[0].btype == 0:
                 nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
                 output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[0])])
@@ -966,7 +1042,7 @@ class generator3D(abstractGenerator):
             defaultFunctions.append('//Default boundary condition for boundary ' + boundaryName + '\n')
             nameForSide = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(i)
             defaultBoundaryConditionList = list([tuple((i, defuaultBoundaryConditionValues))])
-            defaultFunctions.append(self.generateNeumann(blockNumber, nameForSide, parsedEquationsList, variables, defaultBoundaryConditionList))
+            defaultFunctions.append(self.generateNeumannOrInterconnect(blockNumber, nameForSide, parsedEquationsList, variables, defaultBoundaryConditionList))
             
         ribs = [(0,2),(0,3),(0,4),(0,5),(1,2),(1,3),(1,4),(1,5),(2,4),(2,5),(3,4),(3,5)]
         for rib in ribs:
@@ -975,7 +1051,7 @@ class generator3D(abstractGenerator):
             defaultFunctions.extend(['//Default boundary condition for rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n'])
             defaultBoundaryConditionList = list([tuple((rib[0], defuaultBoundaryConditionValues)), tuple((rib[1], defuaultBoundaryConditionValues))])
             nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForRib' + str(rib[0]) + '_' + str(rib[1])
-            defaultFunctions.extend([self.generateNeumann(blockNumber, nameForVertex, parsedEquationsList, variables, defaultBoundaryConditionList)])     
+            defaultFunctions.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEquationsList, variables, defaultBoundaryConditionList)])     
         return ''.join(defaultFunctions)
     
     def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockRanges, boundaryConditionList):
@@ -1082,7 +1158,7 @@ class generator3D(abstractGenerator):
                 if pair[0][1] == pair[1][1] == 1:
                     nameForRib = 'Block' + str(blockNumber) + 'NeumannBoundForRib' + str(rib[0]) + '_' + str(rib[1]) + '_' + str(number)
                     boundaryConditionList = list([tuple((rib[0], pair[0][0])), tuple((rib[1], pair[1][0]))])
-                    output.extend([self.generateNeumann(blockNumber, nameForRib, parsedEstrList, variables, boundaryConditionList)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEstrList, variables, boundaryConditionList)])
                 elif pair[0][1] == 0:
                     nameForRib = 'Block' + str(blockNumber) + 'DirichletBoundForRib' + str(rib[0]) + '_' + str(rib[1]) + '_' + str(number)
                     boundaryConditionList = list([tuple((rib[0], pair[0][0]))])
@@ -1152,7 +1228,7 @@ class generator3D(abstractGenerator):
             if type1 == type2 == type3 == 1:
                 boundaryConditionList = list([tuple((Vertex[0], bound1CondValue)), tuple((Vertex[1], bound2CondValue)), tuple((Vertex[2], bound3CondValue))])
                 nameForVertex = 'Block' + str(blockNumber) + 'NeumannBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
-                output.extend([self.generateNeumann(blockNumber, nameForVertex, parsedEstrList, variables, boundaryConditionList)])
+                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEstrList, variables, boundaryConditionList)])
             elif type1 == 0:
                 boundaryConditionList = list([tuple((Vertex[0], bound1CondValue))])
                 nameForVertex = 'Block' + str(blockNumber) + 'DirichletBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])

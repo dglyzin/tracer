@@ -126,6 +126,21 @@ class DerivGenerator:
         else:
             raise SyntaxError("The highest derivative order of the system greater than 2! I don't know how to generate boundary function in this case!")
     
+    def __interconnectPureDerivAlternative(self, blockNumber, increment, stride, order, varIndex, side, index):
+        if side % 2 == 0:
+            first = 'source[idx + ' + stride + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
+            second = 'ic['+str(index)+'][0]'
+        else:
+            first = 'ic['+str(index)+'][0]'
+            second = 'source[idx - ' + stride + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
+        if order == 1:
+            return '0.5 * ' + increment + ' * ' + '(' + first + ' - ' + second + ')'
+        elif order == 2:
+            third = '2.0 * source[idx + ' + str(varIndex) + ']'
+            return '(' + increment + ' * ' + '(' + first + ' - ' + third + ' + ' + second + ')' + ')'
+        else:
+            raise AttributeError("Pure derivative in some equation has order greater than 2!")
+        
 #     def __creatreIndicesList(self, angle, blockNumber, derivativeIndepVarList, userIndepVarList):
 # #         Создает список индексов для генерирования смешанной производной 2 порядка
 # #         angle --- это номер угла блока: здесь y=0 --- вверху
@@ -157,7 +172,7 @@ class DerivGenerator:
 #             indicesList.append(' - Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper())
 #             indicesList.append(' - (Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[0].upper() + ' + Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper() + ')')
     
-    def generateCodeForDerivative(self, blockNumber, varIndex, indepVarList, indepVarIndexList, derivativeOrderList, userIndepVariables, parsedMathFunction, side):
+    def generateCodeForDerivative(self, blockNumber, varIndex, indepVarList, indepVarIndexList, derivativeOrderList, userIndepVariables, parsedMathFunction, side, firstIndex = -1):
         strideList = list([])
         for indepVar in userIndepVariables:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
@@ -172,12 +187,16 @@ class DerivGenerator:
             for o in derivativeOrderList:
                 order = order + int(o)
             
-            if side % 2 == 0 and indepVarIndexList[0] == side / 2:
-                return self.__specialPureDerivativeAlternative(blockNumber, parsedMathFunction, increment, specialIncrement, stride, strideList, order, varIndex, userIndepVariables, 1)
-            elif (side - 1) % 2 == 0 and indepVarIndexList[0] == (side - 1) / 2:
-                return self.__specialPureDerivativeAlternative(blockNumber, parsedMathFunction, increment, specialIncrement, stride, strideList, order, varIndex, userIndepVariables, 0)
+            #Случай соединения блоков в одномерной задаче
+            if firstIndex >= 0:
+                return self.__interconnectPureDerivAlternative(blockNumber, increment, stride, order, varIndex, side, firstIndex)
             else:
-                return self.__commonPureDerivativeAlternative(blockNumber, increment, stride, order, varIndex)
+                if side % 2 == 0 and indepVarIndexList[0] == side / 2:
+                    return self.__specialPureDerivativeAlternative(blockNumber, parsedMathFunction, increment, specialIncrement, stride, strideList, order, varIndex, userIndepVariables, 1)
+                elif (side - 1) % 2 == 0 and indepVarIndexList[0] == (side - 1) / 2:
+                    return self.__specialPureDerivativeAlternative(blockNumber, parsedMathFunction, increment, specialIncrement, stride, strideList, order, varIndex, userIndepVariables, 0)
+                else:
+                    return self.__commonPureDerivativeAlternative(blockNumber, increment, stride, order, varIndex)
         elif len(indepVarList) == 2:
             generalOrder = 0
             for order in derivativeOrderList:
@@ -217,3 +236,4 @@ class DerivGenerator:
                 return self.__commonMixedDerivativeAlternative(blockNumber, increment, indepVar_Order_Stride, varIndex)
         else:
             raise SyntaxError('Mixed partial derivative has very high order (greater then 2)!')
+        
