@@ -651,8 +651,8 @@ class generator1D(abstractGenerator):
         else:
             pBCL = [condition]
             outputStr += self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL)
-        bfmLen = len(blockFunctionMap)
-        blockFunctionMap.update({sideName: bfmLen})
+        idx = len(arrWithFunctionNames)
+        blockFunctionMap.update({sideName: idx})
         arrWithFunctionNames.append(condition.funcName)
         return outputStr
     
@@ -663,8 +663,8 @@ class generator1D(abstractGenerator):
         outputStr = '//Interconnect for block ' + str(blockNumber) + ' for boundary ' + boundaryName + '\n'
         pBCL = [iconn]
         outputStr += self.generateNeumannOrInterconnect(blockNumber, iconn.funcName, iconn.parsedEquation, iconn.unknownVars, pBCL)
-        bfmLen = len(blockFunctionMap)
-        blockFunctionMap.update({sideName: bfmLen})
+        idx = len(arrWithFunctionNames)
+        blockFunctionMap.update({sideName: idx})
         arrWithFunctionNames.append(iconn.funcName)
         return outputStr
     
