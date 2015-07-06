@@ -62,7 +62,7 @@ class RHSCodeGenerator:
                 parsedMathFunction = pbcl[0].parsedValues[varIndex]
                 derivative = dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)
             else:
-                derivative = dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, "", side, pbcl[0].index)
+                derivative = dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, "", side, pbcl[0].index, 0)
 #         Условие на угол прямоугольника или параллелепипеда или на ребро параллелепипеда        
         elif boundaryConditionCount == 2 or boundaryConditionCount == 3:
             derivativeLR = list([])

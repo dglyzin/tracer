@@ -558,20 +558,48 @@ class generator1D(abstractGenerator):
     def createListOfInterconnects(self, block, blockNumber):
         icsForBlock = []
         for iconn in self.interconnects:
-            if iconn.block1 == blockNumber:
+            #Если блок зациклен.
+            if iconn.block1 == blockNumber and iconn.block2 == blockNumber:
+                Range1 = (iconn.block1Side == 1) * block.sizeX
+                Range2 = (iconn.block2Side == 1) * block.sizeX
+                coord1 = lambda region: (iconn.block1Side == 0) * region.xfrom + (iconn.block1Side == 1) * region.xto
+                coord2 = lambda region: (iconn.block2Side == 0) * region.xfrom + (iconn.block2Side == 1) * region.xto
+                for eqRegion in block.equationRegions:
+                    if coord1(eqRegion) == Range1:
+                        equationNum1 = eqRegion.equationNumber
+                        break
+                else:
+                    equationNum1 = block.defaultEquation
+                for eqRegion in block.equationRegions:
+                    if coord2(eqRegion) == Range2:
+                        equationNum2 = eqRegion.equationNumber
+                        break
+                else:
+                    equationNum2 = block.defaultEquation
+                equation1 = self.equations[equationNum1]
+                equation2 = self.equations[equationNum2]
+                funcName1 = "Block" + str(blockNumber) + "Interconnect__Side" + str(iconn.block1Side) + "_Eqn" + str(equationNum1)
+                funcName2 = "Block" + str(blockNumber) + "Interconnect__Side" + str(iconn.block2Side) + "_Eqn" + str(equationNum2)
+                icsForBlock.append(Connection(0, iconn.block2Side, [], equationNum2, equation2, funcName2))
+                icsForBlock.append(Connection(1, iconn.block1Side, [], equationNum1, equation1, funcName1))
+                continue
+            #Если соединяются несколько блоков
+            elif iconn.block1 == blockNumber and iconn.block2 != blockNumber:
                 side = iconn.block1Side
-            elif iconn.block2 == blockNumber:
+            elif iconn.block2 == blockNumber and iconn.block1 != blockNumber:
                 side = iconn.block2Side
             else:
                 continue
             index = len(icsForBlock)
-            if side == 0:
-                Range = 0.0
-                coord = lambda region: region.xfrom
-            else:
-                Range = block.sizeX
-                coord = lambda region: region.xto 
-                
+            Range = (side == 1) * block.sizeX
+            coord = lambda region: (side == 0) * region.xfrom + (side == 1) * region.xto
+#             if side == 0:
+#                 Range = 0.0
+#                 coord = lambda region: region.xfrom
+#             else:
+#                 Range = block.sizeX
+#                 coord = lambda region: region.xto 
+#                 
             for eqRegion in block.equationRegions:
                 if coord(eqRegion) == Range:
                     equationNum = eqRegion.equationNumber
