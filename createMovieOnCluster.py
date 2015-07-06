@@ -25,27 +25,34 @@ import multiprocessing as mp
 from multiprocessing import Pool
 
 import time
-from fileutils import getSortedBinFileList, defaultProjFname
+from fileUtils import getSortedBinFileList, defaultProjFname
 
-def savePng(filename, X, Y, layer, maxValue, minValue, currentTime):
+import math
+
+def savePng(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
     figure = Figure()
     canvas = FigureCanvas(figure)
     
     t = str(currentTime)
     
-    axes = figure.add_subplot(111, title=t)
-    figure.subplots_adjust(right=0.8)
-    cbaxes = figure.add_axes([0.85, 0.15, 0.05, 0.7])
+    row = round(math.sqrt(cellSize))
+    column = math.ceil(cellSize / row)
+    
+    for i in range(cellSize):
+        m = 100 * row + 10 * column + i + 1
+        axes = figure.add_subplot(m, title=t)
+        #figure.subplots_adjust(right=0.8)
+        #cbaxes = figure.add_axes([0.85, 0.15, 0.05, 0.5])
 
-    cmap=cm.jet
-    #minTemp = layer.min()
-    #maxTemp = layer.max()
+        cmap=cm.jet
+        
+        layer = data[0,:,:,i]
 
-    cb = axes.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue, cmap=cmap)
-    axes.axis([X.min(), X.max(), Y.min(), Y.max()])
-    axes.set_aspect('equal')
-
-    figure.colorbar(cb, cax=cbaxes)
+        cb = axes.pcolormesh(X, Y, layer, vmin=minValue[i], vmax=maxValue[i])
+        axes.axis([X.min(), X.max(), Y.min(), Y.max()])
+        axes.set_aspect('equal')
+        #figure.colorbar(cb, cax=cbaxes)
+        
     ###    
     canvas.draw()
     figure.savefig(filename, format='png')            
@@ -57,7 +64,7 @@ def savePng(filename, X, Y, layer, maxValue, minValue, currentTime):
 
 def readDomFile(projectDir):
     #reading dom file
-    dom = open(projectDir+"/project.dom", 'rb')    
+    dom = open(projectDir+"project.dom", 'rb')    
     m254, = struct.unpack('b', dom.read(1))
     versionMajor, = struct.unpack('b', dom.read(1))
     versionMinor, = struct.unpack('b', dom.read(1))
@@ -193,20 +200,31 @@ def readBinFile(projectDir, binFile, info, countZ, countY, countX, offsetZ, offs
   
   
 def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize):
-    maxValue = sys.float_info.min
-    minValue = sys.float_info.max
+    maxValue = []#sys.float_info.min
+    minValue = []#sys.float_info.max
+    
+    for i in range(cellSize):
+        maxValue.append(sys.float_info.min)
+        minValue.append(sys.float_info.max)
     
     for idx, binFile in enumerate(binFileList):
         data = readBinFile(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
-       
-        tmpMaxValue = np.max(data)
-        tmpMinValue = np.min(data)
         
-        if tmpMaxValue > maxValue:
-            maxValue = tmpMaxValue
+        
+        for i in range(cellSize):
+            tmp = data[0,:,:,i]
+       
+            tmpMaxValue = np.max(tmp)
+            tmpMinValue = np.min(tmp)
+        
+            if tmpMaxValue > maxValue[i]:
+                maxValue[i] = tmpMaxValue
             
-        if tmpMinValue < minValue:
-            minValue = tmpMinValue
+            if tmpMinValue < minValue[i]:
+                minValue[i] = tmpMinValue
+                
+    print maxValue
+    print minValue
            
     return maxValue, minValue
   
@@ -222,7 +240,6 @@ def createPng( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offs
 
 
     X,Y = np.meshgrid(xs,ys)
-    layer = data[0,:,:,0]
 
     #plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
     #plt.colorbar()
@@ -235,7 +252,7 @@ def createPng( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offs
     t = binFile.split("-")[1]
     t = t.split(".bin")[0]
     
-    savePng(filename, X, Y, layer, maxValue, minValue, t)
+    savePng(filename, X, Y, data, maxValue, minValue, t, cellSize)
         
         
         
@@ -288,10 +305,11 @@ def createMovie(projectDir):
 if __name__ == "__main__":
     t1 = time.time()
     
-    if len(sys.argv)==1:
+    if len(sys.argv)<2:
         print "Please specify a project directory"
     else:
         projectDir = sys.argv[1]
+        
         createMovie(projectDir)
         
     t2 = time.time()
