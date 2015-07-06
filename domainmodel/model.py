@@ -467,8 +467,8 @@ class Model(QObject):
         
         
     def getXrange(self, block, xfrom, xto):
-        xfrom -= block.offsetX
-        xto -= block.offsetX
+        #xfrom -= block.offsetX
+        #xto -= block.offsetX
         fromIdx, toIdx = int(xfrom/self.gridStepX),int(xto/self.gridStepX)
         [xc, _, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
         if fromIdx == 0: fromIdx = 1
@@ -476,8 +476,8 @@ class Model(QObject):
         return fromIdx, toIdx
     
     def getYrange(self, block, yfrom, yto):
-        yfrom -= block.offsetY
-        yto -= block.offsetY
+        #yfrom -= block.offsetY
+        #yto -= block.offsetY
         fromIdx, toIdx = int(yfrom/self.gridStepY),int(yto/self.gridStepY)
         [_, yc, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
         if fromIdx == 0: fromIdx = 1
@@ -485,8 +485,8 @@ class Model(QObject):
         return fromIdx, toIdx
     
     def getZrange(self, block, zfrom, zto):
-        zfrom -= block.offsetZ
-        zto -= block.offsetZ
+        #zfrom -= block.offsetZ
+        #zto -= block.offsetZ
         fromIdx, toIdx = int(zfrom/self.gridStepZ),int(zto/self.gridStepZ)
         [_, _, zc ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
         if fromIdx == 0: fromIdx = 1
