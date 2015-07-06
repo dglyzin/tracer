@@ -37,6 +37,23 @@
             "EquationRegions": [],
             "BoundRegions": [], 
             "InitialRegions": []
+        },
+        {
+            "Name": "SubBlock", 
+            "Dimension": 2, 
+            "Offset": {
+                "x": 1.0, 
+                "y": 1.0
+            }, 
+            "Size": {
+                "x": 1.0, 
+                "y": 1.0
+            }, 
+            "DefaultEquation": 1, 
+            "DefaultInitial": 0,
+            "EquationRegions": [],
+            "BoundRegions": [], 
+            "InitialRegions": []
         }
     ], 
     "Interconnects": [], 
@@ -48,30 +65,37 @@
                 "y"
             ], 
             "System": [
-                "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}]+D[U,{y,2}])",
-                "V'=b*U-U*U*V+c*(D[V,{x,2}]+D[V,{y,2}])"
+                "U'=a * (D[U,{x,2}] + D[U,{y,2}])"
+            ]
+        },
+        {
+            "Name": "Flat Brusselator", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=b * (D[U,{x,2}] + D[U,{y,2}])"
             ]
         }
     ], 
     "Params": [
 	  "a",
-	  "b",
-	  "c"
+	  "b"
       ], 
       "ParamValues": [
 	  {
-	      "a": 1.0,
-	      "b": 3.4,
-	      "c": 0.002
-	  }   
+	      "a": 2.0,
+	      "b": 0.1
+	  }
     ],
+    "DefaultParamsIndex": 0,
     "Bounds": [], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
-                "0.5+y",
-                "1+5*x"
+		"x+y"
             ]
         }
     ], 
@@ -85,6 +109,11 @@
     "Mapping": {
         "IsMapped": true, 
         "BlockMapping": [
+            [
+                0, 
+                "cpu", 
+                0
+            ],
             [
                 0, 
                 "cpu", 
