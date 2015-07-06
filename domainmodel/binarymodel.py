@@ -311,7 +311,30 @@ class BinaryModel(object):
 
 
     def interconnect0dFill(self, icIdx):
-        pass
+        ic = self.dmodel.interconnects[icIdx]
+        icDim = 0
+        print "Saving interconnect", icIdx, "part 1"
+        icPropArr1 = np.zeros(5+3*icDim, dtype=np.int32)
+        icPropArr1[0] = icDim
+        icPropArr1[1] = ic.block1
+        icPropArr1[2] = ic.block2
+        icPropArr1[3] = ic.block1Side
+        icPropArr1[4] = ic.block2Side
+        self.icList.append(icPropArr1)
+        print icPropArr1
+
+        print "Saving interconnect", icIdx, "part 2"
+        icPropArr2 = np.zeros(5+3*icDim, dtype=np.int32)
+        icPropArr2[0] = icDim
+        icPropArr2[1] = ic.block2
+        icPropArr2[2] = ic.block1
+        icPropArr2[3] = ic.block2Side
+        icPropArr2[4] = ic.block1Side
+        self.icList.append(icPropArr2)
+        print icPropArr2
+
+
+
 
     def interconnect1dFill(self, icIdx):
         ic = self.dmodel.interconnects[icIdx]
