@@ -129,9 +129,9 @@ class DerivGenerator:
     def __interconnectPureDerivAlternative(self, blockNumber, increment, stride, order, varIndex, side, index):
         if side % 2 == 0:
             first = 'source[idx + ' + stride + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
-            second = 'ic['+str(index)+'][0]'
+            second = 'ic['+str(index)+'][0 + ' + str(varIndex) + ']'
         else:
-            first = 'ic['+str(index)+'][0]'
+            first = 'ic['+str(index)+'][0 + ' + str(varIndex) + ']'
             second = 'source[idx - ' + stride + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
         if order == 1:
             return '0.5 * ' + increment + ' * ' + '(' + first + ' - ' + second + ')'
