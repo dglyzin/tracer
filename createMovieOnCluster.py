@@ -48,11 +48,11 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
         cmap=cm.jet
         
         layer = data[0,0,:,i]
+        axes.set_ylim(minValue[i], maxValue[i])
         axes.plot(layer)
 
         #cb = axes.pcolormesh(X, Y, layer, vmin=minValue[i], vmax=maxValue[i])
-        #axes.axis([X.min(), X.max(), Y.min(), Y.max()])
-        #axes.set_aspect('equal')
+        #axes.axis([X.min(), X.max(), minValue, maxValue])
         #figure.colorbar(cb, cax=cbaxes)
         
     ###    
@@ -124,6 +124,8 @@ def readDomFile(projectDir):
     
     blockCount, = struct.unpack('i', dom.read(4))
     
+    dimension = 1
+    
     info = []
     for index in range(blockCount) :
         dimension, = struct.unpack('i', dom.read(4))
@@ -153,7 +155,7 @@ def readDomFile(projectDir):
         dom.read(2 * 2 * total)
     dom.close()
     
-    return info, cellSize, dx, dy, dz
+    return info, cellSize, dx, dy, dz, dimension
 
 
   
@@ -334,7 +336,7 @@ def createVideoFile(projectDir):
   
   
 def createMovie(projectDir):
-    info, cellSize, dx, dy, dz = readDomFile(projectDir)
+    info, cellSize, dx, dy, dz, dimension = readDomFile(projectDir)
     
     countZ, countY, countX, offsetZ, offsetY, offsetX = calcAreaCharacteristics(info)
     
@@ -352,8 +354,10 @@ def createMovie(projectDir):
     t1 = time.time()
     pool = mp.Pool(processes=16)
     #pool = mp.Semaphore(4)
-    pool.map(createPng1D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
-    #pool.map(createPng2D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
+    if dimension == 1:
+        pool.map(createPng1D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
+    if dimension == 2:
+        pool.map(createPng2D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
     #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
     t2 = time.time()
     

@@ -10,13 +10,13 @@
     "ProjectName": "test1d_two_blocks1_copy", 
     "StartTime": 0.0, 
     "FinishTime": 10.0, 
-    "TimeStep": 0.001, 
+    "TimeStep": 0.00001, 
     "SaveInterval": 0.01, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.1, 
+        "x": 0.01, 
         "y": 1, 
         "z": 1
     },
