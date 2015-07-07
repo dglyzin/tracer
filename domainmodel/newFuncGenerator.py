@@ -509,7 +509,7 @@ class generator1D(abstractGenerator):
             fillFunction += "\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n"
             fillFunction += "\t\tint idx = idxX;\n" #*Block" + strBlockNum + "CELLSIZE
             fillFunction += "\t\tint type = initType[idx];\n"
-            fillFunction += "\t\tinitFuncArray[type](result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, 0, 0);\n\t}\n"
+            fillFunction += "\t\tinitFuncArray[type](result+idx*Block" + strBlockNum + "CELLSIZE, Block" + strBlockNum + "OffsetX + idxX*DX, 0, 0);\n\t}\n"
             fillFunction += "}\n\n"
             allFillFunctions.append(fillFunction)
         return ''.join(allFillFunctions)
@@ -755,7 +755,7 @@ class generator2D(abstractGenerator):
             fillFunction += "\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n"
             fillFunction += "\t\t\tint idx = idxY*Block" + strBlockNum + "CountX + idxX;\n"
             fillFunction += "\t\t\tint type = initType[idx];\n"
-            fillFunction += "\t\t\tinitFuncArray[type](result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, 0);\n\t\t}\n"
+            fillFunction += "\t\t\tinitFuncArray[type](result+idx*Block" + strBlockNum + "CELLSIZE, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, 0);\n\t\t}\n"
             fillFunction += "}\n\n"
             allFillFunctions.append(fillFunction)
         return ''.join(allFillFunctions)
@@ -1060,7 +1060,7 @@ class generator3D(abstractGenerator):
             fillFunction += "\t\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n"
             fillFunction += "\t\t\t\tint idx = idxZ*Block" + strBlockNum + "CountY*Block" + strBlockNum + "CountX + idxY*Block" + strBlockNum + "CountX + idxX;\n"
             fillFunction += "\t\t\t\tint type = initType[idx];\n"
-            fillFunction += "\t\t\t\tinitFuncArray[type](result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, Block" + strBlockNum + "OffsetZ + idxZ*DZ);\n\t\t\t}\n"
+            fillFunction += "\t\t\t\tinitFuncArray[type](result+idx*Block" + strBlockNum + "CELLSIZE, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, Block" + strBlockNum + "OffsetZ + idxZ*DZ);\n\t\t\t}\n"
             fillFunction += "}\n\n"
             allFillFunctions.append(fillFunction)
         return ''.join(allFillFunctions)
