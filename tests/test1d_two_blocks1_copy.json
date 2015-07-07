@@ -7,7 +7,7 @@
         "Workspace": "/home/tester/Tracer1", 
         "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
     }, 
-    "ProjectName": "Heat_test_Frolov", 
+    "ProjectName": "test1d_two_blocks1_copy", 
     "StartTime": 0.0, 
     "FinishTime": 10.0, 
     "TimeStep": 0.001, 

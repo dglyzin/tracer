@@ -183,12 +183,6 @@ class BinaryModel(object):
             xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
             yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
             funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
-        #2 fill edges
-        funcArr[0,0]       = functionMap["e02"]
-        funcArr[0,xc-1]    = functionMap["e12"]
-        funcArr[yc-1,0]    = functionMap["e03"]
-        funcArr[yc-1,xc-1] = functionMap["e13"]
-                
         #side 0
         for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side0"]:            
             yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)            
@@ -205,6 +199,12 @@ class BinaryModel(object):
         for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side3"]:
             xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
             funcArr[yc-1, xfromIdx:xtoIdx] = funcIdx
+        #2 fill edges
+        funcArr[0,0]       = functionMap["e02"]
+        funcArr[0,xc-1]    = functionMap["e12"]
+        funcArr[yc-1,0]    = functionMap["e03"]
+        funcArr[yc-1,xc-1] = functionMap["e13"]
+        
         
         
     def fill3dCompFuncs(self, funcArr, block, blockSize):
