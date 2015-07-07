@@ -48,11 +48,11 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
         cmap=cm.jet
         
         layer = data[0,0,:,i]
+        axes.set_ylim(minValue, maxValue)
         axes.plot(layer)
 
         #cb = axes.pcolormesh(X, Y, layer, vmin=minValue[i], vmax=maxValue[i])
-        #axes.axis([X.min(), X.max(), Y.min(), Y.max()])
-        #axes.set_aspect('equal')
+        #axes.axis([X.min(), X.max(), minValue, maxValue])
         #figure.colorbar(cb, cax=cbaxes)
         
     ###    
