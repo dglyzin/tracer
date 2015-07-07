@@ -79,7 +79,16 @@ class Connection:
         self.parsedEquation = list()
         for equat in self.equation.system:
             self.parsedEquation.extend([mathParser.parseMathExpression(equat, self.unknownVars, params, self.equation.vars)])
-        
+
+class InterconnectRegion:
+    def __init__(self, index, side, xfrom, xto, yfrom, yto):
+        self.index = index
+        self.side = side
+        self.xfrom = xfrom
+        self.xto = xto
+        self.yfrom = yfrom
+        self.yto = yto
+    
 class abstractGenerator(object):
 # Генерирует выходную строку для записи в файл
     def __init__(self, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamsIndex):
@@ -498,7 +507,7 @@ class generator1D(abstractGenerator):
             strBlockNum = str(blockNumber)
             fillFunction = self.genCommonPartForFillInitValFunc(block, blockNumber, totalCountOfInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames)
             fillFunction += "\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n"
-            fillFunction += "\t\tint idx = idxX*Block" + strBlockNum + "CELLSIZE;\n"
+            fillFunction += "\t\tint idx = idxX;\n" #*Block" + strBlockNum + "CELLSIZE
             fillFunction += "\t\tint type = initType[idx];\n"
             fillFunction += "\t\tinitFuncArray[type](result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, 0, 0);\n\t}\n"
             fillFunction += "}\n\n"
@@ -679,6 +688,48 @@ class generator2D(abstractGenerator):
             self.cellsizeList.append(len(equations[block.defaultEquation].system))
             self.allBlockOffsetList.append([block.offsetX, block.offsetY, 0])
             self.allBlockSizeList.append([block.sizeX, block.sizeY, 0])
+            self.__createBlockIcsRegions(block)
+    
+    def __createBlockIcsRegions(self, block):
+        blockNumber = self.blocks.index(block)
+        icsRegions = []
+        index = 0
+        for interconnect in self.interconnects:
+            if interconnect.block1 == blockNumber and interconnect.block2 == blockNumber:
+                icsRegions.append(self.__createIcRegion(interconnect.block2Side, block, self.blocks[interconnect.block1], index))
+                index += 1
+                icsRegions.append(self.__createIcRegion(interconnect.block1Side, block, self.blocks[interconnect.block2], index))
+                index += 1
+            elif interconnect.block1 == blockNumber and interconnect.block2 != blockNumber:
+                icsRegions.append(self.__createIcRegion(interconnect.block1Side, block, self.blocks[interconnect.block2], index))
+                index += 1
+            elif interconnect.block2 == blockNumber and interconnect.block1 != blockNumber:
+                icsRegions.append(self.__createIcRegion(interconnect.block2Side, block, self.blocks[interconnect.block1], index))
+                index += 1
+        block.interconnectRegions = icsRegions
+                
+    def __createIcRegion(self, mainBlockSide, mainBlock, secBlock, index):
+        if mainBlockSide == 0:
+            xfrom = mainBlock.offsetX
+            xto = mainBlock.offsetX
+            yfrom = max([secBlock.OffsetY, mainBlock.offsetY])
+            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY])
+        elif mainBlockSide == 1:
+            xfrom = mainBlock.offsetX + mainBlock.sizeX
+            xto = mainBlock.offsetX + mainBlock.sizeX
+            yfrom = max([secBlock.OffsetY, mainBlock.offsetY])
+            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY])
+        elif mainBlockSide == 2:
+            xfrom = max([mainBlock.offsetX, secBlock.offsetX])
+            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX])
+            yfrom = mainBlock.offsetY
+            yto = mainBlock.offsetY
+        else:
+            xfrom = max([mainBlock.offsetX, secBlock.offsetX])
+            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX])
+            yfrom = mainBlock.offsetY + mainBlock.sizeY
+            yto = mainBlock.offsetY + mainBlock.sizeY
+        return InterconnectRegion(index, mainBlockSide, xfrom, xto, yfrom, yto)
     
     def generateInitials(self):
 #         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
@@ -702,7 +753,7 @@ class generator2D(abstractGenerator):
             fillFunction = self.genCommonPartForFillInitValFunc(block, blockNumber, totalCountOfInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames)
             fillFunction += "\tfor(int idxY = 0; idxY<Block" + strBlockNum + "CountY; idxY++)\n"
             fillFunction += "\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n"
-            fillFunction += "\t\t\tint idx = (idxY*Block" + strBlockNum + "CountX + idxX)*Block" + strBlockNum + "CELLSIZE;\n"
+            fillFunction += "\t\t\tint idx = idxY*Block" + strBlockNum + "CountX + idxX;\n"
             fillFunction += "\t\t\tint type = initType[idx];\n"
             fillFunction += "\t\t\tinitFuncArray[type](result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, 0);\n\t\t}\n"
             fillFunction += "}\n\n"
@@ -1007,7 +1058,7 @@ class generator3D(abstractGenerator):
             fillFunction += "\tfor(int idxZ = 0; idxZ<Block" + strBlockNum + "CountZ; idxZ++)\n"
             fillFunction += "\t\tfor(int idxY = 0; idxY<Block" + strBlockNum + "CountY; idxY++)\n"
             fillFunction += "\t\t\tfor(int idxX = 0; idxX<Block" + strBlockNum + "CountX; idxX++){\n"
-            fillFunction += "\t\t\t\tint idx = (idxZ*Block" + strBlockNum + "CountY*Block" + strBlockNum + "CountX + idxY*Block" + strBlockNum + "CountX + idxX)*Block" + strBlockNum + "CELLSIZE;\n"
+            fillFunction += "\t\t\t\tint idx = idxZ*Block" + strBlockNum + "CountY*Block" + strBlockNum + "CountX + idxY*Block" + strBlockNum + "CountX + idxX;\n"
             fillFunction += "\t\t\t\tint type = initType[idx];\n"
             fillFunction += "\t\t\t\tinitFuncArray[type](result+idx, Block" + strBlockNum + "OffsetX + idxX*DX, Block" + strBlockNum + "OffsetY + idxY*DY, Block" + strBlockNum + "OffsetZ + idxZ*DZ);\n\t\t\t}\n"
             fillFunction += "}\n\n"
