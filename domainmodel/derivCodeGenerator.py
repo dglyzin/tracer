@@ -126,12 +126,12 @@ class DerivGenerator:
         else:
             raise SyntaxError("The highest derivative order of the system greater than 2! I don't know how to generate boundary function in this case!")
     
-    def __interconnectPureDerivAlternative(self, blockNumber, increment, stride, order, varIndex, side, fIndex, sIndex):
+    def __interconnectPureDerivAlternative(self, blockNumber, increment, stride, order, varIndex, side, firstIndex, secondIndexSTR):
         if side % 2 == 0:
             first = 'source[idx + ' + stride + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
-            second = 'ic['+str(fIndex)+'][' + str(sIndex) + ' + ' + str(varIndex) + ']'
+            second = 'ic['+str(firstIndex)+'][' + secondIndexSTR + ' + ' + str(varIndex) + ']'
         else:
-            first = 'ic['+str(fIndex)+'][' + str(sIndex) + ' + ' + str(varIndex) + ']'
+            first = 'ic['+str(firstIndex)+'][' + secondIndexSTR + ' + ' + str(varIndex) + ']'
             second = 'source[idx - ' + stride + ' * ' + 'Block' + str(blockNumber) + 'CELLSIZE + ' + str(varIndex) + ']'
         if order == 1:
             return '0.5 * ' + increment + ' * ' + '(' + first + ' - ' + second + ')'
@@ -172,7 +172,7 @@ class DerivGenerator:
 #             indicesList.append(' - Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper())
 #             indicesList.append(' - (Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[0].upper() + ' + Block' + str(blockNumber) + 'Stride' + derivativeIndepVarList[1].upper() + ')')
     
-    def generateCodeForDerivative(self, blockNumber, varIndex, indepVarList, indepVarIndexList, derivativeOrderList, userIndepVariables, parsedMathFunction, side, firstIndex = -1, secondIndex = -1):
+    def generateCodeForDerivative(self, blockNumber, varIndex, indepVarList, indepVarIndexList, derivativeOrderList, userIndepVariables, parsedMathFunction, side, firstIndex = -1, secondIndexSTR = '0'):
         strideList = list([])
         for indepVar in userIndepVariables:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
@@ -189,7 +189,7 @@ class DerivGenerator:
             
             #Случай соединения блоков в одномерной задаче
             if firstIndex >= 0:
-                return self.__interconnectPureDerivAlternative(blockNumber, increment, stride, order, varIndex, side, firstIndex, secondIndex)
+                return self.__interconnectPureDerivAlternative(blockNumber, increment, stride, order, varIndex, side, firstIndex, secondIndexSTR)
             else:
                 if side % 2 == 0 and indepVarIndexList[0] == side / 2:
                     return self.__specialPureDerivativeAlternative(blockNumber, parsedMathFunction, increment, specialIncrement, stride, strideList, order, varIndex, userIndepVariables, 1)

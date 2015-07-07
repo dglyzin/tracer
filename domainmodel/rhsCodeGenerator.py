@@ -62,24 +62,33 @@ class RHSCodeGenerator:
                 parsedMathFunction = pbcl[0].parsedValues[varIndex]
                 derivative = dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)
             else:
-                derivative = dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, "", side, pbcl[0].index, 0)
+                derivative = dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, "", side, pbcl[0].firstIndex, pbcl[0].secondIndex)
 #         Условие на угол прямоугольника или параллелепипеда или на ребро параллелепипеда        
         elif boundaryConditionCount == 2 or boundaryConditionCount == 3:
             derivativeLR = list([])
             for index in indepVarIndexList:
                 if index == pbcl[0].side // 2:
-                    parsedMathFunction = pbcl[0].parsedValues[varIndex]
-                    side = pbcl[0].side                        
+                    side = pbcl[0].side 
+                    if pbcl[0].name == "BoundCondition":
+                        parsedMathFunction = pbcl[0].parsedValues[varIndex]
+                        derivativeLR.extend([dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)])                     
+                    else:
+                        derivativeLR.extend([dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, "", side, pbcl[0].firstIndex, pbcl[0].secondIndex)])
                 elif index == pbcl[1].side // 2:
-                    parsedMathFunction = pbcl[1].parsedValues[varIndex]
                     side = pbcl[1].side
+                    if pbcl[1].name == "BoundCondition":
+                        parsedMathFunction = pbcl[1].parsedValues[varIndex]
+                        derivativeLR.extend([dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)])
+                    else:
+                        derivativeLR.extend([dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, "", side, pbcl[1].firstIndex, pbcl[1].secondIndex)])
                 elif boundaryConditionCount == 3 and index == pbcl[2].side // 2:
                     parsedMathFunction = pbcl[2].parsedValues[varIndex]
                     side = pbcl[2].side
+                    derivativeLR.extend([dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)])
                 else:
                     side = -1
                     parsedMathFunction = 'empty string'
-                derivativeLR.extend([dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)])   
+                    derivativeLR.extend([dg.generateCodeForDerivative(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)])   
             
             if len(derivativeLR) == 1:
                 derivative = derivativeLR[0]
