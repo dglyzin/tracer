@@ -7,7 +7,7 @@
         "Workspace": "/home/tester/Tracer1", 
         "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
     }, 
-    "ProjectName": "test1d_two_blocks1_copy", 
+    "ProjectName": "test1d_two_blocks_two_nodes", 
     "StartTime": 0.0, 
     "FinishTime": 10.0, 
     "TimeStep": 0.00001, 
