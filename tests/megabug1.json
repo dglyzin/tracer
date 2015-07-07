@@ -45,9 +45,40 @@
 			], 
             "InitialRegions": [
 		]
-        }	
+        },
+        {
+            "Name": "SubBlock", 
+            "Dimension": 1, 
+            "Offset": {
+                "x": 1.0
+            }, 
+            "Size": {
+                "x": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0,
+	    "EquationRegions":[
+				
+			],
+            "BoundRegions": [
+			], 
+            "InitialRegions": [
+            {
+			        "InitialNumber": 1,
+				    "xfrom": 0.2, 
+                    "xto": 0.4
+			    }
+		]
+        }
     ], 
     "Interconnects": [
+	  {
+	    "Name": "right connection",
+	    "Block1": 0,
+	    "Block2": 1,
+	    "Block1Side": 1,
+	    "Block2Side": 0
+	  }
 	], 
     "Equations": [
         {
@@ -56,7 +87,8 @@
                 "x"
             ], 
             "System": [
-                "U'= 0"		
+                "U'= D[U,{x,2}] + D[V,{x,2}]",
+                "V'= D[V,{x,2}] + D[U,{x,2}]"
             ]
         }
     ], 
@@ -66,9 +98,17 @@
 		{
             "Name": "Initial values 0", 
             "Values": [
+                "2.0",
+                "3.0"
+            ]
+        },
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "100.0",
                 "200.0"
             ]
-        }        
+        }
     ], 
     "Hardware": [
         {
@@ -80,6 +120,11 @@
     "Mapping": {
         "IsMapped": true, 
         "BlockMapping": [
+            [
+                0, 
+                "cpu", 
+                0
+            ],
             [
                 0, 
                 "cpu", 

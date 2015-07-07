@@ -10,13 +10,13 @@
     "ProjectName": "Heat_test_Frolov", 
     "StartTime": 0.0, 
     "FinishTime": 0.1, 
-    "TimeStep": 0.00001, 
+    "TimeStep": 0.001, 
     "SaveInterval": 0.1, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.01, 
+        "x": 0.1, 
         "y": 1, 
         "z": 1
     },
@@ -137,7 +137,8 @@
                 "x"
             ], 
             "System": [
-                "U'= a * D[U,{x,2}]"
+                "U'= a * D[U,{x,2}]",
+                "V'= 2"
             ]
         },
 		{
@@ -146,7 +147,8 @@
                 "x"
             ], 
             "System": [
-                "U'= b * D[U,{x,2}]"
+                "U'= b * D[U,{x,2}]",
+                "V'= 2"
             ]
         }
     ], 
@@ -155,13 +157,15 @@
 		{
             "Name": "Initial values 0", 
             "Values": [
-                "100.0"               
+                "100.0",
+                "0.0"
             ]
         },
 		{
             "Name": "Initial values 1", 
             "Values": [
-                "0.0"               
+                "0.0",
+                "0.0"
             ]
         }
     ], 
