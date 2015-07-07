@@ -47,8 +47,12 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
 
         cmap=cm.jet
         
+        amp = maxValue[i] - minValue[i]
+        minV = minValue[i] - amp/10
+        maxV = maxValue[i] + amp/10
+        
         layer = data[0,0,:,i]
-        axes.set_ylim(minValue[i], maxValue[i])
+        axes.set_ylim(minV, maxV)
         axes.plot(layer)
 
         #cb = axes.pcolormesh(X, Y, layer, vmin=minValue[i], vmax=maxValue[i])
