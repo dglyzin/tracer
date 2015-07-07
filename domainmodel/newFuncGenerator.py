@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from equationParser import MathExpressionParser
-from someFuncs import generateCodeForMathFunction, determineNameOfBoundary, RectSquare
+from someFuncs import generateCodeForMathFunction, determineNameOfBoundary, RectSquare, determineCellIndexOfStartOfConnection2D
 from rhsCodeGenerator import RHSCodeGenerator
 
 class FuncGenerator:
@@ -62,9 +62,10 @@ class BoundCondition:
             self.parsedEquation.extend([mathParser.parseMathExpression(equat, self.unknownVars, params, self.equation.vars)])
 
 class Connection:
-    def __init__(self, index, side, ranges, equationNumber, equation, funcName):
+    def __init__(self, firstIndex, secondIndex, side, ranges, equationNumber, equation, funcName):
         self.name = "Connection"
-        self.index = index
+        self.firstIndex = firstIndex
+        self.secondIndex = secondIndex
         self.side = side
         self.ranges = ranges
         self.equationNumber = equationNumber
@@ -81,13 +82,18 @@ class Connection:
             self.parsedEquation.extend([mathParser.parseMathExpression(equat, self.unknownVars, params, self.equation.vars)])
 
 class InterconnectRegion:
-    def __init__(self, index, side, xfrom, xto, yfrom, yto):
-        self.index = index
+    def __init__(self, firstIndex, secondIndex, side, stepAlongSide, lenBetweenStartOfBlockSideAndStartOfConnection, lenOfConnection, xfrom, xto, yfrom, yto, secondaryBlockNumber):
+        self.firstIndex = firstIndex
+        self.secondIndex = secondIndex
         self.side = side
+        self.stepAlongSide = stepAlongSide
+        self.lenBetweenStartOfBlockSideAndStartOfConnection = lenBetweenStartOfBlockSideAndStartOfConnection
+        self.lenOfConnection = lenOfConnection
         self.xfrom = xfrom
         self.xto = xto
         self.yfrom = yfrom
         self.yto = yto
+        self.secondaryBlockNumber = secondaryBlockNumber
     
 class abstractGenerator(object):
 # Генерирует выходную строку для записи в файл
@@ -377,17 +383,45 @@ class abstractGenerator(object):
                 indepVarsForBoundaryFunction.remove(self.userIndepVars[bCond.side // 2])
                 indepVarsForBoundaryFunction.extend(['t'])
                 
-                bCond.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
+                if not isinstance(bCond, Connection):
+                    bCond.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
+                else:
+                    bCond.createSpecialProperties(parser, self.params)
 # Создание списка условий на углы. В него входят условия с уже распарсенными значениями        
-        if len(self.userIndepVars) > 1:
-            condCntOnS2 = len(totalBCondLst[0])
-            condCntOnS3 = len(totalBCondLst[1])
-            condCntOnS0 = len(totalBCondLst[2])
-            condCntOnS1 = len(totalBCondLst[3])
-            angleCondList = [[totalBCondLst[0][0], totalBCondLst[2][0]], [totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]],
-                             [totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]], [totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]]]
-    
-            return angleCondList
+        condCntOnS2 = len(totalBCondLst[0])
+        condCntOnS3 = len(totalBCondLst[1])
+        condCntOnS0 = len(totalBCondLst[2])
+        condCntOnS1 = len(totalBCondLst[3])
+        angleCondList = [[totalBCondLst[0][0], totalBCondLst[2][0]], [totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]],
+                         [totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]], [totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]]]
+#         if isinstance(totalBCondLst[0][0], Connection):
+#             angleCondList.append([totalBCondLst[0][0]])
+#         elif isinstance(totalBCondLst[2][0], Connection):
+#             angleCondList.append([totalBCondLst[2][0]])
+#         else:
+#             angleCondList.append([totalBCondLst[0][0], totalBCondLst[2][0]])
+#             
+#         if isinstance(totalBCondLst[0][condCntOnS2-1], Connection):
+#             angleCondList.append([totalBCondLst[0][condCntOnS2-1]])
+#         elif isinstance(totalBCondLst[3][0], Connection):
+#             angleCondList.append([totalBCondLst[3][0]])
+#         else:
+#             angleCondList.append([totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]])
+#             
+#         if isinstance(totalBCondLst[1][0], Connection):
+#             angleCondList.append([totalBCondLst[1][0]])
+#         elif isinstance(totalBCondLst[2][condCntOnS0-1], Connection):
+#             angleCondList.append([totalBCondLst[2][condCntOnS0-1]])
+#         else:
+#             angleCondList.append([totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]])
+#             
+#         if isinstance(totalBCondLst[1][condCntOnS3-1], Connection):
+#             angleCondList.append([totalBCondLst[1][condCntOnS3-1]])
+#         elif isinstance(totalBCondLst[3][condCntOnS1-1], Connection):
+#             angleCondList.append([totalBCondLst[3][condCntOnS1-1]])
+#         else:
+#             angleCondList.append([totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]])
+        return angleCondList
     
     def setDefault(self, blockNumber, side, equation, equationNum):
         systemLen = len(equation.system)
@@ -589,8 +623,8 @@ class generator1D(abstractGenerator):
                 equation2 = self.equations[equationNum2]
                 funcName1 = "Block" + str(blockNumber) + "Interconnect__Side" + str(iconn.block1Side) + "_Eqn" + str(equationNum1)
                 funcName2 = "Block" + str(blockNumber) + "Interconnect__Side" + str(iconn.block2Side) + "_Eqn" + str(equationNum2)
-                icsForBlock.append(Connection(0, iconn.block2Side, [], equationNum2, equation2, funcName2))
-                icsForBlock.append(Connection(1, iconn.block1Side, [], equationNum1, equation1, funcName1))
+                icsForBlock.append(Connection(0, '0', iconn.block2Side, [], equationNum2, equation2, funcName2))
+                icsForBlock.append(Connection(1, '0', iconn.block1Side, [], equationNum1, equation1, funcName1))
                 continue
             #Если соединяются несколько блоков
             elif iconn.block1 == blockNumber and iconn.block2 != blockNumber:
@@ -599,7 +633,7 @@ class generator1D(abstractGenerator):
                 side = iconn.block2Side
             else:
                 continue
-            index = len(icsForBlock)
+            firstIndex = len(icsForBlock)
             Range = (side == 1) * block.sizeX
             coord = lambda region: (side == 0) * region.xfrom + (side == 1) * region.xto
 #             if side == 0:
@@ -617,7 +651,7 @@ class generator1D(abstractGenerator):
                 equationNum = block.defaultEquation
             equation = self.equations[equationNum]
             funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(side) + "_Eqn" + str(equationNum)
-            icsForBlock.append(Connection(index, side, [], equationNum, equation, funcName))
+            icsForBlock.append(Connection(firstIndex, '0', side, [], equationNum, equation, funcName))
         return icsForBlock
                 
     def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, bCondLst, icsList):
@@ -693,43 +727,59 @@ class generator2D(abstractGenerator):
     def __createBlockIcsRegions(self, block):
         blockNumber = self.blocks.index(block)
         icsRegions = []
-        index = 0
+        firstIndex = 0
         for interconnect in self.interconnects:
             if interconnect.block1 == blockNumber and interconnect.block2 == blockNumber:
-                icsRegions.append(self.__createIcRegion(interconnect.block2Side, block, self.blocks[interconnect.block1], index))
-                index += 1
-                icsRegions.append(self.__createIcRegion(interconnect.block1Side, block, self.blocks[interconnect.block2], index))
-                index += 1
+                icsRegions.append(self.__createIcRegion(interconnect.block2Side, block, self.blocks[interconnect.block1], firstIndex))
+                firstIndex += 1
+                icsRegions.append(self.__createIcRegion(interconnect.block1Side, block, self.blocks[interconnect.block2], firstIndex))
+                firstIndex += 1
             elif interconnect.block1 == blockNumber and interconnect.block2 != blockNumber:
-                icsRegions.append(self.__createIcRegion(interconnect.block1Side, block, self.blocks[interconnect.block2], index))
-                index += 1
+                icsRegions.append(self.__createIcRegion(interconnect.block1Side, block, self.blocks[interconnect.block2], firstIndex))
+                firstIndex += 1
             elif interconnect.block2 == blockNumber and interconnect.block1 != blockNumber:
-                icsRegions.append(self.__createIcRegion(interconnect.block2Side, block, self.blocks[interconnect.block1], index))
-                index += 1
+                icsRegions.append(self.__createIcRegion(interconnect.block2Side, block, self.blocks[interconnect.block1], firstIndex))
+                firstIndex += 1
         block.interconnectRegions = icsRegions
                 
-    def __createIcRegion(self, mainBlockSide, mainBlock, secBlock, index):
+    def __createIcRegion(self, mainBlockSide, mainBlock, secBlock, firstIndex):
         if mainBlockSide == 0:
             xfrom = mainBlock.offsetX
             xto = mainBlock.offsetX
-            yfrom = max([secBlock.OffsetY, mainBlock.offsetY])
+            yfrom = max([secBlock.offsetY, mainBlock.offsetY])
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY])
+            someLen = abs(yfrom - mainBlock.offsetY)
+            lenOfConnection = yto - yfrom
+            secondIndex = 'idxY'
+            stepAlongSide = self.gridStep[0]
         elif mainBlockSide == 1:
             xfrom = mainBlock.offsetX + mainBlock.sizeX
             xto = mainBlock.offsetX + mainBlock.sizeX
-            yfrom = max([secBlock.OffsetY, mainBlock.offsetY])
+            yfrom = max([secBlock.offsetY, mainBlock.offsetY])
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY])
+            someLen = abs(yfrom - mainBlock.offsetY)
+            lenOfConnection = yto - yfrom
+            secondIndex = 'idxY'
+            stepAlongSide = self.gridStep[0]
         elif mainBlockSide == 2:
             xfrom = max([mainBlock.offsetX, secBlock.offsetX])
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX])
             yfrom = mainBlock.offsetY
             yto = mainBlock.offsetY
+            someLen = abs(xfrom - mainBlock.offsetX)
+            lenOfConnection = xto - xfrom
+            secondIndex = 'idxX'
+            stepAlongSide = self.gridStep[1]
         else:
             xfrom = max([mainBlock.offsetX, secBlock.offsetX])
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX])
             yfrom = mainBlock.offsetY + mainBlock.sizeY
             yto = mainBlock.offsetY + mainBlock.sizeY
-        return InterconnectRegion(index, mainBlockSide, xfrom, xto, yfrom, yto)
+            someLen = abs(xfrom - mainBlock.offsetX)
+            lenOfConnection = xto - xfrom
+            secondIndex = 'idxX'
+            stepAlongSide = self.gridStep[1]
+        return InterconnectRegion(firstIndex, secondIndex, mainBlockSide, stepAlongSide, someLen, lenOfConnection, xfrom, xto, yfrom, yto, self.blocks.index(secBlock))
     
     def generateInitials(self):
 #         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
@@ -885,18 +935,32 @@ class generator2D(abstractGenerator):
         condList = list()
 # Отдельно обрабатывается случай, когда какое-то уравнение задано только на прямой
         if var_min == max(varRanges):
-            for bRegion in block.boundRegions:
-                if bRegion.side == side and stepFrom(bRegion) <= var_min and stepTo(bRegion) >= var_min:
-                    values, btype, boundNumber, funcName = self.setDirichletOrNeumann(bRegion, blockNumber, side, equationNum)
+            #Сначала проверяем наличие соединений на этом участке, потом уже -- граничных условий
+            for icRegion in block.interconnectRegions:
+                if icRegion.side == side and stepFrom(icRegion) <= var_min and stepTo(icRegion) >= var_min:
+                    startCellIndex, endCellIndex = determineCellIndexOfStartOfConnection2D(icRegion)
+                    secondIndex = icRegion.secondIndex + ' - ' + str(startCellIndex)
+                    funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(icRegion.side) + "_Eqn" + str(equationNum) + "_SBlock" + str(icRegion.secondaryBlockNumber)
+                    conRanges = [[icRegion.xfrom, icRegion.xto], [icRegion.yfrom, icRegion.yto]]
+                    condList.append(Connection(icRegion.firstIndex, secondIndex, side, conRanges, equationNum, equation, funcName))
                     break
             else:
-                values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equation, equationNum)
-            bCondRanges = ranges
-            condList.append(BoundCondition(values, btype, side, bCondRanges, boundNumber, equationNum, equation, funcName))
+                for bRegion in block.boundRegions:
+                    if bRegion.side == side and stepFrom(bRegion) <= var_min and stepTo(bRegion) >= var_min:
+                        values, btype, boundNumber, funcName = self.setDirichletOrNeumann(bRegion, blockNumber, side, equationNum)
+                        break
+                else:
+                    values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equation, equationNum)
+                bCondRanges = ranges
+                condList.append(BoundCondition(values, btype, side, bCondRanges, boundNumber, equationNum, equation, funcName))
             return condList
 # Здесь случай, когда уравнение задано в подблоке
         while var_min < max(varRanges):
             varMaxLst = []
+            for icRegion in block.interconnectRegions:
+                conds = self.SomeConditions(icRegion, stepFrom, stepTo, var_min, max(varRanges))
+                if icRegion.side == side and (conds[0] or conds[1] or conds[2]):
+                    varMaxLst.append(icRegion)
             for bRegion in block.boundRegions:
                 conds = self.SomeConditions(bRegion, stepFrom, stepTo, var_min, max(varRanges))
                 if bRegion.side == side and (conds[0] or conds[1] or conds[2]):
@@ -908,6 +972,7 @@ class generator2D(abstractGenerator):
                 else:
                     bCondRanges = [secRanges, [var_min, max(varRanges)]]
                 var_min = max(varRanges)
+                condList.append(BoundCondition(values, btype, side, bCondRanges, boundNumber, equationNum, equation, funcName))
             else:
                 varMaxReg = min(varMaxLst, key = lambda reg: stepFrom(reg))
                 conds = self.SomeConditions(varMaxReg, stepFrom, stepTo, var_min, max(varRanges))
@@ -919,14 +984,23 @@ class generator2D(abstractGenerator):
                     else:
                         bCondRanges = [secRanges, [var_min, var_max]]
                     var_min = var_max
+                    condList.append(BoundCondition(values, btype, side, bCondRanges, boundNumber, equationNum, equation, funcName))
                 elif var_max == var_min or var_max > var_min and conds[1] or conds[2]:
-                    values, btype, boundNumber, funcName = self.setDirichletOrNeumann(varMaxReg, blockNumber, side, equationNum)
                     if side == 2 or side == 3:
                         bCondRanges = [[var_min, min([stepTo(varMaxReg), max(varRanges)])], secRanges]
                     else:
                         bCondRanges = [secRanges, [var_min, min([stepTo(varMaxReg), max(varRanges)])]]
                     var_min = min([stepTo(varMaxReg), max(varRanges)]) + cellLen * (stepFrom(varMaxReg) == stepTo(varMaxReg))
-            condList.append(BoundCondition(values, btype, side, bCondRanges, boundNumber, equationNum, equation, funcName))
+                    #Если там стоит граничное условие
+                    if not isinstance(varMaxReg, InterconnectRegion):
+                        values, btype, boundNumber, funcName = self.setDirichletOrNeumann(varMaxReg, blockNumber, side, equationNum)
+                        condList.append(BoundCondition(values, btype, side, bCondRanges, boundNumber, equationNum, equation, funcName))
+                    #Если там стоит соединение
+                    else:
+                        startCellIndex, endCellIndex = determineCellIndexOfStartOfConnection2D(varMaxReg)
+                        secondIndex = varMaxReg.secondIndex + ' - ' + str(startCellIndex)
+                        funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(varMaxReg.side) + "_Eqn" + str(equationNum) + "_SBlock" + str(varMaxReg.secondaryBlockNumber)
+                        condList.append(Connection(icRegion.firstIndex, secondIndex, side, bCondRanges, equationNum, equation, funcName))
         return condList
   
     def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst):
@@ -963,15 +1037,22 @@ class generator2D(abstractGenerator):
                 #Если для граничного условия с таким номером функцию уже создали, то заново создавать не надо.
                 if self.EquationLieOnSomeBound(condition):
                     continue
-                if (condition.boundNumber, condition.equationNumber) in boundAndEquatNumbersList:
-                    ranges = [condition.ranges[0][0], condition.ranges[0][1], condition.ranges[1][0], condition.ranges[1][1]]
-                    sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
-                    continue
-                boundAndEquatNumbersList.append((condition.boundNumber, condition.equationNumber))
-                outputStr.append('//Boundary condition for boundary ' + boundaryName + '\n')
-                if condition.btype == 0:
-                    outputStr.append(self.generateDirichlet(blockNumber, condition.funcName, condition))
+                if not isinstance(condition, Connection):
+                    if (condition.boundNumber, condition.equationNumber) in boundAndEquatNumbersList:
+                        ranges = [condition.ranges[0][0], condition.ranges[0][1], condition.ranges[1][0], condition.ranges[1][1]]
+                        sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
+                        continue
+                    boundAndEquatNumbersList.append((condition.boundNumber, condition.equationNumber))
+                    outputStr.append('//Boundary condition for boundary ' + boundaryName + '\n')
+                    #Если надо сгенерить граничное условие
+                    if condition.btype == 0:
+                        outputStr.append(self.generateDirichlet(blockNumber, condition.funcName, condition))
+                    else:
+                        pBCL = [condition]
+                        outputStr.append(self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL))
+                #Если надо сгенерить соединение блоков
                 else:
+                    outputStr.append('//Interconnect for boundary ' + boundaryName + '\n')
                     pBCL = [condition]
                     outputStr.append(self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL))
                 arrWithFunctionNames.append(condition.funcName)
@@ -992,6 +1073,7 @@ class generator2D(abstractGenerator):
     def generateVertexFunctions(self, blockNumber, arrWithFunctionNames, parsedAngleCondList):
 # parsedAngleCondList --- это список пар [[условие 1, условие 2], [условие 1, условие 2], ...]
         output = list()
+        icsvCounter = 0
         for angleCond in parsedAngleCondList:
             parsedEqs = angleCond[0].parsedEquation
             unknownVars = angleCond[0].unknownVars
@@ -999,23 +1081,56 @@ class generator2D(abstractGenerator):
             boundaryName1 = determineNameOfBoundary(angleCond[0].side)
             boundaryName2 = determineNameOfBoundary(angleCond[1].side)
             funcIndex = str(angleCond[0].side) + '_' + str(angleCond[1].side) + '__Eqn' + str(angleCond[0].equationNumber)
-            
-            if angleCond[0].boundNumber == angleCond[1].boundNumber == -1:
-                output.append('//Default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-                nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumann__Vertex' + funcIndex
-                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
-                arrWithFunctionNames.append(nameForVertex)
-                continue
-            output.append('//Non-default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-            if angleCond[0].btype == angleCond[1].btype == 1:
-                nameForVertex = 'Block' + str(blockNumber) + 'Neumann__Vertex' + funcIndex
-                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
-            elif angleCond[0].btype == 0:
-                nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
-                output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[0])])
+            if not isinstance(angleCond[0], Connection) and not isinstance(angleCond[1], Connection):
+                if angleCond[0].boundNumber == angleCond[1].boundNumber == -1:
+                    output.append('//Default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumann__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    arrWithFunctionNames.append(nameForVertex)
+                    continue
+                output.append('//Non-default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                if angleCond[0].btype == angleCond[1].btype == 1:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Neumann__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                elif angleCond[0].btype == 0:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[0])])
+                else:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[1])])
+            elif isinstance(angleCond[0], Connection) and not isinstance(angleCond[1], Connection):
+                if angleCond[1].boundNumber == -1:
+                    output.append('//Default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    arrWithFunctionNames.append(nameForVertex)
+                    continue
+                output.append('//Non-default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                if angleCond[1].btype == 1:
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                else:
+                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[1])])
+            elif not isinstance(angleCond[0], Connection) and isinstance(angleCond[1], Connection):
+                if angleCond[0].boundNumber == -1:
+                    output.append('//Default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    arrWithFunctionNames.append(nameForVertex)
+                    continue
+                output.append('//Non-default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                if angleCond[0].btype == 1:
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                else:
+                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[0])])
             else:
-                nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
-                output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[1])])
+                output.append('//Interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                nameForVertex = 'Block' + str(blockNumber) + 'Interconnect__Vertex' + funcIndex
+                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                icsvCounter += 1
             
             arrWithFunctionNames.append(nameForVertex)
         return ''.join(output)

@@ -75,3 +75,14 @@ def RectSquare(xlist, ylist):
         l1 = abs(xlist[0] - xlist[1])
         l2 = abs(ylist[0] - ylist[1])
         return l2 * l1
+    
+def determineCellIndexOfStartOfConnection2D(icRegion):
+    #Если эта разность нулевая, то сединение находится в начале стороны блока, поэтому индекс = 0.
+    if icRegion.lenBetweenStartOfBlockSideAndStartOfConnection == 0:
+        startCellIndex = 0
+    else:
+    #Найдем количество клеток между ними. Оно и будет индексом клетки, стоящей в начале соединения
+        startCellIndex = getCellCountAlongLine(icRegion.lenBetweenStartOfBlockSideAndStartOfConnection, icRegion.stepAlongSide)
+    #Определяется индекс клетки конца соединения: это индекс клетки начала + количество клеток в соединении - 1
+    endCellIndex = startCellIndex + getCellCountAlongLine(icRegion.lenOfConnection, icRegion.stepAlongSide) - 1
+    return startCellIndex, endCellIndex
