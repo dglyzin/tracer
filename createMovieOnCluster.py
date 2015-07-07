@@ -29,7 +29,46 @@ from fileUtils import getSortedBinFileList, defaultProjFname
 
 import math
 
-def savePng(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
+
+def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
+    figure = Figure()
+    canvas = FigureCanvas(figure)
+    
+    t = str(currentTime)
+    
+    row = round(math.sqrt(cellSize))
+    column = math.ceil(cellSize / row)
+    
+    for i in range(cellSize):
+        m = 100 * row + 10 * column + i + 1
+        axes = figure.add_subplot(m, title=t)
+        #figure.subplots_adjust(right=0.8)
+        #cbaxes = figure.add_axes([0.85, 0.15, 0.05, 0.5])
+
+        cmap=cm.jet
+        
+        amp = maxValue[i] - minValue[i]
+        minV = minValue[i] - amp/10
+        maxV = maxValue[i] + amp/10
+        
+        layer = data[0,0,:,i]
+        axes.set_ylim(minV, maxV)
+        axes.plot(layer)
+
+        #cb = axes.pcolormesh(X, Y, layer, vmin=minValue[i], vmax=maxValue[i])
+        #axes.axis([X.min(), X.max(), minValue, maxValue])
+        #figure.colorbar(cb, cax=cbaxes)
+        
+    ###    
+    canvas.draw()
+    figure.savefig(filename, format='png')            
+    figure.clear()
+
+
+
+
+
+def savePng2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
     figure = Figure()
     canvas = FigureCanvas(figure)
     
@@ -89,6 +128,8 @@ def readDomFile(projectDir):
     
     blockCount, = struct.unpack('i', dom.read(4))
     
+    dimension = 1
+    
     info = []
     for index in range(blockCount) :
         dimension, = struct.unpack('i', dom.read(4))
@@ -118,7 +159,7 @@ def readDomFile(projectDir):
         dom.read(2 * 2 * total)
     dom.close()
     
-    return info, cellSize, dx, dy, dz
+    return info, cellSize, dx, dy, dz, dimension
 
 
   
@@ -230,8 +271,10 @@ def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, o
   
   
   
-  
-def createPng( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) ):
+
+
+
+def createPng1D( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) ):
    #for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     
@@ -252,7 +295,33 @@ def createPng( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offs
     t = binFile.split("-")[1]
     t = t.split(".bin")[0]
     
-    savePng(filename, X, Y, data, maxValue, minValue, t, cellSize)
+    savePng1D(filename, X, data, maxValue, minValue, t, cellSize)
+
+
+
+  
+def createPng2D( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) ):
+   #for idx, binFile in enumerate(binFileList):
+    data = readBinFile(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
+    
+    xs = np.arange(0, countX)*dx
+    ys = np.arange(0, countY)*dy
+
+
+    X,Y = np.meshgrid(xs,ys)
+
+    #plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
+    #plt.colorbar()
+  
+    filename = projectDir+"image-" + str(idx) + ".png"        
+    #plt.savefig(filename, format='png')        
+    #print 'save #', idx, binFile, "->", filename
+    #plt.clf()
+    
+    t = binFile.split("-")[1]
+    t = t.split(".bin")[0]
+    
+    savePng2D(filename, X, Y, data, maxValue, minValue, t, cellSize)
         
         
         
@@ -271,7 +340,7 @@ def createVideoFile(projectDir):
   
   
 def createMovie(projectDir):
-    info, cellSize, dx, dy, dz = readDomFile(projectDir)
+    info, cellSize, dx, dy, dz, dimension = readDomFile(projectDir)
     
     countZ, countY, countX, offsetZ, offsetY, offsetX = calcAreaCharacteristics(info)
     
@@ -289,7 +358,10 @@ def createMovie(projectDir):
     t1 = time.time()
     pool = mp.Pool(processes=16)
     #pool = mp.Semaphore(4)
-    pool.map(createPng, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
+    if dimension == 1:
+        pool.map(createPng1D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
+    if dimension == 2:
+        pool.map(createPng2D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
     #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
     t2 = time.time()
     

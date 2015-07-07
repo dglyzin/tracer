@@ -61,11 +61,7 @@
 			    }
 			], 
             "InitialRegions": [
-			    {
-			        "InitialNumber": 0,
-				    "xfrom": 1.0, 
-                    "xto": 5.0
-			    }
+			    
 			]
         }
     ], 

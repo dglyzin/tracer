@@ -470,25 +470,25 @@ class Model(QObject):
         #xfrom -= block.offsetX
         #xto -= block.offsetX
         fromIdx, toIdx = int(xfrom/self.gridStepX),int(xto/self.gridStepX)
-        [xc, _, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
-        if fromIdx == 0: fromIdx = 1
-        if toIdx == xc: toIdx = xc-1
+        #[xc, _, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
+        #if fromIdx == 0: fromIdx = 1
+        #if toIdx == xc: toIdx = xc-1
         return fromIdx, toIdx
     
     def getYrange(self, block, yfrom, yto):
         #yfrom -= block.offsetY
         #yto -= block.offsetY
         fromIdx, toIdx = int(yfrom/self.gridStepY),int(yto/self.gridStepY)
-        [_, yc, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
-        if fromIdx == 0: fromIdx = 1
-        if toIdx == yc: toIdx = yc-1
+        #[_, yc, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
+        #if fromIdx == 0: fromIdx = 1
+        #if toIdx == yc: toIdx = yc-1
         return fromIdx, toIdx
     
     def getZrange(self, block, zfrom, zto):
         #zfrom -= block.offsetZ
         #zto -= block.offsetZ
         fromIdx, toIdx = int(zfrom/self.gridStepZ),int(zto/self.gridStepZ)
-        [_, _, zc ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
-        if fromIdx == 0: fromIdx = 1
-        if toIdx == zc: toIdx = zc-1
+        #[_, _, zc ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
+        #if fromIdx == 0: fromIdx = 1
+        #if toIdx == zc: toIdx = zc-1
         return fromIdx, toIdx
