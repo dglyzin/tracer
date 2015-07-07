@@ -9,7 +9,7 @@
     }, 
     "ProjectName": "test1d_two_blocks_two_nodes", 
     "StartTime": 0.0, 
-    "FinishTime": 10.0, 
+    "FinishTime": 1.0, 
     "TimeStep": 0.00001, 
     "SaveInterval": 0.01, 
     "Solver": 0,
