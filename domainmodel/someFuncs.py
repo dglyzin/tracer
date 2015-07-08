@@ -32,10 +32,12 @@ def generateCodeForMathFunction(parsedMathFunction, userIndepVariables, independ
 # parsedMathFunction - распарсенная с помощью equationParser математическая функция
     outputList = list([])
     operatorList = ['+','-','*','/']
-          
+    
+    from rhsCodeGenerator import RHSCodeGenerator
+    powerGenerator = RHSCodeGenerator()      
     for j,expressionList in enumerate(parsedMathFunction):
         if expressionList[0] == '^':
-            self.__generateCodeForPower(parsedMathFunction[j-1], outputList, expressionList)
+            powerGenerator.generateCodeForPower(parsedMathFunction[j-1], outputList, expressionList)
         elif expressionList in operatorList:
             outputList.append(' ' + expressionList + ' ')
         elif expressionList in userIndepVariables:

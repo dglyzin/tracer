@@ -746,36 +746,36 @@ class generator2D(abstractGenerator):
         if mainBlockSide == 0:
             xfrom = mainBlock.offsetX
             xto = mainBlock.offsetX
-            yfrom = max([secBlock.offsetY, mainBlock.offsetY])
-            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY])
-            someLen = abs(yfrom - mainBlock.offsetY)
+            yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
+            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
+            someLen = yfrom
             lenOfConnection = yto - yfrom
             secondIndex = 'idxY'
             stepAlongSide = self.gridStep[0]
         elif mainBlockSide == 1:
             xfrom = mainBlock.offsetX + mainBlock.sizeX
             xto = mainBlock.offsetX + mainBlock.sizeX
-            yfrom = max([secBlock.offsetY, mainBlock.offsetY])
-            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY])
-            someLen = abs(yfrom - mainBlock.offsetY)
+            yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
+            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
+            someLen = yfrom
             lenOfConnection = yto - yfrom
             secondIndex = 'idxY'
             stepAlongSide = self.gridStep[0]
         elif mainBlockSide == 2:
-            xfrom = max([mainBlock.offsetX, secBlock.offsetX])
-            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX])
+            xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
+            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
             yfrom = mainBlock.offsetY
             yto = mainBlock.offsetY
-            someLen = abs(xfrom - mainBlock.offsetX)
+            someLen = xfrom
             lenOfConnection = xto - xfrom
             secondIndex = 'idxX'
             stepAlongSide = self.gridStep[1]
         else:
-            xfrom = max([mainBlock.offsetX, secBlock.offsetX])
-            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX])
+            xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
+            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
             yfrom = mainBlock.offsetY + mainBlock.sizeY
             yto = mainBlock.offsetY + mainBlock.sizeY
-            someLen = abs(xfrom - mainBlock.offsetX)
+            someLen = xfrom
             lenOfConnection = xto - xfrom
             secondIndex = 'idxX'
             stepAlongSide = self.gridStep[1]
@@ -1000,7 +1000,7 @@ class generator2D(abstractGenerator):
                         startCellIndex, endCellIndex = determineCellIndexOfStartOfConnection2D(varMaxReg)
                         secondIndex = varMaxReg.secondIndex + ' - ' + str(startCellIndex)
                         funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(varMaxReg.side) + "_Eqn" + str(equationNum) + "_SBlock" + str(varMaxReg.secondaryBlockNumber)
-                        condList.append(Connection(icRegion.firstIndex, secondIndex, side, bCondRanges, equationNum, equation, funcName))
+                        condList.append(Connection(varMaxReg.firstIndex, secondIndex, side, bCondRanges, equationNum, equation, funcName))
         return condList
   
     def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst):

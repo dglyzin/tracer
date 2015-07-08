@@ -5,19 +5,19 @@
         "Username": "tester", 
         "Password": "tester", 
         "Workspace": "/home/tester/Tracer1", 
-        "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
+        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
     }, 
-    "ProjectName": "test1d_two_blocks_two_nodes", 
+    "ProjectName": "dgl_test2d_two_blocks_two_nodes", 
     "StartTime": 0.0, 
-    "FinishTime": 1.0, 
-    "TimeStep": 0.00001, 
+    "FinishTime": 5, 
+    "TimeStep": 0.001, 
     "SaveInterval": 0.01, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.01, 
-        "y": 1, 
+        "x": 0.1, 
+        "y": 0.1, 
         "z": 1
     },
     "Params": [
@@ -32,14 +32,16 @@
     "Blocks": [
         {
             "Name": "MainBlock",
-            "Dimension": 1,
+            "Dimension": 2,
             "Offset":
                 {
-                    "x": 0.0
+                    "x": 0.0,
+                    "y": 0.0
                 },
             "Size":
                 {
-                    "x": 1.0
+                    "x": 1.0,
+                    "y": 1.0
                 },
             "DefaultEquation": 0,
             "DefaultInitial": 0,
@@ -49,14 +51,16 @@
         },
         {
             "Name": "secBlock",
-            "Dimension": 1,
+            "Dimension": 2,
             "Offset":
                 {
-                    "x": 1.0
+                    "x": 0.0,
+                    "y": 1.0
                 },
             "Size":
                 {
-                    "x": 1.0
+                    "x": 1.0,
+                    "y": 1.0
                 },
             "DefaultEquation": 0,
             "DefaultInitial": 1,
@@ -70,18 +74,18 @@
             "Name": "connection 1",
             "Block1": 0,
             "Block2": 1,
-            "Block1Side": 1,
-            "Block2Side": 0
+            "Block1Side": 3,
+            "Block2Side": 2
         }
     ], 
     "Equations": [
         {
             "Name": "1D heat 1",
             "Vars": [
-                "x"
+                "x", "y"
             ],
             "System": [
-                "U'= a * D[U,{x,2}]"
+                "U'= a * D[U,{y,2}]"
             ]
         }
     ], 

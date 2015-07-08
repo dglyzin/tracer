@@ -189,7 +189,10 @@ class DerivGenerator:
             
             #Случай соединения блоков в одномерной задаче
             if firstIndex >= 0:
-                return self.__interconnectPureDerivAlternative(blockNumber, increment, stride, order, varIndex, side, firstIndex, secondIndexSTR)
+                if side / 2 == indepVarIndexList[0]:
+                    return self.__interconnectPureDerivAlternative(blockNumber, increment, stride, order, varIndex, side, firstIndex, secondIndexSTR)
+                else:
+                    return self.__commonPureDerivativeAlternative(blockNumber, increment, stride, order, varIndex)
             else:
                 if side % 2 == 0 and indepVarIndexList[0] == side / 2:
                     return self.__specialPureDerivativeAlternative(blockNumber, parsedMathFunction, increment, specialIncrement, stride, strideList, order, varIndex, userIndepVariables, 1)

@@ -7,64 +7,90 @@
         "Workspace": "/home/tester/Tracer1", 
         "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
     }, 
-    "ProjectName": "Heat_test", 
+    "ProjectName": "golubenets_favorite_test_1d", 
     "StartTime": 0.0, 
-    "FinishTime": 1.0, 
-    "TimeStep": 0.00001, 
+    "FinishTime": 5.0, 
+    "TimeStep": 0.000025, 
     "SaveInterval": 0.01, 
-    "Solver": 2,
+    "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.15, 
-        "y": 0.15, 
+        "x": 0.01, 
+        "y": 1, 
         "z": 1
     },
-    "Params": [], 
-    "ParamValues": [],	
+	"Params": [
+        "a",
+		"c",
+		"f2"
+    ], 
+    "ParamValues": [
+        {
+            "a": 1.0,
+			"c": 0.1,
+			"f2": 1.0
+	    },
+		{
+            "a": 2.0,
+			"c": 0.1,
+			"f2": 1.0
+	    },
+		{
+            "a": 3.0,
+			"c": 0.1,
+			"f2": 1.0
+	    },
+		{
+            "a": 4.0,
+			"c": 0.1,
+			"f2": 1.0
+	    }
+    ],
 	"DefaultParamsIndex": 0,
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 2, 
+            "Dimension": 1, 
             "Offset": {
-                "x": 0.0, 
-                "y": 0.0
+                "x": 0.0
             }, 
             "Size": {
-                "x": 3.0, 
-                "y": 2.0
+                "x": 1.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0,
 			"EquationRegions":[],
             "BoundRegions": [], 
-            "InitialRegions":[]
+            "InitialRegions": []
         }
     ], 
-    "Interconnects": [], 
+    "Interconnects": [
+		{
+			"Name": "self connection",
+			"Block1": 0,
+			"Block2": 0,
+			"Block1Side": 1,
+			"Block2Side": 0
+		}
+	], 
     "Equations": [
         {
-            "Name": "Heat 1", 
+            "Name": "Parabolic eq", 
             "Vars": [
-                "x", 
-                "y"
+                "x"
             ], 
             "System": [
-				"M'=cos(D[U,{x,2}])",
-                "U'=3.0",
-				"V'=5.0"
+                "U'= D[U,{x,2}] / 2 + a * U * D[U,{x,1}] + c * U + f2 * U^2"
             ]
         }
-    ],
+    ], 
     "Bounds": [], 
     "Initials": [
-        {
+		{
             "Name": "Initial values 0", 
             "Values": [
-                "0.0",
-				"0.0",
-				"0.0"
+                "(cos(sqrt(2) * x))^2"
             ]
         }
     ], 
