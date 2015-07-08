@@ -9,7 +9,7 @@
     }, 
     "ProjectName": "dgl_test2d_4blocks", 
     "StartTime": 0.0, 
-    "FinishTime": 0.001, 
+    "FinishTime": 10, 
     "TimeStep": 0.001, 
     "SaveInterval": 0.01, 
     "Solver": 0,
@@ -44,7 +44,7 @@
                     "y": 1.0
                 },
             "DefaultEquation": 0,
-            "DefaultInitial": 0,
+            "DefaultInitial": 1,
             "EquationRegions":[],
             "BoundRegions": [],
             "InitialRegions": []
@@ -62,7 +62,7 @@
                     "x": 1.0,
                     "y": 1.0
                 },
-            "DefaultEquation": 1,
+            "DefaultEquation": 0,
             "DefaultInitial": 0,
             "EquationRegions":[],
             "BoundRegions": [],
@@ -121,6 +121,13 @@
             "Block2": 3,
             "Block1Side": 1,
             "Block2Side": 0
+        },
+        {
+            "Name": "connection 1",
+            "Block1": 2,
+            "Block2": 3,
+            "Block1Side": 3,
+            "Block2Side": 2
         }
     ], 
     "Equations": [
