@@ -1000,7 +1000,7 @@ class generator2D(abstractGenerator):
                         startCellIndex, endCellIndex = determineCellIndexOfStartOfConnection2D(varMaxReg)
                         secondIndex = varMaxReg.secondIndex + ' - ' + str(startCellIndex)
                         funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(varMaxReg.side) + "_Eqn" + str(equationNum) + "_SBlock" + str(varMaxReg.secondaryBlockNumber)
-                        condList.append(Connection(icRegion.firstIndex, secondIndex, side, bCondRanges, equationNum, equation, funcName))
+                        condList.append(Connection(varMaxReg.firstIndex, secondIndex, side, bCondRanges, equationNum, equation, funcName))
         return condList
   
     def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst):
