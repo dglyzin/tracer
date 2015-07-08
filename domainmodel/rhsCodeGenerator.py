@@ -4,7 +4,7 @@ from derivCodeGenerator import DerivGenerator
 
 class RHSCodeGenerator:
 # Генерирует код правой части уравнения в случае центральной функции, Неймановского кр. усл-я, соединения.    
-    def __generateCodeForPower(self, preventElementInParsedExpression, creatingOutputList, expressionWithPower):
+    def generateCodeForPower(self, preventElementInParsedExpression, creatingOutputList, expressionWithPower):
         power = int(expressionWithPower[1])
         if power > 0:
             if preventElementInParsedExpression != ')':
@@ -129,7 +129,7 @@ class RHSCodeGenerator:
             elif expressionList in operatorList:
                 outputList.extend([' ' + expressionList + ' '])
             elif expressionList[0] == '^':
-                self.__generateCodeForPower(rightHandSide[j-1], outputList, expressionList)
+                self.generateCodeForPower(rightHandSide[j-1], outputList, expressionList)
             elif expressionList in elemFuncsList:
                 outputList.extend([expressionList])
             else:
