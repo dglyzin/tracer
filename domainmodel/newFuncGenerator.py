@@ -746,8 +746,8 @@ class generator2D(abstractGenerator):
         if mainBlockSide == 0:
             xfrom = mainBlock.offsetX
             xto = mainBlock.offsetX
-            yfrom = max([secBlock.offsetY, mainBlock.offsetY])
-            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY])
+            yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
+            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
             someLen = abs(yfrom - mainBlock.offsetY)
             lenOfConnection = yto - yfrom
             secondIndex = 'idxY'
@@ -755,15 +755,15 @@ class generator2D(abstractGenerator):
         elif mainBlockSide == 1:
             xfrom = mainBlock.offsetX + mainBlock.sizeX
             xto = mainBlock.offsetX + mainBlock.sizeX
-            yfrom = max([secBlock.offsetY, mainBlock.offsetY])
-            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY])
+            yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
+            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
             someLen = abs(yfrom - mainBlock.offsetY)
             lenOfConnection = yto - yfrom
             secondIndex = 'idxY'
             stepAlongSide = self.gridStep[0]
         elif mainBlockSide == 2:
-            xfrom = max([mainBlock.offsetX, secBlock.offsetX])
-            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX])
+            xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
+            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
             yfrom = mainBlock.offsetY
             yto = mainBlock.offsetY
             someLen = abs(xfrom - mainBlock.offsetX)
@@ -771,8 +771,8 @@ class generator2D(abstractGenerator):
             secondIndex = 'idxX'
             stepAlongSide = self.gridStep[1]
         else:
-            xfrom = max([mainBlock.offsetX, secBlock.offsetX])
-            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX])
+            xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
+            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
             yfrom = mainBlock.offsetY + mainBlock.sizeY
             yto = mainBlock.offsetY + mainBlock.sizeY
             someLen = abs(xfrom - mainBlock.offsetX)

@@ -10,8 +10,8 @@
     "ProjectName": "golubenets_favorite_test_1d", 
     "StartTime": 0.0, 
     "FinishTime": 5.0, 
-    "TimeStep": 0.0001, 
-    "SaveInterval": 0.05, 
+    "TimeStep": 0.000025, 
+    "SaveInterval": 0.01, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
@@ -90,7 +90,7 @@
 		{
             "Name": "Initial values 0", 
             "Values": [
-                "x^2"
+                "(cos(sqrt(2) * x))^2"
             ]
         }
     ], 
