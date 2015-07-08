@@ -7,9 +7,9 @@
         "Workspace": "/home/tester/Tracer1", 
         "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
     }, 
-    "ProjectName": "Heat_test", 
+    "ProjectName": "test1d_one_block1", 
     "StartTime": 0.0, 
-    "FinishTime": 0.05, 
+    "FinishTime": 5.0, 
     "TimeStep": 0.00001, 
     "SaveInterval": 0.1, 
     "Solver": 0,
