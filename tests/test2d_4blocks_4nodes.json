@@ -62,8 +62,8 @@
                     "x": 1.0,
                     "y": 1.0
                 },
-            "DefaultEquation": 0,
-            "DefaultInitial": 1,
+            "DefaultEquation": 1,
+            "DefaultInitial": 0,
             "EquationRegions":[],
             "BoundRegions": [],
             "InitialRegions": []
@@ -108,6 +108,13 @@
         }
     ], 
     "Interconnects": [
+        {
+            "Name": "connection 1",
+            "Block1": 0,
+            "Block2": 1,
+            "Block1Side": 3,
+            "Block2Side": 2
+        },
         {
             "Name": "connection 1",
             "Block1": 1,
