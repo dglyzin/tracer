@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import itertools
-from rhsCodeGenerator import RHSCodeGenerator
 
 def getCellCountAlongLine(lengthInCoords, step):
     count = lengthInCoords/step#+1
@@ -34,6 +33,7 @@ def generateCodeForMathFunction(parsedMathFunction, userIndepVariables, independ
     outputList = list([])
     operatorList = ['+','-','*','/']
     
+    from rhsCodeGenerator import RHSCodeGenerator
     powerGenerator = RHSCodeGenerator()      
     for j,expressionList in enumerate(parsedMathFunction):
         if expressionList[0] == '^':
