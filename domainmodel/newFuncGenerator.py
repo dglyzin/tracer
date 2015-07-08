@@ -939,7 +939,7 @@ class generator2D(abstractGenerator):
             for icRegion in block.interconnectRegions:
                 if icRegion.side == side and stepFrom(icRegion) <= var_min and stepTo(icRegion) >= var_min:
                     startCellIndex, endCellIndex = determineCellIndexOfStartOfConnection2D(icRegion)
-                    secondIndex = icRegion.secondIndex + ' - ' + str(startCellIndex)
+                    secondIndex = '(' + icRegion.secondIndex + ' - ' + str(startCellIndex) + ') * Block' + str(blockNumber) + 'CELLSIZE'
                     funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(icRegion.side) + "_Eqn" + str(equationNum) + "_SBlock" + str(icRegion.secondaryBlockNumber)
                     conRanges = [[icRegion.xfrom, icRegion.xto], [icRegion.yfrom, icRegion.yto]]
                     condList.append(Connection(icRegion.firstIndex, secondIndex, side, conRanges, equationNum, equation, funcName))
@@ -998,7 +998,7 @@ class generator2D(abstractGenerator):
                     #Если там стоит соединение
                     else:
                         startCellIndex, endCellIndex = determineCellIndexOfStartOfConnection2D(varMaxReg)
-                        secondIndex = varMaxReg.secondIndex + ' - ' + str(startCellIndex)
+                        secondIndex = '(' + varMaxReg.secondIndex + ' - ' + str(startCellIndex) + ') * Block' + str(blockNumber) + 'CELLSIZE'
                         funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(varMaxReg.side) + "_Eqn" + str(equationNum) + "_SBlock" + str(varMaxReg.secondaryBlockNumber)
                         condList.append(Connection(varMaxReg.firstIndex, secondIndex, side, bCondRanges, equationNum, equation, funcName))
         return condList
