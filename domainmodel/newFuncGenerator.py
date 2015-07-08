@@ -748,7 +748,7 @@ class generator2D(abstractGenerator):
             xto = mainBlock.offsetX
             yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
-            someLen = abs(yfrom - mainBlock.offsetY)
+            someLen = yfrom
             lenOfConnection = yto - yfrom
             secondIndex = 'idxY'
             stepAlongSide = self.gridStep[0]
@@ -757,7 +757,7 @@ class generator2D(abstractGenerator):
             xto = mainBlock.offsetX + mainBlock.sizeX
             yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
-            someLen = abs(yfrom - mainBlock.offsetY)
+            someLen = yfrom
             lenOfConnection = yto - yfrom
             secondIndex = 'idxY'
             stepAlongSide = self.gridStep[0]
@@ -766,7 +766,7 @@ class generator2D(abstractGenerator):
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
             yfrom = mainBlock.offsetY
             yto = mainBlock.offsetY
-            someLen = abs(xfrom - mainBlock.offsetX)
+            someLen = xfrom
             lenOfConnection = xto - xfrom
             secondIndex = 'idxX'
             stepAlongSide = self.gridStep[1]
@@ -775,7 +775,7 @@ class generator2D(abstractGenerator):
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
             yfrom = mainBlock.offsetY + mainBlock.sizeY
             yto = mainBlock.offsetY + mainBlock.sizeY
-            someLen = abs(xfrom - mainBlock.offsetX)
+            someLen = xfrom
             lenOfConnection = xto - xfrom
             secondIndex = 'idxX'
             stepAlongSide = self.gridStep[1]
