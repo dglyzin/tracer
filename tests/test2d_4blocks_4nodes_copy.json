@@ -8,24 +8,28 @@
         "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
     }, 
     "ProjectName": "fr_test2d_4blocks", 
-    "StartTime": 0.0, 
-    "FinishTime": 0.001, 
-    "TimeStep": 0.0000001, 
-    "SaveInterval": 0.0, 
+    "StartTime":    0.0, 
+    "FinishTime":   0.2, 
+    "TimeStep":     0.00001, 
+    "SaveInterval": 0.001, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.001, 
-        "y": 0.001, 
+        "x": 0.01, 
+        "y": 0.01, 
         "z": 1
     },
     "Params": [
-        "a"
+        "a",
+        "b",
+        "c"
     ], 
     "ParamValues": [
         {
-            "a": 1.0
+            "a": 1.0,
+            "b": 3.4,
+            "c": 0.002
         }
     ],
     "DefaultParamsIndex": 0,
@@ -44,10 +48,18 @@
                     "y": 1.0
                 },
             "DefaultEquation": 0,
-            "DefaultInitial": 1,
+            "DefaultInitial": 0,
             "EquationRegions":[],
             "BoundRegions": [],
-            "InitialRegions": []
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1,
+                    "xfrom": 0.0,
+                    "xto": 1.0,
+                    "yfrom": 0.0,
+                    "yto": 0.25
+                }
+            ]
         },
         {
             "Name": "lowerLeft",
@@ -74,7 +86,7 @@
             "Offset":
                 {
                     "x": 1.0,
-                    "y": 0.0
+                    "y": 0.5
                 },
             "Size":
                 {
@@ -93,7 +105,7 @@
             "Offset":
                 {
                     "x": 1.0,
-                    "y": 1.0
+                    "y": 1.5
                 },
             "Size":
                 {
@@ -111,60 +123,10 @@
         {
             "Name": "connection 1",
             "Block1": 0,
-            "Block2": 1,
-            "Block1Side": 3,
-            "Block2Side": 2
-        },
-        {
-            "Name": "connection 1",
-            "Block1": 1,
-            "Block2": 3,
-            "Block1Side": 1,
-            "Block2Side": 0
-        },
-        {
-            "Name": "connection 1",
-            "Block1": 3,
-            "Block2": 2,
-            "Block1Side": 2,
-            "Block2Side": 3
-        },
-        {
-            "Name": "connection 1",
-            "Block1": 0,
             "Block2": 2,
             "Block1Side": 1,
             "Block2Side": 0
-        },
-        {
-            "Name": "connection 1",
-            "Block1": 0,
-            "Block2": 2,
-            "Block1Side": 0,
-            "Block2Side": 1
-        },
-        {
-            "Name": "connection 1",
-            "Block1": 1,
-            "Block2": 3,
-            "Block1Side": 0,
-            "Block2Side": 1
-        },
-        {
-            "Name": "connection 1",
-            "Block1": 0,
-            "Block2": 1,
-            "Block1Side": 2,
-            "Block2Side": 3
-        },
-        {
-            "Name": "connection 1",
-            "Block1": 2,
-            "Block2": 3,
-            "Block1Side": 2,
-            "Block2Side": 3
-        }
-        
+        }        
     ], 
     "Equations": [
         {
@@ -173,7 +135,8 @@
                 "x", "y"
             ],
             "System": [
-                "U'= a * (D[U,{y,2}]+D[U,{x,2}])"
+                "U'= a * (D[U,{x,2}] + D[U,{y,2}])",
+                "V'= 1.0"
             ]
         }
     ], 
@@ -182,13 +145,15 @@
         {
             "Name": "Initial values 0",
             "Values": [
+                "0.0",
                 "0.0"
             ]
         },
         {
-            "Name": "Initial values 1",
+            "Name": "Initial values 0",
             "Values": [
-                "100.0"
+                "100.0",
+                "0.0"
             ]
         }
     ], 
@@ -223,17 +188,17 @@
                 0
             ],
             [
-                1,
+                0,
                 "cpu",
                 0
             ],
             [
-                2,
+                0,
                 "cpu",
                 0
             ],
             [
-                3,
+                0,
                 "cpu",
                 0
             ]
