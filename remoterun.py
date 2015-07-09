@@ -66,6 +66,7 @@ def remoteProjectRun(inputFile, continueEnabled, optionalArgs):
         else:
             if not continueEnabled:  
                 stdin, stdout, stderr = client.exec_command('rm -rf '+projFolder+'/*')
+                stdout.read()
                 print "Folder cleaned."                
             else:
                 print "Folder exists, no cleaning needed."                      
