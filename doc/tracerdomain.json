@@ -1,0 +1,97 @@
+{   "$schema": "http://json-schema.org/schema#",
+    "id": "tracerdomain.json",  
+    "title": "Domain",
+    "description": "User-defined domain",
+    "type": "object",
+    "properties": {
+        "ProjectName": {
+            "description": "Name of the project",
+            "type": "string"
+        },
+        "Solver": {
+            "description": "Solver and its parameters",
+            "type": "object",
+            "properties": {},
+            "required":[]
+        },
+        "GridStep": {
+            "description": "Steps along axes",
+            "type": "object",
+            "properties": {},
+            "required":[]
+        },
+        "Params": {
+            "description": "Equation parameters",
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "Paramvalues": {
+            "description": "Equation parameter values",
+            "type": "array",
+            "items": {
+                "type": ""
+            }
+        },
+        "DefaultParamsIndex": {
+            "type": "number",
+            "minimum": 0
+        },
+        "Blocks": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "Interconnects": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            },            
+            "uniqueItems": true
+        },
+        "Equations": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "Bounds": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            },            
+            "uniqueItems": true
+        },
+        "Initials": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "Hardware": {
+            "type": "array",
+            "items": {
+                "type": "object"
+            },
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "Mapping": {            
+            "type": "object",
+            "properties": {},
+            "required":[]
+        },
+       
+    },
+    "required": ["ProjectName", "Solver", "GridStep", "Params", "ParamValues", "DefaultParamsIndex", 
+                 "Blocks", "Interconnects", "Equations", "Bounds", "Initials", "Hardware", "Mapping"]
+                 
+}

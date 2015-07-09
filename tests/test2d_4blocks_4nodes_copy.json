@@ -8,13 +8,15 @@
         "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
     }, 
     "ProjectName": "fr_test2d_4blocks", 
-    "StartTime":    0.0, 
-    "FinishTime":   5.0, 
-    "TimeStep":     0.00001, 
-    "SaveInterval": 0.01, 
-    "Solver": 0,
-    "SolverAbsTolerance": 0.001,
-    "SolverRelTolerance": 0.001,
+    "Solver": {
+        "StartTime":    0.0, 
+        "FinishTime":   5.0, 
+        "TimeStep":     0.00001, 
+        "SaveInterval": 0.01, 
+        "SolverType": 0,
+        "AbsTolerance": 0.001,
+        "RelTolerance": 0.001
+        },
     "GridStep": {
         "x": 0.01, 
         "y": 0.01, 
