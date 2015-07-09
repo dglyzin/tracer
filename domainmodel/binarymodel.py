@@ -367,7 +367,7 @@ class BinaryModel(object):
                 icLen = min(b1yoff+b1yc, b2yoff+b2yc) - b2yoff
             else:
                 b1off = 0
-                b2off = b2yoff - b1yoff
+                b2off = b1yoff - b2yoff
                 icLen = min(b1yoff+b1yc, b2yoff+b2yc) - b1yoff
         else:
             #y=const connection
@@ -377,7 +377,7 @@ class BinaryModel(object):
                 icLen = min(b1xoff+b1xc, b2xoff+b2xc) - b2xoff
             else:
                 b1off = 0
-                b2off = b2xoff - b1xoff
+                b2off = b1xoff - b2xoff
                 icLen = min(b1xoff+b1xc, b2xoff+b2xc) - b1xoff
 
         print "Saving interconnect", icIdx, "part 1"
