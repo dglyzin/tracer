@@ -154,8 +154,9 @@ class BinaryModel(object):
         if "center_default" in functionMap:
             funcArr[:] = functionMap["center_default"]       
             
-        for [funcIdx, xfrom, xto] in functionMap["center"]:
-            xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)            
+        #for [funcIdx, xfrom, xto] in functionMap["center"]:
+        #    xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
+        for [funcIdx, xfromIdx, xtoIdx] in functionMap["center"]:            
             funcArr[xfromIdx:xtoIdx] = funcIdx
         #2 fill edges
         funcArr[0]       = functionMap["side0"]
@@ -179,26 +180,31 @@ class BinaryModel(object):
             funcArr[:] = functionMap["center_default"]
         
             
-        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["center"]:
-            xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
-            yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
+        #for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["center"]:
+        #    xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
+        #    yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["center"]:
             funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
         #side 0
-        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side0"]:            
-            yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)            
-            funcArr[yfromIdx:ytoIdx, 0] = funcIdx
+        #for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side0"]:            
+        #    yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side0"]:            
+            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
         #side 1
-        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side1"]:            
-            yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
-            funcArr[yfromIdx:ytoIdx, xc-1] = funcIdx
+        #for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side1"]:            
+        #    yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side1"]:
+            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
         #side 2
-        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side2"]:
-            xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
-            funcArr[0, xfromIdx:xtoIdx] = funcIdx        
+        #for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side2"]:
+        #    xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side2"]:
+            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx        
         #side 3
-        for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side3"]:
-            xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
-            funcArr[yc-1, xfromIdx:xtoIdx] = funcIdx
+        #for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side3"]:
+        #    xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side3"]:
+            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
         #2 fill edges
         funcArr[0,0]       = functionMap["e02"]
         funcArr[0,xc-1]    = functionMap["e12"]
