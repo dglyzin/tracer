@@ -4,7 +4,7 @@ import itertools
 
 def getCellCountAlongLine(lengthInCoords, step):
     count = lengthInCoords/step#+1
-    return int(count)
+    return int(round(count))
 
 def getRanges(XData, YData = [], ZData = []):
         #Диапазоны в кординатах преобразует в диапазоны в клетках

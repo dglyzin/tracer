@@ -28,6 +28,7 @@ from DerivHandler import DerivativeHandler
 #generators
 from customOfficer import Reviewer
 from newFuncGenerator import FuncGenerator
+from sumFuncs import getRanges
 from libGenerateC import generateCfromDict
 
 
@@ -469,7 +470,7 @@ class Model(QObject):
     def getXrange(self, block, xfrom, xto):
         #xfrom -= block.offsetX
         #xto -= block.offsetX
-        fromIdx, toIdx = int(xfrom/self.gridStepX),int(xto/self.gridStepX)
+        fromIdx, toIdx = getRanges([xfrom, xto, self.gridStepX, block.sizeX])
         #[xc, _, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
         #if fromIdx == 0: fromIdx = 1
         #if toIdx == xc: toIdx = xc-1
@@ -478,7 +479,7 @@ class Model(QObject):
     def getYrange(self, block, yfrom, yto):
         #yfrom -= block.offsetY
         #yto -= block.offsetY
-        fromIdx, toIdx = int(yfrom/self.gridStepY),int(yto/self.gridStepY)
+        fromIdx, toIdx = getRanges([yfrom, yto, self.gridStepY, block.sizeY])
         #[_, yc, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
         #if fromIdx == 0: fromIdx = 1
         #if toIdx == yc: toIdx = yc-1
@@ -487,7 +488,7 @@ class Model(QObject):
     def getZrange(self, block, zfrom, zto):
         #zfrom -= block.offsetZ
         #zto -= block.offsetZ
-        fromIdx, toIdx = int(zfrom/self.gridStepZ),int(zto/self.gridStepZ)
+        fromIdx, toIdx = getRanges([zfrom, zto, self.gridStepZ, block.sizeZ])
         #[_, _, zc ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
         #if fromIdx == 0: fromIdx = 1
         #if toIdx == zc: toIdx = zc-1
