@@ -9,9 +9,9 @@
     }, 
     "ProjectName": "fr_test2d_4blocks", 
     "StartTime":    0.0, 
-    "FinishTime":   0.2, 
+    "FinishTime":   5.0, 
     "TimeStep":     0.00001, 
-    "SaveInterval": 0.001, 
+    "SaveInterval": 0.01, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
@@ -48,18 +48,10 @@
                     "y": 1.0
                 },
             "DefaultEquation": 0,
-            "DefaultInitial": 0,
+            "DefaultInitial": 1,
             "EquationRegions":[],
             "BoundRegions": [],
-            "InitialRegions": [
-                {
-                    "InitialNumber": 1,
-                    "xfrom": 0.0,
-                    "xto": 1.0,
-                    "yfrom": 0.0,
-                    "yto": 0.25
-                }
-            ]
+            "InitialRegions": []
         },
         {
             "Name": "lowerLeft",
@@ -126,7 +118,35 @@
             "Block2": 2,
             "Block1Side": 1,
             "Block2Side": 0
-        }        
+        },
+        {
+            "Name": "connection 1",
+            "Block1": 0,
+            "Block2": 1,
+            "Block1Side": 3,
+            "Block2Side": 2
+        },
+        {
+            "Name": "connection 1",
+            "Block1": 1,
+            "Block2": 2,
+            "Block1Side": 1,
+            "Block2Side": 0
+        },
+        {
+            "Name": "connection 1",
+            "Block1": 1,
+            "Block2": 3,
+            "Block1Side": 1,
+            "Block2Side": 0
+        },
+        {
+            "Name": "connection 1",
+            "Block1": 2,
+            "Block2": 3,
+            "Block1Side": 3,
+            "Block2Side": 2
+        }
     ], 
     "Equations": [
         {
