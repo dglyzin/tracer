@@ -4,7 +4,31 @@ import itertools
 
 def getCellCountAlongLine(lengthInCoords, step):
     count = lengthInCoords/step#+1
-    return int(count)
+    return int(round(count))
+
+def getRanges(XData, YData = [], ZData = []):
+        #Диапазоны в кординатах преобразует в диапазоны в клетках
+        #XData = [xfrom, xto, stepX, xmax]
+        allData = [XData]
+        if len(YData) != 0:
+            allData.append(YData)
+        if len(ZData) != 0:
+            allData.append(ZData)
+        ranges = []
+        for data in allData: 
+            varFrom = data[0]
+            varTo = data[1]
+            stepVar = data[2]
+            varMax = data[3]
+            maxIdxVar = getCellCountAlongLine(varMax, stepVar)
+            firstCellIdxVar = getCellCountAlongLine(varFrom, stepVar)
+            lastCellIdxVar = getCellCountAlongLine(varTo, stepVar)
+            if firstCellIdxVar == lastCellIdxVar == maxIdxVar:
+                firstCellIdxVar -= 1
+            elif firstCellIdxVar == lastCellIdxVar:
+                lastCellIdxVar += 1
+            ranges += [firstCellIdxVar, lastCellIdxVar]
+        return ranges
 
 def factorial(number):
 # Вычисляет факториал

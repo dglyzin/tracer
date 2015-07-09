@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from equationParser import MathExpressionParser
-from someFuncs import generateCodeForMathFunction, determineNameOfBoundary, RectSquare, determineCellIndexOfStartOfConnection2D
+from someFuncs import generateCodeForMathFunction, determineNameOfBoundary, RectSquare, determineCellIndexOfStartOfConnection2D, getRanges
 from rhsCodeGenerator import RHSCodeGenerator
 
 class FuncGenerator:
@@ -25,10 +25,11 @@ class FuncGenerator:
         for blockNumber, block in enumerate(self.generator.blocks):
             systemsForCentralFuncs, numsForSystems, totalBCondLst, totalInterconnectLst, blockFunctionMap = self.generator.getBlockInfo(block, blockNumber)
             cf, arrWithFunctionNames = self.generator.generateCentralFunctionCode(block, blockNumber, systemsForCentralFuncs, numsForSystems)
-            bf = self.generator.generateBoundsAndIcs(blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst)
+            bf = self.generator.generateBoundsAndIcs(block, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst)
             
             totalArrWithFunctionNames.append(arrWithFunctionNames)
             functionMaps.append(blockFunctionMap)
+            print blockFunctionMap
             outputStr += cf + bf
             
         final = self.generator.generateGetBoundFuncArray(totalArrWithFunctionNames)
@@ -560,7 +561,10 @@ class generator1D(abstractGenerator):
                 systemsForCentralFuncs.append(self.equations[eqRegion.equationNumber])
                 numsForSystems.append(eqRegion.equationNumber)
             if not cond:
-                blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber), eqRegion.xfrom, eqRegion.xto])
+                #Каждую функцию характеризует не длина в координатах, а диапазон клеток, которые эта функция должна пересчитывать
+                ranges = getRanges([eqRegion.xfrom, eqRegion.xto, self.gridStep[0], block.sizeX])
+                blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber)] + ranges)
+                #blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber), eqRegion.xfrom, eqRegion.xto])
         if block.sizeX > reservedSpace:
             systemsForCentralFuncs.append(self.equations[block.defaultEquation])
             blockFuncMap.update({'center_default': len(numsForSystems)})
@@ -654,7 +658,7 @@ class generator1D(abstractGenerator):
             icsForBlock.append(Connection(firstIndex, '0', side, [], equationNum, equation, funcName))
         return icsForBlock
                 
-    def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, bCondLst, icsList):
+    def generateBoundsAndIcs(self, block, blockNumber, arrWithFunctionNames, blockFunctionMap, bCondLst, icsList):
         #  ***x->
         #  *  
         #  |  ---side 2---
@@ -824,11 +828,8 @@ class generator2D(abstractGenerator):
                 systemsForCentralFuncs.append(self.equations[eqRegion.equationNumber])
                 numsForSystems.append(eqRegion.equationNumber)
             if not cond1 and not cond2:
-                x1 = eqRegion.xfrom
-                x2 = eqRegion.xto
-                y1 = eqRegion.yfrom
-                y2 = eqRegion.yto
-                blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber), x1, x2, y1, y2])
+                ranges = getRanges([eqRegion.xfrom, eqRegion.xto, self.gridStep[0], block.sizeX], [eqRegion.yfrom, eqRegion.yto, self.gridStep[1], block.sizeY])
+                blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber)] + ranges)
         if blockSquare > reservedSquare:
             systemsForCentralFuncs.append(self.equations[block.defaultEquation])
             blockFuncMap.update({'center_default': len(numsForSystems)})
@@ -1003,7 +1004,7 @@ class generator2D(abstractGenerator):
                         condList.append(Connection(varMaxReg.firstIndex, secondIndex, side, bCondRanges, equationNum, equation, funcName))
         return condList
   
-    def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst):
+    def generateBoundsAndIcs(self, block, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst):
         #  ***x->
         #  *  
         #  |  ---side 2---
@@ -1039,7 +1040,7 @@ class generator2D(abstractGenerator):
                     continue
                 if not isinstance(condition, Connection):
                     if (condition.boundNumber, condition.equationNumber) in boundAndEquatNumbersList:
-                        ranges = [condition.ranges[0][0], condition.ranges[0][1], condition.ranges[1][0], condition.ranges[1][1]]
+                        ranges = getRanges([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0], block.sizeX], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1], block.sizeY])
                         sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
                         continue
                     boundAndEquatNumbersList.append((condition.boundNumber, condition.equationNumber))
@@ -1056,7 +1057,7 @@ class generator2D(abstractGenerator):
                     pBCL = [condition]
                     outputStr.append(self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL))
                 arrWithFunctionNames.append(condition.funcName)
-                ranges = [condition.ranges[0][0], condition.ranges[0][1], condition.ranges[1][0], condition.ranges[1][1]]
+                ranges = getRanges([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0], block.sizeX], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1], block.sizeY])
                 sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
             blockFunctionMap.update({sideName:sideLst}) 
         return ''.join(outputStr)
