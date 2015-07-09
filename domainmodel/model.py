@@ -28,7 +28,7 @@ from DerivHandler import DerivativeHandler
 #generators
 from customOfficer import Reviewer
 from newFuncGenerator import FuncGenerator
-from sumFuncs import getRanges
+from someFuncs import getRanges
 from libGenerateC import generateCfromDict
 
 
