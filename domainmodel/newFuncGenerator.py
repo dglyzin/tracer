@@ -29,7 +29,6 @@ class FuncGenerator:
             
             totalArrWithFunctionNames.append(arrWithFunctionNames)
             functionMaps.append(blockFunctionMap)
-            print blockFunctionMap
             outputStr += cf + bf
             
         final = self.generator.generateGetBoundFuncArray(totalArrWithFunctionNames)
@@ -456,7 +455,7 @@ class abstractGenerator(object):
 #         А здесь используем userIndepVariables.        
         indepVarValueList = list([])
         for indepVar in self.userIndepVars:
-            indepVarValueList.extend(['idx' + indepVar.upper()])
+            indepVarValueList.extend(['idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper()])
         indepVarValueList.extend(['t'])
         
         for i,boundary in enumerate(boundaryCondition.parsedValues):
