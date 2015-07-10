@@ -1,0 +1,236 @@
+{
+    "Connection": {
+        "Host": "10.7.129.222", 
+        "Port": 22, 
+        "Username": "tester", 
+        "Password": "tester", 
+        "Workspace": "/home/tester/Tracer1", 
+        "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
+    }, 
+    "ProjectName": "fr_heat_test", 
+    "StartTime":    0.0, 
+    "FinishTime":   10.0, 
+    "TimeStep":     0.00001, 
+    "SaveInterval": 0.01, 
+    "Solver": 0,
+    "SolverAbsTolerance": 0.001,
+    "SolverRelTolerance": 0.001,
+    "GridStep": {
+        "x": 0.01, 
+        "y": 0.01, 
+        "z": 1
+    },
+    "Params": [
+        "a",
+        "b"
+    ], 
+    "ParamValues": [
+        {
+            "a": 2.0,
+            "b": 0.5
+        }
+    ],
+    "DefaultParamsIndex": 0,
+    "Blocks": [
+        {
+            "Name": "#0",
+            "Dimension": 2,
+            "Offset":
+                {
+                    "x": 0.0,
+                    "y": 0.0
+                },
+            "Size":
+                {
+                    "x": 1.0,
+                    "y": 1.5
+                },
+            "DefaultEquation": 1,
+            "DefaultInitial": 1,
+            "EquationRegions":[],
+            "BoundRegions": [],
+            "InitialRegions": []
+        },
+        {
+            "Name": "#0",
+            "Dimension": 2,
+            "Offset":
+                {
+                    "x": 1.0,
+                    "y": 0.0
+                },
+            "Size":
+                {
+                    "x": 2.0,
+                    "y": 0.5
+                },
+            "DefaultEquation": 0,
+            "DefaultInitial": 0,
+            "EquationRegions":[],
+            "BoundRegions": [],
+            "InitialRegions": []
+        },
+        {
+            "Name": "#0",
+            "Dimension": 2,
+            "Offset":
+                {
+                    "x": 1.0,
+                    "y": 1.0
+                },
+            "Size":
+                {
+                    "x": 2.0,
+                    "y": 0.5
+                },
+            "DefaultEquation": 2,
+            "DefaultInitial": 0,
+            "EquationRegions":[],
+            "BoundRegions": [],
+            "InitialRegions": []
+        },
+        {
+            "Name": "#0",
+            "Dimension": 2,
+            "Offset":
+                {
+                    "x": 3.0,
+                    "y": 0.0
+                },
+            "Size":
+                {
+                    "x": 1.0,
+                    "y": 1.5
+                },
+            "DefaultEquation": 0,
+            "DefaultInitial": 0,
+            "EquationRegions":[],
+            "BoundRegions": [],
+            "InitialRegions": []
+        }
+    ], 
+    "Interconnects": [
+        {
+            "Name": "connection 1",
+            "Block1": 0,
+            "Block2": 1,
+            "Block1Side": 1,
+            "Block2Side": 0
+        },
+        {
+            "Name": "connection 1",
+            "Block1": 0,
+            "Block2": 2,
+            "Block1Side": 1,
+            "Block2Side": 0
+        },
+        {
+            "Name": "connection 1",
+            "Block1": 1,
+            "Block2": 3,
+            "Block1Side": 1,
+            "Block2Side": 0
+        },
+        {
+            "Name": "connection 1",
+            "Block1": 2,
+            "Block2": 3,
+            "Block1Side": 1,
+            "Block2Side": 0
+        }
+    ], 
+    "Equations": [
+        {
+            "Name": "1D heat 1",
+            "Vars": [
+                "x",
+                "y"
+            ],
+            "System": [
+                "U'= a * (D[U,{x,2}] + D[U,{y,2}])"
+            ]
+        },
+        {
+            "Name": "1D heat 1",
+            "Vars": [
+                "x",
+                "y"
+            ],
+            "System": [
+                "U'= 0"
+            ]
+        },
+        {
+            "Name": "1D heat 1",
+            "Vars": [
+                "x",
+                "y"
+            ],
+            "System": [
+                "U'= b * (D[U,{x,2}] + D[U,{y,2}])"
+            ]
+        }
+    ], 
+    "Bounds": [],
+    "Initials": [
+        {
+            "Name": "Initial values 0",
+            "Values": [
+                "10.0"
+            ]
+        },
+        {
+            "Name": "Initial values 0",
+            "Values": [
+                "100.0"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        },
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        },
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        },
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            [
+                0,
+                "cpu",
+                0
+            ],
+            [
+                1,
+                "cpu",
+                0
+            ],
+            [
+                2,
+                "cpu",
+                0
+            ],
+            [
+                3,
+                "cpu",
+                0
+            ]
+        ]
+    }
+}
