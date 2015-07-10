@@ -46,16 +46,17 @@
             "DefaultEquation": 0,
             "DefaultInitial": 0,
             "EquationRegions":[],
-            "BoundRegions": [],
-            "InitialRegions": [
+            "BoundRegions": [
                 {
-                    "InitialNumber": 1,
-                    "xfrom": 0.25,
-                    "xto": 0.75,
-                    "yfrom": 0.25,
-                    "yto": 0.75
+                    "BoundNumber": 1,
+                    "Side": 0,
+                    "xfrom": 0.0,
+                    "xto": 0.0,
+                    "yfrom": 0.0,
+                    "yto": 1.0
                 }
-            ]
+            ],
+            "InitialRegions": []
         },
         {
             "Name": "lowerLeft",
@@ -73,16 +74,17 @@
             "DefaultEquation": 0,
             "DefaultInitial": 0,
             "EquationRegions":[],
-            "BoundRegions": [],
-            "InitialRegions": [
+            "BoundRegions": [
                 {
-                    "InitialNumber": 1,
-                    "xfrom": 0.25,
-                    "xto": 0.75,
-                    "yfrom": 0.25,
-                    "yto": 0.75
+                    "BoundNumber": 1,
+                    "Side": 0,
+                    "xfrom": 0.0,
+                    "xto": 0.0,
+                    "yfrom": 0.0,
+                    "yto": 1.0
                 }
-            ]
+            ],
+            "InitialRegions": []
         },
         {
             "Name": "UpperRight",
@@ -101,15 +103,7 @@
             "DefaultInitial": 0,
             "EquationRegions":[],
             "BoundRegions": [],
-            "InitialRegions": [
-                {
-                    "InitialNumber": 1,
-                    "xfrom": 0.25,
-                    "xto": 0.75,
-                    "yfrom": 0.25,
-                    "yto": 0.75
-                }
-            ]
+            "InitialRegions": []
         },
         {
             "Name": "lowerRight",
@@ -128,15 +122,7 @@
             "DefaultInitial": 0,
             "EquationRegions":[],
             "BoundRegions": [],
-            "InitialRegions": [
-                {
-                    "InitialNumber": 1,
-                    "xfrom": 0.25,
-                    "xto": 0.75,
-                    "yfrom": 0.25,
-                    "yto": 0.75
-                }
-            ]
+            "InitialRegions": []
         }
     ], 
     "Interconnects": [
@@ -146,13 +132,6 @@
             "Block2": 2,
             "Block1Side": 1,
             "Block2Side": 0
-        },
-        {
-            "Name": "connection 1",
-            "Block1": 0,
-            "Block2": 1,
-            "Block1Side": 3,
-            "Block2Side": 2
         },
         {
             "Name": "connection 1",
@@ -181,7 +160,22 @@
             ]
         }
     ], 
-    "Bounds": [], 
+    "Bounds": [
+        {
+            "Name": "N1",
+            "Type": 1,
+            "Values": [
+                "10*x"
+            ]
+        },
+        {
+            "Name": "N2",
+            "Type": 1,
+            "Values": [
+                "10*y"
+            ]
+        }
+    ],
     "Initials": [
         {
             "Name": "Initial values 0",
