@@ -32,8 +32,7 @@ class Block(object):
         self.boundRegions = []
         self.initialRegions = []
 
-    def getCellCount(self, dx, dy, dz ):
-        #TODO complete
+    def getCellCount(self, dx, dy, dz ):        
         yc, zc = 1, 1
         xc = getCellCountAlongLine(self.sizeX, dx) 
         if self.dimension >1:
@@ -45,12 +44,14 @@ class Block(object):
     def getCellOffset(self, dx, dy, dz ):
         #TODO complete
         yc, zc = 1, 1
-        xc = self.offsetX/dx 
+        xc = getCellCountAlongLine(self.offsetX, dx) 
         if self.dimension >1:
-            yc = self.offsetY/dy
+            yc = getCellCountAlongLine(self.offsetY,dy)
         if self.dimension >2:
-            zc = self.offsetZ/dz
-        return [int(xc), int(yc), int(zc)]
+            zc = getCellCountAlongLine(self.offsetZ,dz)
+        print "block", self.name
+        print self.offsetX, self.offsetY
+        return [xc, yc, zc]
         
     def fillProperties(self, bdict):
         self.name = bdict["Name"]

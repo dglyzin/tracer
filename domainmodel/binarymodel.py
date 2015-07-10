@@ -347,7 +347,7 @@ class BinaryModel(object):
         icDim = self.dmodel.blocks[ic.block1].dimension - 1
 
         block1 = self.dmodel.blocks[ic.block1]
-        block2 = self.dmodel.blocks[ic.block1]
+        block2 = self.dmodel.blocks[ic.block2]
         [b1xc, b1yc, b1zc] = block1.getCellCount(self.dmodel.gridStepX,
                                     self.dmodel.gridStepY, self.dmodel.gridStepZ)
         [b2xc, b2yc, b2zc] = block2.getCellCount(self.dmodel.gridStepX,
@@ -356,6 +356,9 @@ class BinaryModel(object):
                                     self.dmodel.gridStepY, self.dmodel.gridStepZ)
         [b2xoff, b2yoff, b2zoff] = block2.getCellOffset(self.dmodel.gridStepX,
                                     self.dmodel.gridStepY, self.dmodel.gridStepZ)
+        
+        print "Filling interconnect", icIdx, ": block1 off:", b1xoff, b1yoff, b1zoff, "; block2 off:", b2xoff, b2yoff, b2zoff 
+        
         if (ic.block1Side==0) or (ic.block1Side==1):
             #x=const connection
             if b1yoff < b2yoff:
@@ -364,7 +367,7 @@ class BinaryModel(object):
                 icLen = min(b1yoff+b1yc, b2yoff+b2yc) - b2yoff
             else:
                 b1off = 0
-                b2off = b2yoff - b1yoff
+                b2off = b1yoff - b2yoff
                 icLen = min(b1yoff+b1yc, b2yoff+b2yc) - b1yoff
         else:
             #y=const connection
@@ -374,7 +377,7 @@ class BinaryModel(object):
                 icLen = min(b1xoff+b1xc, b2xoff+b2xc) - b2xoff
             else:
                 b1off = 0
-                b2off = b2xoff - b1xoff
+                b2off = b1xoff - b2xoff
                 icLen = min(b1xoff+b1xc, b2xoff+b2xc) - b1xoff
 
         print "Saving interconnect", icIdx, "part 1"
