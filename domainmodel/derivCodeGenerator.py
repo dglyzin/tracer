@@ -52,16 +52,16 @@ class DerivGenerator:
             
             for k,indepVar in enumerate(fullIndepVarList):
                 if k == indepVarIndex:
-                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ' + 1)'])
+                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ' + 1)'])
                 else:
-                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ')'])
+                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ')'])
             fullIndepVarValueListR.extend(['t'])
             
             for k,indepVar in enumerate(fullIndepVarList):
                 if k == indepVarIndex:
-                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ' - 1)'])
+                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ' - 1)'])
                 else:
-                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ')'])
+                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ')'])
             fullIndepVarValueListL.extend(['t'])
             
             right = generateCodeForMathFunction(parsedMathFunction, fullIndepVarList, fullIndepVarValueListR)
@@ -111,7 +111,7 @@ class DerivGenerator:
         
         fullIndepVarValueList = list([])
         for indepVar in fullIndepVarList:
-            fullIndepVarValueList.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ')'])
+            fullIndepVarValueList.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ')'])
         fullIndepVarValueList.extend(['t'])
 
         boundaryValue = generateCodeForMathFunction(parsedMathFunction, fullIndepVarList, fullIndepVarValueList)
