@@ -455,7 +455,7 @@ class abstractGenerator(object):
 #         А здесь используем userIndepVariables.        
         indepVarValueList = list([])
         for indepVar in self.userIndepVars:
-            indepVarValueList.extend(['idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper()])
+            indepVarValueList.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ')'])
         indepVarValueList.extend(['t'])
         
         for i,boundary in enumerate(boundaryCondition.parsedValues):
