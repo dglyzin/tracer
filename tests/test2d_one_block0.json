@@ -5,7 +5,7 @@
         "Username": "tester", 
         "Password": "tester", 
         "Workspace": "/home/tester/Tracer1", 
-        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
+        "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
     }, 
     "ProjectName": "test2d_one_block0", 
     "StartTime": 0.0, 
@@ -16,8 +16,8 @@
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.01, 
-        "y": 0.01, 
+        "x": 0.1, 
+        "y": 0.1, 
         "z": 1
     },
     "Params": [
@@ -105,23 +105,17 @@
     "Bounds": [
 		{
 			"Name": "D 3", 
-            "Type": 0, 
+            "Type": 1, 
             "Values": [
-                "x"
-            ],
-			"Derivative":[
-				"0.0"
-			]
+                "10*x"
+            ]
 		},
 		{
 			"Name": "D 4", 
-            "Type": 0, 
+            "Type": 1, 
             "Values": [
-                "y"
-            ],
-			"Derivative":[
-				"0.0"
-			]
+                "10*y"
+            ]
 		}
 	], 
     "Initials": [
