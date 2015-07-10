@@ -34,30 +34,30 @@
             "Name": "MainBlock", 
             "Dimension": 2, 
             "Offset": {
-                "x": 100.0, 
-                "y": 100.0
+                "x": 0.0, 
+                "y": 0.0
             }, 
             "Size": {
-                "x": 1.0, 
-                "y": 1.0
+                "x": 6.0, 
+                "y": 6.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0,
-			"EquationRegions":[],
-            "BoundRegions": [
+			"EquationRegions":[
 				{
-					"BoundNumber": 1, 
-                    "Side": 0, 
-                    "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 0.0, 
-                    "yto": 1.0
-				},
+					"EquationNumber": 1,
+					"xfrom": 0.0,
+					"xto": 6.0,
+					"yfrom": 4.0,
+					"yto": 6.0
+				}
+			],
+            "BoundRegions": [
 				{
 					"BoundNumber": 0, 
                     "Side": 2, 
                     "xfrom": 0.0, 
-                    "xto": 1.0, 
+                    "xto": 6.0, 
                     "yfrom": 0.0, 
                     "yto": 0.0
 				},
@@ -67,38 +67,32 @@
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
-                    "yto": 1.0
-				},
-				{
-					"BoundNumber": 0, 
-                    "Side": 3, 
-                    "xfrom": 0.0, 
-                    "xto": 1.0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0
+                    "yto": 4.0
 				}
 			], 
             "InitialRegions":[]
         }
     ], 
-    "Interconnects": [
-		{
-			"Name": "looped block",
-			"Block1": 0,
-			"Block2": 0,
-			"Block1Side": 2,
-			"Block2Side": 3
-		}
-	], 
+    "Interconnects": [], 
     "Equations": [
         {
-            "Name": "Heat 1", 
+            "Name": "MixDeriv1", 
             "Vars": [
                 "x", 
                 "y"
             ], 
             "System": [
-                "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
+                "U'=D[U,{x,1},{y,1}]"
+            ]
+        },
+		{
+            "Name": "Heat", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=a*(D[U,{x,2}])"
             ]
         }
     ],
