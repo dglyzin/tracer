@@ -41,7 +41,7 @@ class DerivGenerator:
         else:
             raise SyntaxError("Order of some mixed partial derivative greater than 2. I don't know how to work with it!")
     
-    def __specialMixedDerivativeAlternative(self, parsedMathFunction, increment, strideList, generalOrder, fullIndepVarList, indepVarIndex):
+    def __specialMixedDerivativeAlternative(self, blockNumber, parsedMathFunction, increment, strideList, generalOrder, fullIndepVarList, indepVarIndex):
 #         indepVarIndex --- это индекс независимой переменной в массиве всех таких переменных; это индекс той переменной, производная по которой
 #         входит в смешанную производную второго порядка, но не той переменной, для которой написано краевое условие Неймана.
         if indepVarIndex < 0 or indepVarIndex >= len(fullIndepVarList):
@@ -52,16 +52,16 @@ class DerivGenerator:
             
             for k,indepVar in enumerate(fullIndepVarList):
                 if k == indepVarIndex:
-                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper() + ' + 1)'])
+                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ' + 1)'])
                 else:
-                    fullIndepVarValueListR.extend(['idx' + indepVar.upper()])
+                    fullIndepVarValueListR.extend(['idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper()])
             fullIndepVarValueListR.extend(['t'])
             
             for k,indepVar in enumerate(fullIndepVarList):
                 if k == indepVarIndex:
-                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper() + ' - 1)'])
+                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ' - 1)'])
                 else:
-                    fullIndepVarValueListL.extend(['idx' + indepVar.upper()])
+                    fullIndepVarValueListL.extend(['idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper()])
             fullIndepVarValueListL.extend(['t'])
             
             right = generateCodeForMathFunction(parsedMathFunction, fullIndepVarList, fullIndepVarValueListR)
@@ -111,7 +111,7 @@ class DerivGenerator:
         
         fullIndepVarValueList = list([])
         for indepVar in fullIndepVarList:
-            fullIndepVarValueList.extend(['idx' + indepVar.upper()])
+            fullIndepVarValueList.extend(['idx' + indepVar.upper() + ' + Block' + str(blockNumber) + 'Offset' + indepVar.upper()])
         fullIndepVarValueList.extend(['t'])
 
         boundaryValue = generateCodeForMathFunction(parsedMathFunction, fullIndepVarList, fullIndepVarValueList)
@@ -187,7 +187,7 @@ class DerivGenerator:
             for o in derivativeOrderList:
                 order = order + int(o)
             
-            #Случай соединения блоков в одномерной задаче
+            #Случай соединения блоков
             if firstIndex >= 0:
                 if side / 2 == indepVarIndexList[0]:
                     return self.__interconnectPureDerivAlternative(blockNumber, increment, stride, order, varIndex, side, firstIndex, secondIndexSTR)
@@ -226,15 +226,15 @@ class DerivGenerator:
             if (bCond1 and indepVarCond1) or (blockDimension > 2 and bCond3 and indepVarCond3):
                 ind = indepVarList.index(userIndepVariables[1])
                 specialIncrement = 'D' + indepVarList[ind].upper() + 'M' + derivativeOrderList[ind]
-                return self.__specialMixedDerivativeAlternative(parsedMathFunction, specialIncrement, strideList, generalOrder, userIndepVariables, 1)
+                return self.__specialMixedDerivativeAlternative(blockNumber, parsedMathFunction, specialIncrement, strideList, generalOrder, userIndepVariables, 1)
             elif (blockDimension > 2 and bCond1 and indepVarCond2) or (blockDimension > 2 and bCond2 and indepVarCond3):
                 ind = indepVarList.index(userIndepVariables[2])
                 specialIncrement = 'D' + indepVarList[ind].upper() + 'M' + derivativeOrderList[ind]
-                return self.__specialMixedDerivativeAlternative(parsedMathFunction, specialIncrement, strideList, generalOrder, userIndepVariables, 2)
+                return self.__specialMixedDerivativeAlternative(blockNumber, parsedMathFunction, specialIncrement, strideList, generalOrder, userIndepVariables, 2)
             elif (bCond2 and indepVarCond1) or (blockDimension > 2 and bCond3 and indepVarCond2):
                 ind = indepVarList.index(userIndepVariables[0])
                 specialIncrement = 'D' + indepVarList[ind].upper() + 'M' + derivativeOrderList[ind]
-                return self.__specialMixedDerivativeAlternative(parsedMathFunction, specialIncrement, strideList, generalOrder, userIndepVariables, 0)
+                return self.__specialMixedDerivativeAlternative(blockNumber, parsedMathFunction, specialIncrement, strideList, generalOrder, userIndepVariables, 0)
             else:
                 return self.__commonMixedDerivativeAlternative(blockNumber, increment, indepVar_Order_Stride, varIndex)
         else:

@@ -7,7 +7,7 @@
         "Workspace": "/home/tester/Tracer1", 
         "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
     }, 
-    "ProjectName": "test2d_two_blocks0", 
+    "ProjectName": "test2d_two_blocks_with_stride", 
     "StartTime": 0.0, 
     "FinishTime": 1.0, 
     "TimeStep": 0.00001, 
@@ -45,7 +45,7 @@
             }, 
             "Size": {
                 "x": 3.0, 
-                "y": 2.0
+                "y": 8.0
             }, 
             "DefaultEquation": 2, 
             "DefaultInitial": 0,
@@ -81,11 +81,11 @@
             "Dimension": 2, 
             "Offset": {
                 "x": 3.0, 
-                "y": 0.0
+                "y": 3.0
             }, 
             "Size": {
                 "x": 3.0, 
-                "y": 2.0
+                "y": 8.0
             }, 
             "DefaultEquation": 2, 
             "DefaultInitial": 0,
@@ -105,7 +105,16 @@
 					"yto": 2.0
 				}
 			],
-            "BoundRegions": [], 
+            "BoundRegions": [
+				{
+					"BoundNumber": 0, 
+                    "Side": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 8.0
+				}
+			], 
             "InitialRegions":[
 				{
 					"InitialNumber": 1,
@@ -119,7 +128,7 @@
     ], 
     "Interconnects": [
 		{
-			"Name": "simple connection",
+			"Name": "hard connection",
 			"Block1": 0,
 			"Block2": 1,
 			"Block1Side": 1,
@@ -158,7 +167,18 @@
             ]
         }
     ],
-    "Bounds": [], 
+    "Bounds": [
+		{
+			"Name": "Neumann 1", 
+            "Type": 0, 
+            "Values": [
+                "sin(y)"
+            ],
+			"Derivative": [
+                "cos(y)"
+            ]
+		}
+	], 
     "Initials": [
         {
             "Name": "Initial values 0", 

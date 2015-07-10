@@ -9,29 +9,23 @@
     }, 
     "ProjectName": "test2d_one_block0", 
     "StartTime": 0.0, 
-    "FinishTime": 1.0, 
+    "FinishTime": 2.0, 
     "TimeStep": 0.00001, 
     "SaveInterval": 0.05, 
     "Solver": 0,
     "SolverAbsTolerance": 0.001,
     "SolverRelTolerance": 0.001,
     "GridStep": {
-        "x": 0.15, 
-        "y": 0.15, 
+        "x": 0.01, 
+        "y": 0.01, 
         "z": 1
     },
     "Params": [
-			"a",
-			"b",
-			"c",
-			"d"
+			"a"
 	], 
     "ParamValues": [
 		{
-			"a": 2,
-			"b": 3,
-			"c": 0.1,
-			"d": 100
+			"a": 1
 		}
 	],	
 	"DefaultParamsIndex": 0,
@@ -40,58 +34,51 @@
             "Name": "MainBlock", 
             "Dimension": 2, 
             "Offset": {
-                "x": 0.0, 
-                "y": 0.0
+                "x": 100.0, 
+                "y": 100.0
             }, 
             "Size": {
-                "x": 3.0, 
-                "y": 2.0
+                "x": 1.0, 
+                "y": 1.0
             }, 
-            "DefaultEquation": 2, 
+            "DefaultEquation": 0, 
             "DefaultInitial": 0,
-			"EquationRegions":[
-				{
-					"EquationNumber": 0,
-					"xfrom": 0.0, 
-					"xto": 3.0, 
-					"yfrom": 0.0, 
-					"yto": 1.0
-				},
-				{
-					"EquationNumber": 1,
-					"xfrom": 0.0, 
-					"xto": 3.0, 
-					"yfrom": 1.0, 
-					"yto": 2.0
-				}
-			],
+			"EquationRegions":[],
             "BoundRegions": [
 				{
-					"BoundNumber": 2, 
+					"BoundNumber": 1, 
                     "Side": 0, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
-                    "yfrom": 0.5, 
-                    "yto": 1.5
+                    "yfrom": 0.0, 
+                    "yto": 1.0
 				},
 				{
 					"BoundNumber": 0, 
+                    "Side": 2, 
+                    "xfrom": 0.0, 
+                    "xto": 1.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0
+				},
+				{
+					"BoundNumber": 1, 
                     "Side": 1, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
-                    "yto": 2.0
+                    "yto": 1.0
+				},
+				{
+					"BoundNumber": 0, 
+                    "Side": 3, 
+                    "xfrom": 0.0, 
+                    "xto": 1.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0
 				}
 			], 
-            "InitialRegions":[
-				{
-					"InitialNumber": 1,
-					"xfrom": 0.75, 
-					"xto": 2.25, 
-					"yfrom": 0.5, 
-					"yto": 1.5
-				}
-			]
+            "InitialRegions":[]
         }
     ], 
     "Interconnects": [
@@ -113,48 +100,24 @@
             "System": [
                 "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
             ]
-        },
-		{
-            "Name": "Heat 2", 
-            "Vars": [
-                "x", 
-                "y"
-            ], 
-            "System": [
-                "U'=b*(D[U,{x,2}]+ D[U,{y,2}])"
-            ]
-        },
-		{
-            "Name": "Psevdo Heat", 
-            "Vars": [
-                "x", 
-                "y"
-            ], 
-            "System": [
-                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - d * D[U,{y,1}]"
-            ]
         }
     ],
     "Bounds": [
 		{
-			"Name": "Neumann 1", 
-            "Type": 1, 
-            "Values": [
-                "sin(t)"
-            ]
-		},
-		{
-			"Name": "Neumann 2", 
-            "Type": 1, 
-            "Values": [
-                "cos(t)"
-            ]
-		},
-		{
-			"Name": "Dirichlet 1", 
+			"Name": "D 3", 
             "Type": 0, 
             "Values": [
-                "30.0"
+                "x"
+            ],
+			"Derivative":[
+				"0.0"
+			]
+		},
+		{
+			"Name": "D 4", 
+            "Type": 0, 
+            "Values": [
+                "y"
             ],
 			"Derivative":[
 				"0.0"
@@ -167,14 +130,8 @@
             "Values": [
                 "0.0"               
             ]
-        },
-        {
-            "Name": "Initial values 1", 
-            "Values": [
-                "40.0"               
-            ]
         }
-    ], 
+	], 
     "Hardware": [
         {
             "Name": "cnode1", 
