@@ -11,37 +11,106 @@
         "Solver": {
             "description": "Solver and its parameters",
             "type": "object",
-            "properties": {},
-            "required":[]
+            "properties": {
+                "SolverIdx": {"type":"number"},
+                "StartTime": {"type":"number"}, 
+                "FinishTime": {"type":"number"}, 
+                "TimeStep": {"type":"number"}, 
+                "SaveInterval": {"type":"number"},
+                "AbsTolerance": {"type":"number"},
+                "RelTolerance": {"type":"number"}
+            },
+            "required":["SolverIdx", "StartTime", "FinishTime", "TimeStep", "SaveInterval", 
+                        "AbsTolerance", "RelTolerance"]
         },
-        "GridStep": {
+        "Grid": {
             "description": "Steps along axes",
             "type": "object",
-            "properties": {},
-            "required":[]
-        },
-        "Params": {
-            "description": "Equation parameters",
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        },
-        "Paramvalues": {
-            "description": "Equation parameter values",
-            "type": "array",
-            "items": {
-                "type": ""
-            }
-        },
-        "DefaultParamsIndex": {
-            "type": "number",
-            "minimum": 0
-        },
+            "properties": {
+                "dx": {"type":"number"},
+                "dy": {"type":"number"},
+                "dz": {"type":"number"}
+            },
+            "required":["dx", "dy", "dz"]
+        },        
         "Blocks": {
             "type": "array",
             "items": {
-                "type": "object"
+                "type": "object",
+                "properties":{
+                    "Name": {"type": "string"},
+                    "Dimension": {"type":"number"},
+                    "Offset": {
+                        "type":"object",
+                        "properties": {
+                            "x": {"type":"number"},
+                            "y": {"type":"number"},
+                            "z": {"type":"number"}
+                        },
+                        "required": ["x"]
+                    },                
+                    "Size": {
+                        "type":"object",
+                        "properties": {
+                            "x": {"type":"number"},
+                            "y": {"type":"number"},
+                            "z": {"type":"number"}
+                        },
+                        "required": ["x"]    
+                    },
+                    "DefaultEquation": {"type":"number"},
+                    "DefaultInitial": {"type":"number"},
+                    "EquationRegions": {
+                        "type": "array", 
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "EquationNumber": {"type":"number"},
+                                "xfrom": {"type":"number"},
+                                "xto": {"type":"number"},
+                                "yfrom": {"type":"number"},
+                                "yto": {"type":"number"},
+                                "zfrom": {"type":"number"},
+                                "zto": {"type":"number"}
+                            },
+                            "required":["EquationNumber", "xfrom", "xto"]
+                        }
+                    },
+                    "BoundRegions": {
+                        "type": "array", 
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "BoundNumber": {"type":"number"},
+                                "xfrom": {"type":"number"},
+                                "xto": {"type":"number"},
+                                "yfrom": {"type":"number"},
+                                "yto": {"type":"number"},
+                                "zfrom": {"type":"number"},
+                                "zto": {"type":"number"}
+                            },
+                            "required":["BoundNumber", "xfrom", "xto"]
+                        }
+                    },
+                    "InitialRegions": {
+                        "type": "array", 
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "InitialNumber": {"type":"number"},
+                                "xfrom": {"type":"number"},
+                                "xto": {"type":"number"},
+                                "yfrom": {"type":"number"},
+                                "yto": {"type":"number"},
+                                "zfrom": {"type":"number"},
+                                "zto": {"type":"number"}
+                            },
+                            "required":["InitialNumber", "xfrom", "xto"]
+                        }
+                    }
+                },
+                "required": ["Name", "Dimension", "Offset", "Size", "DefaultEquation",
+                             "DefaultInitial", "EquationRegions", "BoundRegions", "InitialRegions"]
             },
             "minItems": 1,
             "uniqueItems": true
@@ -49,29 +118,98 @@
         "Interconnects": {
             "type": "array",
             "items": {
-                "type": "object"
-            },            
+                "type": "object",
+                "properties": {
+                    "Name": {"type": "string"},
+                    "Block1": {"type": "number"},
+                    "Block2": {"type": "number"},
+                    "Block1Side": {"type": "number"},
+                    "Block2Side": {"type": "number"}
+                },
+                "required": ["Name", "Block1", "Block2", "Block1Side", "Block2Side"]
+            },
             "uniqueItems": true
         },
         "Equations": {
             "type": "array",
             "items": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                    "Name": {"type": "string"},
+                    "Vars": {
+                        "type": "array",
+                        "items":{
+                            "type": "string"
+                        },
+                        "minItems": 1,
+                        "uniqueItems": true
+                    },
+                    "System": 
+                    {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "minItems": 1
+                    }
+                },
+                "required": ["Name", "Vars", "System"]
             },
             "minItems": 1,
             "uniqueItems": true
         },
+        "EquationParams": {
+            "Params": {
+                "description": "Equation parameters",
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "Paramvalues": {
+                "description": "Equation parameter values",
+                "type": "array",
+                "items": {
+                    "type": "object"
+                }
+            },
+            "DefaultParamsIndex": {
+                "type": "number",
+                "minimum": 0
+            }
+        },
         "Bounds": {
             "type": "array",
             "items": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                    "Name": {"type": "string"},
+                    "Type": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                        },
+                    "Values": {
+                        "type": "array",
+                        "items": { "type": "string"},
+                        "minItems": 1                        
+                    }                    
+                },
+                "required": ["Name", "Type", "Values"]
             },            
             "uniqueItems": true
         },
         "Initials": {
             "type": "array",
             "items": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                    "Name": {"type": "string"},                    
+                    "Values": {
+                        "type": "array",
+                        "items" : {"type": "string"},
+                        "minItems": 1
+                    }
+                },
+                "required":["Name", "Values"]
             },
             "minItems": 1,
             "uniqueItems": true
@@ -79,19 +217,39 @@
         "Hardware": {
             "type": "array",
             "items": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                    "Name" : {"type": "string"},
+                    "CpuCount": {"type": "number", "minimum": 0},
+                    "GpuCount": {"type": "number", "minimum": 0}
+                },
+                "required":["Name", "CpuCount", "GpuCount"]
             },
             "minItems": 1,
             "uniqueItems": true
         },
         "Mapping": {            
             "type": "object",
-            "properties": {},
-            "required":[]
-        },
+            "properties": {
+                "IsMapped": {"type": "boolean"},
+                "BlockMapping": {
+                    "type": "array", 
+                    "items": {                        
+                        "type": "object", 
+                        "properties": {
+                            "NodeIdx": {"type": "number", "minimum": 0},
+                            "DeviceType": {"type": "string"},
+                            "DeviceIdx": {"type": "number", "minimum": 0}
+                        },
+                        "required":["NodeIdx", "DeviceType", "DeviceIdx"]
+                    }
+                }            
+            },
+            "required":["IsMapped"]
+        }
        
     },
-    "required": ["ProjectName", "Solver", "GridStep", "Params", "ParamValues", "DefaultParamsIndex", 
+    "required": ["ProjectName", "Solver", "Grid", "EquationParams", 
                  "Blocks", "Interconnects", "Equations", "Bounds", "Initials", "Hardware", "Mapping"]
                  
 }

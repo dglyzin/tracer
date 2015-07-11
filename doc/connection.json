@@ -1,0 +1,10 @@
+{"Connection": {
+        "Host": "10.7.129.222", 
+        "Port": 22, 
+        "Username": "tester", 
+        "Password": "tester", 
+        "Workspace": "/home/tester/Tracer1", 
+        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
+    }
+    
+}
