@@ -49,7 +49,7 @@ def createBinaries(inputFile, solverExecutable, preprocessorFolder, finishTimePr
         partModel = partitionAndMap(model)
 
     bm = BinaryModel(partModel)
-    bm.saveFuncs(OutputFuncFile)
+    bm.saveFuncs(OutputFuncFile, preprocessorFolder)
     bm.saveDomain(OutputDataFile)
     bm.compileFuncs(OutputFuncFile)
     

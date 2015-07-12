@@ -517,7 +517,7 @@ class Model(QObject):
             gridStep = [self.gridStepX, self.gridStepY, self.gridStepZ]
             reviewer = Reviewer(self.equations, self.blocks, self.initials, self.bounds, gridStep, self.params, self.paramValues, self.defaultParamsIndex)
             reviewer.ReviewInput()
-            gen = FuncGenerator(self.equations, self.blocks, self.initials, self.bounds, self.interconnects, gridStep, self.params, self.paramValues, self.defaultParamsIndex)
+            gen = FuncGenerator(self.equations, self.blocks, self.initials, self.bounds, self.interconnects, gridStep, self.params, self.paramValues, self.defaultParamsIndex, preprocessorFolder)
             outputStr, functionMaps = gen.generateAllFunctions()
         except Exception as ex:
             print(ex)
