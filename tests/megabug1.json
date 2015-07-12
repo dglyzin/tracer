@@ -1,31 +1,19 @@
 {
-    "Connection": {
-        "Host": "10.7.129.222", 
-        "Port": 22, 
-        "Username": "tester", 
-        "Password": "tester", 
-        "Workspace": "/home/tester/Tracer1", 
-        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
-    }, 
     "ProjectName": "Heat_test", 
-    "StartTime": 0.0, 
-    "FinishTime": 0.1, 
-    "TimeStep": 0.00001, 
-    "SaveInterval": 0.1, 
-    "Solver": 0,
-    "SolverAbsTolerance": 0.001,
-    "SolverRelTolerance": 0.001,
-    "GridStep": {
-        "x": 0.1, 
-        "y": 1, 
-        "z": 1
-    },
-	"Params": [    
-    ], 
-    "ParamValues": [
-    
-    ],
-	"DefaultParamsIndex": 0,
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 0.1, 
+        "TimeStep": 1e-05, 
+        "SaveInterval": 0.1, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "dx": 0.1, 
+        "dy": 1, 
+        "dz": 1
+    }, 
     "Blocks": [
         {
             "Name": "MainBlock", 
@@ -37,15 +25,11 @@
                 "x": 1.0
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 0,
-	    "EquationRegions":[
-				
-			],
-            "BoundRegions": [
-			], 
-            "InitialRegions": [
-		]
-        },
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }, 
         {
             "Name": "SubBlock", 
             "Dimension": 1, 
@@ -56,30 +40,27 @@
                 "x": 1.0
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 0,
-	    "EquationRegions":[
-				
-			],
-            "BoundRegions": [
-			], 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
             "InitialRegions": [
-            {
-			        "InitialNumber": 1,
-				    "xfrom": 0.2, 
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 0.2, 
                     "xto": 0.4
-			    }
-		]
+                }
+            ], 
+            "EquationRegions": []
         }
     ], 
     "Interconnects": [
-	  {
-	    "Name": "right connection",
-	    "Block1": 0,
-	    "Block2": 1,
-	    "Block1Side": 1,
-	    "Block2Side": 0
-	  }
-	], 
+        {
+            "Name": "right connection", 
+            "Block1": 0, 
+            "Block2": 1, 
+            "Block1Side": 1, 
+            "Block2Side": 0
+        }
+    ], 
     "Equations": [
         {
             "Name": "1D heat 1", 
@@ -87,25 +68,29 @@
                 "x"
             ], 
             "System": [
-                "U'= D[U,{x,2}] + D[V,{x,2}]",
+                "U'= D[U,{x,2}] + D[V,{x,2}]", 
                 "V'= D[V,{x,2}] + D[U,{x,2}]"
             ]
         }
     ], 
-    "Bounds": [		
-	], 
+    "EquationParams": {
+        "Params": [], 
+        "ParamValues": [], 
+        "DefaultParamsIndex": -1
+    }, 
+    "Bounds": [], 
     "Initials": [
-		{
-            "Name": "Initial values 0", 
-            "Values": [
-                "2.0",
-                "3.0"
-            ]
-        },
         {
             "Name": "Initial values 0", 
             "Values": [
-                "100.0",
+                "2.0", 
+                "3.0"
+            ]
+        }, 
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "100.0", 
                 "200.0"
             ]
         }
@@ -120,16 +105,16 @@
     "Mapping": {
         "IsMapped": true, 
         "BlockMapping": [
-            [
-                0, 
-                "cpu", 
-                0
-            ],
-            [
-                0, 
-                "cpu", 
-                0
-            ]
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
         ]
     }
 }

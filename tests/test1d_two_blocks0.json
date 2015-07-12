@@ -1,36 +1,19 @@
 {
-    "Connection": {
-        "Host": "10.7.129.222", 
-        "Port": 22, 
-        "Username": "tester", 
-        "Password": "tester", 
-        "Workspace": "/home/tester/Tracer1", 
-        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
-    }, 
     "ProjectName": "Heat_test", 
-    "StartTime": 0.0, 
-    "FinishTime": 0.05, 
-    "TimeStep": 0.00001, 
-    "SaveInterval": 0.1, 
-    "Solver": 0,
-    "SolverAbsTolerance": 0.001,
-    "SolverRelTolerance": 0.001,
-    "GridStep": {
-        "x": 0.01, 
-        "y": 1, 
-        "z": 1
-    },
-	"Params": [
-        "a",
-		"b"
-    ], 
-    "ParamValues": [
-        {
-            "a": 0.65,
-			"b": 3
-	    }
-    ],
-	"DefaultParamsIndex": 0,
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 0.05, 
+        "TimeStep": 1e-05, 
+        "SaveInterval": 0.1, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "dx": 0.01, 
+        "dy": 1, 
+        "dz": 1
+    }, 
     "Blocks": [
         {
             "Name": "MainBlock", 
@@ -42,17 +25,17 @@
                 "x": 10.0
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 1,
-			"EquationRegions":[],
+            "DefaultInitial": 1, 
             "BoundRegions": [
-				{
-			        "BoundNumber": 0,
-					"Side": 0
-			    }
-			], 
-            "InitialRegions": []
-        },
-		{
+                {
+                    "BoundNumber": 0, 
+                    "Side": 0
+                }
+            ], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }, 
+        {
             "Name": "SecBlock", 
             "Dimension": 1, 
             "Offset": {
@@ -62,26 +45,26 @@
                 "x": 10.0
             }, 
             "DefaultEquation": 1, 
-            "DefaultInitial": 0,
-			"EquationRegions":[],
+            "DefaultInitial": 0, 
             "BoundRegions": [
-				{
-			        "BoundNumber": 0,
-					"Side": 1
-			    }
-			], 
-            "InitialRegions": []
+                {
+                    "BoundNumber": 0, 
+                    "Side": 1
+                }
+            ], 
+            "InitialRegions": [], 
+            "EquationRegions": []
         }
     ], 
     "Interconnects": [
-		{
-			"Name": "connection",
-			"Block1": 0,
-			"Block2": 1,
-			"Block1Side": 1,
-			"Block2Side": 0
-		}
-	], 
+        {
+            "Name": "connection", 
+            "Block1": 0, 
+            "Block2": 1, 
+            "Block1Side": 1, 
+            "Block2Side": 0
+        }
+    ], 
     "Equations": [
         {
             "Name": "1D heat 1", 
@@ -89,48 +72,61 @@
                 "x"
             ], 
             "System": [
-                "U'= a * D[U,{x,2}]",
-				"V' = D[U,{x,1}]"
+                "U'= a * D[U,{x,2}]", 
+                "V' = D[U,{x,1}]"
             ]
-        },
-		{
+        }, 
+        {
             "Name": "1D heat 2", 
             "Vars": [
                 "x"
             ], 
             "System": [
-                "U'= b * D[U,{x,2}]",
-				"V' = D[V,{x,1}]"
+                "U'= b * D[U,{x,2}]", 
+                "V' = D[V,{x,1}]"
             ]
         }
     ], 
+    "EquationParams": {
+        "Params": [
+            "a", 
+            "b"
+        ], 
+        "ParamValues": [
+            {
+                "a": 0.65, 
+                "b": 3
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
     "Bounds": [
-		{
-			"Name": "Dirichlet 1", 
+        {
+            "Name": "Dirichlet 1", 
             "Type": 0, 
             "Values": [
-                "exp(t)",
-				"exp(t)"
-            ],
-			"Derivative":[
-				"exp(t)",
-				"exp(t)"
-			]
-		}
-	], 
+                "exp(t)", 
+                "exp(t)"
+            ], 
+            "Derivative": [
+                "exp(t)", 
+                "exp(t)"
+            ]
+        }
+    ], 
     "Initials": [
-		{
+        {
             "Name": "Initial values 0", 
             "Values": [
-                "100.0",
-				"200.0"
+                "100.0", 
+                "200.0"
             ]
-        },
-		{
+        }, 
+        {
             "Name": "Initial values 1", 
             "Values": [
-                "0.0",
-				"0.0"
+                "0.0", 
+                "0.0"
             ]
         }
     ], 
@@ -144,16 +140,16 @@
     "Mapping": {
         "IsMapped": true, 
         "BlockMapping": [
-            [
-                0, 
-                "cpu", 
-                0
-            ],
-			[
-                0, 
-                "cpu", 
-                0
-            ]
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
         ]
     }
 }

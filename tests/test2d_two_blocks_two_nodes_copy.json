@@ -1,104 +1,97 @@
 {
-    "Connection": {
-        "Host": "10.7.129.222", 
-        "Port": 22, 
-        "Username": "tester", 
-        "Password": "tester", 
-        "Workspace": "/home/tester/Tracer1", 
-        "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS"
-    }, 
     "ProjectName": "test2d_two_blocks_two_nodes", 
-    "StartTime": 0.0, 
-    "FinishTime": 0.001, 
-    "TimeStep": 0.001, 
-    "SaveInterval": 0.01, 
-    "Solver": 0,
-    "SolverAbsTolerance": 0.001,
-    "SolverRelTolerance": 0.001,
-    "GridStep": {
-        "x": 0.1, 
-        "y": 0.1, 
-        "z": 1
-    },
-    "Params": [
-        "a"
-    ], 
-    "ParamValues": [
-        {
-            "a": 1.0
-        }
-    ],
-    "DefaultParamsIndex": 0,
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 0.001, 
+        "TimeStep": 0.001, 
+        "SaveInterval": 0.01, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "dx": 0.1, 
+        "dy": 0.1, 
+        "dz": 1
+    }, 
     "Blocks": [
         {
-            "Name": "MainBlock",
-            "Dimension": 2,
-            "Offset":
-                {
-                    "x": 0.0,
-                    "y": 0.0
-                },
-            "Size":
-                {
-                    "x": 1.0,
-                    "y": 1.0
-                },
-            "DefaultEquation": 0,
-            "DefaultInitial": 0,
-            "EquationRegions":[],
-            "BoundRegions": [],
-            "InitialRegions": []
-        },
+            "Name": "MainBlock", 
+            "Dimension": 2, 
+            "Offset": {
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            "Size": {
+                "x": 1.0, 
+                "y": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }, 
         {
-            "Name": "secBlock",
-            "Dimension": 2,
-            "Offset":
-                {
-                    "x": 1.0,
-                    "y": 0.0
-                },
-            "Size":
-                {
-                    "x": 1.0,
-                    "y": 1.0
-                },
-            "DefaultEquation": 0,
-            "DefaultInitial": 1,
-            "EquationRegions":[],
-            "BoundRegions": [],
-            "InitialRegions": []
+            "Name": "secBlock", 
+            "Dimension": 2, 
+            "Offset": {
+                "x": 1.0, 
+                "y": 0.0
+            }, 
+            "Size": {
+                "x": 1.0, 
+                "y": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 1, 
+            "BoundRegions": [], 
+            "InitialRegions": [], 
+            "EquationRegions": []
         }
     ], 
     "Interconnects": [
         {
-            "Name": "connection 1",
-            "Block1": 0,
-            "Block2": 1,
-            "Block1Side": 1,
+            "Name": "connection 1", 
+            "Block1": 0, 
+            "Block2": 1, 
+            "Block1Side": 1, 
             "Block2Side": 0
         }
     ], 
     "Equations": [
         {
-            "Name": "1D heat 1",
+            "Name": "1D heat 1", 
             "Vars": [
-                "x", "y"
-            ],
+                "x", 
+                "y"
+            ], 
             "System": [
                 "U'= a * D[U,{x,2}]"
             ]
         }
     ], 
+    "EquationParams": {
+        "Params": [
+            "a"
+        ], 
+        "ParamValues": [
+            {
+                "a": 1.0
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
     "Bounds": [], 
     "Initials": [
         {
-            "Name": "Initial values 0",
+            "Name": "Initial values 0", 
             "Values": [
                 "0.0"
             ]
-        },
+        }, 
         {
-            "Name": "Initial values 1",
+            "Name": "Initial values 1", 
             "Values": [
                 "100.0"
             ]
@@ -114,16 +107,16 @@
     "Mapping": {
         "IsMapped": true, 
         "BlockMapping": [
-            [
-                0,
-                "cpu",
-                0
-            ],
-            [
-                0,
-                "cpu",
-                0
-            ]
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
         ]
     }
 }

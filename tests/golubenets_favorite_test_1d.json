@@ -1,53 +1,19 @@
 {
-    "Connection": {
-        "Host": "10.7.129.222", 
-        "Port": 22, 
-        "Username": "tester", 
-        "Password": "tester", 
-        "Workspace": "/home/tester/Tracer1", 
-        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
-    }, 
     "ProjectName": "golubenets_favorite_test_1d", 
-    "StartTime": 0.0, 
-    "FinishTime": 5.0, 
-    "TimeStep": 0.000025, 
-    "SaveInterval": 0.01, 
-    "Solver": 0,
-    "SolverAbsTolerance": 0.001,
-    "SolverRelTolerance": 0.001,
-    "GridStep": {
-        "x": 0.01, 
-        "y": 1, 
-        "z": 1
-    },
-	"Params": [
-        "a",
-		"c",
-		"f2"
-    ], 
-    "ParamValues": [
-        {
-            "a": 1.0,
-			"c": 0.1,
-			"f2": 1.0
-	    },
-		{
-            "a": 2.0,
-			"c": 0.1,
-			"f2": 1.0
-	    },
-		{
-            "a": 3.0,
-			"c": 0.1,
-			"f2": 1.0
-	    },
-		{
-            "a": 4.0,
-			"c": 0.1,
-			"f2": 1.0
-	    }
-    ],
-	"DefaultParamsIndex": 0,
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 5.0, 
+        "TimeStep": 2.5e-05, 
+        "SaveInterval": 0.01, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "dx": 0.01, 
+        "dy": 1, 
+        "dz": 1
+    }, 
     "Blocks": [
         {
             "Name": "MainBlock", 
@@ -59,21 +25,21 @@
                 "x": 1.0
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 0,
-			"EquationRegions":[],
+            "DefaultInitial": 0, 
             "BoundRegions": [], 
-            "InitialRegions": []
+            "InitialRegions": [], 
+            "EquationRegions": []
         }
     ], 
     "Interconnects": [
-		{
-			"Name": "self connection",
-			"Block1": 0,
-			"Block2": 0,
-			"Block1Side": 1,
-			"Block2Side": 0
-		}
-	], 
+        {
+            "Name": "self connection", 
+            "Block1": 0, 
+            "Block2": 0, 
+            "Block1Side": 1, 
+            "Block2Side": 0
+        }
+    ], 
     "Equations": [
         {
             "Name": "Parabolic eq", 
@@ -85,9 +51,39 @@
             ]
         }
     ], 
+    "EquationParams": {
+        "Params": [
+            "a", 
+            "c", 
+            "f2"
+        ], 
+        "ParamValues": [
+            {
+                "a": 1.0, 
+                "c": 0.1, 
+                "f2": 1.0
+            }, 
+            {
+                "a": 2.0, 
+                "c": 0.1, 
+                "f2": 1.0
+            }, 
+            {
+                "a": 3.0, 
+                "c": 0.1, 
+                "f2": 1.0
+            }, 
+            {
+                "a": 4.0, 
+                "c": 0.1, 
+                "f2": 1.0
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
     "Bounds": [], 
     "Initials": [
-		{
+        {
             "Name": "Initial values 0", 
             "Values": [
                 "(cos(sqrt(2) * x))^2"
@@ -104,11 +100,11 @@
     "Mapping": {
         "IsMapped": true, 
         "BlockMapping": [
-            [
-                0, 
-                "cpu", 
-                0
-            ]
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
         ]
     }
 }

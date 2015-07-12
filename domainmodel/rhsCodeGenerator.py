@@ -10,7 +10,7 @@ class RHSCodeGenerator:
             if preventElementInParsedExpression != ')':
                 expressionToPower = creatingOutputList.pop()
                 poweredExpression = expressionToPower
-                for i in np.arange(1,power):
+                for _ in np.arange(1,power):
                     poweredExpression = poweredExpression + ' * ' + expressionToPower
             else:
                 expressionToPower = list([creatingOutputList.pop()])
@@ -25,7 +25,7 @@ class RHSCodeGenerator:
 #             reverse expression and convert it to string
                 expressionToPower = ''.join(expressionToPower[::-1])
                 poweredExpression = expressionToPower
-                for i in np.arange(1,power):
+                for _ in np.arange(1,power):
                     poweredExpression = poweredExpression + ' * ' + expressionToPower
             creatingOutputList.extend([poweredExpression])
         else:

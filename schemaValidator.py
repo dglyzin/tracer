@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from domainmodel.model import Model
-import filecmp
 import sys
 import json
 from jsonschema import validate
@@ -25,5 +23,3 @@ if __name__=='__main__':
         inputFileName = sys.argv[1]
         schemaFileName = sys.argv[2]  
         valid(inputFileName, schemaFileName)
-  
-  

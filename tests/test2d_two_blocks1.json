@@ -1,40 +1,19 @@
 {
-    "Connection": {
-        "Host": "10.7.129.222", 
-        "Port": 22, 
-        "Username": "tester", 
-        "Password": "tester", 
-        "Workspace": "/home/tester/Tracer1", 
-        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
-    }, 
     "ProjectName": "test2d_two_blocks1", 
-    "StartTime": 0.0, 
-    "FinishTime": 1.0, 
-    "TimeStep": 0.00001, 
-    "SaveInterval": 0.05, 
-    "Solver": 0,
-    "SolverAbsTolerance": 0.001,
-    "SolverRelTolerance": 0.001,
-    "GridStep": {
-        "x": 0.1, 
-        "y": 0.1, 
-        "z": 1
-    },
-    "Params": [
-			"a",
-			"b",
-			"c",
-			"d"
-	], 
-    "ParamValues": [
-		{
-			"a": 2,
-			"b": 3,
-			"c": 0.1,
-			"d": 100
-		}
-	],	
-	"DefaultParamsIndex": 0,
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 1.0, 
+        "TimeStep": 1e-05, 
+        "SaveInterval": 0.05, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "dx": 0.1, 
+        "dy": 0.1, 
+        "dz": 1
+    }, 
     "Blocks": [
         {
             "Name": "MainBlock", 
@@ -48,35 +27,35 @@
                 "y": 8.0
             }, 
             "DefaultEquation": 2, 
-            "DefaultInitial": 0,
-			"EquationRegions":[
-				{
-					"EquationNumber": 0,
-					"xfrom": 0.0, 
-					"xto": 3.0, 
-					"yfrom": 0.0, 
-					"yto": 1.0
-				},
-				{
-					"EquationNumber": 1,
-					"xfrom": 0.0, 
-					"xto": 3.0, 
-					"yfrom": 1.0, 
-					"yto": 2.0
-				}
-			],
+            "DefaultInitial": 0, 
             "BoundRegions": [], 
-            "InitialRegions":[
-				{
-					"InitialNumber": 1,
-					"xfrom": 0.75, 
-					"xto": 2.25, 
-					"yfrom": 0.5, 
-					"yto": 1.5
-				}
-			]
-        },
-		{
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 0.75, 
+                    "xto": 2.25, 
+                    "yfrom": 0.5, 
+                    "yto": 1.5
+                }
+            ], 
+            "EquationRegions": [
+                {
+                    "EquationNumber": 0, 
+                    "xfrom": 0.0, 
+                    "xto": 3.0, 
+                    "yfrom": 0.0, 
+                    "yto": 1.0
+                }, 
+                {
+                    "EquationNumber": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 3.0, 
+                    "yfrom": 1.0, 
+                    "yto": 2.0
+                }
+            ]
+        }, 
+        {
             "Name": "SecBlock", 
             "Dimension": 2, 
             "Offset": {
@@ -88,44 +67,44 @@
                 "y": 4.0
             }, 
             "DefaultEquation": 2, 
-            "DefaultInitial": 0,
-			"EquationRegions":[
-				{
-					"EquationNumber": 0,
-					"xfrom": 0.0, 
-					"xto": 3.0, 
-					"yfrom": 0.0, 
-					"yto": 1.0
-				},
-				{
-					"EquationNumber": 1,
-					"xfrom": 0.0, 
-					"xto": 3.0, 
-					"yfrom": 1.0, 
-					"yto": 2.0
-				}
-			],
+            "DefaultInitial": 0, 
             "BoundRegions": [], 
-            "InitialRegions":[
-				{
-					"InitialNumber": 1,
-					"xfrom": 0.75, 
-					"xto": 2.25, 
-					"yfrom": 0.5, 
-					"yto": 1.5
-				}
-			]
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 0.75, 
+                    "xto": 2.25, 
+                    "yfrom": 0.5, 
+                    "yto": 1.5
+                }
+            ], 
+            "EquationRegions": [
+                {
+                    "EquationNumber": 0, 
+                    "xfrom": 0.0, 
+                    "xto": 3.0, 
+                    "yfrom": 0.0, 
+                    "yto": 1.0
+                }, 
+                {
+                    "EquationNumber": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 3.0, 
+                    "yfrom": 1.0, 
+                    "yto": 2.0
+                }
+            ]
         }
     ], 
     "Interconnects": [
-		{
-			"Name": "hard connection",
-			"Block1": 0,
-			"Block2": 1,
-			"Block1Side": 1,
-			"Block2Side": 0
-		}
-	], 
+        {
+            "Name": "hard connection", 
+            "Block1": 0, 
+            "Block2": 1, 
+            "Block1Side": 1, 
+            "Block2Side": 0
+        }
+    ], 
     "Equations": [
         {
             "Name": "Heat 1", 
@@ -136,8 +115,8 @@
             "System": [
                 "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
             ]
-        },
-		{
+        }, 
+        {
             "Name": "Heat 2", 
             "Vars": [
                 "x", 
@@ -146,8 +125,8 @@
             "System": [
                 "U'=b*(D[U,{x,2}]+ D[U,{y,2}])"
             ]
-        },
-		{
+        }, 
+        {
             "Name": "Psevdo Heat", 
             "Vars": [
                 "x", 
@@ -157,19 +136,36 @@
                 "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - d * D[U,{y,1}]"
             ]
         }
-    ],
+    ], 
+    "EquationParams": {
+        "Params": [
+            "a", 
+            "b", 
+            "c", 
+            "d"
+        ], 
+        "ParamValues": [
+            {
+                "a": 2, 
+                "c": 0.1, 
+                "b": 3, 
+                "d": 100
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
     "Bounds": [], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
-                "0.0"               
+                "0.0"
             ]
-        },
+        }, 
         {
             "Name": "Initial values 1", 
             "Values": [
-                "40.0"               
+                "40.0"
             ]
         }
     ], 
@@ -183,16 +179,16 @@
     "Mapping": {
         "IsMapped": true, 
         "BlockMapping": [
-            [
-                0, 
-                "cpu", 
-                0
-            ],
-			[
-                0, 
-                "cpu", 
-                0
-            ]
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
         ]
     }
 }
