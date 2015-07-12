@@ -467,7 +467,7 @@ class BinaryModel(object):
         print "compilation finished"
 
 
-    def createRunFile(self, OutputRunFile, projFolder, solverExecutable, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
+    def createRunFile(self, OutputRunFile, projFolder, solverExecutable, preprocessorFolder, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
         print "generating launcher script..."
         flag = 0
         if finishTimeProvided: flag+=1
@@ -478,10 +478,12 @@ class BinaryModel(object):
         
         runFile = open(OutputRunFile, "w")
         #conn = self.dmodel.connection
+        videoGenerator = preprocessorFolder + "/createMovieOnCluster.py"
          
         nodeCount = self.dmodel.getNodeCount()
         runFile.write("echo Welcome to generated kernel launcher!\n")
         runFile.write("export LD_LIBRARY_PATH="+projFolder+":$LD_LIBRARY_PATH\n")
         runFile.write("srun -N "+str(nodeCount)+ " -p debug "+solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
+        runFile.write("srun -n1 python " + videoGenerator +" " + projFolder+"/")
         runFile.close()
 

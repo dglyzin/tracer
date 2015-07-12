@@ -19,7 +19,7 @@ from domainmodel.decomposer import partitionAndMap
 from fileUtils import getSortedBinFileList
 import os
 
-def createBinaries(inputFile, solverExecutable, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
+def createBinaries(inputFile, solverExecutable, preprocessorFolder, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
     projectDir = os.path.dirname(inputFile)
     projectName, _ = os.path.splitext(inputFile)   
     projectTitle = os.path.basename(projectName)
@@ -53,14 +53,15 @@ def createBinaries(inputFile, solverExecutable, finishTimeProvided, finishTime, 
     bm.saveDomain(OutputDataFile)
     bm.compileFuncs(OutputFuncFile)
     
-    bm.createRunFile(OutputRunFile, projectDir, solverExecutable, OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFileName)
+    bm.createRunFile(OutputRunFile, projectDir, solverExecutable, preprocessorFolder, OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFileName)
 
                 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Processing json file on a remote cluster.', epilog = "Have fun!")
     #mandatory argument, json filename
     parser.add_argument('fileName', type = str, help = "local json file to process")
-    parser.add_argument('solverExecutable', type = str, help = "local json file to process")
+    parser.add_argument('solverExecutable', type = str, help = "Solver executable")
+    parser.add_argument('preprocessorFolder', type = str, help = "Preprocessor folder")
     #optional argument, exactly one float to override json finish time
     parser.add_argument('-finish', type=float, help = "new finish time to override json value")
     #optional argument with one or no argument, filename to continue computations from
@@ -76,4 +77,5 @@ if __name__=='__main__':
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
 
     print "jsontobin input!", inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName
-    createBinaries(inputFile, args.solverExecutable, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
+    createBinaries(inputFile, args.solverExecutable, args.preprocessorFolder, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
+    

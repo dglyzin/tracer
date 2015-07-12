@@ -42,6 +42,7 @@ class Connection(object):
         self.password = ""
         self.workspace = "/home/tester/Tracer"
         self.solverExecutable = "/home/dglyzin/hybridsolver/bin/HS"
+        self.preprocessorFolder = "/home/tester/dglTracer/hybriddomain"
 
     def toDict(self):
         connDict = OrderedDict([
@@ -50,7 +51,8 @@ class Connection(object):
         ("Username", self.username),
         ("Password", self.password),
         ("Workspace", self.workspace),
-        ("SolverExecutable", self.solverExecutable)
+        ("SolverExecutable", self.solverExecutable),
+        ("PreprocessorFolder", self.preprocessorFolder)
         ])
         return connDict
 
@@ -61,7 +63,7 @@ class Connection(object):
         self.password = connDict["Password"]
         self.workspace = connDict["Workspace"]
         self.solverExecutable = connDict["SolverExecutable"]
-        
+        self.preprocessorFolder = connDict["PreprocessorFolder"]
         
         
         
@@ -116,7 +118,7 @@ def remoteProjectRun(inputFile, connFileName, continueEnabled, optionalArgs):
         
         #3 Run jsontobin on json
         print 'Running preprocessor:'
-        command = 'python '+connection.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/'+remoteProjectFileName + " " + connection.solverExecutable
+        command = 'python '+connection.preprocessorFolder+'/jsontobin.py '+projFolder+'/'+remoteProjectFileName + " " + connection.solverExecutable + " " + connection.preprocessorFolder
         
         print command, optionalArgs
         stdin, stdout, stderr = client.exec_command(command+optionalArgs)
@@ -134,7 +136,11 @@ def remoteProjectRun(inputFile, connFileName, continueEnabled, optionalArgs):
         stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName)
         print stdout.read()
         print stderr.read()
-
+        #get resulting video
+        cftp=client.open_sftp()
+        cftp.get(projFolder+"/project.mp4", projectPathName+".mp4")
+        cftp.close()
+        
 
         client.close()
 

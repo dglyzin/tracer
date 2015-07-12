@@ -4,5 +4,6 @@
         "Username": "tester", 
         "Password": "tester", 
         "Workspace": "/home/tester/dglTracer", 
-        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS"
+        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS",
+        "PreprocessorFolder": "/home/tester/dglTracer/hybriddomain"
 }
