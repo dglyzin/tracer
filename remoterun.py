@@ -2,12 +2,13 @@
 '''
 Аргументы:
 1. json-файл проекта
-2.
+2. json-файл подключения
+3.
 Если этот аргумент не указан, то вычисления начинаются с нуля
 иначе продолжается либо с последнего существующего, либо с явно указанного
 -cont
 -cont=<bin state filename to continue>
-3. 
+4. 
 -finish=255
 время для окончания вычислений, замещает время из json
 
@@ -23,41 +24,80 @@ remoteRunScriptName='project.sh'
 remoteProjectFileName='project.json'
 
 
-
-import sys
+import json
+import os
 import socket
 import getpass
 import paramiko
 import argparse
+from collections import OrderedDict
 
-from domainmodel.model import Model
 
-def remoteProjectRun(inputFile, continueEnabled, optionalArgs):
+
+class Connection(object):
+    def __init__(self):
+        self.host = "corp7.uniyar.ac.ru"
+        self.port = 2222
+        self.username = "tester"
+        self.password = ""
+        self.workspace = "/home/tester/Tracer"
+        self.solverExecutable = "/home/dglyzin/hybridsolver/bin/HS"
+
+    def toDict(self):
+        connDict = OrderedDict([
+        ("Host", self.host),
+        ("Port", self.port),
+        ("Username", self.username),
+        ("Password", self.password),
+        ("Workspace", self.workspace),
+        ("SolverExecutable", self.solverExecutable)
+        ])
+        return connDict
+
+    def fromDict(self, connDict):
+        self.host = connDict["Host"]
+        self.port = connDict["Port"]
+        self.username = connDict["Username"]
+        self.password = connDict["Password"]
+        self.workspace = connDict["Workspace"]
+        self.solverExecutable = connDict["SolverExecutable"]
+        
+        
+        
+        
+def remoteProjectRun(inputFile, connFileName, continueEnabled, optionalArgs):
     #2 Get connection data and copy json to the cluster
-    model = Model()
-    model.loadFromFile(inputFile)
-    conn = model.connection
-    if conn.password == "":
-        print "Please enter password for user "+ model.connection.username+":"
+    projectPathName, _ = os.path.splitext(inputFile)   
+    projectName = os.path.basename(projectPathName)
+    
+    connFile = open(connFileName,"r")    
+    connDict = json.loads(connFile.read())
+    connFile.close()
+    
+    connection = Connection()
+    connection.fromDict(connDict)
+    
+    if connection.password == "":
+        print "Please enter password for user "+ connection.username+":"
         passwd = getpass.getpass()
     else:
-        passwd = conn.password
+        passwd = connection.password
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     #print conn.host, conn.username, passwd, conn.port
     try:
-        client.connect(hostname=conn.host, username=conn.username, password=passwd, port=conn.port )
+        client.connect(hostname=connection.host, username=connection.username, password=passwd, port=connection.port )
 
-        print "Checking if folder "+conn.workspace+" exists..."
-        stdin, stdout, stderr = client.exec_command('test -d '+conn.workspace)
+        print "Checking if folder "+connection.workspace+" exists..."
+        stdin, stdout, stderr = client.exec_command('test -d '+connection.workspace)
         if stdout.channel.recv_exit_status():
             print "Please create workspace folder and put hybriddomain preprocessor into it"
             return
         else:
             print "Workspace OK."
 
-        projFolder = conn.workspace+"/"+model.projectName
+        projFolder = connection.workspace+"/"+projectName
         print "Creating/cleaning project folder: "
         stdin, stdout, stderr = client.exec_command('test -d  '+projFolder)
         if stdout.channel.recv_exit_status():
@@ -76,15 +116,15 @@ def remoteProjectRun(inputFile, continueEnabled, optionalArgs):
         
         #3 Run jsontobin on json
         print 'Running preprocessor:'
-        command = 'python '+conn.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/'+remoteProjectFileName
+        command = 'python '+connection.workspace+'/hybriddomain/jsontobin.py '+projFolder+'/'+remoteProjectFileName + " " + connection.solverExecutable
         
         print command, optionalArgs
         stdin, stdout, stderr = client.exec_command(command+optionalArgs)
         print stdout.read()
 
         #4 Run Solver binary on created files
-        print "Checking if solver executable at "+conn.solverExecutable+" exists..."
-        stdin, stdout, stderr = client.exec_command('test -f '+conn.solverExecutable)
+        print "Checking if solver executable at "+connection.solverExecutable+" exists..."
+        stdin, stdout, stderr = client.exec_command('test -f '+connection.solverExecutable)
         if stdout.channel.recv_exit_status():
             print "Please provide correct path to the solver executable."
             return
@@ -113,6 +153,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Processing json file on a remote cluster.', epilog = "Have fun!")
     #mandatory argument, json filename
     parser.add_argument('fileName', type = str, help = "local json file to process")
+    parser.add_argument('connFileName', type = str, help = "local json file with connection info")    
     #optional argument, exactly one float to override json finish time
     parser.add_argument('-finish', type=float, help = "new finish time to override json value")
     #optional argument with one or no argument, filename to continue computations from
@@ -122,6 +163,7 @@ if __name__=='__main__':
     
     
     inputFile = args.fileName
+    connFile = args.connFileName
     finishTime = args.finish
     finishTimeProvided = not (finishTime is None)
     continueFileName = args.cont  
@@ -138,6 +180,6 @@ if __name__=='__main__':
             optionalArgs+=" "+continueFileName
     
        
-    remoteProjectRun(inputFile, continueEnabled, optionalArgs)
+    remoteProjectRun(inputFile, connFile, continueEnabled, optionalArgs)
 
 

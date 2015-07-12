@@ -271,9 +271,9 @@ class BinaryModel(object):
 
             blockPropArr[0] = blockDim
             mapping = self.dmodel.mapping[blockIdx]
-            blockPropArr[1] = mapping[0]
-            blockPropArr[2] = devType[ mapping[1] ]
-            blockPropArr[3] = mapping[2]
+            blockPropArr[1] = mapping["NodeIdx"]
+            blockPropArr[2] = devType[ mapping["DeviceType"] ]
+            blockPropArr[3] = mapping["DeviceIdx"]
             idx = 4
             blockPropArr[idx] = cellOffsetList[0]
             idx += 1
@@ -467,7 +467,7 @@ class BinaryModel(object):
         print "compilation finished"
 
 
-    def createRunFile(self, OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
+    def createRunFile(self, OutputRunFile, projFolder, solverExecutable, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
         print "generating launcher script..."
         flag = 0
         if finishTimeProvided: flag+=1
@@ -477,11 +477,11 @@ class BinaryModel(object):
         #print OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName
         
         runFile = open(OutputRunFile, "w")
-        conn = self.dmodel.connection
-        projFolder = conn.workspace+"/"+self.dmodel.projectName
+        #conn = self.dmodel.connection
+         
         nodeCount = self.dmodel.getNodeCount()
         runFile.write("echo Welcome to generated kernel launcher!\n")
         runFile.write("export LD_LIBRARY_PATH="+projFolder+":$LD_LIBRARY_PATH\n")
-        runFile.write("srun -N "+str(nodeCount)+ " -p debug "+conn.solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
+        runFile.write("srun -N "+str(nodeCount)+ " -p debug "+solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
         runFile.close()
 

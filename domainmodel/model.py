@@ -39,33 +39,6 @@ YEND   = 3
 ZSTART = 4
 ZEND   = 5
 
-class Connection(object):
-    def __init__(self):
-        self.host = "corp7.uniyar.ac.ru"
-        self.port = 22
-        self.username = "tester"
-        self.password = ""
-        self.workspace = "/home/tester/Tracer"
-        self.solverExecutable = "/home/dglyzin/hybridsolver/bin/HS"
-
-    def toDict(self):
-        connDict = OrderedDict([
-        ("Host", self.host),
-        ("Port", self.port),
-        ("Username", self.username),
-        ("Password", self.password),
-        ("Workspace", self.workspace),
-        ("SolverExecutable", self.solverExecutable)
-        ])
-        return connDict
-
-    def fromDict(self, connDict):
-        self.host = connDict["Host"]
-        self.port = connDict["Port"]
-        self.username = connDict["Username"]
-        self.password = connDict["Password"]
-        self.workspace = connDict["Workspace"]
-        self.solverExecutable = connDict["SolverExecutable"]
 
 
 class Model(QObject):
@@ -108,7 +81,7 @@ class Model(QObject):
         super(Model, self).__init__()
         self.initSessionSettings()
         self.setSimpleValues()
-        self.connection = Connection()
+        #self.connection = Connection()
         self.blocks = []
         self.interconnects = []
         self.equations = []
@@ -118,7 +91,8 @@ class Model(QObject):
         self.initials = []
         self.compnodes = []
 
-
+    #the following function is useful for json format updating
+    '''
     def setSimpleValuesOld(self, projdict=[]):
         if projdict == []:
             self.projectName = "New project"
@@ -151,7 +125,7 @@ class Model(QObject):
             self.gridStepX = projdict["GridStep"]["x"]
             self.gridStepY = projdict["GridStep"]["y"]
             self.gridStepZ = projdict["GridStep"]["z"]
-
+    '''
 
 
     def setSimpleValues(self, projdict=[]):
@@ -215,6 +189,8 @@ class Model(QObject):
 
 
     ##LOAD
+    #the following function is useful for json format updating
+    '''
     def loadFromFileOld(self, fileName):
         self.deleteAllBlocks()
         self.deleteAllInterconnects()
@@ -256,7 +232,8 @@ class Model(QObject):
         self.workDirectory = os.path.dirname(str(fileName))
 
         self.modelUpdated.emit()
-
+    '''
+        
     def loadFromFile(self, fileName):
         self.deleteAllBlocks()
         self.deleteAllInterconnects()
