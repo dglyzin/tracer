@@ -4,7 +4,7 @@ from someFuncs import generateCodeForMathFunction, determineNameOfBoundary, Rect
 from rhsCodeGenerator import RHSCodeGenerator
 
 class FuncGenerator:
-    def __init__(self, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):
+    def __init__(self, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex, preprocessorFolder):
         dimension = len(equations[0].vars)
         if dimension == 1:
             self.generator = generator1D(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
@@ -12,11 +12,12 @@ class FuncGenerator:
             self.generator = generator2D(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         else:
             self.generator = generator3D(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
+        self.preprocessorFolder = preprocessorFolder
     
     def generateAllFunctions(self):
 #         Важный момент: всегда предполагается, что массив equations содержит только 1 уравнение.
 #         gridStep --- список [gridStepX, gridStepY, gridStepZ]
-        outputStr = '#include <math.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include "../hybriddomain/doc/userfuncs.h"\n\n'
+        outputStr = '#include <math.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include "' +self.preprocessorFolder +  '/doc/userfuncs.h"\n\n'
         outputStr += self.generator.generateAllDefinitions()
         outputStr += self.generator.generateInitials()
         

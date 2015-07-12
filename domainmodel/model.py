@@ -511,7 +511,7 @@ class Model(QObject):
         d = DerivativeHandler()
         return d.orderOfSystem(self.equations[0].system,self.params, self.equations[0].vars)
 
-    def createCPPandGetFunctionMaps(self,cppFileName):
+    def createCPPandGetFunctionMaps(self, cppFileName, preprocessorFolder):
         #generator1
         try:
             gridStep = [self.gridStepX, self.gridStepY, self.gridStepZ]

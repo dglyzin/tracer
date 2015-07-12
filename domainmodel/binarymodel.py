@@ -452,8 +452,8 @@ class BinaryModel(object):
         domfile.close()
     
     
-    def saveFuncs(self, fileName):
-        self.functionMaps = self.dmodel.createCPPandGetFunctionMaps(fileName)
+    def saveFuncs(self, fileName, preprocessorFolder):
+        self.functionMaps = self.dmodel.createCPPandGetFunctionMaps(fileName, preprocessorFolder)
 
     def compileFuncs(self, fileName):
         dirName = os.path.abspath(os.path.dirname(fileName))

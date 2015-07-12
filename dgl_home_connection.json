@@ -1,9 +1,9 @@
 {
         "Host": "corp7.uniyar.ac.ru", 
         "Port": 2222, 
-        "Username": "tester", 
-        "Password": "tester", 
-        "Workspace": "/home/tester/dglTracer", 
+        "Username": "dglyzin", 
+        "Password": "", 
+        "Workspace": "/home/dglyzin/Tracer/projects", 
         "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS",
-        "PreprocessorFolder": "/home/tester/dglTracer/hybriddomain"
+        "PreprocessorFolder": "/home/dglyzin/Tracer/hybriddomain"
 }
