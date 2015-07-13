@@ -50,7 +50,7 @@ class Block(object):
         if self.dimension >2:
             zc = getCellCountAlongLine(self.offsetZ,dz)
         print "block", self.name
-        print self.offsetX, self.offsetY
+        #print self.offsetX, self.offsetY
         return [xc, yc, zc]
         
     def fillProperties(self, bdict):
