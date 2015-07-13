@@ -5,13 +5,13 @@
         "StartTime": 0.0, 
         "FinishTime": 1.0, 
         "TimeStep": 1e-05, 
-        "SaveInterval": 0.05, 
+        "SaveInterval": 0.001, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
-        "dx": 0.1, 
-        "dy": 0.1, 
+        "dx": 0.01, 
+        "dy": 0.01, 
         "dz": 1
     }, 
     "Blocks": [
