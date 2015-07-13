@@ -19,7 +19,8 @@ from domainmodel.decomposer import partitionAndMap
 from fileUtils import getSortedBinFileList
 import os
 
-def createBinaries(inputFile, solverExecutable, preprocessorFolder, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
+def createBinaries(inputFile, solverExecutable, preprocessorFolder, runAtDebugPartition, 
+                   finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
     projectDir = os.path.dirname(inputFile)
     projectName, _ = os.path.splitext(inputFile)   
     projectTitle = os.path.basename(projectName)
@@ -53,7 +54,8 @@ def createBinaries(inputFile, solverExecutable, preprocessorFolder, finishTimePr
     bm.saveDomain(OutputDataFile)
     bm.compileFuncs(OutputFuncFile)
     
-    bm.createRunFile(OutputRunFile, projectDir, solverExecutable, preprocessorFolder, OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFileName)
+    bm.createRunFile(OutputRunFile, projectDir, solverExecutable, preprocessorFolder, runAtDebugPartition, 
+                     OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFileName)
 
                 
 if __name__=='__main__':
@@ -67,6 +69,7 @@ if __name__=='__main__':
     #optional argument with one or no argument, filename to continue computations from
     #if no filename is provided with this option, the last state is taken
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
+    parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
     args = parser.parse_args()
   
     inputFile = args.fileName
@@ -77,5 +80,5 @@ if __name__=='__main__':
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
 
     print "jsontobin input!", inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName
-    createBinaries(inputFile, args.solverExecutable, args.preprocessorFolder, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
+    createBinaries(inputFile, args.solverExecutable, args.preprocessorFolder, args.debug, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
     
