@@ -22,7 +22,7 @@ model -> mapped model -> domain.dom+funcs.cpp+run.sh
 '''
 remoteRunScriptName='project.sh'
 remoteProjectFileName='project.json'
-
+remoteMp4Name = 'project.mp4'
 
 import json
 import os
@@ -138,7 +138,7 @@ def remoteProjectRun(inputFile, connFileName, continueEnabled, optionalArgs):
         print stderr.read()
         #get resulting video
         cftp=client.open_sftp()
-        cftp.get(projFolder+"/project.mp4", projectPathName+".mp4")
+        cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
         cftp.close()
         
 
@@ -165,6 +165,8 @@ if __name__=='__main__':
     #optional argument with one or no argument, filename to continue computations from
     #if no filename is provided with this option, the last state is taken
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
+    parser.add_argument('-debug', help="add this flag to run program in debug partition")
+    
     args = parser.parse_args()
     
     
@@ -184,7 +186,8 @@ if __name__=='__main__':
         optionalArgs+=" -cont"
         if continueFnameProvided:
             optionalArgs+=" "+continueFileName
-    
+    if args.debug:
+        optionalArgs+=" -debug"
        
     remoteProjectRun(inputFile, connFile, continueEnabled, optionalArgs)
 
