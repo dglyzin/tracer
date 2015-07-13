@@ -69,7 +69,7 @@ if __name__=='__main__':
     #optional argument with one or no argument, filename to continue computations from
     #if no filename is provided with this option, the last state is taken
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
-    parser.add_argument('-debug', help="add this flag to run program in debug partition")
+    parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
     args = parser.parse_args()
   
     inputFile = args.fileName
