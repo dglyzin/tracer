@@ -3,15 +3,15 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 0.1, 
-        "TimeStep":   0.00001, 
+        "FinishTime": 1.0, 
+        "TimeStep":   0.000001, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
-        "dx": 0.01, 
-        "dy": 0.01, 
+        "dx": 0.002, 
+        "dy": 0.002, 
         "dz": 1
     }, 
     "Blocks": [

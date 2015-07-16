@@ -3,8 +3,8 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime":    0.0, 
-        "FinishTime":   0.01, 
-        "TimeStep":     0.0000001, 
+        "FinishTime":   0.5, 
+        "TimeStep":     0.000001, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
@@ -23,58 +23,32 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 1.0, 
+                "x": 0.5, 
                 "y": 1.0
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 1, 
+            "DefaultInitial": 0, 
             "BoundRegions": [], 
-            "InitialRegions": [], 
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.5, 
+                    "yfrom": 0.0, 
+                    "yto": 0.5
+                }
+            ], 
             "EquationRegions": []
         }, 
         {
             "Name": "lowerLeft", 
             "Dimension": 2, 
             "Offset": {
-                "x": 0.0, 
-                "y": 1.0
-            }, 
-            "Size": {
-                "x": 1.0, 
-                "y": 1.0
-            }, 
-            "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
-            "BoundRegions": [], 
-            "InitialRegions": [], 
-            "EquationRegions": []
-        }, 
-        {
-            "Name": "UpperRight", 
-            "Dimension": 2, 
-            "Offset": {
-                "x": 1.0, 
+                "x": 0.5, 
                 "y": 0.0
             }, 
             "Size": {
-                "x": 1.0, 
-                "y": 1.0
-            }, 
-            "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
-            "BoundRegions": [], 
-            "InitialRegions": [], 
-            "EquationRegions": []
-        }, 
-        {
-            "Name": "lowerRight", 
-            "Dimension": 2, 
-            "Offset": {
-                "x": 1.0, 
-                "y": 1.0
-            }, 
-            "Size": {
-                "x": 1.0, 
+                "x": 0.5, 
                 "y": 1.0
             }, 
             "DefaultEquation": 0, 
@@ -88,30 +62,9 @@
         {
             "Name": "connection 1", 
             "Block1": 0, 
-            "Block2": 2, 
-            "Block1Side": 1, 
-            "Block2Side": 0
-        }, 
-        {
-            "Name": "connection 1", 
-            "Block1": 0, 
             "Block2": 1, 
-            "Block1Side": 3, 
-            "Block2Side": 2
-        }, 
-        {
-            "Name": "connection 1", 
-            "Block1": 1, 
-            "Block2": 3, 
             "Block1Side": 1, 
             "Block2Side": 0
-        }, 
-        {
-            "Name": "connection 1", 
-            "Block1": 2, 
-            "Block2": 3, 
-            "Block1Side": 3, 
-            "Block2Side": 2
         }
     ], 
     "Equations": [
@@ -162,16 +115,6 @@
             "Name": "cnode2", 
             "CpuCount": 1, 
             "GpuCount": 3
-        }, 
-        {
-            "Name": "cnode3", 
-            "CpuCount": 1, 
-            "GpuCount": 3
-        }, 
-        {
-            "Name": "cnode4", 
-            "CpuCount": 1, 
-            "GpuCount": 3
         }
     ], 
     "Mapping": {
@@ -184,16 +127,6 @@
             }, 
             {
                 "NodeIdx": 1, 
-                "DeviceType": "cpu", 
-                "DeviceIdx": 0
-            }, 
-            {
-                "NodeIdx": 2, 
-                "DeviceType": "cpu", 
-                "DeviceIdx": 0
-            }, 
-            {
-                "NodeIdx": 3, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
             }

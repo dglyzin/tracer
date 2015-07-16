@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 0.1, 
+        "FinishTime": 10.0, 
         "TimeStep":   0.00001, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
@@ -50,7 +50,8 @@
                 "y"
             ], 
             "System": [
-                "U'= a * (D[U,{x,2}] + D[U,{y,2}])"
+                "U'= a * (D[U,{x,2}] + D[U,{y,2}])",
+                "V'= a * (D[V,{x,2}] + D[V,{y,2}])"
             ]
         }
     ], 
@@ -70,12 +71,14 @@
         {
             "Name": "Initial values 0", 
             "Values": [
+                "0.0",
                 "0.0"
             ]
         }, 
         {
             "Name": "Initial values 0", 
             "Values": [
+                "100.0",
                 "100.0"
             ]
         }
