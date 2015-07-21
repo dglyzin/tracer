@@ -23,8 +23,8 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 0.5, 
-                "y": 1.0
+                "x": 1.0, 
+                "y": 0.5
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -44,12 +44,12 @@
             "Name": "lowerLeft", 
             "Dimension": 2, 
             "Offset": {
-                "x": 0.5, 
-                "y": 0.0
+                "x": 0.0, 
+                "y": 0.5
             }, 
             "Size": {
-                "x": 0.5, 
-                "y": 1.0
+                "x": 1.0, 
+                "y": 0.5
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -63,8 +63,8 @@
             "Name": "connection 1", 
             "Block1": 0, 
             "Block2": 1, 
-            "Block1Side": 1, 
-            "Block2Side": 0
+            "Block1Side": 3, 
+            "Block2Side": 2
         }
     ], 
     "Equations": [
