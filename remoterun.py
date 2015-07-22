@@ -80,8 +80,12 @@ def remoteProjectRun(inputFile, connFileName, continueEnabled, optionalArgs):
     connection.fromDict(connDict)
     
     if connection.password == "":
-        print "Please enter password for user "+ connection.username+":"
-        passwd = getpass.getpass()
+        tmpPass = os.getenv("CLUSTER_PASS")
+        if tmpPass is None:
+            print "Please enter password for user "+ connection.username+":"
+            passwd = getpass.getpass()
+        else:
+            passwd = tmpPass
     else:
         passwd = connection.password
 
