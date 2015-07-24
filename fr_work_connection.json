@@ -5,5 +5,5 @@
         "Password": "", 
         "Workspace": "/home/frolov2/Tracer_project", 
         "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS",
-        "PreprocessorFolder": "/home/dglyzin/Tracer/hybriddomain"
+        "PreprocessorFolder": "/home/frolov2/HybridDomain"
 }

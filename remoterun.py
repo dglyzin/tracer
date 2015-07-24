@@ -141,9 +141,9 @@ def remoteProjectRun(inputFile, connFileName, continueEnabled, optionalArgs):
         print stdout.read()
         print stderr.read()
         #get resulting video
-        cftp=client.open_sftp()
-        cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
-        cftp.close()
+        #cftp=client.open_sftp()
+        #cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
+        #cftp.close()
         
 
         client.close()
@@ -155,7 +155,6 @@ def remoteProjectRun(inputFile, connFileName, continueEnabled, optionalArgs):
         return u'Указан неправильный адрес или порт'
     except paramiko.ssh_exception.SSHException:
         return u'Ошибка в протоколе SSH'
-
 
 
 

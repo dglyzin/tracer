@@ -1,0 +1,100 @@
+{
+    "ProjectName": "Speed_Test_1_1600_1", 
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 0.01, 
+        "TimeStep":   0.0000001, 
+        "SaveInterval": 0.0, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "dx": 0.001, 
+        "dy": 0.001, 
+        "dz": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "upperLeft", 
+            "Dimension": 2, 
+            "Offset": {
+                "x": 0.0, 
+                "y": 0.0
+            }, 
+            "Size": {
+                "x": 1.6, 
+                "y": 1.6
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.8, 
+                    "yfrom": 0.0, 
+                    "yto": 0.8
+                }
+            ], 
+            "EquationRegions": []
+        }
+    ], 
+    "Interconnects": [], 
+    "Equations": [
+        {
+            "Name": "1D heat 1", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'= a * (D[U,{x,2}] + D[U,{y,2}])"
+            ]
+        }
+    ], 
+    "EquationParams": {
+        "Params": [
+            "a"
+        ], 
+        "ParamValues": [
+            {
+                "a": 1.0
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
+    "Bounds": [], 
+    "Initials": [
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "0.0"
+            ]
+        }, 
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "100.0"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
+        ]
+    }
+}
