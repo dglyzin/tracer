@@ -29,7 +29,6 @@ class FuncGenerator:
             
             totalArrWithFunctionNames.append(arrWithFunctionNames)
             functionMaps.append(blockFunctionMap)
-            print blockFunctionMap
             outputStr += cf + bf
             
         final = self.generator.generateGetBoundFuncArray(totalArrWithFunctionNames)
@@ -387,7 +386,7 @@ class abstractGenerator(object):
         
         return list([signature,idx])
     
-    def createACL(self, totalBCondLst, parser):
+    def parseBoundaryConditions(self, totalBCondLst, parser):
         #Парсит краевые условия и создает список условий на углы (angleCondList) 
         for bCondListForSide in totalBCondLst:  
             for bCond in bCondListForSide:
@@ -399,14 +398,6 @@ class abstractGenerator(object):
                     bCond.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
                 else:
                     bCond.createSpecialProperties(parser, self.params)
-        #Создание списка условий на углы. В него входят условия с уже распарсенными значениями        
-        condCntOnS2 = len(totalBCondLst[0])
-        condCntOnS3 = len(totalBCondLst[1])
-        condCntOnS0 = len(totalBCondLst[2])
-        condCntOnS1 = len(totalBCondLst[3])
-        angleCondList = [[totalBCondLst[0][0], totalBCondLst[2][0]], [totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]],
-                         [totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]], [totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]]]
-        return angleCondList
     
     def setDefault(self, blockNumber, side, equation, equationNum):
         systemLen = len(equation.system)
@@ -642,7 +633,6 @@ class generator1D(abstractGenerator):
         #     |          |
         #     ---side 3---  
         parser = MathExpressionParser()
-#         self.createACL(bCondLst, parser)
         intro = '\n//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputStr = [intro]      
         
@@ -975,10 +965,11 @@ class generator2D(abstractGenerator):
         #     |          |
         #     ---side 3---  
         parser = MathExpressionParser()
-        parsedAngleCondList = self.createACL(totalBCondLst, parser)
+        self.parseBoundaryConditions(totalBCondLst, parser)
+        parsedVertexCondList = self.createVertexCondLst(totalBCondLst)
         intro = '\n//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputStr = [intro]
-        outputStr.append(self.generateVertexFunctions(blockNumber, arrWithFunctionNames, parsedAngleCondList))      
+        outputStr.append(self.generateVertexFunctions(blockNumber, arrWithFunctionNames, parsedVertexCondList))      
         
         #counter for elements in blockFunctionMap including subdictionaries
         bfmLen = len(arrWithFunctionNames)
@@ -1019,6 +1010,16 @@ class generator2D(abstractGenerator):
                 sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
             blockFunctionMap.update({sideName:sideLst}) 
         return ''.join(outputStr)
+    
+    def createVertexCondLst(self, totalBCondLst):
+        #Создание списка условий на углы. В него входят условия с уже распарсенными значениями        
+        condCntOnS2 = len(totalBCondLst[0])
+        condCntOnS3 = len(totalBCondLst[1])
+        condCntOnS0 = len(totalBCondLst[2])
+        condCntOnS1 = len(totalBCondLst[3])
+        angleCondList = [[totalBCondLst[0][0], totalBCondLst[2][0]], [totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]],
+                         [totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]], [totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]]]
+        return angleCondList
     
     def EquationLieOnSomeBound(self, condition):
         return condition.ranges[0][0] == condition.ranges[0][1] and condition.ranges[1][0] == condition.ranges[1][1]
@@ -1448,19 +1449,6 @@ class generator3D(abstractGenerator):
                 sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
             blockFunctionMap.update({sideName:sideLst}) 
         return ''.join(outputStr)
-    
-    def parseBoundaryConditions(self, totalBCondLst, parser):
-        #Парсит краевые условия 
-        for bCondListForSide in totalBCondLst:  
-            for bCond in bCondListForSide:
-                indepVarsForBoundaryFunction = list(self.userIndepVars)
-                indepVarsForBoundaryFunction.remove(self.userIndepVars[bCond.side // 2])
-                indepVarsForBoundaryFunction.extend(['t'])
-                
-                if not isinstance(bCond, Connection):
-                    bCond.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
-                else:
-                    bCond.createSpecialProperties(parser, self.params)
     
     def createVertexCondLst(self, totalBCondLst):
         #Составляет список условий на углы блока. Одно условие - это массив из трех граничных условий
