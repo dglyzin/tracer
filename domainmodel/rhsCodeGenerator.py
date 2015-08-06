@@ -63,12 +63,12 @@ class RHSCodeGenerator:
         return string
     
     def callDerivGenerator(self, outputList, blockNumber, parsedDrivativeExpression, varIndex, userIndepVariables, pbcl):
-# Эта функция должна правильно определить параметры для передачи их в функцию callSpecialDerivGenerator()
-#         Если pbcl пуст, то надо сделать производную для центральной функции
-#         Если длина словаря pbcl равна одному, то надо сделать условие на границу отрезка или на сторону прямоугольника или параллелепипеда
-#         Если длина словаря pbcl равна двум и длина массива indepVrbls равна двум, то надо сделать условие на угол прямоугольника
-#         Если длина словаря pbcl равна двум а длина массива indepVrbls равна трем, то надо сделать условие на ребро
-#         Если длина словаря pbcl равна трем, то надо сделать условие на угол параллелепипеда
+        # Эта функция должна правильно определить параметры для передачи их в функцию callSpecialDerivGenerator()
+        #     Если pbcl пуст, то надо сделать производную для центральной функции
+        #     Если длина словаря pbcl равна одному, то надо сделать условие на границу отрезка или на сторону прямоугольника или параллелепипеда
+        #     Если длина словаря pbcl равна двум и длина массива indepVrbls равна двум, то надо сделать условие на угол прямоугольника
+        #     Если длина словаря pbcl равна двум а длина массива indepVrbls равна трем, то надо сделать условие на ребро
+        #     Если длина словаря pbcl равна трем, то надо сделать условие на угол параллелепипеда
         boundaryConditionCount = len(pbcl)
         
         indepVarList = list()
@@ -80,12 +80,12 @@ class RHSCodeGenerator:
                 indepVarIndexList.append(userIndepVariables.index(parsedDrivativeExpression[i+1]))
                 orderList.append(parsedDrivativeExpression[i+3])
         
-#         Условие для генерирования производных в центральных функциях
+        #Условие для генерирования производных в центральных функциях
         if boundaryConditionCount == 0:    
             side = -1
             parsedMathFunction = 'empty string'
             derivative = self.callSpecialDerivGenerator(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)
-#         Условие для обычной границы ИЛИ ДЛЯ СОЕДИНЕНИЯ!!!
+        #Условие для обычной границы ИЛИ ДЛЯ СОЕДИНЕНИЯ!!!
         elif boundaryConditionCount == 1:
             side = pbcl[0].side
             if pbcl[0].name == "BoundCondition":
@@ -93,7 +93,7 @@ class RHSCodeGenerator:
                 derivative = self.callSpecialDerivGenerator(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)
             else:
                 derivative = self.callSpecialDerivGenerator(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, "", side, pbcl[0].firstIndex, pbcl[0].secondIndex)
-#         Условие на угол прямоугольника или параллелепипеда или на ребро параллелепипеда        
+        #Условие на угол прямоугольника или параллелепипеда или на ребро параллелепипеда        
         elif boundaryConditionCount == 2 or boundaryConditionCount == 3:
             derivativeLR = list([])
             for index in indepVarIndexList:
@@ -112,9 +112,12 @@ class RHSCodeGenerator:
                     else:
                         derivativeLR.extend([self.callSpecialDerivGenerator(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, "", side, pbcl[1].firstIndex, pbcl[1].secondIndex)])
                 elif boundaryConditionCount == 3 and index == pbcl[2].side // 2:
-                    parsedMathFunction = pbcl[2].parsedValues[varIndex]
                     side = pbcl[2].side
-                    derivativeLR.extend([self.callSpecialDerivGenerator(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)])
+                    if pbcl[2].name == "BoundCondition":
+                        parsedMathFunction = pbcl[2].parsedValues[varIndex]
+                        derivativeLR.extend([self.callSpecialDerivGenerator(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, parsedMathFunction, side)])
+                    else:
+                        derivativeLR.extend([self.callSpecialDerivGenerator(blockNumber, varIndex, indepVarList, indepVarIndexList, orderList, userIndepVariables, "", side, pbcl[2].firstIndex, pbcl[2].secondIndex)])
                 else:
                     side = -1
                     parsedMathFunction = 'empty string'
@@ -122,7 +125,7 @@ class RHSCodeGenerator:
             
             if len(derivativeLR) == 1:
                 derivative = derivativeLR[0]
-#             Можно написать else, потому что считаем, что производные могут браться максимум второго порядка
+            #Можно написать else, потому что считаем, что производные могут браться максимум второго порядка
             else:
                 if derivativeLR[0] != '0.0' and derivativeLR[1] != '0.0':
                     derivative = '(0.5 * ' + derivativeLR[0] + ' + 0.5 * ' + derivativeLR[1] + ')'
@@ -132,7 +135,7 @@ class RHSCodeGenerator:
                     derivative = '(0.5 * ' + derivativeLR[0] + ')'
                 else:
                     derivative = '0.0'
-#         Отмечаем случай, когда в знаменателе получился нуль при аппроксимации производной.
+        #Отмечаем случай, когда в знаменателе получился нуль при аппроксимации производной.
         if derivative == '0.0' and outputList[-1] == ' / ':
             raise SyntaxError("An approximation for mixed derivative" + ''.join(parsedDrivativeExpression) + ", that stands in the denominator, was identically equal to zero during the process of generating function for boundary condition!")
         outputList.extend([derivative])

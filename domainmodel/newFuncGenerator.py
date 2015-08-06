@@ -83,6 +83,9 @@ class Connection:
     def setRibsAndVertexesIn3D(self, ribs, vertexes):
         self.ribs = ribs
         self.vertexes = vertexes
+        
+    def setSecondaryBlockIdx(self, secondaryBlockIdx):
+        self.secondaryBlockIdx = secondaryBlockIdx
 
 class InterconnectRegion:
     def __init__(self, firstIndex, secondIndex, side, stepAlongSide, lenBetweenStartOfBlockSideAndStartOfConnection, lenOfConnection, xfrom, xto, yfrom, yto, secondaryBlockNumber):
@@ -1153,7 +1156,7 @@ class generator3D(abstractGenerator):
             startCellIdx1Dir = getCellCountAlongLine(yfrom, self.gridStep[1])
             startCellIdx2Dir = getCellCountAlongLine(zfrom, self.gridStep[2])
             cellCountAlong1Dir = getCellCountAlongLine(yto - yfrom, self.gridStep[1])
-            secondIndex = '(idxY + ' + str(cellCountAlong1Dir) + ' * idxZ) - '
+            secondIndex = '((idxY + ' + str(cellCountAlong1Dir) + ' * idxZ) - '
             if mainBlockSide == 0:
                 xfrom = 0
                 xto = 0
@@ -1168,7 +1171,7 @@ class generator3D(abstractGenerator):
             startCellIdx1Dir = getCellCountAlongLine(xfrom, self.gridStep[0])
             startCellIdx2Dir = getCellCountAlongLine(zfrom, self.gridStep[2])
             cellCountAlong1Dir = getCellCountAlongLine(xto - xfrom, self.gridStep[0])
-            secondIndex = '(idxX + ' + str(cellCountAlong1Dir) + ' * idxZ) - '
+            secondIndex = '((idxX + ' + str(cellCountAlong1Dir) + ' * idxZ) - '
             if mainBlockSide == 2:
                 yfrom = 0
                 yto = 0
@@ -1183,14 +1186,14 @@ class generator3D(abstractGenerator):
             startCellIdx1Dir = getCellCountAlongLine(xfrom, self.gridStep[0])
             startCellIdx2Dir = getCellCountAlongLine(yfrom, self.gridStep[1])
             cellCountAlong1Dir = getCellCountAlongLine(xto - xfrom, self.gridStep[0])
-            secondIndex = '(idxX + ' + str(cellCountAlong1Dir) + ' * idxY) - '
+            secondIndex = '((idxX + ' + str(cellCountAlong1Dir) + ' * idxY) - '
             if mainBlockSide == 4:
                 zfrom = 0
                 zto = 0
             else:
                 zfrom = mainBlock.sizeZ
                 zto = mainBlock.sizeZ
-        secondIndex += '('+str(startCellIdx1Dir)+' + '+str(cellCountAlong1Dir)+' * '+str(startCellIdx2Dir)+') * Block'+str(mainBlockNum)+'CELLSIZE'
+        secondIndex += '('+str(startCellIdx1Dir)+' + '+str(cellCountAlong1Dir)+' * '+str(startCellIdx2Dir)+')) * Block'+str(mainBlockNum)+'CELLSIZE'
         return InterconnectRegion3D(firstIndex, secondIndex, mainBlockSide, xfrom, xto, yfrom, yto, zfrom, zto, self.blocks.index(secBlock))
             
     def generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
@@ -1284,6 +1287,7 @@ class generator3D(abstractGenerator):
                     if isinstance(region, InterconnectRegion3D):
                         funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(region.side) + "_Eqn" + str(equationNum) + "_SBlock" + str(region.secondaryBlockNumber)
                         condition = Connection(region.firstIndex, region.secondIndex, side, ranges, equationNum, equation, funcName)
+                        condition.setSecondaryBlockIdx(region.secondaryBlockNumber)
                     else:
                         values, btype, boundNumber, funcName = self.setDirichletOrNeumann(region, blockNumber, side, equationNum)
                         condition = BoundCondition(values, btype, side, ranges, boundNumber, equationNum, equation, funcName)
@@ -1570,13 +1574,13 @@ class generator3D(abstractGenerator):
             funcIndex = str(vertexCond[0].side) + '_' + str(vertexCond[1].side) + '_' + str(vertexCond[2].side) + '__Eqn' + str(vertexCond[0].equationNumber)
             #Ни на одной из трех границ нет соединения, затрагивающего угол
             if not isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection) and not isinstance(vertexCond[2], Connection):
-                if vertexCond[0].boundNumber == vertexCond[1].boundNumber == vertexCond[2].boundNumber == -1:
-                    output.append('//Default boundary condition for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumann__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                    arrWithFunctionNames.append(nameForVertex)
-                    continue
-                output.append('//Non-default boundary condition for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                 if vertexCond[0].boundNumber == vertexCond[1].boundNumber == vertexCond[2].boundNumber == -1:
+#                     output.append('//Default boundary condition for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumann__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
                 if vertexCond[0].btype == vertexCond[1].btype == vertexCond[2].btype == 1:
                     nameForVertex = 'Block' + str(blockNumber) + 'Neumann__Vertex' + funcIndex
                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
@@ -1591,134 +1595,125 @@ class generator3D(abstractGenerator):
                     output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[2])])
             #На одной из трех границ есть соединение, затрагивающее угол. Вариант 1
             elif isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection) and not isinstance(vertexCond[2], Connection):
-                if vertexCond[1].boundNumber == vertexCond[2].boundNumber == -1:
-                    output.append('//Two default boundary conditions and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                    nameForVertex = 'Block' + str(blockNumber) + 'TwiceDefaultNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                    arrWithFunctionNames.append(nameForVertex)
-                    continue
-                elif vertexCond[1].boundNumber == -1 and vertexCond[2].boundNumber == 1 or vertexCond[1].boundNumber == 1 and vertexCond[2].boundNumber == -1:
-                    output.append('//Default boundary condition, nondefault boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndNondefaultNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                    arrWithFunctionNames.append(nameForVertex)
-                    continue
-                output.append('//Two non-default boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                 if vertexCond[1].boundNumber == vertexCond[2].boundNumber == -1:
+#                     output.append('//Two default boundary conditions and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'TwiceDefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+#                 elif vertexCond[1].boundNumber == -1 and vertexCond[2].btype == 1 or vertexCond[1].btype == 1 and vertexCond[2].boundNumber == -1:
+#                     output.append('//Default boundary condition, nondefault boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndNondefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
                 if vertexCond[1].btype == 1 and vertexCond[2].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'TwiceNeumannAndInterconnect__Vertex' + funcIndex
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                elif vertexCond[1].btype == 0 and vertexCond[2].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndNeumannAndInterconnect__Vertex' + funcIndex
+                elif vertexCond[1].btype == 0:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
                     output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
-                elif vertexCond[2].btype == 0 and vertexCond[1].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[2])])
                 else:
-                    nameForVertex = 'Block' + str(blockNumber) + 'TwiceDirichletAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[2])])
             #На одной из трех границ есть соединение, затрагивающее угол. Вариант 2        
             elif not isinstance(vertexCond[0], Connection) and isinstance(vertexCond[1], Connection) and not isinstance(vertexCond[2], Connection):
-                if vertexCond[0].boundNumber == vertexCond[2].boundNumber == -1:
-                    output.append('//Two default boundary conditions and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                    nameForVertex = 'Block' + str(blockNumber) + 'TwiceDefaultNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                    arrWithFunctionNames.append(nameForVertex)
-                    continue
-                elif vertexCond[0].boundNumber == -1 and vertexCond[2].boundNumber == 1 or vertexCond[0].boundNumber == 1 and vertexCond[2].boundNumber == -1:
-                    output.append('//Default boundary condition, nondefault boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndNondefaultNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                    arrWithFunctionNames.append(nameForVertex)
-                    continue
-                output.append('//Two non-default boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                 if vertexCond[0].boundNumber == vertexCond[2].boundNumber == -1:
+#                     output.append('//Two default boundary conditions and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'TwiceDefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+#                 elif vertexCond[0].boundNumber == -1 and vertexCond[2].boundNumber == 1 or vertexCond[0].boundNumber == 1 and vertexCond[2].boundNumber == -1:
+#                     output.append('//Default boundary condition, nondefault boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndNondefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
                 if vertexCond[0].btype == 1 and vertexCond[2].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'TwiceNeumannAndInterconnect__Vertex' + funcIndex
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                elif vertexCond[0].btype == 0 and vertexCond[2].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndNeumannAndInterconnect__Vertex' + funcIndex
+                elif vertexCond[0].btype == 0:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
                     output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
-                elif vertexCond[2].btype == 0 and vertexCond[0].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[2])])
                 else:
-                    nameForVertex = 'Block' + str(blockNumber) + 'TwiceDirichletAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[2])])
             #На одной из трех границ есть соединение, затрагивающее угол. Вариант 3        
             elif not isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection) and isinstance(vertexCond[2], Connection):
-                if vertexCond[1].boundNumber == vertexCond[0].boundNumber == -1:
-                    output.append('//Two default boundary conditions and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                    nameForVertex = 'Block' + str(blockNumber) + 'TwiceDefaultNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                    arrWithFunctionNames.append(nameForVertex)
-                    continue
-                elif vertexCond[1].boundNumber == -1 and vertexCond[0].boundNumber == 1 or vertexCond[1].boundNumber == 1 and vertexCond[0].boundNumber == -1:
-                    output.append('//Default boundary condition, nondefault boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndNondefaultNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                    arrWithFunctionNames.append(nameForVertex)
-                    continue
-                output.append('//Two non-default boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                 if vertexCond[1].boundNumber == vertexCond[0].boundNumber == -1:
+#                     output.append('//Two default boundary conditions and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'TwiceDefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+#                 elif vertexCond[1].boundNumber == -1 and vertexCond[0].boundNumber == 1 or vertexCond[1].boundNumber == 1 and vertexCond[0].boundNumber == -1:
+#                     output.append('//Default boundary condition, nondefault boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndNondefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
                 if vertexCond[1].btype == 1 and vertexCond[0].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'TwiceNeumannAndInterconnect__Vertex' + funcIndex
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                elif vertexCond[1].btype == 0 and vertexCond[0].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndNeumannAndInterconnect__Vertex' + funcIndex
+                elif vertexCond[1].btype == 0:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
                     output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
-                elif vertexCond[0].btype == 0 and vertexCond[1].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
                 else:
-                    nameForVertex = 'Block' + str(blockNumber) + 'TwiceDirichletAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
             #На двух из трех границ есть соединения, затрагивающие угол. Вариант 1
             elif isinstance(vertexCond[0], Connection) and isinstance(vertexCond[1], Connection) and not isinstance(vertexCond[2], Connection):
-                if vertexCond[2].boundNumber == -1:
-                    output.append('//Default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndTwiceInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                    arrWithFunctionNames.append(nameForVertex)
-                    continue
-                output.append('//Non-default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                 if vertexCond[2].boundNumber == -1:
+#                     output.append('//Default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndTwiceInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and double interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
                 if vertexCond[2].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndTwiceInterconnect__Vertex' + funcIndex
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndDoubleInterconnect__Vertex' + funcIndex
                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                 else:
-                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndTwiceInterconnect__Vertex' + funcIndex
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
                     output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[2])])
             #На двух из трех границ есть соединения, затрагивающие угол. Вариант 2        
             elif isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection) and isinstance(vertexCond[2], Connection):
-                if vertexCond[1].boundNumber == -1:
-                    output.append('//Default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndTwiceInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                    arrWithFunctionNames.append(nameForVertex)
-                    continue
-                output.append('//Non-default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                 if vertexCond[1].boundNumber == -1:
+#                     output.append('//Default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndTwiceInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and double interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
                 if vertexCond[1].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndTwiceInterconnect__Vertex' + funcIndex
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndDoubleInterconnect__Vertex' + funcIndex
                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                 else:
-                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndTwiceInterconnect__Vertex' + funcIndex
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
                     output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
             #На двух из трех границ есть соединения, затрагивающие угол. Вариант 3
             elif not isinstance(vertexCond[0], Connection) and isinstance(vertexCond[1], Connection) and isinstance(vertexCond[2], Connection):
-                if vertexCond[0].boundNumber == -1:
-                    output.append('//Default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                    nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndTwiceInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
-                    arrWithFunctionNames.append(nameForVertex)
-                    continue
-                output.append('//Non-default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                 if vertexCond[0].boundNumber == -1:
+#                     output.append('//Default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndTwiceInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and double interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
                 if vertexCond[0].btype == 1:
-                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndTwiceInterconnect__Vertex' + funcIndex
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndDoubleInterconnect__Vertex' + funcIndex
                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                 else:
-                    nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndTwiceInterconnect__Vertex' + funcIndex
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
                     output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
             #На всех трех границах есть соединения, затрагивающие угол
             else:
-                output.append('//Tripple Interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
-                nameForVertex = 'Block' + str(blockNumber) + 'TrippleInterconnect__Vertex' + funcIndex
+                output.append('//Interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+                nameForVertex = 'Block' + str(blockNumber) + 'Interconnect__Vertex' + funcIndex
                 output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
             
             arrWithFunctionNames.append(nameForVertex)
@@ -1781,18 +1776,18 @@ class generator3D(abstractGenerator):
                 funcIndex = str(ribCond[0].side) + '_' + str(ribCond[1].side) + '__Eqn' + str(ribCond[0].equationNumber) + '__FBCond' + fBCond + '__SBCond' + sBCond
                 #Ни на одной из двух границ нет соединений, касающихся ребра
                 if not isinstance(ribCond[0], Connection) and not isinstance(ribCond[1], Connection):
-                    if ribCond[0].boundNumber == ribCond[1].boundNumber == -1:
-                        nameForRib = 'Block' + str(blockNumber) + 'DefaultNeumann__Rib' + funcIndex
-                        if (ribCond[0].boundNumber, ribCond[1].boundNumber, ribCond[0].equationNumber) in boundAndEquatNumberList:
-                            listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
-                            continue
-                        boundAndEquatNumberList.append((ribCond[0].boundNumber, ribCond[1].boundNumber, ribCond[0].equationNumber))
-                        output.append('//Default boundary condition for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-                        output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEqs, unknownVars, [ribCond[0], ribCond[1]])])
-                        arrWithFunctionNames.append(nameForRib)
-                        listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
-                        continue
-                    output.append('//Non-default boundary condition for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+#                     if ribCond[0].boundNumber == ribCond[1].boundNumber == -1:
+#                         nameForRib = 'Block' + str(blockNumber) + 'DefaultNeumann__Rib' + funcIndex
+#                         if (ribCond[0].boundNumber, ribCond[1].boundNumber, ribCond[0].equationNumber) in boundAndEquatNumberList:
+#                             listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
+#                             continue
+#                         boundAndEquatNumberList.append((ribCond[0].boundNumber, ribCond[1].boundNumber, ribCond[0].equationNumber))
+#                         output.append('//Default boundary condition for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+#                         output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEqs, unknownVars, [ribCond[0], ribCond[1]])])
+#                         arrWithFunctionNames.append(nameForRib)
+#                         listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
+#                         continue
+                    output.append('//Boundary condition for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                     if ribCond[0].btype == ribCond[1].btype == 1:
                         nameForRib = 'Block' + str(blockNumber) + 'Neumann__Rib' + funcIndex
                         if (ribCond[0].boundNumber, ribCond[1].boundNumber, ribCond[0].equationNumber) in boundAndEquatNumberList:
@@ -1816,65 +1811,67 @@ class generator3D(abstractGenerator):
                         output.extend([self.generateDirichlet(blockNumber, nameForRib, ribCond[1])])
                 #На одной из двух границ есть соединения, касающиеся ребра. Вариант 1        
                 elif isinstance(ribCond[0], Connection) and not isinstance(ribCond[1], Connection):
-                    if ribCond[1].boundNumber == -1:
-                        nameForRib = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Rib' + funcIndex
-                        if (-1, ribCond[1].boundNumber, ribCond[0].equationNumber) in boundAndEquatNumberList:
-                            listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
-                            continue
-                        boundAndEquatNumberList.append((-1, ribCond[1].boundNumber, ribCond[0].equationNumber))
-                        output.append('//Default boundary condition and interconnect for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-                        output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEqs, unknownVars, [ribCond[0], ribCond[1]])])
-                        arrWithFunctionNames.append(nameForRib)
-                        continue
-                    output.append('//Non-default boundary condition and interconnect for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+#                     if ribCond[1].boundNumber == -1:
+#                         nameForRib = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Rib' + funcIndex
+#                         if (ribCond[0].secondaryBlockIdx, ribCond[1].boundNumber, ribCond[0].equationNumber) in boundAndEquatNumberList:
+#                             listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
+#                             continue
+#                         boundAndEquatNumberList.append((ribCond[0].secondaryBlockIdx, ribCond[1].boundNumber, ribCond[0].equationNumber))
+#                         output.append('//Default boundary condition and interconnect for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+#                         output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEqs, unknownVars, [ribCond[0], ribCond[1]])])
+#                         arrWithFunctionNames.append(nameForRib)
+#                         listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
+#                         continue
+                    output.append('//Boundary condition and interconnect for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                     if ribCond[1].btype == 1:
                         nameForRib = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Rib' + funcIndex
-                        if (-1, ribCond[1].boundNumber, ribCond[0].equationNumber) in boundAndEquatNumberList:
+                        if (ribCond[0].secondaryBlockIdx, ribCond[1].boundNumber, ribCond[0].equationNumber) in boundAndEquatNumberList:
                             listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
                             continue
-                        boundAndEquatNumberList.append((-1, ribCond[1].boundNumber, ribCond[0].equationNumber))
+                        boundAndEquatNumberList.append((ribCond[0].secondaryBlockIdx, ribCond[1].boundNumber, ribCond[0].equationNumber))
                         output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEqs, unknownVars, [ribCond[0], ribCond[1]])])
                     else:
-                        nameForRib = 'Block' + str(blockNumber) + 'DirichletAndInterconnect__Rib' + funcIndex
-                        if (-1, ribCond[1].boundNumber, ribCond[0].equationNumber) in boundAndEquatNumberList:
+                        nameForRib = 'Block' + str(blockNumber) + 'Dirichlet__Rib' + funcIndex
+                        if (ribCond[0].secondaryBlockIdx, ribCond[1].boundNumber, ribCond[0].equationNumber) in boundAndEquatNumberList:
                             listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
                             continue
                         boundAndEquatNumberList.append((-1, ribCond[1].boundNumber, ribCond[0].equationNumber))
                         output.extend([self.generateDirichlet(blockNumber, nameForRib, ribCond[1])])
                 #На одной из двух границ есть соединения, касающиеся ребра. Вариант 2        
                 elif not isinstance(ribCond[0], Connection) and isinstance(ribCond[1], Connection):
-                    if ribCond[0].boundNumber == -1:
-                        nameForRib = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Rib' + funcIndex
-                        if (ribCond[0].boundNumber, -1, ribCond[0].equationNumber) in boundAndEquatNumberList:
-                            listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
-                            continue
-                        boundAndEquatNumberList.append((ribCond[0].boundNumber, -1, ribCond[0].equationNumber))
-                        output.append('//Default boundary condition and interconnect for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-                        output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEqs, unknownVars, [ribCond[0], ribCond[1]])])
-                        arrWithFunctionNames.append(nameForRib)
-                        continue
-                    output.append('//Non-default boundary condition and interconnect for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+#                     if ribCond[0].boundNumber == -1:
+#                         nameForRib = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Rib' + funcIndex
+#                         if (ribCond[0].boundNumber, ribCond[1].secondaryBlockIdx, ribCond[0].equationNumber) in boundAndEquatNumberList:
+#                             listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
+#                             continue
+#                         boundAndEquatNumberList.append((ribCond[0].boundNumber, ribCond[1].secondaryBlockIdx, ribCond[0].equationNumber))
+#                         output.append('//Default boundary condition and interconnect for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+#                         output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEqs, unknownVars, [ribCond[0], ribCond[1]])])
+#                         arrWithFunctionNames.append(nameForRib)
+#                         listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
+#                         continue
+                    output.append('//Boundary condition and interconnect for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                     if ribCond[0].btype == 1:
                         nameForRib = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Rib' + funcIndex
-                        if (ribCond[0].boundNumber, -1, ribCond[0].equationNumber) in boundAndEquatNumberList:
+                        if (ribCond[0].boundNumber, ribCond[1].secondaryBlockIdx, ribCond[0].equationNumber) in boundAndEquatNumberList:
                             listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
                             continue
-                        boundAndEquatNumberList.append((ribCond[0].boundNumber, -1, ribCond[0].equationNumber))
+                        boundAndEquatNumberList.append((ribCond[0].boundNumber, ribCond[1].secondaryBlockIdx, ribCond[0].equationNumber))
                         output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEqs, unknownVars, [ribCond[0], ribCond[1]])])
                     else:
-                        nameForRib = 'Block' + str(blockNumber) + 'DirichletAndInterconnect__Rib' + funcIndex
-                        if (ribCond[0].boundNumber, -1, ribCond[0].equationNumber) in boundAndEquatNumberList:
+                        nameForRib = 'Block' + str(blockNumber) + 'Dirichlet__Rib' + funcIndex
+                        if (ribCond[0].boundNumber, ribCond[1].secondaryBlockIdx, ribCond[0].equationNumber) in boundAndEquatNumberList:
                             listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
                             continue
-                        boundAndEquatNumberList.append((ribCond[0].boundNumber, -1, ribCond[0].equationNumber))
+                        boundAndEquatNumberList.append((ribCond[0].boundNumber, ribCond[1].secondaryBlockIdx, ribCond[0].equationNumber))
                         output.extend([self.generateDirichlet(blockNumber, nameForRib, ribCond[0])])
                 #На обеих границах есть соединения, касающиеся ребра
                 else:
                     nameForRib = 'Block' + str(blockNumber) + 'Interconnect__Rib' + funcIndex
-                    if (-1, -1, ribCond[0].equationNumber) in boundAndEquatNumberList:
+                    if (ribCond[0].secondaryBlockIdx, ribCond[1].secondaryBlockIdx, ribCond[0].equationNumber) in boundAndEquatNumberList:
                         listOfConditionsForRib.append([arrWithFunctionNames.index(nameForRib)] + ranges)
                         continue
-                    boundAndEquatNumberList.append((-1, -1, ribCond[0].equationNumber))
+                    boundAndEquatNumberList.append((ribCond[0].secondaryBlockIdx, ribCond[1].secondaryBlockIdx, ribCond[0].equationNumber))
                     output.append('//Interconnect for Rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEqs, unknownVars, [ribCond[0], ribCond[1]])])
                 
@@ -1885,7 +1882,7 @@ class generator3D(abstractGenerator):
     
     def createSomeName(self, condition):
         if isinstance(condition, Connection):
-            return 'Conn'
+            return 'Block' + str(condition.secondaryBlockIdx)
         if condition.boundNumber == -1:
             return 'Def'
         else:
