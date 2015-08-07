@@ -156,7 +156,8 @@ class BinaryModel(object):
             initFuncNum = usedIndices + usedInitNums.index(initReg.initialNumber)
             xstart, xend = self.dmodel.getXrange(block, initReg.xfrom, initReg.xto)
             ystart, yend = self.dmodel.getYrange(block, initReg.yfrom, initReg.yto)            
-            funcArr[ystart:yend, xstart:xend] = initFuncNum             
+            zstart, zend = self.dmodel.getYrange(block, initReg.zfrom, initReg.zto)
+            funcArr[zstart:zend, ystart:yend, xstart:xend] = initFuncNum             
                 
         print "Used init nums:", usedInitNums
         
@@ -170,9 +171,7 @@ class BinaryModel(object):
                     usedDirBoundNums.append(boundReg.boundNumber) 
         
         usedDirBoundNums.sort()
-        print "Used Dirichlet bound nums:", usedDirBoundNums
-        
-        
+        print "Used Dirichlet bound nums:", usedDirBoundNums        
         
         #3.2 fill them
         for boundReg in block.boundRegions:
@@ -181,19 +180,33 @@ class BinaryModel(object):
                 if boundReg.side == 0:       
                     idxX = 0         
                     ystart, yend = self.dmodel.getYrange(block, boundReg.yfrom, boundReg.yto)    
-                    funcArr[ystart:yend, idxX] = initFuncNum                
+                    zstart, zend = self.dmodel.getZrange(block, boundReg.zfrom, boundReg.zto)
+                    funcArr[zstart:zend, ystart:yend, idxX] = initFuncNum                
                 elif boundReg.side == 1:
                     idxX = xc - 1
                     ystart, yend = self.dmodel.getYrange(block, boundReg.yfrom, boundReg.yto)           
-                    funcArr[ystart:yend, idxX] = initFuncNum                    
+                    zstart, zend = self.dmodel.getZrange(block, boundReg.zfrom, boundReg.zto)
+                    funcArr[zstart:zend, ystart:yend, idxX] = initFuncNum                    
                 elif boundReg.side == 2:
                     idxY =  0
-                    xstart, xend =self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto) 
-                    funcArr[idxY, xstart:xend] = initFuncNum
+                    xstart, xend =self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto)
+                    zstart, zend = self.dmodel.getZrange(block, boundReg.zfrom, boundReg.zto) 
+                    funcArr[zstart:zend, idxY, xstart:xend] = initFuncNum
                 elif boundReg.side == 3:
                     idxY = yc-1
+                    xstart, xend =self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto)
+                    zstart, zend = self.dmodel.getZrange(block, boundReg.zfrom, boundReg.zto)
+                    funcArr[zstart:zend, idxY, xstart:xend] = initFuncNum
+                elif boundReg.side == 4:
+                    idxZ =  0
+                    xstart, xend =self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto)
+                    ystart, yend = self.dmodel.getYrange(block, boundReg.yfrom, boundReg.yto) 
+                    funcArr[idxZ, ystart:yend, xstart:xend] = initFuncNum
+                elif boundReg.side == 5:
+                    idxZ = zc-1
                     xstart, xend = self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto)
-                    funcArr[idxY, xstart:xend] = initFuncNum
+                    ystart, yend = self.dmodel.getYrange(block, boundReg.yfrom, boundReg.yto)
+                    funcArr[idxZ, ystart:yend, xstart:xend] = initFuncNum
 
 
     def fill1dCompFuncs(self, funcArr, block, functionMap, blockSize):
@@ -261,10 +274,10 @@ class BinaryModel(object):
         for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side3"]:
             funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
         #2 fill edges
-        funcArr[0,0]       = functionMap["e02"]
-        funcArr[0,xc-1]    = functionMap["e12"]
-        funcArr[yc-1,0]    = functionMap["e03"]
-        funcArr[yc-1,xc-1] = functionMap["e13"]
+        funcArr[0,0]       = functionMap["v02"]
+        funcArr[0,xc-1]    = functionMap["v12"]
+        funcArr[yc-1,0]    = functionMap["v03"]
+        funcArr[yc-1,xc-1] = functionMap["v13"]
         
         
         
@@ -281,31 +294,24 @@ class BinaryModel(object):
             raise AttributeError("Halosize>1 is not supported yet")
         #1 fill center funcs
         if "center_default" in functionMap:
-            funcArr[:] = functionMap["center_default"]
-            
+            funcArr[:] = functionMap["center_default"]            
         for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, zfromIdx, ztoIdx] in functionMap["center"]:
             funcArr[zfromIdx:ztoIdx, yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
-        #side 0
-        #for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side0"]:            
-        #    yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
+            
+        #2d sides    
+        #side 0        
         for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side0"]:            
             funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
         #side 1
-        #for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side1"]:            
-        #    yfromIdx, ytoIdx = self.dmodel.getYrange(block, yfrom, yto)
         for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side1"]:
             funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
         #side 2
-        #for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side2"]:
-        #    xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
         for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side2"]:
             funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx        
         #side 3
-        #for [funcIdx, xfrom, xto, yfrom, yto] in functionMap["side3"]:
-        #    xfromIdx, xtoIdx = self.dmodel.getXrange(block, xfrom, xto)
         for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side3"]:
             funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
-        #2 fill edges
+        #2 fill vertices
         funcArr[0,0]       = functionMap["e02"]
         funcArr[0,xc-1]    = functionMap["e12"]
         funcArr[yc-1,0]    = functionMap["e03"]
