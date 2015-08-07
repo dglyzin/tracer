@@ -408,7 +408,7 @@ class abstractGenerator(object):
         return list([signature,idx])
     
     def parseBoundaryConditions(self, totalBCondLst, parser):
-        #Парсит краевые условия и создает список условий на углы (angleCondList) 
+        #Парсит краевые условия и создает список условий на углы (vertexCondList) 
         for bCondListForSide in totalBCondLst:  
             for bCond in bCondListForSide:
                 indepVarsForBoundaryFunction = list(self.userIndepVars)
@@ -995,7 +995,7 @@ class generator2D(abstractGenerator):
         #counter for elements in blockFunctionMap including subdictionaries
         bfmLen = len(arrWithFunctionNames)
         #dictionary to return to binarymodel
-        blockFunctionMap.update({"e02":bfmLen - 4, "e12":bfmLen - 3, "e03":bfmLen - 2, "e13":bfmLen - 1 })
+        blockFunctionMap.update({"v02":bfmLen - 4, "v12":bfmLen - 3, "v03":bfmLen - 2, "v13":bfmLen - 1 })
         for num, bCondLst in enumerate(totalBCondLst):
             side = 2 * (num == 0) + 3 * (num == 1) + 1 * (num == 3)
             boundaryName = determineNameOfBoundary(side)
@@ -1038,9 +1038,9 @@ class generator2D(abstractGenerator):
         condCntOnS3 = len(totalBCondLst[1])
         condCntOnS0 = len(totalBCondLst[2])
         condCntOnS1 = len(totalBCondLst[3])
-        angleCondList = [[totalBCondLst[0][0], totalBCondLst[2][0]], [totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]],
+        vertexCondList = [[totalBCondLst[0][0], totalBCondLst[2][0]], [totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]],
                          [totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]], [totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]]]
-        return angleCondList
+        return vertexCondList
     
     def EquationLieOnSomeBound(self, condition):
         return condition.ranges[0][0] == condition.ranges[0][1] and condition.ranges[1][0] == condition.ranges[1][1]
@@ -1051,66 +1051,66 @@ class generator2D(abstractGenerator):
         cond3 = stepFrom(bRegion) < vmin and stepTo(bRegion) > vmax
         return [cond1, cond2, cond3]
     
-    def generateVertexFunctions(self, blockNumber, arrWithFunctionNames, parsedAngleCondList):
-        # parsedAngleCondList --- это список пар [[условие 1, условие 2], [условие 1, условие 2], ...]
+    def generateVertexFunctions(self, blockNumber, arrWithFunctionNames, parsedVertexCondList):
+        # parsedVertexCondList --- это список пар [[условие 1, условие 2], [условие 1, условие 2], ...]
         output = list()
         icsvCounter = 0
-        for angleCond in parsedAngleCondList:
-            parsedEqs = angleCond[0].parsedEquation
-            unknownVars = angleCond[0].unknownVars
+        for vertexCond in parsedVertexCondList:
+            parsedEqs = vertexCond[0].parsedEquation
+            unknownVars = vertexCond[0].unknownVars
             
-            boundaryName1 = determineNameOfBoundary(angleCond[0].side)
-            boundaryName2 = determineNameOfBoundary(angleCond[1].side)
-            funcIndex = str(angleCond[0].side) + '_' + str(angleCond[1].side) + '__Eqn' + str(angleCond[0].equationNumber)
-            if not isinstance(angleCond[0], Connection) and not isinstance(angleCond[1], Connection):
-                if angleCond[0].boundNumber == angleCond[1].boundNumber == -1:
+            boundaryName1 = determineNameOfBoundary(vertexCond[0].side)
+            boundaryName2 = determineNameOfBoundary(vertexCond[1].side)
+            funcIndex = str(vertexCond[0].side) + '_' + str(vertexCond[1].side) + '__Eqn' + str(vertexCond[0].equationNumber)
+            if not isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection):
+                if vertexCond[0].boundNumber == vertexCond[1].boundNumber == -1:
                     output.append('//Default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumann__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                     arrWithFunctionNames.append(nameForVertex)
                     continue
                 output.append('//Non-default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-                if angleCond[0].btype == angleCond[1].btype == 1:
+                if vertexCond[0].btype == vertexCond[1].btype == 1:
                     nameForVertex = 'Block' + str(blockNumber) + 'Neumann__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
-                elif angleCond[0].btype == 0:
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+                elif vertexCond[0].btype == 0:
                     nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[0])])
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
                 else:
                     nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[1])])
-            elif isinstance(angleCond[0], Connection) and not isinstance(angleCond[1], Connection):
-                if angleCond[1].boundNumber == -1:
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
+            elif isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection):
+                if vertexCond[1].boundNumber == -1:
                     output.append('//Default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                     arrWithFunctionNames.append(nameForVertex)
                     continue
                 output.append('//Non-default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-                if angleCond[1].btype == 1:
+                if vertexCond[1].btype == 1:
                     nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                 else:
                     nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[1])])
-            elif not isinstance(angleCond[0], Connection) and isinstance(angleCond[1], Connection):
-                if angleCond[0].boundNumber == -1:
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
+            elif not isinstance(vertexCond[0], Connection) and isinstance(vertexCond[1], Connection):
+                if vertexCond[0].boundNumber == -1:
                     output.append('//Default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                     arrWithFunctionNames.append(nameForVertex)
                     continue
                 output.append('//Non-default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-                if angleCond[0].btype == 1:
+                if vertexCond[0].btype == 1:
                     nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                 else:
                     nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[0])])
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
             else:
                 output.append('//Interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                 nameForVertex = 'Block' + str(blockNumber) + 'Interconnect__Vertex' + funcIndex
-                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                 icsvCounter += 1
             
             arrWithFunctionNames.append(nameForVertex)
@@ -1499,7 +1499,7 @@ class generator3D(abstractGenerator):
         parsedVertexCondList = self.createVertexCondLst(totalBCondLst)
         outputStr.append(self.generateVertexFunctions(blockNumber, arrWithFunctionNames, parsedVertexCondList))      
         bfmLen = len(arrWithFunctionNames)
-        blockFunctionMap.update({"e024":bfmLen - 8, "e124":bfmLen - 7, "e034":bfmLen - 6, "e134":bfmLen - 5, "e025":bfmLen - 4, "e125":bfmLen - 3, "e035":bfmLen - 2, "e135":bfmLen - 1 })
+        blockFunctionMap.update({"v024":bfmLen - 8, "v124":bfmLen - 7, "v034":bfmLen - 6, "v134":bfmLen - 5, "v025":bfmLen - 4, "v125":bfmLen - 3, "v035":bfmLen - 2, "v135":bfmLen - 1 })
         #Создаем список условий на ребра, генерируем функции на ребра и добавляем всю инфу в blockFunctionMap
         parsedEdgeCondList = self.createEdgeCondLst(totalBCondLst)
         #После работы этой функции словарь parsedEdgeCondList изменится и будет для каждого ребра содержать
