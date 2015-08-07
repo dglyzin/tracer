@@ -1,9 +1,9 @@
 {
 	"Host": "10.7.129.222",
 	"Port": 22,
-	"Username": "tester",
-	"Password": "tester",
-	"Workspace": "/home/tester/Tracer1/golubenets_projects",
+	"Username": "golubenets",
+	"Password": "S1l2a3va",
+	"Workspace": "/home/golubenets/Tracer/tracer_projects",
 	"SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS",
-    "PreprocessorFolder": "/home/dglyzin/Tracer/hybriddomain"
+    "PreprocessorFolder": "/home/golubenets/Tracer/hybriddomain"
 }

@@ -3,8 +3,8 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 0.000005, 
-        "TimeStep":   0.00000001, 
+        "FinishTime": 0.00025, 
+        "TimeStep":   0.000000005, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
@@ -60,7 +60,7 @@
         ], 
         "ParamValues": [
             {
-                "a": 1.0
+                "a": 1.25
             }
         ], 
         "DefaultParamsIndex": 0
