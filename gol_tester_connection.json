@@ -5,5 +5,5 @@
 	"Password": "tester",
 	"Workspace": "/home/tester/Tracer1/golubenets_projects",
 	"SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS",
-    "PreprocessorFolder": "/home/dglyzin/Tracer/hybriddomain"
+    "PreprocessorFolder": "/home/golubenets/Tracer/hybriddomain"
 }
