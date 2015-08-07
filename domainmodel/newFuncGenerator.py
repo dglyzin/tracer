@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from equationParser import MathExpressionParser
-from someFuncs import generateCodeForMathFunction, determineNameOfBoundary, RectSquare, determineCellIndexOfStartOfConnection2D, getRanges
+from someFuncs import generateCodeForMathFunction, determineNameOfBoundary, squareOrVolume, determineCellIndexOfStartOfConnection2D, getRanges, splitBigRect, intersectionOfRects, getCellCountAlongLine
 from rhsCodeGenerator import RHSCodeGenerator
 
 class FuncGenerator:
@@ -15,8 +15,7 @@ class FuncGenerator:
         self.preprocessorFolder = preprocessorFolder
     
     def generateAllFunctions(self):
-#         Важный момент: всегда предполагается, что массив equations содержит только 1 уравнение.
-#         gridStep --- список [gridStepX, gridStepY, gridStepZ]
+        #gridStep --- список [gridStepX, gridStepY, gridStepZ]
         outputStr = '#include <math.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include "' +self.preprocessorFolder +  '/doc/userfuncs.h"\n\n'
         outputStr += self.generator.generateAllDefinitions()
         outputStr += self.generator.generateInitials()
@@ -30,6 +29,7 @@ class FuncGenerator:
             
             totalArrWithFunctionNames.append(arrWithFunctionNames)
             functionMaps.append(blockFunctionMap)
+            print blockFunctionMap
             outputStr += cf + bf
             
         final = self.generator.generateGetBoundFuncArray(totalArrWithFunctionNames)
@@ -50,9 +50,6 @@ class BoundCondition:
         self.funcName = funcName
          
     def createSpecialProperties(self, mathParser, params, indepVars):
-# Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
-# boundaryCoordinates отличается от ranges тем, что ranges -- это то как задал границу юзер,
-# а boundaryCoordinates -- координаты крайних точек границы в геометрическом смысле 
         self.parsedValues = list()
         for value in self.values:
             self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))
@@ -61,6 +58,10 @@ class BoundCondition:
         self.parsedEquation = list()
         for equat in self.equation.system:
             self.parsedEquation.extend([mathParser.parseMathExpression(equat, self.unknownVars, params, self.equation.vars)])
+            
+    def setEdgesAndVertexesIn3D(self, edges, vertexes):
+        self.edges = edges
+        self.vertexes = vertexes
 
 class Connection:
     def __init__(self, firstIndex, secondIndex, side, ranges, equationNumber, equation, funcName):
@@ -74,13 +75,17 @@ class Connection:
         self.funcName = funcName
     
     def createSpecialProperties(self, mathParser, params):
-# Если случай двумерный, то формируем координаты отрезков, если трехмерный -- то координаты углов прямоугольника
-# boundaryCoordinates отличается от ranges тем, что ranges -- это то как задал границу юзер,
-# а boundaryCoordinates -- координаты крайних точек границы в геометрическом смысле 
         self.unknownVars = mathParser.getVariableList(self.equation.system)    
         self.parsedEquation = list()
         for equat in self.equation.system:
             self.parsedEquation.extend([mathParser.parseMathExpression(equat, self.unknownVars, params, self.equation.vars)])
+            
+    def setEdgesAndVertexesIn3D(self, edges, vertexes):
+        self.edges = edges
+        self.vertexes = vertexes
+        
+    def setSecondaryBlockIdx(self, secondaryBlockIdx):
+        self.secondaryBlockIdx = secondaryBlockIdx
 
 class InterconnectRegion:
     def __init__(self, firstIndex, secondIndex, side, stepAlongSide, lenBetweenStartOfBlockSideAndStartOfConnection, lenOfConnection, xfrom, xto, yfrom, yto, secondaryBlockNumber):
@@ -94,6 +99,19 @@ class InterconnectRegion:
         self.xto = xto
         self.yfrom = yfrom
         self.yto = yto
+        self.secondaryBlockNumber = secondaryBlockNumber
+        
+class InterconnectRegion3D:
+    def __init__(self, firstIndex, secondIndex, side, xfrom, xto, yfrom, yto, zfrom, zto, secondaryBlockNumber):
+        self.firstIndex = firstIndex
+        self.secondIndex = secondIndex
+        self.side = side
+        self.xfrom = xfrom
+        self.xto = xto
+        self.yfrom = yfrom
+        self.yto = yto
+        self.zfrom = zfrom
+        self.zto = zto
         self.secondaryBlockNumber = secondaryBlockNumber
     
 class abstractGenerator(object):
@@ -172,6 +190,19 @@ class abstractGenerator(object):
         definitions.append("\n#define PAR_COUNT " + str(len(self.params)) + "\n\n")
 
         return ''.join(definitions)
+    
+    def generateInitials(self):
+#         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
+        output = list(["//===================PARAMETERS==========================//\n\n"])
+        output.append(self.generateParamFunction())
+        output.append("//===================INITIAL CONDITIONS==========================//\n\n")
+
+        pointInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames = self.generateAllPointInitials()
+        output.append(pointInitials)
+        output.append(self.generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
+        output.append(self.generateGetInitFuncArray())
+        
+        return ''.join(output)
                    
     def generateParamFunction(self):
         output = list(["void initDefaultParams(double** pparams, int* pparamscount){\n"])
@@ -376,8 +407,8 @@ class abstractGenerator(object):
         
         return list([signature,idx])
     
-    def createACL(self, totalBCondLst, parser):
-# Парсит краевые условия и создает список условий на углы (angleCondList) 
+    def parseBoundaryConditions(self, totalBCondLst, parser):
+        #Парсит краевые условия и создает список условий на углы (vertexCondList) 
         for bCondListForSide in totalBCondLst:  
             for bCond in bCondListForSide:
                 indepVarsForBoundaryFunction = list(self.userIndepVars)
@@ -388,57 +419,22 @@ class abstractGenerator(object):
                     bCond.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
                 else:
                     bCond.createSpecialProperties(parser, self.params)
-# Создание списка условий на углы. В него входят условия с уже распарсенными значениями        
-        condCntOnS2 = len(totalBCondLst[0])
-        condCntOnS3 = len(totalBCondLst[1])
-        condCntOnS0 = len(totalBCondLst[2])
-        condCntOnS1 = len(totalBCondLst[3])
-        angleCondList = [[totalBCondLst[0][0], totalBCondLst[2][0]], [totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]],
-                         [totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]], [totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]]]
-#         if isinstance(totalBCondLst[0][0], Connection):
-#             angleCondList.append([totalBCondLst[0][0]])
-#         elif isinstance(totalBCondLst[2][0], Connection):
-#             angleCondList.append([totalBCondLst[2][0]])
-#         else:
-#             angleCondList.append([totalBCondLst[0][0], totalBCondLst[2][0]])
-#             
-#         if isinstance(totalBCondLst[0][condCntOnS2-1], Connection):
-#             angleCondList.append([totalBCondLst[0][condCntOnS2-1]])
-#         elif isinstance(totalBCondLst[3][0], Connection):
-#             angleCondList.append([totalBCondLst[3][0]])
-#         else:
-#             angleCondList.append([totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]])
-#             
-#         if isinstance(totalBCondLst[1][0], Connection):
-#             angleCondList.append([totalBCondLst[1][0]])
-#         elif isinstance(totalBCondLst[2][condCntOnS0-1], Connection):
-#             angleCondList.append([totalBCondLst[2][condCntOnS0-1]])
-#         else:
-#             angleCondList.append([totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]])
-#             
-#         if isinstance(totalBCondLst[1][condCntOnS3-1], Connection):
-#             angleCondList.append([totalBCondLst[1][condCntOnS3-1]])
-#         elif isinstance(totalBCondLst[3][condCntOnS1-1], Connection):
-#             angleCondList.append([totalBCondLst[3][condCntOnS1-1]])
-#         else:
-#             angleCondList.append([totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]])
-        return angleCondList
     
     def setDefault(self, blockNumber, side, equation, equationNum):
         systemLen = len(equation.system)
-        funcName = "Block" + str(blockNumber) + "DefaultNeumann__Bound" + str(side) + "_Eqn" + str(equationNum)
+        funcName = "Block" + str(blockNumber) + "DefaultNeumann__Bound" + str(side) + "__Eqn" + str(equationNum)
         return systemLen * ['0.0'], 1, -1, funcName
     
     def setDirichletOrNeumann(self, bRegion, blockNumber, side, equationNum):
         boundNumber = bRegion.boundNumber
         btype = self.bounds[boundNumber].btype
         if btype == 0:
-            funcName = "Block" + str(blockNumber) + "Dirichlet__Bound" + str(side) + "_" + str(boundNumber) + "_Eqn" + str(equationNum)
+            funcName = "Block" + str(blockNumber) + "Dirichlet__Bound" + str(side) + "_" + str(boundNumber) + "__Eqn" + str(equationNum)
             outputValues = list(self.bounds[boundNumber].derivative)
         elif btype == 1:
-            funcName = "Block" + str(blockNumber) + "Neumann__Bound" + str(side) + "_" + str(boundNumber) + "_Eqn" + str(equationNum)
+            funcName = "Block" + str(blockNumber) + "Neumann__Bound" + str(side) + "_" + str(boundNumber) + "__Eqn" + str(equationNum)
             outputValues = list(self.bounds[boundNumber].values)
-#                 Особенность Неймановского условия
+            #Особенность Неймановского условия
             if side == 0 or side == 2:
                 for idx, value in enumerate(outputValues):
                     outputValues.pop(idx)
@@ -520,20 +516,7 @@ class generator1D(abstractGenerator):
             self.cellsizeList.append(len(equations[block.defaultEquation].system))
             self.allBlockOffsetList.append([block.offsetX, 0, 0])
             self.allBlockSizeList.append([block.sizeX, 0, 0])
-    
-    def generateInitials(self):
-#         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
-        output = list(["//===================PARAMETERS==========================//\n\n"])
-        output.append(self.generateParamFunction())
-        output.append("//===================INITIAL CONDITIONS==========================//\n\n")
-
-        pointInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames = self.generateAllPointInitials()
-        output.append(pointInitials)
-        output.append(self.generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
-        output.append(self.generateGetInitFuncArray())
-        
-        return ''.join(output)  
-    
+       
     def generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
 #         Для каждого блока создает функцию-заполнитель с именем BlockIFillInitialValues (I-номер блока)
         totalCountOfInitials = len(listWithInitialFunctionNames)
@@ -671,7 +654,6 @@ class generator1D(abstractGenerator):
         #     |          |
         #     ---side 3---  
         parser = MathExpressionParser()
-#         self.createACL(bCondLst, parser)
         intro = '\n//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputStr = [intro]      
         
@@ -748,56 +730,43 @@ class generator2D(abstractGenerator):
                 
     def __createIcRegion(self, mainBlockSide, mainBlock, secBlock, firstIndex):
         if mainBlockSide == 0:
-            xfrom = mainBlock.offsetX
-            xto = mainBlock.offsetX
+            xfrom = 0#mainBlock.offsetX
+            xto = 0#mainBlock.offsetX
             yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
             someLen = yfrom
             lenOfConnection = yto - yfrom
             secondIndex = 'idxY'
-            stepAlongSide = self.gridStep[0]
+            stepAlongSide = self.gridStep[1]
         elif mainBlockSide == 1:
-            xfrom = mainBlock.offsetX + mainBlock.sizeX
-            xto = mainBlock.offsetX + mainBlock.sizeX
+            xfrom = mainBlock.sizeX# + mainBlock.offsetX
+            xto = mainBlock.sizeX# + mainBlock.offsetX
             yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
             someLen = yfrom
             lenOfConnection = yto - yfrom
             secondIndex = 'idxY'
-            stepAlongSide = self.gridStep[0]
+            stepAlongSide = self.gridStep[1]
         elif mainBlockSide == 2:
             xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
-            yfrom = mainBlock.offsetY
-            yto = mainBlock.offsetY
+            yfrom = 0#mainBlock.offsetY
+            yto = 0#mainBlock.offsetY
             someLen = xfrom
             lenOfConnection = xto - xfrom
             secondIndex = 'idxX'
-            stepAlongSide = self.gridStep[1]
+            stepAlongSide = self.gridStep[0]
         else:
             xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
-            yfrom = mainBlock.offsetY + mainBlock.sizeY
-            yto = mainBlock.offsetY + mainBlock.sizeY
+            yfrom = mainBlock.sizeY# + mainBlock.offsetY
+            yto = mainBlock.sizeY# + mainBlock.offsetY
             someLen = xfrom
             lenOfConnection = xto - xfrom
             secondIndex = 'idxX'
-            stepAlongSide = self.gridStep[1]
+            stepAlongSide = self.gridStep[0]
         return InterconnectRegion(firstIndex, secondIndex, mainBlockSide, stepAlongSide, someLen, lenOfConnection, xfrom, xto, yfrom, yto, self.blocks.index(secBlock))
-    
-    def generateInitials(self):
-#         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
-        output = list(["//===================PARAMETERS==========================//\n\n"])
-        output.append(self.generateParamFunction())
-        output.append("//===================INITIAL CONDITIONS==========================//\n\n")
-
-        pointInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames = self.generateAllPointInitials()
-        output.append(pointInitials)
-        output.append(self.generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
-        output.append(self.generateGetInitFuncArray())
-        
-        return ''.join(output)  
-    
+   
     def generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
 #         Для каждого блока создает функцию-заполнитель с именем BlockIFillInitialValues (I-номер блока)
         totalCountOfInitials = len(listWithInitialFunctionNames)
@@ -823,7 +792,7 @@ class generator2D(abstractGenerator):
         for eqRegion in block.equationRegions:
             cond1 = eqRegion.xfrom == eqRegion.xto and (eqRegion.xto == 0.0 or eqRegion.xto == block.sizeX)
             cond2 = eqRegion.yfrom == eqRegion.yto and (eqRegion.yto == 0.0 or eqRegion.yto == block.sizeY)
-            reservedSquare += RectSquare([eqRegion.xfrom, eqRegion.xto], [eqRegion.yfrom, eqRegion.yto])
+            reservedSquare += squareOrVolume([eqRegion.xfrom, eqRegion.xto], [eqRegion.yfrom, eqRegion.yto])
             if eqRegion.equationNumber not in numsForSystems and not cond1 and not cond2:
                 systemsForCentralFuncs.append(self.equations[eqRegion.equationNumber])
                 numsForSystems.append(eqRegion.equationNumber)
@@ -844,7 +813,7 @@ class generator2D(abstractGenerator):
     
     def createListOfBCondsForSide(self, block, blockNumber, side):
         if side == 2:
-            cellLen = self.gridStep[1]
+            cellLen = self.gridStep[0]
             sideMaxRange = block.sizeX
             sideMinRange = 0.0
             currentSideValue = 0.0
@@ -852,7 +821,7 @@ class generator2D(abstractGenerator):
             stepFrom = lambda eqRegion: eqRegion.xfrom
             stepTo = lambda eqRegion: eqRegion.xto
         elif side == 3:
-            cellLen = self.gridStep[1]
+            cellLen = self.gridStep[0]
             sideMaxRange = block.sizeX
             sideMinRange = 0.0
             currentSideValue = block.sizeY
@@ -860,7 +829,7 @@ class generator2D(abstractGenerator):
             stepFrom = lambda eqRegion: eqRegion.xfrom
             stepTo = lambda eqRegion: eqRegion.xto
         elif side == 0:
-            cellLen = self.gridStep[0]
+            cellLen = self.gridStep[1]
             sideMaxRange = block.sizeY
             sideMinRange = 0.0
             currentSideValue = 0.0
@@ -868,7 +837,7 @@ class generator2D(abstractGenerator):
             stepFrom = lambda eqRegion: eqRegion.yfrom
             stepTo = lambda eqRegion: eqRegion.yto
         elif side == 1:
-            cellLen = self.gridStep[0]
+            cellLen = self.gridStep[1]
             sideMaxRange = block.sizeY
             sideMinRange = 0.0
             currentSideValue = block.sizeX
@@ -934,7 +903,7 @@ class generator2D(abstractGenerator):
             secRanges = ranges[0]
         var_min = min(varRanges)
         condList = list()
-# Отдельно обрабатывается случай, когда какое-то уравнение задано только на прямой
+        #Отдельно обрабатывается случай, когда какое-то уравнение задано только на прямой
         if var_min == max(varRanges):
             #Сначала проверяем наличие соединений на этом участке, потом уже -- граничных условий
             for icRegion in block.interconnectRegions:
@@ -955,7 +924,7 @@ class generator2D(abstractGenerator):
                 bCondRanges = ranges
                 condList.append(BoundCondition(values, btype, side, bCondRanges, boundNumber, equationNum, equation, funcName))
             return condList
-# Здесь случай, когда уравнение задано в подблоке
+        #Здесь случай, когда уравнение задано в подблоке
         while var_min < max(varRanges):
             varMaxLst = []
             for icRegion in block.interconnectRegions:
@@ -1017,15 +986,16 @@ class generator2D(abstractGenerator):
         #     |          |
         #     ---side 3---  
         parser = MathExpressionParser()
-        parsedAngleCondList = self.createACL(totalBCondLst, parser)
+        self.parseBoundaryConditions(totalBCondLst, parser)
+        parsedVertexCondList = self.createVertexCondLst(totalBCondLst)
         intro = '\n//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputStr = [intro]
-        outputStr.append(self.generateVertexFunctions(blockNumber, arrWithFunctionNames, parsedAngleCondList))      
+        outputStr.append(self.generateVertexFunctions(blockNumber, arrWithFunctionNames, parsedVertexCondList))      
         
         #counter for elements in blockFunctionMap including subdictionaries
         bfmLen = len(arrWithFunctionNames)
         #dictionary to return to binarymodel
-        blockFunctionMap.update({"e02":bfmLen - 4, "e12":bfmLen - 3, "e03":bfmLen - 2, "e13":bfmLen - 1 })
+        blockFunctionMap.update({"v02":bfmLen - 4, "v12":bfmLen - 3, "v03":bfmLen - 2, "v13":bfmLen - 1 })
         for num, bCondLst in enumerate(totalBCondLst):
             side = 2 * (num == 0) + 3 * (num == 1) + 1 * (num == 3)
             boundaryName = determineNameOfBoundary(side)
@@ -1062,6 +1032,16 @@ class generator2D(abstractGenerator):
             blockFunctionMap.update({sideName:sideLst}) 
         return ''.join(outputStr)
     
+    def createVertexCondLst(self, totalBCondLst):
+        #Создание списка условий на углы. В него входят условия с уже распарсенными значениями        
+        condCntOnS2 = len(totalBCondLst[0])
+        condCntOnS3 = len(totalBCondLst[1])
+        condCntOnS0 = len(totalBCondLst[2])
+        condCntOnS1 = len(totalBCondLst[3])
+        vertexCondList = [[totalBCondLst[0][0], totalBCondLst[2][0]], [totalBCondLst[0][condCntOnS2-1], totalBCondLst[3][0]],
+                         [totalBCondLst[1][0], totalBCondLst[2][condCntOnS0-1]], [totalBCondLst[1][condCntOnS3-1], totalBCondLst[3][condCntOnS1-1]]]
+        return vertexCondList
+    
     def EquationLieOnSomeBound(self, condition):
         return condition.ranges[0][0] == condition.ranges[0][1] and condition.ranges[1][0] == condition.ranges[1][1]
     
@@ -1071,101 +1051,153 @@ class generator2D(abstractGenerator):
         cond3 = stepFrom(bRegion) < vmin and stepTo(bRegion) > vmax
         return [cond1, cond2, cond3]
     
-    def generateVertexFunctions(self, blockNumber, arrWithFunctionNames, parsedAngleCondList):
-# parsedAngleCondList --- это список пар [[условие 1, условие 2], [условие 1, условие 2], ...]
+    def generateVertexFunctions(self, blockNumber, arrWithFunctionNames, parsedVertexCondList):
+        # parsedVertexCondList --- это список пар [[условие 1, условие 2], [условие 1, условие 2], ...]
         output = list()
         icsvCounter = 0
-        for angleCond in parsedAngleCondList:
-            parsedEqs = angleCond[0].parsedEquation
-            unknownVars = angleCond[0].unknownVars
+        for vertexCond in parsedVertexCondList:
+            parsedEqs = vertexCond[0].parsedEquation
+            unknownVars = vertexCond[0].unknownVars
             
-            boundaryName1 = determineNameOfBoundary(angleCond[0].side)
-            boundaryName2 = determineNameOfBoundary(angleCond[1].side)
-            funcIndex = str(angleCond[0].side) + '_' + str(angleCond[1].side) + '__Eqn' + str(angleCond[0].equationNumber)
-            if not isinstance(angleCond[0], Connection) and not isinstance(angleCond[1], Connection):
-                if angleCond[0].boundNumber == angleCond[1].boundNumber == -1:
+            boundaryName1 = determineNameOfBoundary(vertexCond[0].side)
+            boundaryName2 = determineNameOfBoundary(vertexCond[1].side)
+            funcIndex = str(vertexCond[0].side) + '_' + str(vertexCond[1].side) + '__Eqn' + str(vertexCond[0].equationNumber)
+            if not isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection):
+                if vertexCond[0].boundNumber == vertexCond[1].boundNumber == -1:
                     output.append('//Default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumann__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                     arrWithFunctionNames.append(nameForVertex)
                     continue
                 output.append('//Non-default boundary condition for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-                if angleCond[0].btype == angleCond[1].btype == 1:
+                if vertexCond[0].btype == vertexCond[1].btype == 1:
                     nameForVertex = 'Block' + str(blockNumber) + 'Neumann__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
-                elif angleCond[0].btype == 0:
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+                elif vertexCond[0].btype == 0:
                     nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[0])])
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
                 else:
                     nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[1])])
-            elif isinstance(angleCond[0], Connection) and not isinstance(angleCond[1], Connection):
-                if angleCond[1].boundNumber == -1:
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
+            elif isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection):
+                if vertexCond[1].boundNumber == -1:
                     output.append('//Default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                     arrWithFunctionNames.append(nameForVertex)
                     continue
                 output.append('//Non-default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-                if angleCond[1].btype == 1:
+                if vertexCond[1].btype == 1:
                     nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                 else:
                     nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[1])])
-            elif not isinstance(angleCond[0], Connection) and isinstance(angleCond[1], Connection):
-                if angleCond[0].boundNumber == -1:
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
+            elif not isinstance(vertexCond[0], Connection) and isinstance(vertexCond[1], Connection):
+                if vertexCond[0].boundNumber == -1:
                     output.append('//Default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                     arrWithFunctionNames.append(nameForVertex)
                     continue
                 output.append('//Non-default boundary condition and interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
-                if angleCond[0].btype == 1:
+                if vertexCond[0].btype == 1:
                     nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                 else:
                     nameForVertex = 'Block' + str(blockNumber) + 'DirichletAndInterconnect__Vertex' + funcIndex
-                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, angleCond[0])])
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
             else:
                 output.append('//Interconnect for Vertex between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
                 nameForVertex = 'Block' + str(blockNumber) + 'Interconnect__Vertex' + funcIndex
-                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, angleCond)])
+                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
                 icsvCounter += 1
             
             arrWithFunctionNames.append(nameForVertex)
         return ''.join(output)
         
 class generator3D(abstractGenerator):
-    def __init__(self, equations, blocks, initials, bounds, gridStep):
-        super(generator3D,self).__init__(equations, blocks, initials, bounds, gridStep)
+    def __init__(self, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):
+        super(generator3D,self).__init__(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         self.cellsizeList = list()
         self.allBlockSizeList = list()
         self.allBlockOffsetList = list()
         
         for block in self.blocks:
-            self.cellsizeList.append(len(self.system))
+            self.cellsizeList.append(len(equations[block.defaultEquation].system))
             self.allBlockOffsetList.append([block.offsetX, block.offsetY, block.offsetZ])
             self.allBlockSizeList.append([block.sizeX, block.sizeY, block.sizeZ])
+            self.__createBlockIcsRegions(block)
+    
+    def __createBlockIcsRegions(self, block):
+        blockNumber = self.blocks.index(block)
+        icsRegions = []
+        firstIndex = 0
+        for interconnect in self.interconnects:
+            if interconnect.block1 == blockNumber and interconnect.block2 == blockNumber:
+                icsRegions.append(self.__createIcRegion(blockNumber, interconnect.block2Side, block, self.blocks[interconnect.block1], firstIndex))
+                firstIndex += 1
+                icsRegions.append(self.__createIcRegion(blockNumber, interconnect.block1Side, block, self.blocks[interconnect.block2], firstIndex))
+                firstIndex += 1
+            elif interconnect.block1 == blockNumber and interconnect.block2 != blockNumber:
+                icsRegions.append(self.__createIcRegion(blockNumber, interconnect.block1Side, block, self.blocks[interconnect.block2], firstIndex))
+                firstIndex += 1
+            elif interconnect.block2 == blockNumber and interconnect.block1 != blockNumber:
+                icsRegions.append(self.__createIcRegion(blockNumber, interconnect.block2Side, block, self.blocks[interconnect.block1], firstIndex))
+                firstIndex += 1
+        block.interconnectRegions = icsRegions
+                
+    def __createIcRegion(self, mainBlockNum, mainBlockSide, mainBlock, secBlock, firstIndex):
+        if mainBlockSide / 2 == 0:
+            yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
+            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
+            zfrom = max([secBlock.offsetZ, mainBlock.offsetZ]) - mainBlock.offsetZ
+            zto = min([mainBlock.offsetZ + mainBlock.sizeZ, secBlock.offsetZ + secBlock.sizeZ]) - mainBlock.offsetZ
+            startCellIdx1Dir = getCellCountAlongLine(yfrom, self.gridStep[1])
+            startCellIdx2Dir = getCellCountAlongLine(zfrom, self.gridStep[2])
+            cellCountAlong1Dir = getCellCountAlongLine(yto - yfrom, self.gridStep[1])
+            secondIndex = '((idxY + ' + str(cellCountAlong1Dir) + ' * idxZ) - '
+            if mainBlockSide == 0:
+                xfrom = 0
+                xto = 0
+            else:
+                xfrom = mainBlock.sizeX
+                xto = mainBlock.sizeX
+        elif mainBlockSide / 2 == 1:
+            xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
+            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
+            zfrom = max([secBlock.offsetZ, mainBlock.offsetZ]) - mainBlock.offsetZ
+            zto = min([mainBlock.offsetZ + mainBlock.sizeZ, secBlock.offsetZ + secBlock.sizeZ]) - mainBlock.offsetZ
+            startCellIdx1Dir = getCellCountAlongLine(xfrom, self.gridStep[0])
+            startCellIdx2Dir = getCellCountAlongLine(zfrom, self.gridStep[2])
+            cellCountAlong1Dir = getCellCountAlongLine(xto - xfrom, self.gridStep[0])
+            secondIndex = '((idxX + ' + str(cellCountAlong1Dir) + ' * idxZ) - '
+            if mainBlockSide == 2:
+                yfrom = 0
+                yto = 0
+            else:
+                yfrom = mainBlock.sizeY
+                yto = mainBlock.sizeY
+        else:
+            xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
+            xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
+            yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
+            yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
+            startCellIdx1Dir = getCellCountAlongLine(xfrom, self.gridStep[0])
+            startCellIdx2Dir = getCellCountAlongLine(yfrom, self.gridStep[1])
+            cellCountAlong1Dir = getCellCountAlongLine(xto - xfrom, self.gridStep[0])
+            secondIndex = '((idxX + ' + str(cellCountAlong1Dir) + ' * idxY) - '
+            if mainBlockSide == 4:
+                zfrom = 0
+                zto = 0
+            else:
+                zfrom = mainBlock.sizeZ
+                zto = mainBlock.sizeZ
+        secondIndex += '('+str(startCellIdx1Dir)+' + '+str(cellCountAlong1Dir)+' * '+str(startCellIdx2Dir)+')) * Block'+str(mainBlockNum)+'CELLSIZE'
+        return InterconnectRegion3D(firstIndex, secondIndex, mainBlockSide, xfrom, xto, yfrom, yto, zfrom, zto, self.blocks.index(secBlock))
             
-    def createListWithFuncNamesForBlock(self, blockNumber):
-        raise AttributeError("3D case is difficult!")
-    
-    def generateInitials(self):
-#         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
-        output = list(["//===================PARAMETERS==========================//\n\n"])
-        output.append(self.generateParamFunction())
-        output.append("//===================INITIAL CONDITIONS==========================//\n\n")
-
-        pointInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames = self.generateAllPointInitials()
-        output.append(pointInitials)
-        output.append(self.generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
-        output.append(self.generateGetInitFuncArray())
-        
-        return ''.join(output) 
-    
     def generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
-#         Для каждого блока создает функцию-заполнитель с именем BlockIFillInitialValues (I-номер блока)
+        #Для каждого блока создает функцию-заполнитель с именем BlockIFillInitialValues (I-номер блока)
         totalCountOfInitials = len(listWithInitialFunctionNames)
         allFillFunctions = list()
         for blockNumber, block in enumerate(self.blocks):
@@ -1182,409 +1214,710 @@ class generator3D(abstractGenerator):
         return ''.join(allFillFunctions)
     
     def getBlockInfo(self, block, blockNumber):
-# Возвращает границы блока и особый список всех граничных условий
-# Offset -- это смещение блока, Size -- длина границы, поэтому границы блока -- это [Offset, Offset + Size]
-        minRanges = [block.offsetX, block.offsetY, block.offsetZ]
-        maxRanges = [block.offsetX + block.sizeX, block.offsetY + block.sizeY, block.offsetZ + block.sizeZ]
-        blockRanges = dict({'min' : minRanges, 'max' : maxRanges})
-# boundaryConditionList -- это [{'values':[], 'type':тип, 'side':номер границы, 'boundNumber': номер условия, 'ranges':[[xFrom,xTo],[y],[z]]}]
-        boundaryConditionList = list()
-        for region in block.boundRegions:
-            if region.boundNumber >= len(self.bounds):
-                raise AttributeError("Non-existent number of boundary condition is set for some boundary region in array 'Blocks'!")
-            if region.side == 0:
-                boundaryRanges = [[block.offsetX, block.offsetX], [region.yfrom, region.yto], [region.zfrom, region.zto]]
-            elif region.side == 1:
-                boundaryRanges = [[block.offsetX + block.sizeX, block.offsetX + block.sizeX], [region.yfrom, region.yto], [region.zfrom, region.zto]]
-            elif region.side == 2:
-                boundaryRanges = [[region.xfrom, region.xto], [block.offsetY, block.offsetY], [region.zfrom, region.zto]]
-            elif region.side == 3:
-                boundaryRanges = [[region.xfrom, region.xto], [block.offsetY + block.sizeY, block.offsetY + block.sizeY], [region.zfrom, region.zto]]
-            elif region.side == 4:
-                boundaryRanges = [[region.xfrom, region.xto], [region.yfrom, region.yto], [block.offsetZ, block.offsetZ]]
-            elif region.side == 5:
-                boundaryRanges = [[region.xfrom, region.xto], [region.yfrom, region.yto], [block.offsetZ + block.sizeZ, block.offsetZ + block.sizeZ]]
+        systemsForCentralFuncs = []
+        numsForSystems = []
+        blockFuncMap = {'center': []}
+        blockVolume = block.sizeX * block.sizeY * block.sizeZ
+        reservedVolume = 0
+        for eqRegion in block.equationRegions:
+            cond1 = eqRegion.xfrom == eqRegion.xto and (eqRegion.xto == 0.0 or eqRegion.xto == block.sizeX)
+            cond2 = eqRegion.yfrom == eqRegion.yto and (eqRegion.yto == 0.0 or eqRegion.yto == block.sizeY)
+            cond3 = eqRegion.zfrom == eqRegion.zto and (eqRegion.zto == 0.0 or eqRegion.zto == block.sizeZ)
+            reservedVolume += squareOrVolume([eqRegion.xfrom, eqRegion.xto], [eqRegion.yfrom, eqRegion.yto], [eqRegion.zfrom, eqRegion.zto])
+            if eqRegion.equationNumber not in numsForSystems and not cond1 and not cond2 and not cond3:
+                systemsForCentralFuncs.append(self.equations[eqRegion.equationNumber])
+                numsForSystems.append(eqRegion.equationNumber)
+            if not cond1 and not cond2 and not cond3:
+                ranges = getRanges([eqRegion.xfrom, eqRegion.xto, self.gridStep[0], block.sizeX], [eqRegion.yfrom, eqRegion.yto, self.gridStep[1], block.sizeY], [eqRegion.zfrom, eqRegion.zto, self.gridStep[2], block.sizeZ])
+                blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber)] + ranges)
+        if blockVolume > reservedVolume:
+            systemsForCentralFuncs.append(self.equations[block.defaultEquation])
+            blockFuncMap.update({'center_default': len(numsForSystems)})
+            numsForSystems.append(block.defaultEquation)
+        
+        totalBCondLst = list()
+        sides = [4,5,2,3,0,1]
+        for side in sides:
+            totalBCondLst.append(self.createListOfBCondsForSide(block, blockNumber, side))
+        
+        return systemsForCentralFuncs, numsForSystems, totalBCondLst, [], blockFuncMap
 
-            bound = self.bounds[region.boundNumber]
-            #Если условие Дирихле, то используем производные по t,
-            #если Неймановское условие --- то сами значения.
-            if bound.btype == 0:
-                values = list(bound.derivative)
-            elif bound.btype == 1:
-                values = list(bound.values)
-#                 Исправление понятия Неймановского условия
-                if region.side == 0 or region.side == 2 or region.side == 4:
-                    for idx, value in enumerate(values):
-                        values.pop(idx)
-                        values.insert(idx, '-(' + value + ')')
-            NeumannValues = list(values) 
-            bCond = BoundCondition(NeumannValues, bound.btype, region.side, boundaryRanges, region.boundNumber)
-            boundaryConditionList.append(bCond)
-        return blockRanges, boundaryConditionList
-    
-    def generateDefaultBoundaryFunction(self, blockNumber, parsedEquationsList):
-        defaultFunctions = list()
-        parser = MathExpressionParser()
-        variables = parser.getVariableList(self.system)
-             
-        defuaultBoundaryConditionValues = len(variables) * ['0.0']
-        
-        intro = '\n//=========================DEFAULT BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' +str(blockNumber)+'========================//\n\n'       
-        defaultFunctions.append(intro)
-                 
-        for i in range(0, 6):
-            boundaryName = determineNameOfBoundary(i)
-            defaultFunctions.append('//Default boundary condition for boundary ' + boundaryName + '\n')
-            nameForSide = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(i)
-            defaultBoundaryConditionList = list([tuple((i, defuaultBoundaryConditionValues))])
-            defaultFunctions.append(self.generateNeumannOrInterconnect(blockNumber, nameForSide, parsedEquationsList, variables, defaultBoundaryConditionList))
-            
-        ribs = [(0,2),(0,3),(0,4),(0,5),(1,2),(1,3),(1,4),(1,5),(2,4),(2,5),(3,4),(3,5)]
-        for rib in ribs:
-            boundaryName1 = determineNameOfBoundary(rib[0])
-            boundaryName2 = determineNameOfBoundary(rib[1])
-            defaultFunctions.extend(['//Default boundary condition for rib between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n'])
-            defaultBoundaryConditionList = list([tuple((rib[0], defuaultBoundaryConditionValues)), tuple((rib[1], defuaultBoundaryConditionValues))])
-            nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannBoundForRib' + str(rib[0]) + '_' + str(rib[1])
-            defaultFunctions.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEquationsList, variables, defaultBoundaryConditionList)])     
-        return ''.join(defaultFunctions)
-    
-    def generateBoundsAndIcs(self, blockNumber, arrWithFunctionNames, blockRanges, boundaryConditionList):
-        parser = MathExpressionParser()
-        variables = parser.getVariableList(self.system)
-        parsedBoundaryConditionDictionary, parsedEquationsList = self.createPBCDandPEL(boundaryConditionList, parser, variables)
-        
-        outputStr = list(self.generateDefaultBoundaryFunction(blockNumber, parsedEquationsList))
-        intro = '\n//=============================OTHER BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
-        outputStr.append(intro)
-        
-        properSequenceOfSides = [2,3,0,1]
-        #  ***x->
-        #  *  
-        #  |  ---side 2---
-        #  y  |          |
-        #     s          s
-        #     i          i
-        #     d          d
-        #     e          e
-        #     0          1
-        #     |          |
-        #     ---side 3---        
-        
-        #dictionary to return to binarymodel
-        blockFunctionMap = {"center":0, "e02":1, "e12":2, "e03":3, "e13":4 } 
-        #counter for elements in blockFunctionMap including subdictionaries
-        bfmLen = 5
-        #for side in range(0, boundaryCount):
-        for side in properSequenceOfSides:
-            #subdictionary for every side 
-            sideMap = {}
-            sideName = "side"+str(side)
-                        
-            boundaryName = determineNameOfBoundary(side)
-            defaultFuncName = 'Block' + str(blockNumber) + 'DefaultNeumannBound' + str(side)
-            arrWithFunctionNames.append(defaultFuncName)
-            #every time we append a name to arrWithFunctionNames we should also  
-            sideMap = {"default":bfmLen}
-            bfmLen += 1
-            #Генерируем функции для всех заданных условий и кладем их имена в массив
-            if side not in parsedBoundaryConditionDictionary:
-                blockFunctionMap.update({sideName:sideMap})
-                continue
-            counter = 0
-            #Это список номеров граничных условий для данной стороны side. Нужен для исключения повторяющихся функций,
-            #т.к. на одну сторону в разных местах м.б. наложено одно и то же условие
-            boundNumberList = list()
-            for condition in parsedBoundaryConditionDictionary[side]:
-                #Если для граничного условия с таким номером функцию еще не создавали, то создать, иначе - не надо.
-                if condition.boundNumber in boundNumberList:
+    def createListOfBCondsForSide(self, block, blockNumber, side):
+        bCondList = []
+        sidec1from, sidec1to, sidec2from, sidec2to = self.sideConfigs2(block, side)
+        boundary = [sidec1from, sidec1to, sidec2from, sidec2to]
+        edgesNames, vertexesNames = self.sideConfigs3(block, side)
+        #В массиве allRectsOnSide будут содержаться словари вида {'ranges', 'eNum', 'e'}, каждый из которых соответствует какому-то
+        #прямоугольнику на границе
+        allRectsOnSide = self.determineSpaceOnTheBoundWithDefaultEquation(block, side)
+        #Идем по всем прямоугольникам на границе и создаем для каждого из них одно или несколько краевых условий
+        boundAndInterconnectRegions = block.boundRegions + block.interconnectRegions
+        for rectMap in allRectsOnSide:
+            dRect = rectMap['ranges']
+            equationNum = rectMap['eNum']
+            equation = rectMap['e']
+            newDomainAfterSpliting = [dRect]
+            for region in boundAndInterconnectRegions:
+                #Находим очередное граничное условие на данную границу; это прямоугольник
+                if region.side != side:
                     continue
-                boundNumberList.append(condition.boundNumber)
-                parsedBoundaryConditionTuple = list([tuple((side, condition.parsedValues))])
-                raise AttributeError("Three-dimensional case is difficult!")
-                counter += 1
-            blockFunctionMap.update({sideName:sideMap}) 
-        outputStr.extend(self.generateVertexAndRibFunctions(blockNumber, arrWithFunctionNames, blockRanges, parsedEquationsList, variables, parsedBoundaryConditionDictionary))
-        return ''.join(outputStr), blockFunctionMap
-    
-    def generateVertexAndRibFunctions(self, blockNumber, arrWithFunctionNames, blockRanges, parsedEstrList, variables, parsedBoundaryConditionDictionary):
-#         blockRanges --- это словарь {'min' : [x_min,y_min,z_min], 'max' : [x_max,y_max,z_max]}
-#         parsedBoundaryConditionDictionary {Номер границы : [(распарсенное условие 1, [4 или 2 координаты краев части 1 границы], Тип условия),
-#                                                             (распарсенное условие 2, [4 или 2 координаты краев части 2 границы], Тип условия), ...]}
-#         [координаты краев части 1 границы] содержат 4 точки
-        output = list([])
-        defuaultBoundaryConditionValues = len(variables) * ['0.0']
-
-        ribs = [(0,2),(0,3),(0,4),(0,5),(1,2),(1,3),(1,4),(1,5),(2,4),(2,5),(3,4),(3,5)]
-        ribsCoordinates = [[(blockRanges['min'][0], blockRanges['min'][1], blockRanges['min'][2]), (blockRanges['min'][0], blockRanges['min'][1], blockRanges['max'][2])],
-                           [(blockRanges['min'][0], blockRanges['max'][1], blockRanges['min'][2]), (blockRanges['min'][0], blockRanges['max'][1], blockRanges['max'][2])],
-                           [(blockRanges['min'][0], blockRanges['min'][1], blockRanges['min'][2]), (blockRanges['min'][0], blockRanges['max'][1], blockRanges['min'][2])],
-                           [(blockRanges['min'][0], blockRanges['min'][1], blockRanges['max'][2]), (blockRanges['min'][0], blockRanges['max'][1], blockRanges['max'][2])],
-                           [(blockRanges['max'][0], blockRanges['min'][1], blockRanges['min'][2]), (blockRanges['max'][0], blockRanges['min'][1], blockRanges['max'][2])],
-                           [(blockRanges['max'][0], blockRanges['max'][1], blockRanges['min'][2]), (blockRanges['max'][0], blockRanges['max'][1], blockRanges['max'][2])],
-                           [(blockRanges['max'][0], blockRanges['min'][1], blockRanges['min'][2]), (blockRanges['max'][0], blockRanges['max'][1], blockRanges['min'][2])],
-                           [(blockRanges['max'][0], blockRanges['min'][1], blockRanges['max'][2]), (blockRanges['max'][0], blockRanges['max'][1], blockRanges['max'][2])],
-                           [(blockRanges['min'][0], blockRanges['min'][1], blockRanges['min'][2]), (blockRanges['max'][0], blockRanges['min'][1], blockRanges['min'][2])],
-                           [(blockRanges['min'][0], blockRanges['min'][1], blockRanges['max'][2]), (blockRanges['max'][0], blockRanges['min'][1], blockRanges['max'][2])],
-                           [(blockRanges['min'][0], blockRanges['max'][1], blockRanges['min'][2]), (blockRanges['max'][0], blockRanges['max'][1], blockRanges['min'][2])],
-                           [(blockRanges['min'][0], blockRanges['max'][1], blockRanges['max'][2]), (blockRanges['max'][0], blockRanges['max'][1], blockRanges['max'][2])]]
-        for idx,rib in enumerate(ribs):
-            boundaryName1 = determineNameOfBoundary(rib[0])
-            boundaryName2 = determineNameOfBoundary(rib[1])
-            pairsOfBoundaryCondition = list()
-            if rib[0] in parsedBoundaryConditionDictionary and rib[1] in parsedBoundaryConditionDictionary:
-                boundary1CondList = parsedBoundaryConditionDictionary[rib[0]]
-                boundary2CondList = parsedBoundaryConditionDictionary[rib[1]]
-                pairsOfBoundaryCondition = self.algorithmForRib(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundary1CondList, boundary2CondList, defuaultBoundaryConditionValues)
-            elif rib[0] in parsedBoundaryConditionDictionary and rib[1] not in parsedBoundaryConditionDictionary:
-#                     Здесь надо сначала определить те границы, которые касаются ребра, и для каждой из них
-#                     сгенерить функцию
-                for boundaryCondition in parsedBoundaryConditionDictionary[rib[0]]:
-                    if len(self.rectVertexNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
-                        pairsOfBoundaryCondition.append(((boundaryCondition[0],boundaryCondition[2]), (defuaultBoundaryConditionValues,1)))
-            elif rib[0] not in parsedBoundaryConditionDictionary and rib[1] in parsedBoundaryConditionDictionary:
-                for boundaryCondition in parsedBoundaryConditionDictionary[rib[1]]:
-                    if len(self.rectVertexNearSegment(ribsCoordinates[idx][0], ribsCoordinates[idx][1], boundaryCondition[1])[0]) == 2:
-                        pairsOfBoundaryCondition.append(((defuaultBoundaryConditionValues,1), (boundaryCondition[0],boundaryCondition[2])))
-            else:
-                continue
-            for number,pair in enumerate(pairsOfBoundaryCondition):
-                output.extend(['//Non-default boundary condition for RIB between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + ' with number ' + str(number) + '\n'])
-                if pair[0][1] == pair[1][1] == 1:
-                    nameForRib = 'Block' + str(blockNumber) + 'NeumannBoundForRib' + str(rib[0]) + '_' + str(rib[1]) + '_' + str(number)
-                    boundaryConditionList = list([tuple((rib[0], pair[0][0])), tuple((rib[1], pair[1][0]))])
-                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForRib, parsedEstrList, variables, boundaryConditionList)])
-                elif pair[0][1] == 0:
-                    nameForRib = 'Block' + str(blockNumber) + 'DirichletBoundForRib' + str(rib[0]) + '_' + str(rib[1]) + '_' + str(number)
-                    boundaryConditionList = list([tuple((rib[0], pair[0][0]))])
-                    output.extend([self.generateDirichlet(blockNumber, nameForRib, boundaryConditionList)])
+                if side == 0 or side == 1:
+                    rect = [region.yfrom, region.yto, region.zfrom, region.zto]
+                elif side == 2 or side == 3:
+                    rect = [region.xfrom, region.xto, region.zfrom, region.zto]
                 else:
-                    nameForRib = 'Block' + str(blockNumber) + 'DirichletBoundForRib' + str(rib[0]) + '_' + str(rib[1]) + '_' + str(number)
-                    boundaryConditionList = list([tuple((rib[1], pair[1][0]))])
-                    output.extend([self.generateDirichlet(blockNumber, nameForRib, boundaryConditionList)])
-        
-        Vertexs = [(0,2,4),(0,2,5),(0,3,4),(0,3,5),(1,2,4),(1,2,5),(1,3,4),(1,3,5)]
-        VertexsCoordinates = [(blockRanges['min'][0], blockRanges['min'][1], blockRanges['min'][2]),
-                             (blockRanges['min'][0], blockRanges['min'][1], blockRanges['max'][2]),
-                             (blockRanges['min'][0], blockRanges['max'][1], blockRanges['min'][2]),
-                             (blockRanges['min'][0], blockRanges['max'][1], blockRanges['max'][2]),
-                             (blockRanges['max'][0], blockRanges['min'][1], blockRanges['min'][2]),
-                             (blockRanges['max'][0], blockRanges['min'][1], blockRanges['max'][2]),
-                             (blockRanges['max'][0], blockRanges['max'][1], blockRanges['min'][2]),
-                             (blockRanges['max'][0], blockRanges['max'][1], blockRanges['max'][2])]
-        
-        for i,Vertex in enumerate(Vertexs):
-            c = set([VertexsCoordinates[i]])
-                
-            bound1CondValue = defuaultBoundaryConditionValues
-            bound2CondValue = defuaultBoundaryConditionValues
-            bound3CondValue = defuaultBoundaryConditionValues
-            type1 = 1
-            type2 = 1
-            type3 = 1
-                
-            if Vertex[0] in parsedBoundaryConditionDictionary:
-                bound1CondList = parsedBoundaryConditionDictionary[Vertex[0]]
-                for boundCondition in bound1CondList:
-                    a = set(boundCondition[1])
-                    if not a.isdisjoint(c):
-                        bound1CondValue = boundCondition[0]
-                        type1 = boundCondition[2]
-                        if type1 != 0 and type1 != 1:
-                            raise AttributeError("Type of boundary condition should be equal either 0 or 1!")
-                        break
-            if Vertex[1] in parsedBoundaryConditionDictionary:
-                bound2CondList = parsedBoundaryConditionDictionary[Vertex[1]]
-                for boundCondition in bound2CondList:
-                    a = set(boundCondition[1])
-                    if not a.isdisjoint(c):
-                        bound2CondValue = boundCondition[0]
-                        type2 = boundCondition[2]
-                        if type2 != 0 and type2 != 1:
-                            raise AttributeError("Type of boundary condition should be equal either 0 or 1!")
-                        break
-            if Vertex[2] in parsedBoundaryConditionDictionary:
-                bound3CondList = parsedBoundaryConditionDictionary[Vertex[2]]
-                for boundCondition in bound3CondList:
-                    a = set(boundCondition[1])
-                    if not a.isdisjoint(c):
-                        bound3CondValue = boundCondition[0]
-                        type3 = boundCondition[2]
-                        if type3 != 0 and type3 != 1:
-                            raise AttributeError("Type of boundary condition should be equal either 0 or 1!")
-                        break
-            if bound1CondValue == defuaultBoundaryConditionValues and bound2CondValue == defuaultBoundaryConditionValues and bound3CondValue == defuaultBoundaryConditionValues:
-                continue
-            
-            boundaryName1 = determineNameOfBoundary(Vertex[0])
-            boundaryName2 = determineNameOfBoundary(Vertex[1])
-            boundaryName3 = determineNameOfBoundary(Vertex[2])
-            output.extend(['//Non-default boundary condition for Vertex between boundaries ' + boundaryName1 + ', ' + boundaryName2 + ' and ' + boundaryName3 + '\n'])
-            if type1 == type2 == type3 == 1:
-                boundaryConditionList = list([tuple((Vertex[0], bound1CondValue)), tuple((Vertex[1], bound2CondValue)), tuple((Vertex[2], bound3CondValue))])
-                nameForVertex = 'Block' + str(blockNumber) + 'NeumannBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
-                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEstrList, variables, boundaryConditionList)])
-            elif type1 == 0:
-                boundaryConditionList = list([tuple((Vertex[0], bound1CondValue))])
-                nameForVertex = 'Block' + str(blockNumber) + 'DirichletBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
-                output.extend([self.generateDirichlet(blockNumber, nameForVertex, boundaryConditionList)])
-            elif type2 == 0:
-                boundaryConditionList = list([tuple((Vertex[1], bound2CondValue))])
-                nameForVertex = 'Block' + str(blockNumber) + 'DirichletBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
-                output.extend([self.generateDirichlet(blockNumber, nameForVertex, boundaryConditionList)])
-            else:
-                boundaryConditionList = list([tuple((Vertex[2], bound3CondValue))])
-                nameForVertex = 'Block' + str(blockNumber) + 'DirichletBoundForVertex' + str(Vertex[0]) + '_' + str(Vertex[1])
-                output.extend([self.generateDirichlet(blockNumber, nameForVertex, boundaryConditionList)])
-
-        return output
-    
-    def rectVertexNearSegment(self, ribCoordinateMin, ribCoordinateMax, rectCoordinateList):
-# Определяет, лежит ли часть стороны прямоугольника на отрезке. Возвращает 0, если не лежит,
-# 1, если лежит не полностью, 2, если лежит полностью.
-# rectCoordinateList содержит четыре координаты -- углы прямоугольника
-        coord0 = list(rectCoordinateList[0])
-        coord1 = list(rectCoordinateList[1])
-        coord2 = list(rectCoordinateList[2])
-        coord3 = list(rectCoordinateList[3])
-        reducedRibCoordinateMin = list(ribCoordinateMin)
-        reducedRibCoordinateMax = list(ribCoordinateMax)
-        reducedRectCoordList = list([coord0, coord1, coord2, coord3])
-        
-#         Так как прямоугольник и ребро лежат в одной плоскости, параллельной одной из координатных плоскостей,
-#         то одна компонента у всех точек одинаковая, поэтому сводим ситуацию к двумерной, удаляя одинаковую компоненту
-        for i in range(0,3):
-            if coord0[i] == coord1[i] == coord2[i] == coord3[i]:
-                for coordinate in reducedRectCoordList:
-                    coordinate.pop(i)
-                reducedRibCoordinateMin.pop(i)
-                reducedRibCoordinateMax.pop(i)
-                break
-#         У координат ребра только одна компонента различна, ее и ищем
-        index = 0
-        for i in range(0,2):
-            if reducedRibCoordinateMin[i] != reducedRibCoordinateMax[i]:
-                index = i
-#         Считаем количество углов прямоугольника, принадлежащих ребру
-        goodPoints = list()
-        differentCoord = list()
-        for (reducedCoord, originalCoord) in zip(reducedRectCoordList, rectCoordinateList):
-            left = (reducedCoord[0] - reducedRibCoordinateMax[0]) * (reducedRibCoordinateMin[1] - reducedRibCoordinateMax[1])
-            right = (reducedCoord[1] - reducedRibCoordinateMax[1]) * (reducedRibCoordinateMin[0] - reducedRibCoordinateMax[0])
-            if left == right and reducedCoord[index] <= reducedRibCoordinateMax[index] and reducedCoord[index] >= reducedRibCoordinateMin[index]:
-                goodPoints.extend([originalCoord])
-                differentCoord.extend([reducedCoord[index]])
-        
-        return tuple((goodPoints, differentCoord))
-    
-    def computeSideLength2D(self, blockRanges, Side):
-#         blockRanges --- словарь {"min": [x,y,z], "max": [x,y,z]}
-#         side --- номер стороны, длину которой надо вычислить       
-        if Side == 0 or Side == 1:
-            return blockRanges["max"][1] - blockRanges["min"][1]
-        elif Side == 2 or Side == 3:
-            return blockRanges["max"][0] - blockRanges["min"][0]
-        else:
-            raise AttributeError("Side should be 0, 1, 2 or 3!")
-     
-    def computeSegmentLength2D(self, segment):
-#         segment = [(x1,y1),(x2,y2)]
-        if len(segment) != 2 or len(segment[0]) != 2 or len(segment[1]) != 2:
-            raise AttributeError("List 'segment' in computeSegmentLength2D() should contain exactly two elements!")
-#         т.к. отрезки параллельны осям кординат, то можно делать так
-        reducedSegment = []
-#         Двумерный случай сводится к одномерному
-        if segment[0][0] == segment[1][0]:
-            reducedSegment = [min([segment[0][1], segment[1][1]]), max([segment[0][1], segment[1][1]])]
-        elif segment[0][1] == segment[1][1]:
-            reducedSegment = [min([segment[0][0], segment[1][0]]), max([segment[0][0], segment[1][0]])]
-             
-        return reducedSegment[1] - reducedSegment[0]
-        
-    def segmentsIntersects(self, segment1, segment2):
-#         segment1, segment2 --- одномерные отрезки, вовсе необязательно, что segmentI[0] <= segmentI[1], I = 1,2!
-#         Делаем так, чтобы в обоих отрезках левая граница была <= правой
-        if len(segment1) != 2 or len(segment2) != 2:
-            raise AttributeError("Lists 'segment1' and 'segment2' in __segmentIntersections() should contain exactly two elements!")
-        if segment1[0] > segment1[1]:
-            segment1.reverse()
-        if segment2[0] > segment2[1]:
-            segment2.reverse()
-        first = segment1[0] >= segment2[0] and segment1[0] <= segment2[1]
-        second = segment1[1] >= segment2[0] and segment1[1] <= segment2[1]
-        third = segment2[1] >= segment1[0] and segment2[1] <= segment1[1]
-        fourth = segment2[0] >= segment1[0] and segment2[0] <= segment1[1]
-        if first or second or third or fourth:
-            return True
-        else:
-            return False
-     
-    def determineAllPairsOfConditions(self, resultCondList1, resultCondList2, defaultBoundaryConditions):
-#         Для каждого из условий в resultCondList1 ищет все условия из resultCondList2
-        outputConditionList = list()
-        for boundaryCond1 in resultCondList1:
-#             Это список отрезков, пересекающихся с отрезком для boundaryCond1. Друг с другом они не пересекаются,
-#             поэтому их можно упорядочить по левой границе.
-            listOfSegments = list()
-#             Может получится так, что в resultCondList1 лежит хотя бы одно краевое условие,
-#             а в resultCondList2 ничего нет. Тогда надо сгенерить пару с дефолтным краевым условием.
-            if len(resultCondList2) > 0:
-                for boundaryCond2 in resultCondList2:
-                    if self.segmentsIntersects(boundaryCond1[3], boundaryCond2[3]):
-                        listOfSegments.extend([boundaryCond2[3]])
-                        outputConditionList.extend([((boundaryCond1[0],boundaryCond1[4]), (boundaryCond2[0],boundaryCond2[4]))])
-    #                 Сортируем массив отрезков по левой границе
-                    listOfSegments.sort(key = lambda lst : lst[0])
-                    length = len(listOfSegments)
-    #                 Идем по всему списку отрезков и если есть хотя бы 2 не касающихся отрезка,
-    #                 то составляем пару (граничное условие, дефолтное граничное условие)
-                    if length > 0:
-                        if listOfSegments[0][0] <= boundaryCond1[3][0] and listOfSegments[length - 1][1] >= boundaryCond1[3][1]:
-                            for i,segment in enumerate(listOfSegments):
-                                if i < length - 1 and segment[1] < listOfSegments[i+1][0]:
-                                    outputConditionList.extend([((boundaryCond1[0],boundaryCond1[4]), (defaultBoundaryConditions,1))])
-                                    break
-                        else:
-                            outputConditionList.extend([((boundaryCond1[0],boundaryCond1[4]), (defaultBoundaryConditions,1))])
+                    rect = [region.xfrom, region.xto, region.yfrom, region.yto]
+                    
+                domainAfterSpliting = newDomainAfterSpliting
+                newDomainAfterSpliting = []
+                cntOfIntersections = 0
+                for rectWithEq in domainAfterSpliting:
+                    #посмотрим, пересекаются ли регионы. Если да, то создадим условие для пересечения. Сделаем сплит и, пока
+                    #не закончатся граничные условия либо пока разность не станет пуста, будем искать пересечения и сплитить.
+                    #В конце посмотрим, пуста ли разность. Если нет, то создадим дефолтное Неймановское условие
+                    intersection = intersectionOfRects(rectWithEq, rect)
+                    if len(intersection) == 0:
+                        continue
+                    cntOfIntersections += 1
+                    #Здесь, разумеется, будут повторные названия функций. Это учтется потом
+                    ranges = self.determine3DCoordinatesForBCond(block, side, intersection)
+                    #Находим все ребра (и их координаты относительно ребра) и углы, которых касается прямоугольник
+                    edges, vertexes = self.createVertexAndEdgeLsts(intersection, boundary, edgesNames, vertexesNames)
+                    #Создаем либо соединение, либо граничное условие
+                    if isinstance(region, InterconnectRegion3D):
+                        funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(region.side) + "_Eqn" + str(equationNum) + "_SBlock" + str(region.secondaryBlockNumber)
+                        condition = Connection(region.firstIndex, region.secondIndex, side, ranges, equationNum, equation, funcName)
+                        condition.setSecondaryBlockIdx(region.secondaryBlockNumber)
                     else:
-                        outputConditionList.extend([((boundaryCond1[0],boundaryCond1[4]), (defaultBoundaryConditions,1))])
+                        values, btype, boundNumber, funcName = self.setDirichletOrNeumann(region, blockNumber, side, equationNum)
+                        condition = BoundCondition(values, btype, side, ranges, boundNumber, equationNum, equation, funcName)
+                    #У него создаем поля с именами и координатами ребер и углов, которых касается прямоугольник
+                    condition.setEdgesAndVertexesIn3D(edges, vertexes)
+                    bCondList.append(condition)
+                    #Находим кусок области, не затронутый граничным условием (соединением)
+                    rectsAfterSpliting = splitBigRect(rectWithEq, intersection)
+                    #Если на всем очередном прямоугольнике задано граничное условие, то переходим к следующему
+                    if len(rectsAfterSpliting) == 0:
+                        continue
+                    newDomainAfterSpliting.extend(rectsAfterSpliting)
+                #newDomainAfterSpliting может быть пуст в 2 случаях:
+                #1. Если среди первых нескольких граничных регионов нашлись те, которые покрывают весь dRect;
+                #2. Если очередное граничное условие не имеет ни одного пересечения с каждой из областей в domainAfterSpliting;
+                if len(newDomainAfterSpliting) != 0:
+                    continue
+                #В случае 1 досрочно прервается цикл по граничным регионам
+                if cntOfIntersections > 0:
+                    break
+                #В случае 2 надо сохранить остаток области dRect
+                else:
+                    newDomainAfterSpliting = domainAfterSpliting
+            #После цикла по всем граничным регионам от прямоугольника dRect должна остаться область,
+            #которую не затронули граничные условия. Если эта область не пуста, то генерируем для каждого прямоугольника
+            #из этой области дефолтное условие Неймана.
+            if len(newDomainAfterSpliting) != 0:
+                values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equation, equationNum)
+                for domain in newDomainAfterSpliting:
+                    edges, vertexes = self.createVertexAndEdgeLsts(domain, boundary, edgesNames, vertexesNames)
+                    ranges = self.determine3DCoordinatesForBCond(block, side, domain)
+                    defCondition = BoundCondition(values, btype, side, ranges, boundNumber, equationNum, equation, funcName)
+                    defCondition.setEdgesAndVertexesIn3D(edges, vertexes)
+                    bCondList.append(defCondition)
+        #На выходе каждый экземпляр граничного условия содержит инфу об углах и ребрах; этим надо пользоваться при генерировании условий на них
+        return bCondList
+    
+    def determineSpaceOnTheBoundWithDefaultEquation(self, block, side):
+        #Так как в 3D граница -- это прямоугольник, то функция определяет прямоугольные области
+        #внутри этого прямоугольника, на которых задано уравнение по умолчанию;
+        #Возвращает список таких областей и список областей на границе с уравнениями не по умолчанию
+        sideCharacteristic, regionCharacteristic, c1from, c1to, c2from, c2to = self.sideConfigs1(block, side)
+        sidec1from, sidec1to, sidec2from, sidec2to = self.sideConfigs2(block, side)
+        #Сначала составим список областей с уравнениями не по умолчанию
+        rectsWithNondefaultEquations = []
+        for eqRegion in block.equationRegions:
+            if regionCharacteristic(eqRegion) == sideCharacteristic:
+                #Исключение ситуации, когда проекция региона уравнения на границу является не прямоугольником, а прямой
+                if c1from(eqRegion) != c1to(eqRegion) and c2from(eqRegion) != c2to(eqRegion):
+                    equationNum = eqRegion.equationNumber
+                    equation = self.equations[equationNum]
+                    ranges = [c1from(eqRegion), c1to(eqRegion), c2from(eqRegion), c2to(eqRegion)]
+                    rectsWithNondefaultEquations.append({'ranges': ranges, 'eNum': equationNum, 'e': equation})
+        #Теперь составляем список областей с уравнениями по умолчанию
+        rectsWithDefaultEquation = [[sidec1from, sidec1to, sidec2from, sidec2to]]
+        iteratedRectsWithDefaultEquation = []
+        for smallRect in rectsWithNondefaultEquations:
+            for bigRect in rectsWithDefaultEquation:
+                #Если smallRect полностью лежит в bigRect, то intersection будет совпадать со smallRect
+                sRect = smallRect['ranges']
+                intersection = intersectionOfRects(bigRect, sRect)
+                if len(intersection) == 0:
+                    iteratedRectsWithDefaultEquation.append(bigRect)
+                else:
+                    newRects = splitBigRect(bigRect, intersection)
+                    #Может оказаться так, что весь внешний прямоугольник совпал с внутренним,
+                    #значит, на нем задано недефолтное уравнение и его добавлять не надо
+                    if len(newRects) != 0:
+                        iteratedRectsWithDefaultEquation.extend(newRects)
+            rectsWithDefaultEquation = list(iteratedRectsWithDefaultEquation)
+        #Здесь rectsWithDefaultEquation это просто список границ регионов, а rectsWithNondefaultEquations это список словарей,
+        #где есть поле с границами региона, а также номер уравнения, и само уравнение, список ребер и углов, которых касается прямоугольник
+        result = rectsWithNondefaultEquations
+        defEquationNum = block.defaultEquation
+        defEquation = self.equations[defEquationNum]
+        for rect in rectsWithDefaultEquation:
+            result.append({'ranges': rect, 'eNum': defEquationNum, 'e': defEquation})
+        return result#rectsWithDefaultEquation, rectsWithNondefaultEquations
+    
+    def sideConfigs1(self, block, side):
+        if side / 2 == 0:
+            c1from = lambda region: region.yfrom
+            c1to = lambda region: region.yto
+            c2from = lambda region: region.zfrom
+            c2to = lambda region: region.zto
+            if side == 0:
+                sideCharacteristic = 0
+                regionCharacteristic = lambda region: region.xfrom
             else:
-                outputConditionList.extend([((boundaryCond1[0],boundaryCond1[4]), (defaultBoundaryConditions,1))])
-        return outputConditionList
+                sideCharacteristic = block.sizeX
+                regionCharacteristic = lambda region: region.xto
+        elif side / 2 == 1:
+            c1from = lambda region: region.xfrom
+            c1to = lambda region: region.xto
+            c2from = lambda region: region.zfrom
+            c2to = lambda region: region.zto
+            if side == 2:
+                sideCharacteristic = 0
+                regionCharacteristic = lambda region: region.yfrom
+            else:
+                sideCharacteristic = block.sizeY
+                regionCharacteristic = lambda region: region.yto
+        else:
+            c1from = lambda region: region.xfrom
+            c1to = lambda region: region.xto
+            c2from = lambda region: region.yfrom
+            c2to = lambda region: region.yto
+            if side == 4:
+                sideCharacteristic = 0
+                regionCharacteristic = lambda region: region.zfrom
+            else:
+                sideCharacteristic = block.sizeZ
+                regionCharacteristic = lambda region: region.zto
+        return sideCharacteristic, regionCharacteristic, c1from, c1to, c2from, c2to
+    
+    def sideConfigs2(self, block, side):
+        if side / 2 == 0:
+            sidec1from = 0
+            sidec1to = block.sizeY
+            sidec2from = 0
+            sidec2to = block.sizeZ
+        elif side / 2 == 1:
+            sidec1from = 0
+            sidec1to = block.sizeX
+            sidec2from = 0
+            sidec2to = block.sizeZ
+        else:
+            sidec1from = 0
+            sidec1to = block.sizeX
+            sidec2from = 0
+            sidec2to = block.sizeY
+        return sidec1from, sidec1to, sidec2from, sidec2to
+    
+    def sideConfigs3(self, block, side):
+        if side == 0:
+            #Правила именования ребер и углов и размещения их в списке:
+            #1. Цифры в названии расположены по возрастанию;
+            #2. Порядок их расположения в массиве такой же, как при обходе двумерного блока
+            edgesNames = ['02', '03', '04', '05']
+            vertexesNames = ['024', '034', '025', '035']
+        elif side == 1:
+            edgesNames = ['12', '13', '14', '15']
+            vertexesNames = ['124', '134', '125', '135']
+        elif side == 2:
+            edgesNames = ['02', '12', '24', '25']
+            vertexesNames = ['024', '124', '025', '125']
+        elif side == 3:
+            edgesNames = ['03', '13', '34', '35']
+            vertexesNames = ['034', '134', '035', '135']
+        elif side == 4:
+            edgesNames = ['04', '14', '24', '34']
+            vertexesNames = ['024', '124', '034', '134']
+        else:
+            edgesNames = ['05', '15', '25', '35']
+            vertexesNames = ['025', '125', '035', '135']
+        return edgesNames, vertexesNames
+    
+    def createVertexAndEdgeLsts(self, rect, boundary, edgesNames, vertexesNames):
+        #Составляет списки ребер и углов, которых касается граничное условие
+        #Ребра будут возвращаться в формате списка с элементами вида {"название": [xfrom, xto]} (т.е. координаты относительно ребра!!!)
+        edges = {}
+        vertexes = []
+        if rect[0] == boundary[0]:
+            edges.update({edgesNames[0]: [rect[2], rect[3]]})
+            if rect[2] == boundary[2]:
+                vertexes.append(vertexesNames[0])
+                edges.update({edgesNames[2]: [rect[0], rect[1]]})
+            if rect[3] == boundary[3]:
+                vertexes.append(vertexesNames[2])
+                edges.update({edgesNames[3]: [rect[0], rect[1]]})
+        if rect[2] == boundary[2]:
+            if edgesNames[2] not in edges:
+                edges.update({edgesNames[2]: [rect[0], rect[1]]})
+            if rect[1] == boundary[1]:
+                vertexes.append(vertexesNames[1])
+                edges.update({edgesNames[1]: [rect[2], rect[3]]})
+        if rect[1] == boundary[1]:
+            if edgesNames[1] not in edges:
+                edges.update({edgesNames[1]: [rect[2], rect[3]]})
+            if rect[3] == boundary[3]:
+                vertexes.append(vertexesNames[3])
+                if edgesNames[3] not in edges:
+                    edges.update({edgesNames[3]: [rect[0], rect[1]]})
+        if rect[3] == boundary[3]:
+            if edgesNames[3] not in edges:
+                edges.update({edgesNames[3]: [rect[0], rect[1]]})
+        return edges, vertexes
+
+    def determine3DCoordinatesForBCond(self, block, side, coordinates2D):
+        if side == 0:
+            return [[0, 0], [coordinates2D[0], coordinates2D[1]], [coordinates2D[2], coordinates2D[3]]]
+        elif side == 1:
+            return [[block.sizeX, block.sizeX], [coordinates2D[0], coordinates2D[1]], [coordinates2D[2], coordinates2D[3]]]
+        elif side == 2:
+            return [[coordinates2D[0], coordinates2D[1]], [0, 0], [coordinates2D[2], coordinates2D[3]]]
+        elif side == 3:
+            return [[coordinates2D[0], coordinates2D[1]], [block.sizeY, block.sizeY], [coordinates2D[2], coordinates2D[3]]]
+        elif side == 4:
+            return [[coordinates2D[0], coordinates2D[1]], [coordinates2D[2], coordinates2D[3]], [0, 0]]
+        else:
+            return [[coordinates2D[0], coordinates2D[1]], [coordinates2D[2], coordinates2D[3]], [block.sizeZ, block.sizeZ]]
+    
+    def generateBoundsAndIcs(self, block, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst): 
+        parser = MathExpressionParser()
+        self.parseBoundaryConditions(totalBCondLst, parser)
+        intro = '\n//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
+        outputStr = [intro]
+        #Создаем список условий на вершины, затем генерируем функции на вершины. В конце добавляем всю инфу в blockFunctionMap
+        parsedVertexCondList = self.createVertexCondLst(totalBCondLst)
+        outputStr.append(self.generateVertexFunctions(blockNumber, arrWithFunctionNames, parsedVertexCondList))      
+        bfmLen = len(arrWithFunctionNames)
+        blockFunctionMap.update({"v024":bfmLen - 8, "v124":bfmLen - 7, "v034":bfmLen - 6, "v134":bfmLen - 5, "v025":bfmLen - 4, "v125":bfmLen - 3, "v035":bfmLen - 2, "v135":bfmLen - 1 })
+        #Создаем список условий на ребра, генерируем функции на ребра и добавляем всю инфу в blockFunctionMap
+        parsedEdgeCondList = self.createEdgeCondLst(totalBCondLst)
+        #После работы этой функции словарь parsedEdgeCondList изменится и будет для каждого ребра содержать
+        #список с его условиями. Этот список готов для занесения без изсенений в blockFunctionMap
+        outputStr.append(self.generateEdgesFunctions(block, blockNumber, arrWithFunctionNames, parsedEdgeCondList))
+        for edge in parsedEdgeCondList:
+            blockFunctionMap.update({"edge" + edge: parsedEdgeCondList[edge]})
+        #Генерируем все краевые условия для обычных границ
+        for num, bCondLst in enumerate(totalBCondLst):
+            side = 4 * (num == 0) + 5 * (num == 1) + 2 * (num == 2) + 3 * (num == 3) + 1 * (num == 5)
+            boundaryName = determineNameOfBoundary(side)
+            #subdictionary for every side 
+            sideLst = []
+            sideName = "side"+str(side)          
+            #Этот список нужен для исключения повторяющихся функций
+            boundAndEquatNumbersList = []
+            for condition in bCondLst:
+                if not isinstance(condition, Connection):
+                    #Если для граничного условия с таким номером функцию уже создали, то заново создавать не надо.
+                    if (condition.boundNumber, condition.equationNumber) in boundAndEquatNumbersList:
+                        ranges = getRanges([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0], block.sizeX], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1], block.sizeY], [condition.ranges[2][0], condition.ranges[2][1], self.gridStep[2], block.sizeZ])
+                        sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
+                        continue
+                    boundAndEquatNumbersList.append((condition.boundNumber, condition.equationNumber))
+                    outputStr.append('//Boundary condition for boundary ' + boundaryName + '\n')
+                    #Если надо сгенерить граничное условие
+                    if condition.btype == 0:
+                        outputStr.append(self.generateDirichlet(blockNumber, condition.funcName, condition))
+                    else:
+                        pBCL = [condition]
+                        outputStr.append(self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL))
+                #Если надо сгенерить соединение блоков
+                else:
+                    outputStr.append('//Interconnect for boundary ' + boundaryName + '\n')
+                    pBCL = [condition]
+                    outputStr.append(self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL))
+                arrWithFunctionNames.append(condition.funcName)
+                ranges = getRanges([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0], block.sizeX], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1], block.sizeY], [condition.ranges[2][0], condition.ranges[2][1], self.gridStep[2], block.sizeZ])
+                sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
+            blockFunctionMap.update({sideName:sideLst}) 
+        return ''.join(outputStr)
+    
+    def createVertexCondLst(self, totalBCondLst):
+        #Составляет список условий на углы блока. Одно условие - это массив из трех граничных условий
+        #В эту функцию передаются условия с уже распарсенными значениями
+        blockVertexes = ['024', '124', '034', '134', '025', '125', '035', '135']
+        listOfConditionsForVertexes = []
+        
+        for vertex in blockVertexes:
+            conditionForVertex = []
+            for BCondLst in totalBCondLst:
+                for bCond in BCondLst:
+                    if vertex in bCond.vertexes:
+                        conditionForVertex.append(bCond)
+                        break
+                if len(conditionForVertex) == 3:
+                    listOfConditionsForVertexes.append(conditionForVertex)
+                    break
+                
+        return listOfConditionsForVertexes
+    
+    def generateVertexFunctions(self, blockNumber, arrWithFunctionNames, parsedVertexCondList):
+        # parsedVertexCondList --- это список троек [[условие 1, условие 2, условие 3], [условие 1, условие 2, условие 3], ...]
+        output = list()
+        for vertexCond in parsedVertexCondList:
+            parsedEqs = vertexCond[0].parsedEquation
+            unknownVars = vertexCond[0].unknownVars
+            
+            bName1 = determineNameOfBoundary(vertexCond[0].side)
+            bName2 = determineNameOfBoundary(vertexCond[1].side)
+            bName3 = determineNameOfBoundary(vertexCond[2].side)
+            funcIndex = str(vertexCond[0].side) + '_' + str(vertexCond[1].side) + '_' + str(vertexCond[2].side) + '__Eqn' + str(vertexCond[0].equationNumber)
+            #Ни на одной из трех границ нет соединения, затрагивающего угол
+            if not isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection) and not isinstance(vertexCond[2], Connection):
+#                 if vertexCond[0].boundNumber == vertexCond[1].boundNumber == vertexCond[2].boundNumber == -1:
+#                     output.append('//Default boundary condition for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumann__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+                if vertexCond[0].btype == vertexCond[1].btype == vertexCond[2].btype == 1:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Neumann__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+                elif vertexCond[0].btype == 0:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
+                elif vertexCond[1].btype == 0:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
+                else:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[2])])
+            #На одной из трех границ есть соединение, затрагивающее угол. Вариант 1
+            elif isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection) and not isinstance(vertexCond[2], Connection):
+#                 if vertexCond[1].boundNumber == vertexCond[2].boundNumber == -1:
+#                     output.append('//Two default boundary conditions and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'TwiceDefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+#                 elif vertexCond[1].boundNumber == -1 and vertexCond[2].btype == 1 or vertexCond[1].btype == 1 and vertexCond[2].boundNumber == -1:
+#                     output.append('//Default boundary condition, nondefault boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndNondefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+                if vertexCond[1].btype == 1 and vertexCond[2].btype == 1:
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+                elif vertexCond[1].btype == 0:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
+                else:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[2])])
+            #На одной из трех границ есть соединение, затрагивающее угол. Вариант 2        
+            elif not isinstance(vertexCond[0], Connection) and isinstance(vertexCond[1], Connection) and not isinstance(vertexCond[2], Connection):
+#                 if vertexCond[0].boundNumber == vertexCond[2].boundNumber == -1:
+#                     output.append('//Two default boundary conditions and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'TwiceDefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+#                 elif vertexCond[0].boundNumber == -1 and vertexCond[2].boundNumber == 1 or vertexCond[0].boundNumber == 1 and vertexCond[2].boundNumber == -1:
+#                     output.append('//Default boundary condition, nondefault boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndNondefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+                if vertexCond[0].btype == 1 and vertexCond[2].btype == 1:
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+                elif vertexCond[0].btype == 0:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
+                else:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[2])])
+            #На одной из трех границ есть соединение, затрагивающее угол. Вариант 3        
+            elif not isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection) and isinstance(vertexCond[2], Connection):
+#                 if vertexCond[1].boundNumber == vertexCond[0].boundNumber == -1:
+#                     output.append('//Two default boundary conditions and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'TwiceDefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+#                 elif vertexCond[1].boundNumber == -1 and vertexCond[0].boundNumber == 1 or vertexCond[1].boundNumber == 1 and vertexCond[0].boundNumber == -1:
+#                     output.append('//Default boundary condition, nondefault boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndNondefaultNeumannAndInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+                if vertexCond[1].btype == 1 and vertexCond[0].btype == 1:
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+                elif vertexCond[1].btype == 0:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
+                else:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
+            #На двух из трех границ есть соединения, затрагивающие угол. Вариант 1
+            elif isinstance(vertexCond[0], Connection) and isinstance(vertexCond[1], Connection) and not isinstance(vertexCond[2], Connection):
+#                 if vertexCond[2].boundNumber == -1:
+#                     output.append('//Default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndTwiceInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and double interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+                if vertexCond[2].btype == 1:
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndDoubleInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+                else:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[2])])
+            #На двух из трех границ есть соединения, затрагивающие угол. Вариант 2        
+            elif isinstance(vertexCond[0], Connection) and not isinstance(vertexCond[1], Connection) and isinstance(vertexCond[2], Connection):
+#                 if vertexCond[1].boundNumber == -1:
+#                     output.append('//Default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndTwiceInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and double interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+                if vertexCond[1].btype == 1:
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndDoubleInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+                else:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[1])])
+            #На двух из трех границ есть соединения, затрагивающие угол. Вариант 3
+            elif not isinstance(vertexCond[0], Connection) and isinstance(vertexCond[1], Connection) and isinstance(vertexCond[2], Connection):
+#                 if vertexCond[0].boundNumber == -1:
+#                     output.append('//Default boundary condition and twice interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+#                     nameForVertex = 'Block' + str(blockNumber) + 'DefaultNeumannAndTwiceInterconnect__Vertex' + funcIndex
+#                     output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+#                     arrWithFunctionNames.append(nameForVertex)
+#                     continue
+                output.append('//Boundary condition and double interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+                if vertexCond[0].btype == 1:
+                    nameForVertex = 'Block' + str(blockNumber) + 'NeumannAndDoubleInterconnect__Vertex' + funcIndex
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+                else:
+                    nameForVertex = 'Block' + str(blockNumber) + 'Dirichlet__Vertex' + funcIndex
+                    output.extend([self.generateDirichlet(blockNumber, nameForVertex, vertexCond[0])])
+            #На всех трех границах есть соединения, затрагивающие угол
+            else:
+                output.append('//Interconnect for Vertex between boundaries ' + bName1 + ', ' + bName2 + ' and ' + bName3 + '\n')
+                nameForVertex = 'Block' + str(blockNumber) + 'Interconnect__Vertex' + funcIndex
+                output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForVertex, parsedEqs, unknownVars, vertexCond)])
+            
+            arrWithFunctionNames.append(nameForVertex)
+        return ''.join(output)
+
+    def createEdgeCondLst(self, totalBCondLst):
+        #Формирует всевозможные условия на ребра (пары граничных условий) вместе с одномерными координатами (относительно ребра)
+        #области, на которой каждое условие задано
+        #В эту функцию передаются условия с уже распарсенными значениями
+        blockEdges = {'04': [], '05': [], '14': [], '15': [], '02': [], '03': [], '12': [], '13': [], '24': [], '25': [], '34': [], '35': []}
+        #Этот словарь задает соответствие вида {'сторона': индекс массива граничных условий в массиве totalBCondLst}
+        correspondenceBetweenIndicesAndSides = {'4': 0, '5': 1, '2': 2, '3': 3, '0': 4, '1': 5}
+        for edge in blockEdges:
+            fSide = edge[0]
+            sSide = edge[1]
+            fIdx = correspondenceBetweenIndicesAndSides[fSide]
+            sIdx = correspondenceBetweenIndicesAndSides[sSide]
+            conditionsOnFirstSide = []
+            conditionsOnSecondSide = []
+            for bCond in totalBCondLst[fIdx]:
+                if edge in bCond.edges:
+                    conditionsOnFirstSide.append(bCond)
+            for bCond in totalBCondLst[sIdx]:
+                if edge in bCond.edges:
+                    conditionsOnSecondSide.append(bCond)
+            blockEdges[edge] = self.determineAllPairsOfConditionsForEdge(conditionsOnFirstSide, conditionsOnSecondSide, edge)
+        return blockEdges
+    
+    def determineAllPairsOfConditionsForEdge(self, conditionsOnFirstSide, conditionsOnSecondSide, edge):
+        #Функция создает условие на ребро (= пара граничных условий) + одномерные координаты места, на котором оно задано
+        allPairs = []
+        for condition1 in conditionsOnFirstSide:
+            for condition2 in conditionsOnSecondSide:
+                segment1 = condition1.edges[edge]
+                segment2 = condition2.edges[edge]
+                intersection = self.segmentsIntersects(segment1, segment2)
+                if len(intersection) == 0:
+                    continue
+                allPairs.append((condition1, condition2, intersection))   
+        return allPairs
+    
+    def generateEdgesFunctions(self, block, blockNumber, arrWithFunctionNames, parsedEdgeCondList):
+        #Генерирует все функции для всех ребер, создает словарь типа blockFunctionMap, где для каждого ребра указан список,
+        #состоящий из списков вида [№ функции, границы]
+        output = list()
+        for edge in parsedEdgeCondList:
+            boundAndEquatNumberList = []
+            listOfConditionsForEdge = []
+            for edgeCond in parsedEdgeCondList[edge]:
+                parsedEqs = edgeCond[0].parsedEquation
+                unknownVars = edgeCond[0].unknownVars
+                ranges1D = edgeCond[2]
+                ranges3D = self.determine3DCoordinatesForCondOnEdge(block, ranges1D, edge)
+                ranges = getRanges([ranges3D[0], ranges3D[1], self.gridStep[0], block.sizeX], [ranges3D[2], ranges3D[3], self.gridStep[1], block.sizeY], [ranges3D[4], ranges3D[5], self.gridStep[2], block.sizeZ])
+                
+                boundaryName1 = determineNameOfBoundary(edgeCond[0].side)
+                boundaryName2 = determineNameOfBoundary(edgeCond[1].side)
+                fBCond = self.createSomeName(edgeCond[0])
+                sBCond = self.createSomeName(edgeCond[1])
+                funcIndex = str(edgeCond[0].side) + '_' + str(edgeCond[1].side) + '__Eqn' + str(edgeCond[0].equationNumber) + '__FBCond' + fBCond + '__SBCond' + sBCond
+                #Ни на одной из двух границ нет соединений, касающихся ребра
+                if not isinstance(edgeCond[0], Connection) and not isinstance(edgeCond[1], Connection):
+#                     if edgeCond[0].boundNumber == edgeCond[1].boundNumber == -1:
+#                         nameForEdge = 'Block' + str(blockNumber) + 'DefaultNeumann__Edge' + funcIndex
+#                         if (edgeCond[0].boundNumber, edgeCond[1].boundNumber, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+#                             listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+#                             continue
+#                         boundAndEquatNumberList.append((edgeCond[0].boundNumber, edgeCond[1].boundNumber, edgeCond[0].equationNumber))
+#                         output.append('//Default boundary condition for Edge between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+#                         output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForEdge, parsedEqs, unknownVars, [edgeCond[0], edgeCond[1]])])
+#                         arrWithFunctionNames.append(nameForEdge)
+#                         listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+#                         continue
+                    output.append('//Boundary condition for Edge between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                    if edgeCond[0].btype == edgeCond[1].btype == 1:
+                        nameForEdge = 'Block' + str(blockNumber) + 'Neumann__Edge' + funcIndex
+                        if (edgeCond[0].boundNumber, edgeCond[1].boundNumber, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+                            listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+                            continue
+                        boundAndEquatNumberList.append((edgeCond[0].boundNumber, edgeCond[1].boundNumber, edgeCond[0].equationNumber))
+                        output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForEdge, parsedEqs, unknownVars, [edgeCond[0], edgeCond[1]])])
+                    elif edgeCond[0].btype == 0:
+                        nameForEdge = 'Block' + str(blockNumber) + 'Dirichlet__Edge' + funcIndex
+                        if (edgeCond[0].boundNumber, edgeCond[1].boundNumber, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+                            listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+                            continue
+                        boundAndEquatNumberList.append((edgeCond[0].boundNumber, edgeCond[1].boundNumber, edgeCond[0].equationNumber))
+                        output.extend([self.generateDirichlet(blockNumber, nameForEdge, edgeCond[0])])
+                    else:
+                        nameForEdge = 'Block' + str(blockNumber) + 'Dirichlet__Edge' + funcIndex
+                        if (edgeCond[0].boundNumber, edgeCond[1].boundNumber, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+                            listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+                            continue
+                        boundAndEquatNumberList.append((edgeCond[0].boundNumber, edgeCond[1].boundNumber, edgeCond[0].equationNumber))
+                        output.extend([self.generateDirichlet(blockNumber, nameForEdge, edgeCond[1])])
+                #На одной из двух границ есть соединения, касающиеся ребра. Вариант 1        
+                elif isinstance(edgeCond[0], Connection) and not isinstance(edgeCond[1], Connection):
+#                     if edgeCond[1].boundNumber == -1:
+#                         nameForEdge = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Edge' + funcIndex
+#                         if (edgeCond[0].secondaryBlockIdx, edgeCond[1].boundNumber, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+#                             listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+#                             continue
+#                         boundAndEquatNumberList.append((edgeCond[0].secondaryBlockIdx, edgeCond[1].boundNumber, edgeCond[0].equationNumber))
+#                         output.append('//Default boundary condition and interconnect for Edge between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+#                         output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForEdge, parsedEqs, unknownVars, [edgeCond[0], edgeCond[1]])])
+#                         arrWithFunctionNames.append(nameForEdge)
+#                         listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+#                         continue
+                    output.append('//Boundary condition and interconnect for Edge between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                    if edgeCond[1].btype == 1:
+                        nameForEdge = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Edge' + funcIndex
+                        if (edgeCond[0].secondaryBlockIdx, edgeCond[1].boundNumber, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+                            listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+                            continue
+                        boundAndEquatNumberList.append((edgeCond[0].secondaryBlockIdx, edgeCond[1].boundNumber, edgeCond[0].equationNumber))
+                        output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForEdge, parsedEqs, unknownVars, [edgeCond[0], edgeCond[1]])])
+                    else:
+                        nameForEdge = 'Block' + str(blockNumber) + 'Dirichlet__Edge' + funcIndex
+                        if (edgeCond[0].secondaryBlockIdx, edgeCond[1].boundNumber, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+                            listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+                            continue
+                        boundAndEquatNumberList.append((-1, edgeCond[1].boundNumber, edgeCond[0].equationNumber))
+                        output.extend([self.generateDirichlet(blockNumber, nameForEdge, edgeCond[1])])
+                #На одной из двух границ есть соединения, касающиеся ребра. Вариант 2        
+                elif not isinstance(edgeCond[0], Connection) and isinstance(edgeCond[1], Connection):
+#                     if edgeCond[0].boundNumber == -1:
+#                         nameForEdge = 'Block' + str(blockNumber) + 'DefaultNeumannAndInterconnect__Edge' + funcIndex
+#                         if (edgeCond[0].boundNumber, edgeCond[1].secondaryBlockIdx, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+#                             listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+#                             continue
+#                         boundAndEquatNumberList.append((edgeCond[0].boundNumber, edgeCond[1].secondaryBlockIdx, edgeCond[0].equationNumber))
+#                         output.append('//Default boundary condition and interconnect for Edge between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+#                         output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForEdge, parsedEqs, unknownVars, [edgeCond[0], edgeCond[1]])])
+#                         arrWithFunctionNames.append(nameForEdge)
+#                         listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+#                         continue
+                    output.append('//Boundary condition and interconnect for Edge between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                    if edgeCond[0].btype == 1:
+                        nameForEdge = 'Block' + str(blockNumber) + 'NeumannAndInterconnect__Edge' + funcIndex
+                        if (edgeCond[0].boundNumber, edgeCond[1].secondaryBlockIdx, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+                            listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+                            continue
+                        boundAndEquatNumberList.append((edgeCond[0].boundNumber, edgeCond[1].secondaryBlockIdx, edgeCond[0].equationNumber))
+                        output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForEdge, parsedEqs, unknownVars, [edgeCond[0], edgeCond[1]])])
+                    else:
+                        nameForEdge = 'Block' + str(blockNumber) + 'Dirichlet__Edge' + funcIndex
+                        if (edgeCond[0].boundNumber, edgeCond[1].secondaryBlockIdx, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+                            listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+                            continue
+                        boundAndEquatNumberList.append((edgeCond[0].boundNumber, edgeCond[1].secondaryBlockIdx, edgeCond[0].equationNumber))
+                        output.extend([self.generateDirichlet(blockNumber, nameForEdge, edgeCond[0])])
+                #На обеих границах есть соединения, касающиеся ребра
+                else:
+                    nameForEdge = 'Block' + str(blockNumber) + 'Interconnect__Edge' + funcIndex
+                    if (edgeCond[0].secondaryBlockIdx, edgeCond[1].secondaryBlockIdx, edgeCond[0].equationNumber) in boundAndEquatNumberList:
+                        listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+                        continue
+                    boundAndEquatNumberList.append((edgeCond[0].secondaryBlockIdx, edgeCond[1].secondaryBlockIdx, edgeCond[0].equationNumber))
+                    output.append('//Interconnect for Edge between boundaries ' + boundaryName1 + ' and ' + boundaryName2 + '\n')
+                    output.extend([self.generateNeumannOrInterconnect(blockNumber, nameForEdge, parsedEqs, unknownVars, [edgeCond[0], edgeCond[1]])])
+                
+                arrWithFunctionNames.append(nameForEdge)
+                listOfConditionsForEdge.append([arrWithFunctionNames.index(nameForEdge)] + ranges)
+            parsedEdgeCondList[edge] = listOfConditionsForEdge
+        return ''.join(output)
+    
+    def createSomeName(self, condition):
+        if isinstance(condition, Connection):
+            return 'Block' + str(condition.secondaryBlockIdx)
+        if condition.boundNumber == -1:
+            return 'Def'
+        else:
+            return str(condition.boundNumber)
+    
+    def determine3DCoordinatesForCondOnEdge(self, block, condRangesOnEdge, edge):
+        if edge == '04':
+            return [0, 0, condRangesOnEdge[0], condRangesOnEdge[1], 0, 0]
+        elif edge == '05':
+            return [0, 0, condRangesOnEdge[0], condRangesOnEdge[1], block.sizeZ, block.sizeZ]
+        elif edge == '14':
+            return [block.sizeX, block.sizeX, condRangesOnEdge[0], condRangesOnEdge[1], 0, 0]
+        elif edge == '15':
+            return [block.sizeX, block.sizeX, condRangesOnEdge[0], condRangesOnEdge[1], block.sizeZ, block.sizeZ]
+        elif edge == '02':
+            return [0, 0, 0, 0, condRangesOnEdge[0], condRangesOnEdge[1]]
+        elif edge == '03':
+            return [0, 0, block.sizeY, block.sizeY, condRangesOnEdge[0], condRangesOnEdge[1]]
+        elif edge == '12':
+            return [block.sizeX, block.sizeX, 0, 0, condRangesOnEdge[0], condRangesOnEdge[1]]
+        elif edge == '13':
+            return [block.sizeX, block.sizeX, block.sizeY, block.sizeY, condRangesOnEdge[0], condRangesOnEdge[1]]
+        elif edge == '24':
+            return [condRangesOnEdge[0], condRangesOnEdge[1], 0, 0, 0, 0]
+        elif edge == '34':
+            return [condRangesOnEdge[0], condRangesOnEdge[1], block.sizeY, block.sizeY, 0, 0]
+        elif edge == '25':
+            return [condRangesOnEdge[0], condRangesOnEdge[1], 0, 0, block.sizeZ, block.sizeZ]
+        elif edge == '35':
+            return [condRangesOnEdge[0], condRangesOnEdge[1], block.sizeY, block.sizeY, block.sizeZ, block.sizeZ]
      
-    def algorithmForRib(self, ribCoordinateMin, ribCoordinateMax, boundary1CondList, boundary2CondList, defaultBoundaryConditions):
-# Функция возвращает список кортежей --- пар условий.
-# ribCoordinateMin = (x,y,z_min), ribCoordinateMax = (x,y,z_max) или x_min x_max или y_min y_max
-# Каждый из списков имеет вид [(распарсенное условие 1, [4 координаты углов части 1 границы], Тип условия),
-#                              (распарсенное условие 2, [4 координаты углов части 2 границы], Тип условия), ...]
-#         Шаг 1: определить все условия, смежные с ребром, на каждой из границ
-        result1CondList = list()
-        result2CondList = list()
-#         Для каждого из списков boundary1CondList и boundary2CondList создали списки условий, котрые смежны с ребром
-        generalResultCondList = list([result1CondList, result2CondList])
-         
-        generalCondList = list([boundary1CondList, boundary2CondList])
-        for (boundaryCondList, resultCondList) in zip(generalCondList, generalResultCondList):
-            for boundaryCondition in boundaryCondList:
-                pointsOnRib = self.rectVertexNearSegment(ribCoordinateMin, ribCoordinateMax, boundaryCondition[1])
-                if len(pointsOnRib[0]) == 2:
-#                     (Сами условия, координаты углов, список координат углов на ребре, координаты одномерного отрезка, Тип условия)
-                    resultCondList.extend([(boundaryCondition[0], boundaryCondition[1], pointsOnRib[0], pointsOnRib[1], boundaryCondition[2])])
-         
-#         Шаг 2: теперь составляем всевозможные пары условий (Условие на 1 границу, условие на 2 границу):
-#         для каждого условия первой границы берем все подходящие условия второй, и наоборот.
-#         Потом их объединяем и возвращаем в виде списка.
-        finalResultCondList1 = self.determineAllPairsOfConditions(generalResultCondList[0], generalResultCondList[1], defaultBoundaryConditions)
-        finalResultCondList2 = self.determineAllPairsOfConditions(generalResultCondList[1], generalResultCondList[0], defaultBoundaryConditions)
-#         Надо, чтобы первым элементом кортежа было условие из generalResultCondList[0], поэтому переворачиваем кортежи в finalResultCondList2
-        for idx,pair in enumerate(finalResultCondList2):
-            tmp = list(finalResultCondList2.pop(idx))
-            tmp.reverse()
-            finalResultCondList2.insert(idx, tuple(tmp))
-#         Исключаем из второго списка все пары, которые уже присутствуют в первом списке.
-        for pairTuple in finalResultCondList1:
-            if pairTuple in finalResultCondList2:
-                finalResultCondList1.remove(pairTuple)
-        a = finalResultCondList1 + finalResultCondList2
-        return a
+    def segmentsIntersects(self, segment1, segment2):
+        intersection = [max([segment1[0], segment2[0]]), min([segment1[1], segment2[1]])]
+        if intersection[0] >= intersection[1]:
+            return []
+        else:
+            return intersection
     

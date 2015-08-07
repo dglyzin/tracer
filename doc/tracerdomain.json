@@ -11,6 +11,9 @@
         "Solver": {
             "description": "Solver and its parameters",
             "type": "object",
+            "options": {
+                "collapsed": true
+            },
             "properties": {
                 "SolverIdx": {"type":"number"},
                 "StartTime": {"type":"number"}, 
@@ -26,6 +29,9 @@
         "Grid": {
             "description": "Steps along axes",
             "type": "object",
+            "options": {
+                "collapsed": true
+            },
             "properties": {
                 "dx": {"type":"number"},
                 "dy": {"type":"number"},
@@ -35,6 +41,9 @@
         },        
         "Blocks": {
             "type": "array",
+            "options": {
+                "collapsed": true
+            },
             "items": {
                 "type": "object",
                 "properties":{
@@ -117,6 +126,9 @@
         },
         "Interconnects": {
             "type": "array",
+            "options": {
+                "collapsed": true
+            },
             "items": {
                 "type": "object",
                 "properties": {
@@ -132,6 +144,9 @@
         },
         "Equations": {
             "type": "array",
+            "options": {
+                "collapsed": true
+            },
             "items": {
                 "type": "object",
                 "properties": {
@@ -157,27 +172,37 @@
             "uniqueItems": true
         },
         "EquationParams": {
-            "Params": {
-                "description": "Equation parameters",
-                "type": "array",
-                "items": {
-                    "type": "string"
-                }
+            "description": "Equation parameters",
+            "type": "object", 
+            "options": {
+                "collapsed": true
             },
-            "Paramvalues": {
-                "description": "Equation parameter values",
-                "type": "array",
-                "items": {
-                    "type": "object"
+            "properties":{
+                "Params": {
+                    "description": "Parameter names",        
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "Paramvalues": {
+                    "description": "Equation parameter values",
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "DefaultParamsIndex": {
+                    "type": "number",
+                    "minimum": 0
                 }
-            },
-            "DefaultParamsIndex": {
-                "type": "number",
-                "minimum": 0
             }
         },
         "Bounds": {
             "type": "array",
+            "options": {
+                "collapsed": true
+            },
             "items": {
                 "type": "object",
                 "properties": {
@@ -199,6 +224,9 @@
         },
         "Initials": {
             "type": "array",
+            "options": {
+                "collapsed": true
+            },
             "items": {
                 "type": "object",
                 "properties": {
@@ -216,6 +244,9 @@
         },
         "Hardware": {
             "type": "array",
+            "options": {
+                "collapsed": true
+            },
             "items": {
                 "type": "object",
                 "properties": {
@@ -230,6 +261,9 @@
         },
         "Mapping": {            
             "type": "object",
+            "options": {
+                "collapsed": true
+            },
             "properties": {
                 "IsMapped": {"type": "boolean"},
                 "BlockMapping": {

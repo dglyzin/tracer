@@ -97,10 +97,71 @@ def convertRangesToBoundaryCoordinates(xyzList):
         else:
             raise AttributeError("Dimension of geometric space should not be greater than 3!")
 
-def RectSquare(xlist, ylist):
+def squareOrVolume(xlist, ylist, zlist = []):
         l1 = abs(xlist[0] - xlist[1])
         l2 = abs(ylist[0] - ylist[1])
-        return l2 * l1
+        if len(zlist) == 2:
+            l3 = abs(zlist[0] - zlist[1])
+        else:
+            l3 = 1
+        return l3 * l2 * l1
+    
+def splitBigRect(bigRect, smallRect):
+    #Функция разбивает результат вычитания внутреннего (маленького) прямоугольника из внешнего (большого)
+    #на минимальное количество прямоугольников;
+    #!!!Работа происходит с координатами относительно блока!!!
+    #bigRect = [xfrom, xto, yfrom, yto] и аналогично smallRect; возвращается массив прямоугольников в таком же формате
+    
+    #Внутренний пр-к совпадает с внешним
+    if bigRect[0] == smallRect[0] and bigRect[1] == smallRect[1] and bigRect[2] == smallRect[2] and bigRect[3] == smallRect[3]:
+        return []
+    #Прямоугольники отличаются только одной из сторон
+    elif bigRect[0] != smallRect[0] and bigRect[1] == smallRect[1] and bigRect[2] == smallRect[2] and bigRect[3] == smallRect[3]:
+        return [[bigRect[0], smallRect[0], bigRect[2], bigRect[3]]]
+    elif bigRect[0] == smallRect[0] and bigRect[1] != smallRect[1] and bigRect[2] == smallRect[2] and bigRect[3] == smallRect[3]:
+        return [[smallRect[1], bigRect[1], bigRect[2], bigRect[3]]]
+    elif bigRect[0] == smallRect[0] and bigRect[1] == smallRect[1] and bigRect[2] != smallRect[2] and bigRect[3] == smallRect[3]:
+        return [[bigRect[0], bigRect[1], bigRect[2], smallRect[2]]]
+    elif bigRect[0] == smallRect[0] and bigRect[1] == smallRect[1] and bigRect[2] == smallRect[2] and bigRect[3] != smallRect[3]:
+        return [[bigRect[0], bigRect[1], smallRect[3], bigRect[3]]]
+    #Прямоугольники отличаются двумя сторонами
+    #Внутренний пр-к - Вертикальная полоса
+    elif bigRect[0] != smallRect[0] and bigRect[1] != smallRect[1] and bigRect[2] == smallRect[2] and bigRect[3] == smallRect[3]:
+        return [[bigRect[0], smallRect[0], bigRect[2], bigRect[3]], [smallRect[1], bigRect[1], bigRect[2], bigRect[3]]]
+    #Внутренний пр-к - Горизонтальная полоса
+    elif bigRect[0] == smallRect[0] and bigRect[1] == smallRect[1] and bigRect[2] != smallRect[2] and bigRect[3] != smallRect[3]:
+        return [[bigRect[0], bigRect[1], bigRect[2], smallRect[2]], [bigRect[0], bigRect[1], smallRect[3], bigRect[3]]]
+    #Прямоугольники имеют общий угол
+    elif bigRect[0] != smallRect[0] and bigRect[1] == smallRect[1] and bigRect[2] != smallRect[2] and bigRect[3] == smallRect[3]:
+        return [[bigRect[0], smallRect[0], bigRect[2], bigRect[3]], [smallRect[0], smallRect[1], bigRect[2], smallRect[2]]]
+    elif bigRect[0] != smallRect[0] and bigRect[1] == smallRect[1] and bigRect[2] == smallRect[2] and bigRect[3] != smallRect[3]:
+        return [[bigRect[0], smallRect[0], bigRect[2], bigRect[3]], [smallRect[0], smallRect[1], smallRect[3], bigRect[3]]]
+    elif bigRect[0] == smallRect[0] and bigRect[1] != smallRect[1] and bigRect[2] != smallRect[2] and bigRect[3] == smallRect[3]:
+        return [[smallRect[1], bigRect[1], bigRect[2], bigRect[3]], [smallRect[0], smallRect[1], bigRect[2], smallRect[2]]]
+    elif bigRect[0] == smallRect[0] and bigRect[1] != smallRect[1] and bigRect[2] == smallRect[2] and bigRect[3] != smallRect[3]:
+        return [[smallRect[1], bigRect[1], bigRect[2], bigRect[3]], [smallRect[0], smallRect[1], smallRect[3], bigRect[3]]]
+    #Прямоугольники имеют только одну общую сторону
+    elif bigRect[0] != smallRect[0] and bigRect[1] != smallRect[1] and bigRect[2] != smallRect[2] and bigRect[3] == smallRect[3]:
+        return [[bigRect[0], smallRect[0], bigRect[2], bigRect[3]], [smallRect[1], bigRect[1], bigRect[2], bigRect[3]], [smallRect[0], smallRect[1], bigRect[2], smallRect[2]]]
+    elif bigRect[0] != smallRect[0] and bigRect[1] != smallRect[1] and bigRect[2] == smallRect[2] and bigRect[3] != smallRect[3]:
+        return [[bigRect[0], smallRect[0], bigRect[2], bigRect[3]], [smallRect[1], bigRect[1], bigRect[2], bigRect[3]], [smallRect[0], smallRect[1], smallRect[3], bigRect[3]]]
+    elif bigRect[0] == smallRect[0] and bigRect[1] != smallRect[1] and bigRect[2] != smallRect[2] and bigRect[3] != smallRect[3]:
+        return [[bigRect[0], bigRect[1], bigRect[2], smallRect[2]], [bigRect[0], bigRect[1], smallRect[3], bigRect[3]], [smallRect[1], bigRect[1], smallRect[2], smallRect[3]]]
+    elif bigRect[0] != smallRect[0] and bigRect[1] == smallRect[1] and bigRect[2] != smallRect[2] and bigRect[3] != smallRect[3]:
+        return [[bigRect[0], bigRect[1], bigRect[2], smallRect[2]], [bigRect[0], bigRect[1], smallRect[3], bigRect[3]], [bigRect[0], smallRect[0], smallRect[2], smallRect[3]]]
+    #Прямоугольники не имеют общих сторон
+    else:
+        return [[bigRect[0], smallRect[0], bigRect[2], bigRect[3]], [smallRect[1], bigRect[1], bigRect[2], bigRect[3]], [smallRect[0], smallRect[1], bigRect[2], smallRect[2]], [smallRect[0], smallRect[1], smallRect[3], bigRect[3]]]
+    
+def intersectionOfRects(rect1, rect2):
+    #Если прямоугольники пересекаются, то возвращает координаты вхождения rect2 в rect1, иначе - пустой список
+    #rect1 = [xfrom, xto, yfrom, yto] и rect2 аналогичен
+    intersection = [max([rect1[0], rect2[0]]), min([rect1[1], rect2[1]]), max([rect1[2], rect2[2]]), min([rect1[3], rect2[3]])]
+    #Если xfrom >= xto или yfrom >= yto, то пересечения нет! В этом случае возвращается пустой список
+    if intersection[0] >= intersection[1] or intersection[2] >= intersection[3]:
+        return []
+    else:
+        return intersection
     
 def determineCellIndexOfStartOfConnection2D(icRegion):
     #Если эта разность нулевая, то сединение находится в начале стороны блока, поэтому индекс = 0.

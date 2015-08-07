@@ -47,29 +47,11 @@
                 }
             ], 
             "InitialRegions": [], 
-            "EquationRegions": [
-                {
-                    "EquationNumber": 1, 
-                    "xfrom": 0.0, 
-                    "xto": 6.0, 
-                    "yfrom": 4.0, 
-                    "yto": 6.0
-                }
-            ]
+            "EquationRegions": []
         }
     ], 
     "Interconnects": [], 
-    "Equations": [
-        {
-            "Name": "MixDeriv1", 
-            "Vars": [
-                "x", 
-                "y"
-            ], 
-            "System": [
-                "U'=D[U,{x,1},{y,1}]"
-            ]
-        }, 
+    "Equations": [ 
         {
             "Name": "Heat", 
             "Vars": [
@@ -77,7 +59,7 @@
                 "y"
             ], 
             "System": [
-                "U'=a*(D[U,{x,2}])"
+                "U'=a*(D[U,{x,2}] + D[U,{y,2}])"
             ]
         }
     ], 
@@ -94,14 +76,14 @@
     }, 
     "Bounds": [
         {
-            "Name": "D 3", 
+            "Name": "N 1", 
             "Type": 1, 
             "Values": [
                 "10*x"
             ]
         }, 
         {
-            "Name": "D 4", 
+            "Name": "N 2", 
             "Type": 1, 
             "Values": [
                 "10*y"
