@@ -295,29 +295,34 @@ class BinaryModel(object):
         #1 fill center funcs
         if "center_default" in functionMap:
             funcArr[:] = functionMap["center_default"]            
+        #3d blocks
         for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, zfromIdx, ztoIdx] in functionMap["center"]:
             funcArr[zfromIdx:ztoIdx, yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
             
+        
         #2d sides    
-        #side 0        
-        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side0"]:            
-            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
-        #side 1
-        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side1"]:
-            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
-        #side 2
-        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side2"]:
-            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx        
-        #side 3
-        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side3"]:
-            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
-        #2 fill vertices
-        funcArr[0,0]       = functionMap["e02"]
-        funcArr[0,xc-1]    = functionMap["e12"]
-        funcArr[yc-1,0]    = functionMap["e03"]
-        funcArr[yc-1,xc-1] = functionMap["e13"]
+        sides = functionMap["side0"] + functionMap["side1"] + functionMap["side2"] + \
+                functionMap["side3"] + functionMap["side4"] + functionMap["side5"] 
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, zfromIdx, ztoIdx] in sides:
+            funcArr[zfromIdx:ztoIdx, yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx        
+        #1d edges
+        edges = functionMap["edge02"] + functionMap["edge03"] + functionMap["edge12"] + functionMap["edge13"] + \
+                functionMap["edge04"] + functionMap["edge05"] + functionMap["edge14"] + functionMap["edge15"] + \
+                functionMap["edge24"] + functionMap["edge25"] + functionMap["edge34"] + functionMap["edge35"]     
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, zfromIdx, ztoIdx] in edges:
+            funcArr[zfromIdx:ztoIdx, yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx        
         
+        #point vertices
+        funcArr[0,0,0]       = functionMap["v024"]
+        funcArr[0,0,xc-1]    = functionMap["v124"]
+        funcArr[0,yc-1,0]    = functionMap["v034"]
+        funcArr[0,yc-1,xc-1] = functionMap["v134"]
+        funcArr[zc-1,0,0]       = functionMap["v025"]
+        funcArr[zc-1,0,xc-1]    = functionMap["v125"]
+        funcArr[zc-1,yc-1,0]    = functionMap["v035"]
+        funcArr[zc-1,yc-1,xc-1] = functionMap["v135"]
         
+                
 
     def fillBinarySettings(self):
         self.versionArr = np.zeros(3, dtype=np.uint8)
