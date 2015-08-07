@@ -1,17 +1,17 @@
 {
-    "ProjectName": "Speed_Test_1_100_1", 
+    "ProjectName": "Speed_Test_1_5000_1", 
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 200.0, 
-        "TimeStep":   0.00001, 
+        "FinishTime": 0.00025, 
+        "TimeStep":   0.000000005,  
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
-        "dx": 0.01, 
-        "dy": 0.01, 
+        "dx": 0.0002, 
+        "dy": 0.0002, 
         "dz": 1
     }, 
     "Blocks": [
@@ -29,15 +29,7 @@
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [], 
-            "InitialRegions": [
-                {
-                    "InitialNumber": 1, 
-                    "xfrom": 0.0, 
-                    "xto": 0.5, 
-                    "yfrom": 0.0, 
-                    "yto": 0.5
-                }
-            ], 
+            "InitialRegions": [], 
             "EquationRegions": []
         }
     ], 
@@ -70,7 +62,7 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "0.0"
+                "0.00000000001*(x+y)"
             ]
         }, 
         {
