@@ -138,7 +138,75 @@ class BinaryModel(object):
             
 
     def fill3dInitFuncs(self, funcArr, block, blockSize):
-        pass
+        print "Filling 3d initial function array."
+        xc = blockSize[0]
+        yc = blockSize[1]
+        zc = blockSize[2]
+        #1 fill default conditions
+        funcArr[:] = 0#block.defaultInitial
+        usedIndices = 0
+        #2 fill user-defined conditions
+        #2.1 collect user-defines initial conditions that are used in this block
+        usedInitNums = [block.defaultInitial]
+        for initReg in block.initialRegions:
+            if not (initReg.initialNumber in usedInitNums):
+                usedInitNums.append(initReg.initialNumber)
+        #2.2 fill them    
+        for initReg in block.initialRegions:    
+            initFuncNum = usedIndices + usedInitNums.index(initReg.initialNumber)
+            xstart, xend = self.dmodel.getXrange(block, initReg.xfrom, initReg.xto)
+            ystart, yend = self.dmodel.getYrange(block, initReg.yfrom, initReg.yto)            
+            zstart, zend = self.dmodel.getYrange(block, initReg.zfrom, initReg.zto)
+            funcArr[zstart:zend, ystart:yend, xstart:xend] = initFuncNum             
+                
+        print "Used init nums:", usedInitNums
+        
+        #3 overwrite with values that come from Dirichlet bounds
+        #3.1 collect dirichlet bound numbers that are used in this block
+        usedIndices += len(usedInitNums)
+        usedDirBoundNums = []
+        for boundReg in block.boundRegions:
+            if not (boundReg.boundNumber in usedDirBoundNums):
+                if (self.dmodel.bounds[boundReg.boundNumber].btype == bdict["dirichlet"]):
+                    usedDirBoundNums.append(boundReg.boundNumber) 
+        
+        usedDirBoundNums.sort()
+        print "Used Dirichlet bound nums:", usedDirBoundNums        
+        
+        #3.2 fill them
+        for boundReg in block.boundRegions:
+            if (self.dmodel.bounds[boundReg.boundNumber].btype == bdict["dirichlet"]):
+                initFuncNum = usedIndices + usedDirBoundNums.index(boundReg.boundNumber)
+                if boundReg.side == 0:       
+                    idxX = 0         
+                    ystart, yend = self.dmodel.getYrange(block, boundReg.yfrom, boundReg.yto)    
+                    zstart, zend = self.dmodel.getZrange(block, boundReg.zfrom, boundReg.zto)
+                    funcArr[zstart:zend, ystart:yend, idxX] = initFuncNum                
+                elif boundReg.side == 1:
+                    idxX = xc - 1
+                    ystart, yend = self.dmodel.getYrange(block, boundReg.yfrom, boundReg.yto)           
+                    zstart, zend = self.dmodel.getZrange(block, boundReg.zfrom, boundReg.zto)
+                    funcArr[zstart:zend, ystart:yend, idxX] = initFuncNum                    
+                elif boundReg.side == 2:
+                    idxY =  0
+                    xstart, xend =self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto)
+                    zstart, zend = self.dmodel.getZrange(block, boundReg.zfrom, boundReg.zto) 
+                    funcArr[zstart:zend, idxY, xstart:xend] = initFuncNum
+                elif boundReg.side == 3:
+                    idxY = yc-1
+                    xstart, xend =self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto)
+                    zstart, zend = self.dmodel.getZrange(block, boundReg.zfrom, boundReg.zto)
+                    funcArr[zstart:zend, idxY, xstart:xend] = initFuncNum
+                elif boundReg.side == 4:
+                    idxZ =  0
+                    xstart, xend =self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto)
+                    ystart, yend = self.dmodel.getYrange(block, boundReg.yfrom, boundReg.yto) 
+                    funcArr[idxZ, ystart:yend, xstart:xend] = initFuncNum
+                elif boundReg.side == 5:
+                    idxZ = zc-1
+                    xstart, xend = self.dmodel.getXrange(block, boundReg.xfrom, boundReg.xto)
+                    ystart, yend = self.dmodel.getYrange(block, boundReg.yfrom, boundReg.yto)
+                    funcArr[idxZ, ystart:yend, xstart:xend] = initFuncNum
 
 
     def fill1dCompFuncs(self, funcArr, block, functionMap, blockSize):
@@ -206,15 +274,55 @@ class BinaryModel(object):
         for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side3"]:
             funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
         #2 fill edges
-        funcArr[0,0]       = functionMap["e02"]
-        funcArr[0,xc-1]    = functionMap["e12"]
-        funcArr[yc-1,0]    = functionMap["e03"]
-        funcArr[yc-1,xc-1] = functionMap["e13"]
+        funcArr[0,0]       = functionMap["v02"]
+        funcArr[0,xc-1]    = functionMap["v12"]
+        funcArr[yc-1,0]    = functionMap["v03"]
+        funcArr[yc-1,xc-1] = functionMap["v13"]
         
         
         
-    def fill3dCompFuncs(self, funcArr, block, blockSize):
-        pass
+    def fill3dCompFuncs(self, funcArr, block, functionMap, blockSize):
+        print "Filling 2d main function array."
+        print "Function mapping for this block:"
+        print functionMap
+        xc = blockSize[0]
+        yc = blockSize[1]        
+        zc = blockSize[2]
+        print "size:", xc, "x", yc, "x", zc
+        haloSize = self.dmodel.getHaloSize()
+        if haloSize>1:
+            raise AttributeError("Halosize>1 is not supported yet")
+        #1 fill center funcs
+        if "center_default" in functionMap:
+            funcArr[:] = functionMap["center_default"]            
+        #3d blocks
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, zfromIdx, ztoIdx] in functionMap["center"]:
+            funcArr[zfromIdx:ztoIdx, yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
+            
+        
+        #2d sides    
+        sides = functionMap["side0"] + functionMap["side1"] + functionMap["side2"] + \
+                functionMap["side3"] + functionMap["side4"] + functionMap["side5"] 
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, zfromIdx, ztoIdx] in sides:
+            funcArr[zfromIdx:ztoIdx, yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx        
+        #1d edges
+        edges = functionMap["edge02"] + functionMap["edge03"] + functionMap["edge12"] + functionMap["edge13"] + \
+                functionMap["edge04"] + functionMap["edge05"] + functionMap["edge14"] + functionMap["edge15"] + \
+                functionMap["edge24"] + functionMap["edge25"] + functionMap["edge34"] + functionMap["edge35"]     
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, zfromIdx, ztoIdx] in edges:
+            funcArr[zfromIdx:ztoIdx, yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx        
+        
+        #point vertices
+        funcArr[0,0,0]       = functionMap["v024"]
+        funcArr[0,0,xc-1]    = functionMap["v124"]
+        funcArr[0,yc-1,0]    = functionMap["v034"]
+        funcArr[0,yc-1,xc-1] = functionMap["v134"]
+        funcArr[zc-1,0,0]       = functionMap["v025"]
+        funcArr[zc-1,0,xc-1]    = functionMap["v125"]
+        funcArr[zc-1,yc-1,0]    = functionMap["v035"]
+        funcArr[zc-1,yc-1,xc-1] = functionMap["v135"]
+        
+                
 
     def fillBinarySettings(self):
         self.versionArr = np.zeros(3, dtype=np.uint8)
@@ -263,7 +371,7 @@ class BinaryModel(object):
             cellOffsetList = block.getCellOffset(self.dmodel.gridStepX, self.dmodel.gridStepY,
                                            self.dmodel.gridStepZ )
             cellCount = cellCountList[0]*cellCountList[1]*cellCountList[2]
-            yc, xc = cellCountList[1] , cellCountList[0]
+            zc, yc, xc = cellCountList[2], cellCountList[1] , cellCountList[0]
 
             blockPropArr = np.zeros(4+2*blockDim, dtype=np.int32)
             blockInitFuncArr = np.zeros(cellCount, dtype=np.int16)
@@ -308,8 +416,12 @@ class BinaryModel(object):
                 print "Computation function indices:"
                 print blockCompFuncArr.reshape([yc, xc])
             elif blockDim==3:
-                self.fill1dFuncs(blockInitFuncArr, block, cellCountList)
-                self.fill3dFuncs(blockCompFuncArr, block, cellCountList)
+                self.fill3dInitFuncs(blockInitFuncArr.reshape([zc, yc, xc]), block, cellCountList)
+                print "Initial function indices:"
+                print blockInitFuncArr.reshape([zc, yc, xc])
+                self.fill3dCompFuncs(blockCompFuncArr.reshape([zc, yc, xc]), block, self.functionMaps[blockIdx], cellCountList)                
+                print "Computation function indices:"
+                print blockCompFuncArr.reshape([zc, yc, xc])
 
             self.blockInitFuncArrList.append(blockInitFuncArr)
             self.blockCompFuncArrList.append(blockCompFuncArr)
