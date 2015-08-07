@@ -3,7 +3,7 @@
 	"Port": 22,
 	"Username": "tester",
 	"Password": "tester",
-	"Workspace": "/home/golubenets/Tracer/tracer_projects"
+	"Workspace": "/home/golubenets/Tracer/tracer_projects",
 	"SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS",
     "PreprocessorFolder": "/home/golubenets/Tracer/hybriddomain"
 }
