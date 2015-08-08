@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 2.0, 
+        "FinishTime": 2, 
         "TimeStep": 1e-05, 
         "SaveInterval": 0.05, 
         "AbsTolerance": 0.001, 
@@ -54,6 +54,20 @@
             "Block2": 0,
             "Block1Side": 0,
             "Block2Side": 1
+        },
+        {
+            "Name": "loop connection along x",
+            "Block1": 0,
+            "Block2": 0,
+            "Block1Side": 2,
+            "Block2Side": 3
+        },
+        {
+            "Name": "loop connection along x",
+            "Block1": 0,
+            "Block2": 0,
+            "Block1Side": 4,
+            "Block2Side": 5
         }
     ],
     "Equations": [
