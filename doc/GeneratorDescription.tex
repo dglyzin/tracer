@@ -172,9 +172,9 @@ u^{\ell}_{ijk} := u(\ell\Delta t, i\Delta x, j\Delta y, k\Delta z),
 В центральных функциях для приближения производных используется самый обычный вид конечно-разностных формул.
 
 Первая производная (например, по $z$):
-\begin{equation*}
+\begin{equation}\label{e3}
 \left(\frac{\partial u}{\partial z}\right)^{\ell}_{ijk} \approx \frac{u^{\ell}_{ijk+1} - u^{\ell}_{ijk-1}}{2\Delta z}
-\end{equation*}
+\end{equation}
 
 Вторая чистая производная (например, по $yy$):
 \begin{equation*}
@@ -188,9 +188,15 @@ u^{\ell}_{ijk} := u(\ell\Delta t, i\Delta x, j\Delta y, k\Delta z),
 
 \subsection{\Large Формулы для производных в функциях расчета границ блока}
 Рассмотрим какую-нибудь границу блока, например, $y = 0$. Пусть на каком-то куске $D = \{(x,y,z) \in \Pi| y = 0; x \in [a,b], x_0 \leqslant a,b \leqslant x_1; z \in [c,d], z_0 \leqslant c,d \leqslant z_1\}$ этой границы пользователь задал краевое условие Неймана:
-\begin{equation}\label{e3}
+\begin{equation}\label{e4}
 \frac{\partial u}{\partial y}(t,x,0,z) = \varphi(t,x,z).
 \end{equation}
-Тогда на этом куске
+Тогда при аппроксимации производных в функциях для расчета куска $D$ используются такие формулы.
+
+Первая производная по $y$:
+\begin{equation*}
+\left(\frac{\partial u}{\partial z}\right)^{\ell}_{ijk} \approx \varphi^{\ell}_{ik} = \varphi(\ell\Delta t, i\Delta x, k\Delta z),
+\end{equation*}
+а первые производные по $x$ и $z$ будут выглядеть как в \eqref{e3}.
 
 \end{document}
