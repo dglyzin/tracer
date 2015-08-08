@@ -47,29 +47,7 @@
             "EquationRegions": []
         }
     ], 
-    "Interconnects": [
-        {
-            "Name": "loop connection along x",
-            "Block1": 0,
-            "Block2": 0,
-            "Block1Side": 0,
-            "Block2Side": 1
-        },
-        {
-            "Name": "loop connection along x",
-            "Block1": 0,
-            "Block2": 0,
-            "Block1Side": 2,
-            "Block2Side": 3
-        },
-        {
-            "Name": "loop connection along x",
-            "Block1": 0,
-            "Block2": 0,
-            "Block1Side": 4,
-            "Block2Side": 5
-        }
-    ],
+    "Interconnects": [],
     "Equations": [
         {
             "Name": "Heat1",
