@@ -730,8 +730,8 @@ class generator2D(abstractGenerator):
                 
     def __createIcRegion(self, mainBlockSide, mainBlock, secBlock, firstIndex):
         if mainBlockSide == 0:
-            xfrom = 0#mainBlock.offsetX
-            xto = 0#mainBlock.offsetX
+            xfrom = mainBlock.offsetX
+            xto = mainBlock.offsetX
             yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
             someLen = yfrom
@@ -739,8 +739,8 @@ class generator2D(abstractGenerator):
             secondIndex = 'idxY'
             stepAlongSide = self.gridStep[1]
         elif mainBlockSide == 1:
-            xfrom = mainBlock.sizeX# + mainBlock.offsetX
-            xto = mainBlock.sizeX# + mainBlock.offsetX
+            xfrom = mainBlock.sizeX + mainBlock.offsetX
+            xto = mainBlock.sizeX + mainBlock.offsetX
             yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
             someLen = yfrom
@@ -750,8 +750,8 @@ class generator2D(abstractGenerator):
         elif mainBlockSide == 2:
             xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
-            yfrom = 0#mainBlock.offsetY
-            yto = 0#mainBlock.offsetY
+            yfrom = mainBlock.offsetY
+            yto = mainBlock.offsetY
             someLen = xfrom
             lenOfConnection = xto - xfrom
             secondIndex = 'idxX'
@@ -759,8 +759,8 @@ class generator2D(abstractGenerator):
         else:
             xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
-            yfrom = mainBlock.sizeY# + mainBlock.offsetY
-            yto = mainBlock.sizeY# + mainBlock.offsetY
+            yfrom = mainBlock.sizeY + mainBlock.offsetY
+            yto = mainBlock.sizeY + mainBlock.offsetY
             someLen = xfrom
             lenOfConnection = xto - xfrom
             secondIndex = 'idxX'
