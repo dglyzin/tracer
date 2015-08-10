@@ -143,9 +143,9 @@ result[idx + 0] = params[0] * ((2.0 * DXM2 * (
 Надо аппроксимировать все производные, стоящие в правой части \eqref{e1}. Нужны аппро\-кси\-ма\-ции для:
 \begin{enumerate}
 \item центральных функций;
-\item функций для расчета границ блока; \label {i1}
-\item функций для расчета вершин блока (в двумерном и трехмерном случаях);
-\item функций для расчета ребер блока (в трехмерном случае). \label{i2}
+\item функций для рассчета границ блока; \label {i1}
+\item функций для рассчета вершин блока (в двумерном и трехмерном случаях);
+\item функций для рассчета ребер блока (в трехмерном случае). \label{i2}
 \end{enumerate}
 В \ref{i1}. - \ref{i2}. надо учитывать краевые условия (в случае краевых условий Неймана как раз и возникает необходимость аппроксимировать производные, а в случае условий Дирихле вместо правой части уравнения \eqref{e1} просто подставляется значение про\-из\-вод\-ной функции, являющейся этим условием), соединения блоков и то, что на разных частях одного блока могут быть заданы разные уравнения. Для приближения про\-из\-вод\-ных во всех функциях используются центральные конечные разности.
 
@@ -155,11 +155,11 @@ result[idx + 0] = params[0] * ((2.0 * DXM2 * (
 \end{equation*}
 Пусть $m,n,p\in N$ и на $\Pi$ введена сетка с шагами $\Delta x = (x_1-x_0)/m$, $\Delta y = (y_1-y_0)/n$, $\Delta z = (z_1-z_0)/p$ по про\-стран\-ствен\-ным переменным $x,y,z$ и введен шаг $\Delta t$ по времени $t$. Значения функции $u$ в узлах сетки далее обозначаются обычным образом:
 \begin{equation*}
-u^{\ell}_{ijk} := u(\ell\Delta t, i\Delta x, j\Delta y, k\Delta z),
+u^{\ell}_{ijk} := u(\ell\Delta t, x_0 + i\Delta x, y_0 + j\Delta y, z_0 + k\Delta z),
 \end{equation*}
 а значения производных в узлах сетки пишутся похожим образом, например:
 \begin{equation*}
-\left(\frac{\partial^2 u}{\partial y^2}\right)^{\ell}_{ijk} := \frac{\partial^2 u}{\partial y^2}(\ell\Delta t, i\Delta x, j\Delta y, k\Delta z).
+\left(\frac{\partial^2 u}{\partial y^2}\right)^{\ell}_{ijk} := \frac{\partial^2 u}{\partial y^2}(\ell\Delta t, x_0 + i\Delta x, y_0 + j\Delta y, z_0 + k\Delta z).
 \end{equation*}
 Здесь $\ell = \overline{0,L}$, $i = \overline{0,m}$, $j = \overline{0,n}$, $k = \overline{0,p}$.
 
@@ -177,26 +177,90 @@ u^{\ell}_{ijk} := u(\ell\Delta t, i\Delta x, j\Delta y, k\Delta z),
 \end{equation}
 
 Вторая чистая производная (например, по $yy$):
-\begin{equation*}
+\begin{equation}\label{e4}
 \left(\frac{\partial^2 u}{\partial y^2}\right)^{\ell}_{ijk} \approx \frac{u^{\ell}_{ij+1k} - 2u^{\ell}_{ijk} + u^{\ell}_{ij-1k}}{(\Delta y)^2}
-\end{equation*}
+\end{equation}
 
 Для центральных функций смешанные производные генерировать очень легко. Смешанная производная (например, по $xz$):
-\begin{equation*}
+\begin{equation}\label{e5}
 \left(\frac{\partial^2 u}{\partial x\partial z}\right)^{\ell}_{ijk} \approx \frac{u^{\ell}_{i+1jk+1} - u^{\ell}_{i-1jk+1} - u^{\ell}_{i+1jk-1} + u^{\ell}_{i-1jk-1}}{4\Delta x\Delta z}
-\end{equation*}
-
-\subsection{\Large Формулы для производных в функциях расчета границ блока}
-Рассмотрим какую-нибудь границу блока, например, $y = 0$. Пусть на каком-то куске $D = \{(x,y,z) \in \Pi| y = 0; x \in [a,b], x_0 \leqslant a,b \leqslant x_1; z \in [c,d], z_0 \leqslant c,d \leqslant z_1\}$ этой границы пользователь задал краевое условие Неймана:
-\begin{equation}\label{e4}
-\frac{\partial u}{\partial y}(t,x,0,z) = \varphi(t,x,z).
 \end{equation}
-Тогда при аппроксимации производных в функциях для расчета куска $D$ используются такие формулы.
+
+\subsection{\Large Формулы для производных в функциях рассчета границ блока}
+\subsubsection{\large Левая граница}
+Рассмотрим, например, границу $y = y_0$ блока. Пусть на каком-то куске \[\Pi_0 = \{(x,y,z) \in \Pi|\quad y = y_0;\quad x_0 \leqslant a \leqslant x \leqslant b \leqslant x_1;\quad z_0 \leqslant c \leqslant z \leqslant d \leqslant z_1\}\] этой границы пользователь задал краевое условие Неймана:
+\begin{equation*}
+\frac{\partial u}{\partial y}(t,x,y_0,z) = \varphi(t,x,z).
+\end{equation*}
+И пусть на $\Pi_0$ также задано уравнение \eqref{e2}. Тогда при аппроксимации производных в функциях для рассчета куска $\Pi_0$ используются такие формулы.
+
+Первая производная по $y$:
+\begin{equation}\label{e6}
+\left(\frac{\partial u}{\partial y}\right)^{\ell}_{i0k} \approx \varphi^{\ell}_{ik} = \varphi(\ell\Delta t, x_0 + i\Delta x, z_0 + k\Delta z),
+\end{equation}
+а первые производные по $x$ и $z$ будут выглядеть как в \eqref{e3} (т.е. будут центральными).
+
+Вторая производная по $y$:
+\begin{equation*}
+\left(\frac{\partial^2 u}{\partial y^2}\right)^{\ell}_{i0k} \approx \frac{2\left(u^{\ell}_{i1k} - u^{\ell}_{i0k} - \Delta y  \varphi^{\ell}_{ik}\right)}{(\Delta y)^2},
+\end{equation*}
+а вторые производные по $x$ и $z$ будут как в \eqref{e4} (т.е. будут центральными).
+
+Смешанная производная по $xy$:
+\begin{equation}\label{e7}
+\left(\frac{\partial^2 u}{\partial x\partial y}\right)^{\ell}_{i0k} \approx \frac{\varphi^{\ell}_{i+1k} - \varphi^{\ell}_{i-1k}}{2\Delta x};
+\end{equation}
+смешанная производная по $zy$:
+\begin{equation}\label{e8}
+\left(\frac{\partial^2 u}{\partial z\partial y}\right)^{\ell}_{i0k} \approx \frac{\varphi^{\ell}_{ik+1} - \varphi^{\ell}_{ik-1}}{2\Delta z};
+\end{equation}
+смешанная производная по $xz$ будет как в \eqref{e5} (т.е. будет центральной).
+
+Предположим теперь, что область $\Pi_0$ является местом соединения рассматриваемого блока с каким-то другим. Это значит, что на $\Pi_0$ вообще не может быть задано краевых условий. Здесь генератор бессилен при генерировании смешанных производных, поэтому считаем, что на $\Pi_0$ задано уравнение \eqref{e1}. Формулы такие.
 
 Первая производная по $y$:
 \begin{equation*}
-\left(\frac{\partial u}{\partial z}\right)^{\ell}_{ijk} \approx \varphi^{\ell}_{ik} = \varphi(\ell\Delta t, i\Delta x, k\Delta z),
+\left(\frac{\partial u}{\partial y}\right)^{\ell}_{i0k} \approx \frac{u^{\ell}_{i1k} - ic[idx1][idx2]}{2\Delta y},
 \end{equation*}
-а первые производные по $x$ и $z$ будут выглядеть как в \eqref{e3}.
+а первые производные по $x$ и $z$ опять будут выглядеть как в \eqref{e3}. Тут $ic$ -- массив интерконнектов, передающийся в рассчетную функцию, а $idx1$ и $idx2$ определяются генератором.
+
+Вторая производная по $y$:
+\begin{equation*}
+\left(\frac{\partial^2 u}{\partial y^2}\right)^{\ell}_{i0k} \approx \frac{u^{\ell}_{i1k} - 2u^{\ell}_{i0k} +  ic[idx1][idx2]}{(\Delta y)^2},
+\end{equation*}
+а вторые производные по $x$ и $z$ опять будут как в \eqref{e4}.
+
+Формулы для границ $x = x_0$, $z = z_0$ строятся по аналогии.
+
+\subsubsection{\large Правая граница}
+Рассмотрим границу $y = y_1$ блока. Пусть на куске \[\Pi_1 = \{(x,y,z) \in \Pi|\quad y = y_1;\quad x_0 \leqslant A \leqslant x \leqslant B \leqslant x_1;\quad z_0 \leqslant C \leqslant z \leqslant D \leqslant z_1\}\] этой границы пользователь задал краевое условие Неймана:
+\begin{equation*}
+\frac{\partial u}{\partial y}(t,x,y_1,z) = \psi(t,x,z).
+\end{equation*}
+И пусть на $\Pi_1$ также задано уравнение \eqref{e2}. Формулы такие.
+
+Для первых производных по $x$, $z$ формулы будут такие же, как в \eqref{e3}, а по $y$ --- как в \eqref{e6} с заменой функции $\varphi$ на $\psi$ и среднего индекса $0$ на $n$ в левой части. Для смешанной производной по $xz$ формула как в \eqref{e5}, а для производных по $xy$ и $zy$ формулы как в \eqref{e7}, \eqref{e8} с заменой функции $\varphi$ на $\psi$ и среднего индекса $0$ на $n$ в левой части.
+
+Сильно изменяется вторая производная по $y$:
+\begin{equation*}
+\left(\frac{\partial^2 u}{\partial y^2}\right)^{\ell}_{ink} \approx \frac{2\left(u^{\ell}_{in-1k} - u^{\ell}_{ink} + \Delta y  \psi^{\ell}_{ik}\right)}{(\Delta y)^2},
+\end{equation*}
+а вторые производные по $x$ и $z$ опять будут как в \eqref{e4}.
+
+Если область $\Pi_1$ является местом соединения рассматриваемого блока с каким-то другим, то на $\Pi_0$ вообще не может быть задано краевых условий. Считаем, что на $\Pi_1$ задано уравнение \eqref{e1}. Формулы такие.
+
+Первая производная по $y$:
+\begin{equation*}
+\left(\frac{\partial u}{\partial y}\right)^{\ell}_{ink} \approx \frac{ic[idx1][idx2] - u^{\ell}_{in-1k}}{2\Delta y},
+\end{equation*}
+а первые производные по $x$ и $z$ опять будут выглядеть как в \eqref{e3}.
+
+Вторая производная по $y$:
+\begin{equation*}
+\left(\frac{\partial^2 u}{\partial y^2}\right)^{\ell}_{ink} \approx \frac{ic[idx1][idx2] - 2u^{\ell}_{ink} + u^{\ell}_{in-1k}}{(\Delta y)^2},
+\end{equation*}
+а вторые производные по $x$ и $z$ опять будут как в \eqref{e4}.
+
+\subsection{\Large Формулы для производных в функциях рассчета вершин блока}
 
 \end{document}
