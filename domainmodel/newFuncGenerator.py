@@ -730,41 +730,41 @@ class generator2D(abstractGenerator):
                 
     def __createIcRegion(self, mainBlockSide, mainBlock, secBlock, firstIndex):
         if mainBlockSide == 0:
-            xfrom = mainBlock.offsetX
-            xto = mainBlock.offsetX
+            xfrom = 0#mainBlock.offsetX
+            xto = 0#mainBlock.offsetX
             yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
             someLen = yfrom
             lenOfConnection = yto - yfrom
             secondIndex = 'idxY'
-            stepAlongSide = self.gridStep[0]
+            stepAlongSide = self.gridStep[1]
         elif mainBlockSide == 1:
-            xfrom = mainBlock.sizeX + mainBlock.offsetX
-            xto = mainBlock.sizeX + mainBlock.offsetX
+            xfrom = mainBlock.sizeX# + mainBlock.offsetX
+            xto = mainBlock.sizeX# + mainBlock.offsetX
             yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
             someLen = yfrom
             lenOfConnection = yto - yfrom
             secondIndex = 'idxY'
-            stepAlongSide = self.gridStep[0]
+            stepAlongSide = self.gridStep[1]
         elif mainBlockSide == 2:
             xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
-            yfrom = mainBlock.offsetY
-            yto = mainBlock.offsetY
+            yfrom = 0#mainBlock.offsetY
+            yto = 0#mainBlock.offsetY
             someLen = xfrom
             lenOfConnection = xto - xfrom
             secondIndex = 'idxX'
-            stepAlongSide = self.gridStep[1]
+            stepAlongSide = self.gridStep[0]
         else:
             xfrom = max([mainBlock.offsetX, secBlock.offsetX]) - mainBlock.offsetX
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
-            yfrom = mainBlock.sizeY + mainBlock.offsetY
-            yto = mainBlock.sizeY + mainBlock.offsetY
+            yfrom = mainBlock.sizeY# + mainBlock.offsetY
+            yto = mainBlock.sizeY# + mainBlock.offsetY
             someLen = xfrom
             lenOfConnection = xto - xfrom
             secondIndex = 'idxX'
-            stepAlongSide = self.gridStep[1]
+            stepAlongSide = self.gridStep[0]
         return InterconnectRegion(firstIndex, secondIndex, mainBlockSide, stepAlongSide, someLen, lenOfConnection, xfrom, xto, yfrom, yto, self.blocks.index(secBlock))
    
     def generateFillInitValFuncsForAllBlocks(self, listWithInitialFunctionNames, listWithDirichletFunctionNames):
@@ -813,7 +813,7 @@ class generator2D(abstractGenerator):
     
     def createListOfBCondsForSide(self, block, blockNumber, side):
         if side == 2:
-            cellLen = self.gridStep[1]
+            cellLen = self.gridStep[0]
             sideMaxRange = block.sizeX
             sideMinRange = 0.0
             currentSideValue = 0.0
@@ -821,7 +821,7 @@ class generator2D(abstractGenerator):
             stepFrom = lambda eqRegion: eqRegion.xfrom
             stepTo = lambda eqRegion: eqRegion.xto
         elif side == 3:
-            cellLen = self.gridStep[1]
+            cellLen = self.gridStep[0]
             sideMaxRange = block.sizeX
             sideMinRange = 0.0
             currentSideValue = block.sizeY
@@ -829,7 +829,7 @@ class generator2D(abstractGenerator):
             stepFrom = lambda eqRegion: eqRegion.xfrom
             stepTo = lambda eqRegion: eqRegion.xto
         elif side == 0:
-            cellLen = self.gridStep[0]
+            cellLen = self.gridStep[1]
             sideMaxRange = block.sizeY
             sideMinRange = 0.0
             currentSideValue = 0.0
@@ -837,7 +837,7 @@ class generator2D(abstractGenerator):
             stepFrom = lambda eqRegion: eqRegion.yfrom
             stepTo = lambda eqRegion: eqRegion.yto
         elif side == 1:
-            cellLen = self.gridStep[0]
+            cellLen = self.gridStep[1]
             sideMaxRange = block.sizeY
             sideMinRange = 0.0
             currentSideValue = block.sizeX
