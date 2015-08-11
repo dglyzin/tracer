@@ -79,23 +79,6 @@ def determineNameOfBoundary(side):
             return boundaryNames[side]
         else:
             raise AttributeError("Error in function __determineNameOfBoundary(): argument 'boundaryNumber' should take only integer values from 0 to 5!")
-        
-def convertRangesToBoundaryCoordinates(xyzList):
-#         xyzList --- список вида [[xFrom, xTo], [yFrom, yTo], [zFrom, zTo]]
-#         Функция по списку xyzList формирует в двумерном случае 2 точки границы [(x1,y1), (x2,y2)],
-#         в 3 мерном случае -- 4 точки прямоугольника [(x1,y1), (x2,y2), (x3,y3), (x4,y4)].
-        length = len(xyzList)
-        if length == 1:
-            return xyzList[0]
-        elif length >= 2:
-            coordinates = []
-#             Декартово произведение двух списков. В результате -- список кортежей!
-            for point in itertools.product(*xyzList):
-                coordinates.append(point)
-#             Таким образом устраняем лишние кортежи
-            return list(set(coordinates))
-        else:
-            raise AttributeError("Dimension of geometric space should not be greater than 3!")
 
 def squareOrVolume(xlist, ylist, zlist = []):
         l1 = abs(xlist[0] - xlist[1])
@@ -166,10 +149,7 @@ def intersectionOfRects(rect1, rect2):
 def determineCellIndexOfStartOfConnection2D(icRegion):
     #Если эта разность нулевая, то сединение находится в начале стороны блока, поэтому индекс = 0.
     if icRegion.lenBetweenStartOfBlockSideAndStartOfConnection == 0:
-        startCellIndex = 0
+        return 0
     else:
     #Найдем количество клеток между ними. Оно и будет индексом клетки, стоящей в начале соединения
-        startCellIndex = getCellCountAlongLine(icRegion.lenBetweenStartOfBlockSideAndStartOfConnection, icRegion.stepAlongSide)
-    #Определяется индекс клетки конца соединения: это индекс клетки начала + количество клеток в соединении - 1
-    endCellIndex = startCellIndex + getCellCountAlongLine(icRegion.lenOfConnection, icRegion.stepAlongSide) - 1
-    return startCellIndex, endCellIndex
+        return getCellCountAlongLine(icRegion.lenBetweenStartOfBlockSideAndStartOfConnection, icRegion.stepAlongSide)
