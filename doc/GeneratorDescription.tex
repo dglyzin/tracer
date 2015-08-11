@@ -168,7 +168,7 @@ u^{\ell}_{ijk} := u(\ell\Delta t, x_0 + i\Delta x, y_0 + j\Delta y, z_0 + k\Delt
 \frac{\partial u}{\partial t} = f\left(u, \frac{\partial u}{\partial x}, \frac{\partial u}{\partial y}, \frac{\partial u}{\partial z}, \frac{\partial^2 u}{\partial x\partial y}, \frac{\partial^2 u}{\partial x\partial z}, \frac{\partial^2 u}{\partial z\partial y}, \frac{\partial^2 u}{\partial x^2}, \frac{\partial^2 u}{\partial y^2}, \frac{\partial^2 u}{\partial z^2}\right).
 \end{equation} 
 
-\subsection{\Large Формулы для производных в центральных функциях}
+\subsection{\Large Формулы для производных в центральных функциях}\label{s1}
 В центральных функциях для приближения производных используется самый обычный вид конечно-разностных формул.
 
 Первая производная (например, по $z$):
@@ -186,7 +186,7 @@ u^{\ell}_{ijk} := u(\ell\Delta t, x_0 + i\Delta x, y_0 + j\Delta y, z_0 + k\Delt
 \left(\frac{\partial^2 u}{\partial x\partial z}\right)^{\ell}_{ijk} \approx \frac{u^{\ell}_{i+1jk+1} - u^{\ell}_{i-1jk+1} - u^{\ell}_{i+1jk-1} + u^{\ell}_{i-1jk-1}}{4\Delta x\Delta z}
 \end{equation}
 
-\subsection{\Large Формулы для производных в функциях рассчета границ блока}
+\subsection{\Large Формулы для производных в функциях рассчета границ блока}\label{s2}
 \subsubsection{\large Левая граница}
 Рассмотрим, например, границу $y = y_0$ блока. Пусть на каком-то куске \[\Pi_0 = \{(x,y,z) \in \Pi|\quad y = y_0;\quad x_0 \leqslant a \leqslant x \leqslant b \leqslant x_1;\quad z_0 \leqslant c \leqslant z \leqslant d \leqslant z_1\}\] этой границы пользователь задал краевое условие Неймана:
 \begin{equation*}
@@ -261,6 +261,40 @@ u^{\ell}_{ijk} := u(\ell\Delta t, x_0 + i\Delta x, y_0 + j\Delta y, z_0 + k\Delt
 \end{equation*}
 а вторые производные по $x$ и $z$ опять будут как в \eqref{e4}.
 
-\subsection{\Large Формулы для производных в функциях рассчета вершин блока}
+\subsection{\Large Формулы для производных в функциях рассчета вершин блока (в $2D$ и $3D$) и в функциях рассчета ребер (в $3D$)}
+
+Здесь для производных формулы те же самые, что и в п.~\ref{s1} и \ref{s2}. Отличие только в том, что для гарничных функций производные только по какому-нибудь одному аргументу будут приближены нецентральными формулами, а по всем остальным --- центральными. Здесь же для вершин в двумерном случае производные по обоим аргументам будут приближены нецентральными формулами, а в трехмерном --- по всем трем. Для ребер в $3D$ производные по двум аргументам будут приближены нецентральными формулами, а по третьему аргументу --- центральными.
+
+Особенность только в аппроксимации смешанных производных. Пусть рас\-сма\-три\-ва\-ет\-ся трехмерный блок $\Pi$ (без соединений!) и в окрестности какого-то угла, например, $x = x_0$, $y = y_0$, $z = z_1$ задано уравнение \eqref{e2} и заданы такие условия Неймана на соответствующие границы (можно сразу для простоты считать, что они заданы на каждой из границ полностью, а не на отдельных их частях):
+\begin{equation*}
+\frac{\partial u}{\partial x}(t,x_0,y,z) = f(t,y,z), \quad \frac{\partial u}{\partial y}(t,x,y_0,z) = g(t,x,z), \quad \frac{\partial u}{\partial z}(t,x,y,z_1) = h(t,x,y).
+\end{equation*}
+
+Тогда производные по $xy$, $xz$, $yz$ в рассматриваемой вершине будут ап\-про\-кси\-ми\-ро\-вать\-ся формулами:
+\begin{equation*}
+\left(\frac{\partial^2 u}{\partial x\partial y}\right)^{\ell}_{00p} \approx \left.\left(\frac{f^{\ell}_{j+1k} - f^{\ell}_{j-1k}}{4\Delta y} + \frac{g^{\ell}_{i+1k} - g^{\ell}_{i-1k}}{4\Delta x}\right)\right|_{i = 0, j = 0, k = p};
+\end{equation*}
+\begin{equation*}
+\left(\frac{\partial^2 u}{\partial x\partial z}\right)^{\ell}_{00p} \approx \left.\left(\frac{f^{\ell}_{jk+1} - f^{\ell}_{jk-1}}{4\Delta z} + \frac{h^{\ell}_{i+1j} - h^{\ell}_{i-1j}}{4\Delta x}\right)\right|_{i = 0, j = 0, k = p};
+\end{equation*}
+\begin{equation*}
+\left(\frac{\partial^2 u}{\partial y\partial z}\right)^{\ell}_{00p} \approx \left.\left(\frac{g^{\ell}_{ik+1} - g^{\ell}_{ik-1}}{4\Delta z} + \frac{h^{\ell}_{ij+1} - h^{\ell}_{ij-1}}{4\Delta y}\right)\right|_{i = 0, j = 0, k = p}.
+\end{equation*}
+Проблема тут в том, что приходится считать, что нам известны значения функций $f$, $g$ и $h$ за пределами блока $\Pi$.
+
+Формулы для производных на ребрах чуть-чуть отличаются. Ребро --- это место пересечения двух границ. Рассмотрим какое-нибудь ребро, например, $x = x_1$, $z = z_0$. Пусть на соответствующих границах заданы условия Неймана:
+\begin{equation*}
+\frac{\partial u}{\partial x}(t,x_1,y,z) = \xi(t,y,z), \quad \frac{\partial u}{\partial z}(t,x,y,z_0) = \eta(t,x,y).
+\end{equation*}
+Тогда формулы для аппроксимации производных на рассматриваемом ребре такие:
+\begin{equation*}
+\left(\frac{\partial^2 u}{\partial x\partial y}\right)^{\ell}_{mj0} \approx \left.\left(\frac{\xi^{\ell}_{j+1k} - \xi^{\ell}_{j-1k}}{2\Delta y}\right)\right|_{ k = 0};
+\end{equation*}
+\begin{equation*}
+\left(\frac{\partial^2 u}{\partial x\partial z}\right)^{\ell}_{mj0} \approx \left.\left(\frac{\xi^{\ell}_{jk+1} - f^{\ell}_{jk-1}}{4\Delta z} + \frac{\eta^{\ell}_{i+1j} - \eta^{\ell}_{i-1j}}{4\Delta x}\right)\right|_{i = m, k = 0};
+\end{equation*}
+\begin{equation*}
+\left(\frac{\partial^2 u}{\partial y\partial z}\right)^{\ell}_{mj0} \approx \left.\left(\frac{\eta^{\ell}_{ij+1} - \eta^{\ell}_{ij-1}}{4\Delta y}\right)\right|_{i = m}.
+\end{equation*}
 
 \end{document}
