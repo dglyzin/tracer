@@ -9,8 +9,8 @@ from equationParser import MathExpressionParser
 from someFuncs import determineNameOfBoundary, squareOrVolume, determineCellIndexOfStartOfConnection2D, getRanges
 
 class Generator2D(AbstractGenerator):
-    def __init__(self, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):
-        super(Generator2D,self).__init__(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
+    def __init__(self, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):
+        super(Generator2D,self).__init__(haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         self.cellsizeList = list()
         self.allBlockSizeList = list()
         self.allBlockOffsetList = list()

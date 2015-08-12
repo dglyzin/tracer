@@ -4,14 +4,14 @@ from generator2D import Generator2D
 from generator3D import Generator3D
 
 class FuncGenerator:
-    def __init__(self, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex, preprocessorFolder):
+    def __init__(self, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex, preprocessorFolder):
         dimension = len(equations[0].vars)
         if dimension == 1:
-            self.generator = Generator1D(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
+            self.generator = Generator1D(haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         elif dimension == 2:
-            self.generator = Generator2D(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
+            self.generator = Generator2D(haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         else:
-            self.generator = Generator3D(equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
+            self.generator = Generator3D(haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         self.preprocessorFolder = preprocessorFolder
     
     def generateAllFunctions(self):
