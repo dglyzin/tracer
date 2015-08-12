@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 30, 
+        "FinishTime": 30.0, 
         "TimeStep": 0.001, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
@@ -52,7 +52,7 @@
             "Offset":
                 {
                     "x": 1.0,
-                    "y": 0.0,
+                    "y": 0.5,
                     "z": 0.0
                 }, 
             "Size":
