@@ -72,13 +72,6 @@
 			"Block2Side": 0
 		},
 		{
-			"Name": "loop connection along z",
-			"Block1": 0,
-			"Block2": 1,
-			"Block1Side": 0,
-			"Block2Side": 1
-		},
-		{
 			"Name": "loop connection along y",
 			"Block1": 0,
 			"Block2": 0,
