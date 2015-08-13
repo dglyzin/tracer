@@ -16,7 +16,7 @@
 \large
 \section*{\LARGE Введение. Текущие возможности и актуальные файлы}
 \addcontentsline{toc}{section}{\LARGE Введение}
-Сейчас ($07.08.15$)  генератор умеет генерировать функции в таких случаях:
+Сейчас ($12.08.15$)  генератор умеет генерировать функции в таких случаях:
 \begin{itemize}
 \item одномерный случай с соединениями, ни в одном уравнении нет про\-из\-вод\-ных порядка выше второго;
 \item двумерный случай с соединениями, ни в одном уравнении не со\-дер\-жит\-ся смешанных производных и производных порядка выше второго;
@@ -28,7 +28,9 @@
 \begin{enumerate}
 \item  customOfficer.py; \label{i1}
 \item equationParser.py; \label{i2}
-\item newFuncGenerator.py; \label{i3}
+\item funcGenerator.py; \label{i3}
+\item abstractGenerator.py; \label{i9}
+\item generator1D.py, generator2D.py, generator3D.py; \label{i8}
 \item  rhsCodeGenerator.py; \label{i4}
 \item derivCodeGenerator.py; \label{i5}
 \item someFuncs.py; \label{i6}
@@ -78,8 +80,8 @@
 \end{itemize}
 
 %\newpage
-\subsection{\Large Файл newFuncGenerator.py, выполняющий основную работу}
-Класс {\bf abstractGenerator} и его наследники {\bf generator1D} и {\bf generator2D} выполняют почти всю работу, связанную с генерацией (остав\-шу\-ю\-ся, но все же весьма значительную часть работы выполняют классы, на\-хо\-дя\-щи\-е\-ся в файлах \ref{i4}, \ref{i5}).
+\subsection{\Large Файлы funcGenerator.py, abstractGenerator.py, generator1D.py, generator2D.py, generator3D.py}
+Класс {\bf abstractGenerator} и его наследники {\bf generator1D}, {\bf generator2D} и {\bf generator3D} выполняют почти всю работу, связанную с генерацией (остав\-шу\-ю\-ся, но все же весьма значительную часть работы выполняют классы, на\-хо\-дя\-щи\-е\-ся в файлах \ref{i4}, \ref{i5}).
 
 В методе {\bf createCPPandGetFunctionMaps()} класса {\bf Model} со\-зда\-ет\-ся экземпляр класса {\bf FuncGenerator}, описание которого находится в рассматриваемом файле \ref{i3}. В конструкторе этого класса в зависимости от размерности задачи выбирается конкретная реализация генератора (т.е. полем этого класса становится экземпляр одного из трех классов {\bf generator1D}, {\bf generator2D}, {\bf generator3D}). В дальнейшем метод {\bf generateAllFunctions()} класса {\bf FuncGenerator} работает именно с этой конкретной реализацией. Также этот метод формирует список словарей {\bf functionMaps}, по которому формируется матрица пересчета и структура которго описана в файле definition в папке doc.
 
