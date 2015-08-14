@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 100.0, 
+        "FinishTime": 100, 
         "TimeStep": 0.001, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
@@ -21,7 +21,7 @@
             "Offset": {
                 "x": 0.0, 
                 "y": 0.0,
-				"z": 0.0
+		"z": 0.0
             }, 
             "Size": {
                 "x": 1.0, 
@@ -31,14 +31,14 @@
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [{
-					"BoundNumber": 0, 
+		    "BoundNumber": 0, 
                     "Side": 0, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
                     "yto": 0.5,
-					"zfrom": 0.0,
-					"zto": 0.5
+		    "zfrom": 0.0,
+		    "zto": 0.5
 				}], 
             "InitialRegions": [], 
             "EquationRegions": []
@@ -58,7 +58,16 @@
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [], 
+            "BoundRegions": [{
+		    "BoundNumber": 1, 
+                    "Side": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.0, 
+                    "yfrom": 0.0, 
+                    "yto": 0.5,
+		    "zfrom": 0.0,
+		    "zto": 0.5
+				}], 
             "InitialRegions": [], 
             "EquationRegions": []
         }
@@ -139,14 +148,24 @@
     }, 
     "Bounds": [
     {
-            "Name": "D 1", 
+            "Name": "N 1", 
             "Type": 0, 
             "Values": [
                 "100.0"
             ],
-			"Derivative": [
-				"0.0"
-			]
+            "Derivative": [
+                "0.0"
+            ]
+        },
+        {
+            "Name": "N 2", 
+            "Type": 0, 
+            "Values": [
+                "-100.0"
+            ],
+            "Derivative": [
+                "0.0"
+            ]
         }
         ], 
     "Initials": [
@@ -168,6 +187,11 @@
             "Name": "cnode1", 
             "CpuCount": 1, 
             "GpuCount": 3
+        },
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 3
         }
     ], 
     "Mapping": {
@@ -179,7 +203,7 @@
                 "DeviceIdx": 0
             },
             {
-                "NodeIdx": 0, 
+                "NodeIdx": 0 , 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
             }
