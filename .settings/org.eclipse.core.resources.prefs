@@ -15,7 +15,6 @@ encoding//domainmodel/interconnect.py=utf-8
 encoding//domainmodel/libGenerateC.py=utf-8
 encoding//domainmodel/libGenerateJSON.py=utf-8
 encoding//domainmodel/model.py=utf-8
-encoding//domainmodel/newFuncGenerator.py=utf-8
 encoding//domainmodel/regions.py=utf-8
 encoding//domainmodel/rhsCodeGenerator.py=utf-8
 encoding//domainmodel/someFuncs.py=utf-8

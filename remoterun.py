@@ -67,7 +67,7 @@ class Connection(object):
         
         
         
-def remoteProjectRun(inputFile, connFileName, continueEnabled, optionalArgs):
+def remoteProjectRun(jobId, inputFile, connFileName, continueEnabled, optionalArgs):
     #2 Get connection data and copy json to the cluster
     projectPathName, _ = os.path.splitext(inputFile)   
     projectName = os.path.basename(projectPathName)
@@ -122,7 +122,7 @@ def remoteProjectRun(inputFile, connFileName, continueEnabled, optionalArgs):
         
         #3 Run jsontobin on json
         print 'Running preprocessor:'
-        command = 'python '+connection.preprocessorFolder+'/jsontobin.py '+projFolder+'/'+remoteProjectFileName + " " + connection.solverExecutable + " " + connection.preprocessorFolder
+        command = 'python '+connection.preprocessorFolder+'/jsontobin.py '+ str(jobId) + ' ' +  projFolder+'/'+remoteProjectFileName + " " + connection.solverExecutable + " " + connection.preprocessorFolder
         
         print command, optionalArgs
         stdin, stdout, stderr = client.exec_command(command+optionalArgs)
@@ -160,6 +160,8 @@ def remoteProjectRun(inputFile, connFileName, continueEnabled, optionalArgs):
 
 if __name__=='__main__':    
     parser = argparse.ArgumentParser(description='Processing json file on a remote cluster.', epilog = "Have fun!")
+    #mandatory argument, unique job Id for identification in database
+    parser.add_argument('jobId', type = int, help = "unique job ID")
     #mandatory argument, json filename
     parser.add_argument('fileName', type = str, help = "local json file to process")
     parser.add_argument('connFileName', type = str, help = "local json file with connection info")    
@@ -172,7 +174,7 @@ if __name__=='__main__':
     
     args = parser.parse_args()
     
-    
+    jobId = args.jobId    
     inputFile = args.fileName
     connFile = args.connFileName
     finishTime = args.finish
@@ -192,6 +194,6 @@ if __name__=='__main__':
     if args.debug:
         optionalArgs+=" -debug"
        
-    remoteProjectRun(inputFile, connFile, continueEnabled, optionalArgs)
+    remoteProjectRun(jobId, inputFile, connFile, continueEnabled, optionalArgs)
 
 
