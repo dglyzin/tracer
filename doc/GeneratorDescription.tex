@@ -27,18 +27,18 @@
 
 Для генерирования функций используются файлы, находящиеся в пап\-ке domainmodel:
 \begin{enumerate}
-\item  customOfficer.py; \label{i1}
+\item customOfficer.py; \label{i1}
 \item equationParser.py; \label{i2}
 \item funcGenerator.py; \label{i3}
-\item abstractGenerator.py; \label{i9}
-\item generator1D.py, generator2D.py, generator3D.py; \label{i8}
-\item  rhsCodeGenerator.py; \label{i4}
-\item derivCodeGenerator.py; \label{i5}
-\item someFuncs.py; \label{i6}
-\item DerivHandler.py. \label{i7}
+\item abstractGenerator.py; \label{i4}
+\item generator1D.py, generator2D.py, generator3D.py; \label{i5}
+\item  rhsCodeGenerator.py; \label{i6}
+\item derivCodeGenerator.py; \label{i7}
+\item someFuncs.py; \label{i8}
+\item DerivHandler.py. \label{i9}
 \end{enumerate}
 
-Файлы \ref{i6} и \ref{i7} используются для генерации, но функции, лежащие в них, могут использоваться и для других целей. Из файла \ref{i6} для генерации используются функции {\bf NewtonBinomCoefficient()}, {\bf generateCodeForMathFunction()}, {\bf determineNameOfBoundary()}, {\bf RectSquare()}, {\bf determineCellIndexOfStartOfConnection2D()}, {\bf getRanges()}. Функции {\bf factorial()} и {\bf getCellCountAlongLine()} из этого же файла используются функциями {\bf NewtonBinomCoefficient()}, {\bf determineCellIndexOfStartOfConnection2D()}, {\bf getRanges()}. Файл \ref{i7} содержит функцию, которая находит порядок старшей про\-из\-вод\-ной.
+Файлы \ref{i8} и \ref{i9} используются для генерации, но функции, лежащие в них, могут использоваться и для других целей. Из файла \ref{i8} для генерации используются функции {\bf NewtonBinomCoefficient()}, {\bf generateCodeForMathFunction()}, {\bf determineNameOfBoundary()}, {\bf RectSquare()}, {\bf determineCellIndexOfStartOfConnection2D()}, {\bf getRanges()}. Функции {\bf factorial()} и {\bf getCellCountAlongLine()} из этого же файла используются функциями {\bf NewtonBinomCoefficient()}, {\bf determineCellIndexOfStartOfConnection2D()}, {\bf getRanges()}. Файл \ref{i9} содержит функцию, которая находит порядок старшей про\-из\-вод\-ной.
 
 \bigskip
 {\bf Основная идея}.
@@ -101,15 +101,15 @@
 \item Корректность ввода интерконнектов пока что нигде не проверяется!
 \end{itemize}
 
-%\newpage
+\newpage
 \subsection{\Large Файл equationParser.py и парсинг уравнений, начальных и граничных условий}
 Мозги парсера --- библиотека pyparsing. Этот файл (equationParser.py) содержит три класса:
 \begin{itemize}
 \item {\bf CorrectnessController}. Занимается проверкой уравнений и ма\-те\-ма\-ти\-чес\-ких функций (например, используемых в качестве начальных или граничных условий) на корректность ввода (например, пра\-виль\-ность расстановки скобок, правильность расстановки операторов $+$, $-$, $*$, $/$ и т.д.)
 \item {\bf ParsePatternCreater}. Чтобы распарсить некое выражение сред\-ства\-ми pyparsing, нужно составить подходящую под это выражение грамматику. Нам надо парсить уравнения (выделять их правые части) и отдельно функции. Для этого надо создать 2 разных (но очень похожих) грамматики. Еще надо получать из левых частей уравнений список компонент искомой функции. Надо поэтому уравнения пар\-сить уже по-другому (выделять их левые части), т.е. есть не\-об\-хо\-ди\-мость создания третьей грамматики. Этот класс отвечает за создание этих грамматик.
-\item {\bf MathExpressionParser}. С помощью созданной предыдущим клас\-сом грамматики либо парсит уравнение, либо математическую функ\-цию, либо возвращает список компонент искомой функции. \label{ci1}
+\item {\bf MathExpressionParser}. С помощью созданной предыдущим клас\-сом грамматики либо парсит уравнение, либо математическую функ\-цию, либо возвращает список компонент искомой функции.
 \end{itemize}
-Клиент использует только класс \ref{ci1}. Это происходит в методе {\bf generateAllPointInitials()} класса {\bf abstractGenerator} для того, чтобы пар\-сить начальные условия; в методе {\bf generateCentralFunctionCode()} того же класса для парсинга уравнений, необходимых для генерации центр\-аль\-ных функций; в реализациях матода {\bf generateBoundsAndIcs()} клас\-сов {\bf generator1D} и {\bf generator2D} (а в будущем и {\bf generator3D}).
+Клиент использует только последний из этих классов. Это происходит в методе {\bf generateAllPointInitials()} класса {\bf abstractGenerator} для того, чтобы пар\-сить начальные условия; в методе {\bf generateCentralFunctionCode()} того же класса для парсинга уравнений, необходимых для генерации центр\-аль\-ных функций; в реализациях матода {\bf generateBoundsAndIcs()} клас\-сов {\bf generator1D} и {\bf generator2D} (а в будущем и {\bf generator3D}).
 
 Недостатки парсера:
 \begin{itemize}
@@ -117,7 +117,11 @@
 \item Проверка на корректность ввода уравнений и математических функ\-ций (расстановка скобок и т.д.) сделана без использования средств pyparsing. Это порождает целый дополнительный класс, который занимается проверкой.
 \end{itemize}
 
-%\newpage
+Философия.
+
+Вообще использование pyparsing может быть лишним. Потому что с его помощью сначала строка преобразуется в список строк (в основном все строки там односимвольные, полноценные строки -- это только производные, например, "$D[U,\{x,1\},\{y,1\}]$" и степени), а потом только отдельные элементы этого списка (производные; выражения, возведенные в степень; компоненты искомой функции; имена параметров) заменяются на выражения C++. Использование pyparsing удобно тем, что позволяет парсить математические функции любой вложенности, например $[cos(sqrt(x + y) - sin(300 * cos(y)) * y)]^{59}$.
+
+\newpage
 \subsection{\Large Файлы funcGenerator.py, abstractGenerator.py, generator1D.py, generator2D.py, generator3D.py}
 Класс {\bf abstractGenerator} и его наследники {\bf generator1D}, {\bf generator2D} и {\bf generator3D} выполняют почти всю работу, связанную с генерацией (остав\-шу\-ю\-ся, но все же весьма значительную часть работы выполняют классы, на\-хо\-дя\-щи\-е\-ся в файлах \ref{i4}, \ref{i5}).
 
@@ -137,7 +141,7 @@
 \item {\bf BoundCondition} и {\bf Connection}. Метод {\bf getBlockInfo()} в двумерном (и может, в трехмерном) случае составляет список элементов, которые есть экземпляры этих классов.
 \end{itemize}
 
-%\newpage
+\newpage
 \subsection{\Large Файл rhsCodeGenerator.py и генерирование правых частей уравнений, заданных пользователем}
 Файл содержит класс {\bf RHSCodeGenerator}, который отвечает за ге\-не\-ра\-цию правой части одного уарвнения системы, заданной пользователем, с учетом краевых условий или соединений. Пример возврата такой функ\-ции --- строка:
 \begin{verbatim}
@@ -149,7 +153,7 @@ result[idx + 0] = params[0] * ((2.0 * DXM2 * (
 Этим занимается метод {\bf generateRightHandSideCode()}. Методы\\{\bf generateDirichlet()} и {\bf generateNeumannOrInterconnect()} класса\\
 {\bf abstractGenerator} используют именно этот метод. Отдельная задача --- сгенерировать производную с нужным конечно-разностным при\-бли\-же\-ни\-ем. Подготовкой к такой генерации занимаются методы \\ {\bf callDerivGenerator()} и {\bf callSpecialDerivGenerator()}. А саму про\-из\-вод\-ную генерируют уже методы одного из двух классов, описанных в файле \ref{i5}.
 
-%\newpage
+\newpage
 \subsection{\Large Файл derivCodeGenerator.py и генерирование производных}
 Т.к. в уравнении могут встретиться и чистые и смешанные производные, а смешанные производные в случае соединения блоков порождают много разных видов функций, которые необходимо сгенерировать, то удобно поручить генерирование чистых и смешанных производных разным клас\-сам. Эти классы:
 \begin{itemize}
