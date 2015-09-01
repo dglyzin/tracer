@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 '''
 Аргументы:
+0. уникальный id задачи
 1. json-файл проекта
 2. json-файл подключения
 3.
@@ -140,10 +141,11 @@ def remoteProjectRun(jobId, inputFile, connFileName, continueEnabled, optionalAr
         stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName)
         print stdout.read()
         print stderr.read()
+        
         #get resulting video
-        cftp=client.open_sftp()
-        cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
-        cftp.close()
+        #cftp=client.open_sftp()
+        #cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
+        #cftp.close()
         
 
         client.close()

@@ -1,0 +1,9 @@
+{
+        "Host": "10.7.129.222", 
+        "Port": 22, 
+        "Username": "dglyzin", 
+        "Password": "", 
+        "Workspace": "/home/dglyzin/sqlconntest", 
+        "SolverExecutable": "/home/dglyzin/sqlconntest/HS",
+        "PreprocessorFolder": "/home/dglyzin/sqlconntest"
+}
