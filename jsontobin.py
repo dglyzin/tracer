@@ -19,7 +19,7 @@ from domainmodel.decomposer import partitionAndMap
 from fileUtils import getSortedBinFileList
 import os
 
-def createBinaries(inputFile, solverExecutable, preprocessorFolder, runAtDebugPartition, 
+def createBinaries(jobId, inputFile, solverExecutable, preprocessorFolder, runAtDebugPartition, 
                    finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
     projectDir = os.path.dirname(inputFile)
     projectName, _ = os.path.splitext(inputFile)   
@@ -60,6 +60,8 @@ def createBinaries(inputFile, solverExecutable, preprocessorFolder, runAtDebugPa
                 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Processing json file on a remote cluster.', epilog = "Have fun!")
+    #mandatory argument, unique job Id for identification in database
+    parser.add_argument('jobId', type = int, help = "unique job ID")
     #mandatory argument, json filename
     parser.add_argument('fileName', type = str, help = "local json file to process")
     parser.add_argument('solverExecutable', type = str, help = "Solver executable")
@@ -80,5 +82,5 @@ if __name__=='__main__':
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
 
     print "jsontobin input!", inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName
-    createBinaries(inputFile, args.solverExecutable, args.preprocessorFolder, args.debug, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
+    createBinaries(args.jobId, inputFile, args.solverExecutable, args.preprocessorFolder, args.debug, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
     
