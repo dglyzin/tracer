@@ -68,17 +68,12 @@ class Connection(object):
         
         
         
-def remoteProjectRun(jobId, inputFile, connFileName, continueEnabled, optionalArgs):
+def remoteProjectRun(jobId, inputFile, connection, continueEnabled, optionalArgs):
     #2 Get connection data and copy json to the cluster
     projectPathName, _ = os.path.splitext(inputFile)   
     projectName = os.path.basename(projectPathName)
     
-    connFile = open(connFileName,"r")    
-    connDict = json.loads(connFile.read())
-    connFile.close()
     
-    connection = Connection()
-    connection.fromDict(connDict)
     
     if connection.password == "":
         tmpPass = os.getenv("CLUSTER_PASS")
@@ -178,7 +173,7 @@ if __name__=='__main__':
     
     jobId = args.jobId    
     inputFile = args.fileName
-    connFile = args.connFileName
+    connFileName = args.connFileName
     finishTime = args.finish
     finishTimeProvided = not (finishTime is None)
     continueFileName = args.cont  
@@ -195,7 +190,15 @@ if __name__=='__main__':
             optionalArgs+=" "+continueFileName
     if args.debug:
         optionalArgs+=" -debug"
+        
+        
+    connFile = open(connFileName,"r")    
+    connDict = json.loads(connFile.read())
+    connFile.close()
+    
+    connection = Connection()
+    connection.fromDict(connDict)        
        
-    remoteProjectRun(jobId, inputFile, connFile, continueEnabled, optionalArgs)
+    remoteProjectRun(jobId, inputFile, connection, continueEnabled, optionalArgs)
 
 
