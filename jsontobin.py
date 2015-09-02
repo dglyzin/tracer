@@ -20,6 +20,9 @@ JS_CANCELLED = 4
 JS_FINISHED = 5
 JS_FAILED = 6
 
+US_STOP = 0 
+US_GO = 1
+US_CONTUNUE = 2
 
 import argparse
 from domainmodel.model import Model
@@ -47,7 +50,7 @@ def addDbRecord(jobId):
     # Use all the SQL you like
     cur.execute("DELETE FROM jobs WHERE id="+str(jobId) )
     cur.execute("DELETE FROM results WHERE job="+str(jobId) )
-    cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+")")
+    cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state, userstatus) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+", "+str(US_GO)+")")
     db.commit()
 
 
