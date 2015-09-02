@@ -138,9 +138,9 @@ def remoteProjectRun(jobId, inputFile, connection, continueEnabled, optionalArgs
         print stderr.read()
         
         #get resulting video
-        #cftp=client.open_sftp()
-        #cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
-        #cftp.close()
+        cftp=client.open_sftp()
+        cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
+        cftp.close()
         
 
         client.close()

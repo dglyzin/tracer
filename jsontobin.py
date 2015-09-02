@@ -11,6 +11,16 @@
 
 model -> mapped model -> domain.dom+funcs.cpp+run.sh
 '''
+
+JS_STARTED = 0
+JS_PREPROCESSING = 1
+JS_QUEUED = 2
+JS_RUNNING = 3
+JS_CANCELLED = 4
+JS_FINISHED = 5
+JS_FAILED = 6
+
+
 import argparse
 from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel
@@ -18,6 +28,27 @@ from domainmodel.decomposer import partitionAndMap
 
 from fileUtils import getSortedBinFileList
 import os
+import MySQLdb
+
+def addDbRecord(jobId):
+    db = MySQLdb.connect(host="127.0.0.1", # your host, usually localhost
+                         user="cherry", # your username
+                         passwd="sho0ro0p", # your password
+                         db="cluster") # name of the data base
+    # you must create a Cursor object. It will let
+    #  you execute all the queries you need
+    cur = db.cursor() 
+    #1. get task id
+    #command = 'python '+connection.preprocessorFolder+'/jsontobin.py '+str(jobId)+' '   +projFolder+'/'+remoteProjectFileName + " " + 
+    #                       connection.solverExecutable + " " + connection.preprocessorFolder
+    #2. add task to db
+    #3. generate launcher script
+
+    # Use all the SQL you like
+    cur.execute("DELETE FROM jobs WHERE id="+str(jobId) )
+    cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+")")
+    db.commit()
+
 
 def createBinaries(jobId, inputFile, solverExecutable, preprocessorFolder, runAtDebugPartition, 
                    finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
@@ -48,6 +79,8 @@ def createBinaries(jobId, inputFile, solverExecutable, preprocessorFolder, runAt
         partModel = model
     else:
         partModel = partitionAndMap(model)
+
+    addDbRecord(jobId)
 
     bm = BinaryModel(partModel)
     bm.saveFuncs(OutputFuncFile, preprocessorFolder)
