@@ -54,7 +54,7 @@ def createBinaries(jobId, inputFile, solverExecutable, preprocessorFolder, runAt
     bm.saveDomain(OutputDataFile)
     bm.compileFuncs(OutputFuncFile)
     
-    bm.createRunFile(OutputRunFile, projectDir, solverExecutable, preprocessorFolder, runAtDebugPartition, 
+    bm.createRunFile(jobId, OutputRunFile, projectDir, solverExecutable, preprocessorFolder, runAtDebugPartition, 
                      OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFileName)
 
                 
