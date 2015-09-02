@@ -46,6 +46,7 @@ def addDbRecord(jobId):
 
     # Use all the SQL you like
     cur.execute("DELETE FROM jobs WHERE id="+str(jobId) )
+    cur.execute("DELETE FROM results WHERE job="+str(jobId) )
     cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+")")
     db.commit()
 
