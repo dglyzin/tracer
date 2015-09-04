@@ -34,7 +34,7 @@ from fileUtils import getSortedBinFileList
 import os
 import MySQLdb
 
-def addDbRecord(jobId):
+def updateDbRecord(jobId):
     db = MySQLdb.connect(host="127.0.0.1", # your host, usually localhost
                          user="cherry", # your username
                          passwd="sho0ro0p", # your password
@@ -49,9 +49,12 @@ def addDbRecord(jobId):
     #3. generate launcher script
 
     # Use all the SQL you like
-    cur.execute("DELETE FROM jobs WHERE id="+str(jobId) )
-    cur.execute("DELETE FROM results WHERE job="+str(jobId) )
-    cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state, userstatus) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+", "+str(USER_STATUS_START)+")")
+    
+    cur.execute("DELETE FROM results WHERE comptask="+str(jobId) )
+    #now record is created form web ui
+    #cur.execute("DELETE FROM jobs WHERE id="+str(jobId) )
+    #cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state, userstatus) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+", "+str(USER_STATUS_START)+")")
+    cur.execute("UPDATE comptasks SET update=1, state="+str(JS_PREPROCESSING)+" WHERE id="+str(jobId) )    
     db.commit()
 
 
@@ -85,7 +88,7 @@ def createBinaries(jobId, inputFile, solverExecutable, preprocessorFolder, runAt
     else:
         partModel = partitionAndMap(model)
 
-    addDbRecord(jobId)
+    updateDbRecord(jobId)
 
     bm = BinaryModel(partModel)
     bm.saveFuncs(OutputFuncFile, preprocessorFolder)
