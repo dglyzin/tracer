@@ -50,11 +50,11 @@ def updateDbRecord(jobId):
 
     # Use all the SQL you like
     
-    cur.execute("DELETE FROM results WHERE comptask="+str(jobId) )
+    cur.execute("DELETE FROM task_results WHERE task_id="+str(jobId) )
     #now record is created form web ui
     #cur.execute("DELETE FROM jobs WHERE id="+str(jobId) )
     #cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state, userstatus) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+", "+str(USER_STATUS_START)+")")
-    cur.execute("UPDATE comptasks SET update=1, state="+str(JS_PREPROCESSING)+" WHERE id="+str(jobId) )    
+    cur.execute("UPDATE tasks SET update=1, state="+str(JS_PREPROCESSING)+" WHERE id="+str(jobId) )    
     db.commit()
 
 
