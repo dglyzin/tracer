@@ -1,9 +1,9 @@
 {
-        "Host": "10.7.129.222", 
+        "Host": "10.8.0.10", 
         "Port": 22, 
-        "Username": "dglyzin", 
-        "Password": "", 
-        "Workspace": "/home/dglyzin/sqlconntest", 
-        "SolverExecutable": "/home/dglyzin/sqlconntest/HS",
-        "PreprocessorFolder": "/home/dglyzin/sqlconntest"
+        "Username": "tester", 
+        "Password": "tester", 
+        "Workspace": "/home/tester/tracer_workspace", 
+        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS",
+        "PreprocessorFolder": "/home/dglyzin/Tracer/hybriddomain"
 }
