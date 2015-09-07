@@ -59,7 +59,7 @@ def updateDbRecord(jobId):
     #cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state, userstatus) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+", "+str(USER_STATUS_START)+")")
     #cur.execute("UPDATE tasks SET  state=17 WHERE id=2")
     
-    cur.execute("UPDATE tasks SET `update`=1, state="+str(JS_PREPROCESSING)+" WHERE id="+str(jobId) )    
+    cur.execute("UPDATE tasks SET  state="+str(JS_PREPROCESSING)+" WHERE id="+str(jobId) )    
     db.commit()
 
 
