@@ -1,0 +1,2 @@
+0 python mpimaster.py
+1-15 ./cslave 
