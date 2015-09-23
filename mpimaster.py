@@ -15,7 +15,7 @@ def start_serving():
     rank = comm.Get_rank()
     size = comm.Get_size()
     if rank == 0:
-        for idx in range(size):
+        for idx in range(1,size):
             recId = comm.recv(source=idx, tag = 0)
             print recId
     else:
