@@ -83,7 +83,7 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
     print projectDir
     if continueEnabled:
         continueFileName = cont
-    else 
+    else: 
         continueFileName = "na"
     
     if continueEnabled and not continueFnameProvided:
