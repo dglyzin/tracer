@@ -681,8 +681,8 @@ class BinaryModel(object):
         domfile.close()
     
     
-    def saveFuncs(self, fileName, preprocessorFolder):
-        self.functionMaps = self.dmodel.createCPPandGetFunctionMaps(fileName, preprocessorFolder)
+    def saveFuncs(self, fileName, tracerFolder):
+        self.functionMaps = self.dmodel.createCPPandGetFunctionMaps(fileName, tracerFolder+"/hybriddomain")
 
     def compileFuncs(self, fileName):
         dirName = os.path.abspath(os.path.dirname(fileName))
