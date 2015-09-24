@@ -92,8 +92,8 @@ def createBinaries(jobId, inputFile, solverExecutable, preprocessorFolder, runAt
         partModel = model
     else:
         partModel = partitionAndMap(model)
-
-    updateDbRecord(jobId)
+    if jobId>=0:
+        updateDbRecord(jobId)
 
     bm = BinaryModel(partModel)
     bm.saveFuncs(OutputFuncFile, preprocessorFolder)
