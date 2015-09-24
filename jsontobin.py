@@ -106,6 +106,8 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
     bm.saveDomain(OutputDataFile)
     bm.compileFuncs(OutputFuncFile)
     
+    print "jobID:", jobId
+
     if not (jobId is None):
         updateDbRecord(jobId)
         bm.createCOnlyRunFile(OutputRunFile, projectDir, tracerFolder, debug, 
