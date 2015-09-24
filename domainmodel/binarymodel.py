@@ -697,7 +697,7 @@ class BinaryModel(object):
 
 
     def createCOnlyRunFile(self, OutputRunFile, projectDir, tracerFolder, debug, 
-                     DomFileName, finishTimeProvided, finish, continueEnabled, continueFileName):
+                     DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
         #in this case we run only c mpi workers and then process results
         
         #(self, jobId, OutputRunFile, projFolder, solverExecutable, preprocessorFolder, runAtDebugPartition,
