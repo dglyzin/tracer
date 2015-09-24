@@ -127,6 +127,6 @@ if __name__=='__main__':
     continueEnabled = not (continueFileName is None)
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
 
-    print "jsontobin input!", inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName
+    print "jsontobin input!", args.jobId, inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName
     createBinaries(args.jobId, inputFile, args.solverExecutable, args.preprocessorFolder, args.debug, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
     
