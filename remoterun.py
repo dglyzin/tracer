@@ -64,8 +64,9 @@ class Connection(object):
         self.tracerFolder = connDict["TracerFolder"]
         
         
-def remoteProjectRun(inputFile, connection, continueEnabled, optionalArgs):
+def remoteProjectRun(connection, inputFile, continueEnabled, optionalArgs):
     #get project file name without extension
+    print inputFile
     projectPathName, _ = os.path.splitext(inputFile)   
     projectName = os.path.basename(projectPathName)
     #get password
@@ -165,7 +166,7 @@ if __name__=='__main__':
     args = parser.parse_args()
     
     connFileName = args.connFileName    
-    inputFile = args.fileName
+    inputFile = args.projectFileName
     
     
     
