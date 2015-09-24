@@ -110,10 +110,10 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
 
     if not (jobId is None):
         updateDbRecord(jobId)
-        bm.createCOnlyRunFile(OutputRunFile, projectDir, tracerFolder, debug, 
-                     OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)
-    else:               
         bm.createMixRunFile(OutputRunFile, projectDir, tracerFolder, jobId, debug, 
+                     OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)        
+    else:               
+        bm.createCOnlyRunFile(OutputRunFile, projectDir, tracerFolder, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)
                 
 if __name__=='__main__':
