@@ -66,7 +66,7 @@ def updateDbRecord(jobId):
 def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):    
     finishTimeProvided = not (finish is None)   
     continueEnabled = not (cont is None)
-    continueFnameProvided =  not (args.cont  == "/") if continueEnabled else False
+    continueFnameProvided =  not (cont  == "/") if continueEnabled else False
     
     projectDir = os.path.dirname(inputFile)
     projectName, _ = os.path.splitext(inputFile)   
@@ -81,6 +81,11 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
 
     #we want to find the last computed state to continue if user does not provide filename but tell us to continue
     print projectDir
+    if continueEnabled:
+        continueFileName = cont
+    else 
+        continueFileName = "na"
+    
     if continueEnabled and not continueFnameProvided:
         try:
             continueFileName = os.path.join(projectDir, getSortedBinFileList(projectDir, projectTitle)[-1])
