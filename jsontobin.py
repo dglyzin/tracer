@@ -63,8 +63,11 @@ def updateDbRecord(jobId):
     db.commit()
 
 
-def createBinaries(jobId, inputFile, solverExecutable, preprocessorFolder, runAtDebugPartition, 
-                   finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName):    
+def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):    
+    finishTimeProvided = not (finish is None)   
+    continueEnabled = not (cont is None)
+    continueFnameProvided =  not (args.cont  == "/") if continueEnabled else False
+    
     projectDir = os.path.dirname(inputFile)
     projectName, _ = os.path.splitext(inputFile)   
     projectTitle = os.path.basename(projectName)
@@ -92,26 +95,29 @@ def createBinaries(jobId, inputFile, solverExecutable, preprocessorFolder, runAt
         partModel = model
     else:
         partModel = partitionAndMap(model)
-    if jobId>=0:
-        updateDbRecord(jobId)
-
+    
     bm = BinaryModel(partModel)
-    bm.saveFuncs(OutputFuncFile, preprocessorFolder)
+    bm.saveFuncs(OutputFuncFile, tracerFolder)
     bm.saveDomain(OutputDataFile)
     bm.compileFuncs(OutputFuncFile)
     
-    bm.createRunFile(jobId, OutputRunFile, projectDir, solverExecutable, preprocessorFolder, runAtDebugPartition, 
-                     OutputDataFile, finishTimeProvided, finishTime, continueEnabled, continueFileName)
-
+    if not (jobId is None):
+        updateDbRecord(jobId)
+        bm.createCOnlyRunFile(OutputRunFile, projectDir, tracerFolder, debug, 
+                     OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)
+    else:               
+        bm.createMixRunFile(OutputRunFile, projectDir, tracerFolder, jobId, debug, 
+                     OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)
                 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Processing json file on a remote cluster.', epilog = "Have fun!")
-    #mandatory argument, unique job Id for identification in database
-    parser.add_argument('jobId', type = int, help = "unique job ID")
     #mandatory argument, json filename
     parser.add_argument('fileName', type = str, help = "local json file to process")
-    parser.add_argument('solverExecutable', type = str, help = "Solver executable")
-    parser.add_argument('preprocessorFolder', type = str, help = "Preprocessor folder")
+    parser.add_argument('tracerFolder', type = str, help = "Tracer Folder")
+    
+    #optional argument, unique job Id for identification in database 
+    #if no id provided, db is not used and separate python mpi process is not included 
+    parser.add_argument('jobId', type = int, help = "unique job ID")
     #optional argument, exactly one float to override json finish time
     parser.add_argument('-finish', type=float, help = "new finish time to override json value")
     #optional argument with one or no argument, filename to continue computations from
@@ -120,13 +126,6 @@ if __name__=='__main__':
     parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
     args = parser.parse_args()
   
-    inputFile = args.fileName
-    finishTime = args.finish
-    finishTimeProvided = not (finishTime is None)
-    continueFileName = args.cont  
-    continueEnabled = not (continueFileName is None)
-    continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
-
-    print "jsontobin input!", args.jobId, inputFile, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName
-    createBinaries(args.jobId, inputFile, args.solverExecutable, args.preprocessorFolder, args.debug, finishTimeProvided, finishTime, continueEnabled, continueFnameProvided, continueFileName)
+    print "jsontobin input!", args.fileName, args.tracerFolder, args.jobId, args.finish, args.cont, args.debug 
+    createBinaries(args.fileName, args.tracerFolder, args.jobId, args.finish, args.cont, args.debug)
     

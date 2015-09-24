@@ -4,6 +4,6 @@
         "Username": "dglyzin", 
         "Password": "", 
         "Workspace": "/home/dglyzin/Tracer/projects", 
-        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS",
-        "PreprocessorFolder": "/home/dglyzin/Tracer/hybriddomain"
+        "TracerFolder": "/home/dglyzin/Tracer",
+        
 }

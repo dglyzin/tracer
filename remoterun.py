@@ -42,8 +42,7 @@ class Connection(object):
         self.username = "tester"
         self.password = ""
         self.workspace = "/home/tester/Tracer"
-        self.solverExecutable = "/home/dglyzin/hybridsolver/bin/HS"
-        self.preprocessorFolder = "/home/tester/dglTracer/hybriddomain"
+        self.tracerFolder = "/home/dglyzin/Tracer"        
 
     def toDict(self):
         connDict = OrderedDict([
@@ -52,8 +51,7 @@ class Connection(object):
         ("Username", self.username),
         ("Password", self.password),
         ("Workspace", self.workspace),
-        ("SolverExecutable", self.solverExecutable),
-        ("PreprocessorFolder", self.preprocessorFolder)
+        ("TracerFolder", self.tracerFolder)
         ])
         return connDict
 
@@ -63,18 +61,14 @@ class Connection(object):
         self.username = connDict["Username"]
         self.password = connDict["Password"]
         self.workspace = connDict["Workspace"]
-        self.solverExecutable = connDict["SolverExecutable"]
-        self.preprocessorFolder = connDict["PreprocessorFolder"]
+        self.tracerFolder = connDict["TracerFolder"]
         
         
-        
-def remoteProjectRun(jobId, inputFile, connection, continueEnabled, optionalArgs):
-    #2 Get connection data and copy json to the cluster
+def remoteProjectRun(inputFile, connection, continueEnabled, optionalArgs):
+    #get project file name without extension
     projectPathName, _ = os.path.splitext(inputFile)   
     projectName = os.path.basename(projectPathName)
-    
-    
-    
+    #get password
     if connection.password == "":
         tmpPass = os.getenv("CLUSTER_PASS")
         if tmpPass is None:
@@ -118,15 +112,15 @@ def remoteProjectRun(jobId, inputFile, connection, continueEnabled, optionalArgs
         
         #3 Run jsontobin on json
         print 'Running preprocessor:'
-        command = 'python '+connection.preprocessorFolder+'/jsontobin.py '+ str(jobId) + ' ' +  projFolder+'/'+remoteProjectFileName + " " + connection.solverExecutable + " " + connection.preprocessorFolder
+        command = 'python '+connection.tracerFolder+'/hybriddomain/jsontobin.py '+ projFolder+'/'+remoteProjectFileName + " " + connection.tracerFolder
         
         print command, optionalArgs
         stdin, stdout, stderr = client.exec_command(command+optionalArgs)
         print stdout.read()
 
         #4 Run Solver binary on created files
-        print "Checking if solver executable at "+connection.solverExecutable+" exists..."
-        stdin, stdout, stderr = client.exec_command('test -f '+connection.solverExecutable)
+        print "Checking if solver executable at "+connection.tracerFolder+"/hybridsolver/bin/HS exists..."
+        stdin, stdout, stderr = client.exec_command('test -f '+connection.tracerFolder + "/hybridsolver/bin/HS")
         if stdout.channel.recv_exit_status():
             print "Please provide correct path to the solver executable."
             return
@@ -137,12 +131,11 @@ def remoteProjectRun(jobId, inputFile, connection, continueEnabled, optionalArgs
         print stdout.read()
         print stderr.read()
         
-        #get resulting video
-        cftp=client.open_sftp()
-        cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
-        cftp.close()
+        #get resulting files
+        #cftp=client.open_sftp()
+        #cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
+        #cftp.close()
         
-
         client.close()
 
     #Обрабатываю исключения
@@ -157,11 +150,11 @@ def remoteProjectRun(jobId, inputFile, connection, continueEnabled, optionalArgs
 
 if __name__=='__main__':    
     parser = argparse.ArgumentParser(description='Processing json file on a remote cluster.', epilog = "Have fun!")
-    #mandatory argument, unique job Id for identification in database
-    parser.add_argument('jobId', type = int, help = "unique job ID")
-    #mandatory argument, json filename
-    parser.add_argument('fileName', type = str, help = "local json file to process")
     parser.add_argument('connFileName', type = str, help = "local json file with connection info")    
+    #mandatory argument, json filename
+    parser.add_argument('projectFileName', type = str, help = "local json file to process")
+    #optional argument, unique job Id for identification in database
+    parser.add_argument('-jobId', type = int, help = "unique job ID") 
     #optional argument, exactly one float to override json finish time
     parser.add_argument('-finish', type=float, help = "new finish time to override json value")
     #optional argument with one or no argument, filename to continue computations from
@@ -171,17 +164,23 @@ if __name__=='__main__':
     
     args = parser.parse_args()
     
-    jobId = args.jobId    
+    connFileName = args.connFileName    
     inputFile = args.fileName
-    connFileName = args.connFileName
+    
+    
+    
     finishTime = args.finish
     finishTimeProvided = not (finishTime is None)
     continueFileName = args.cont  
     continueEnabled = not (continueFileName is None)
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
+        
     
   
     optionalArgs=''
+    
+    if not (args.jobId is None):
+        optionalArgs+=" -jobId "+str(args.jobId)
     if finishTimeProvided:
         optionalArgs+=" -finish "+str(finishTime)
     if continueEnabled:
@@ -199,6 +198,6 @@ if __name__=='__main__':
     connection = Connection()
     connection.fromDict(connDict)        
        
-    remoteProjectRun(jobId, inputFile, connection, continueEnabled, optionalArgs)
+    remoteProjectRun(connection, inputFile, continueEnabled, optionalArgs)
 
 

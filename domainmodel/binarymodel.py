@@ -696,8 +696,12 @@ class BinaryModel(object):
         print "compilation finished"
 
 
-    def createRunFile(self, jobId, OutputRunFile, projFolder, solverExecutable, preprocessorFolder, runAtDebugPartition,
-                       DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
+    def createCOnlyRunFile(self, OutputRunFile, projectDir, tracerFolder, debug, 
+                     DomFileName, finishTimeProvided, finish, continueEnabled, continueFileName):
+        #in this case we run only c mpi workers and then process results
+        
+        #(self, jobId, OutputRunFile, projFolder, solverExecutable, preprocessorFolder, runAtDebugPartition,
+        #                   DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
         print "generating launcher script..."
         flag = 0
         if finishTimeProvided: flag+=1
@@ -708,16 +712,29 @@ class BinaryModel(object):
         
         runFile = open(OutputRunFile, "w")
         #conn = self.dmodel.connection
-        videoGenerator = preprocessorFolder + "/createMovieOnCluster.py"
+        postprocessor = tracerFolder + "/hybriddomain/postprocessor.py"
          
         partitionOption = " "
-        if runAtDebugPartition:
+        if debug:
             partitionOption = " -p debug "
-         
+        
+        solverExecutable = tracerFolder+"/hybridsolver/bin/HS"
+        
         nodeCount = self.dmodel.getNodeCount()
         runFile.write("echo Welcome to generated kernel launcher!\n")
-        runFile.write("export LD_LIBRARY_PATH="+projFolder+":$LD_LIBRARY_PATH\n")
-        runFile.write("srun -N "+str(nodeCount)+ partitionOption +solverExecutable+" "+str(jobId) +" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
-        runFile.write("srun -n1" + partitionOption +"python " + videoGenerator +" " + projFolder+"/" )
+        runFile.write("export LD_LIBRARY_PATH="+projectDir+":$LD_LIBRARY_PATH\n")
+        runFile.write("srun -N "+str(nodeCount)+ partitionOption +solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
+        runFile.write("srun -n1" + partitionOption +"python " + postprocessor +" " + projectDir+"/" )
         runFile.close()
-
+   
+                   
+    def createMixRunFile(self, OutputRunFile, projectDir, tracerFolder, jobId, debug, 
+                    OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName):
+        '''
+          here we want to run mpi in mpmd mode with one python master process
+          and some c workers
+          1. create slurm-mpmd file
+          2. create sh script
+          no results handling needed, as it is done by python master          
+        '''
+        pass
