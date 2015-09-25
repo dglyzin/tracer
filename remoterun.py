@@ -64,7 +64,7 @@ class Connection(object):
         self.tracerFolder = connDict["TracerFolder"]
         
         
-def remoteProjectRun(connection, inputFile, continueEnabled, optionalArgs):
+def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, optionalArgs):
     #get project file name without extension
     print inputFile
     projectPathName, _ = os.path.splitext(inputFile)   
@@ -106,7 +106,17 @@ def remoteProjectRun(connection, inputFile, continueEnabled, optionalArgs):
                 stdout.read()
                 print "Folder cleaned."                
             else:
-                print "Folder exists, no cleaning needed."                      
+                print "Folder exists, no cleaning needed."
+                #now check if file to continue from exists
+                if continueFnameProvided:
+                    print "Checking if file to continue from  ("+continueFileName+") exists..."
+                    stdin, stdout, stderr = client.exec_command('test -f '+continueFileName)
+                    if stdout.channel.recv_exit_status():
+                        print "File not found, please specify existing file to continue"
+                        return
+                    else:
+                        print "File OK."
+                                      
         cftp=client.open_sftp()
         cftp.put(inputFile, projFolder+"/"+remoteProjectFileName)
         cftp.close()
@@ -199,6 +209,6 @@ if __name__=='__main__':
     connection = Connection()
     connection.fromDict(connDict)        
        
-    remoteProjectRun(connection, inputFile, continueEnabled, optionalArgs)
+    remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, optionalArgs)
 
 

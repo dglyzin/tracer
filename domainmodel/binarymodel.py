@@ -698,10 +698,9 @@ class BinaryModel(object):
 
     def createCOnlyRunFile(self, OutputRunFile, projectDir, tracerFolder, debug, 
                      DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
-        #in this case we run only c mpi workers and then process results
-        
-        #(self, jobId, OutputRunFile, projFolder, solverExecutable, preprocessorFolder, runAtDebugPartition,
-        #                   DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
+        '''
+        in this case we run only c mpi workers and then process results
+        '''    
         print "generating launcher script..."
         flag = 0
         if finishTimeProvided: flag+=1
@@ -709,9 +708,7 @@ class BinaryModel(object):
         if continueEnabled: flag +=2
         else: continueFileName = "n_a"
         #print OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName
-        
-        runFile = open(OutputRunFile, "w")
-        #conn = self.dmodel.connection
+        runFile = open(OutputRunFile, "w")        
         postprocessor = tracerFolder + "/hybriddomain/postprocessor.py"
          
         partitionOption = " "
@@ -728,8 +725,8 @@ class BinaryModel(object):
         runFile.close()
    
                    
-    def createMixRunFile(self, OutputRunFile, projectDir, tracerFolder, jobId, debug, 
-                    OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName):
+    def createMixRunFile(self, OutputSpmdFile, OutputRunFile, projectDir, tracerFolder, jobId, debug, 
+                    DomFileName, finishTimeProvided, finish, continueEnabled, continueFileName):
         '''
           here we want to run mpi in mpmd mode with one python master process
           and some c workers
@@ -737,4 +734,34 @@ class BinaryModel(object):
           2. create sh script
           no results handling needed, as it is done by python master          
         '''
-        pass
+        print "generating launcher script..."
+        flag = 0
+        if finishTimeProvided: flag+=1
+        else: finishTime = -1.1
+        if continueEnabled: flag +=2
+        else: continueFileName = "n_a"
+        #print OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName
+                
+        partitionOption = " "
+        if debug:
+            partitionOption = " -p debug "
+        
+        pythonMaster = tracerFolder+"/hybriddomain/mpimaster.py"
+        solverExecutable = tracerFolder+"/hybridsolver/bin/HS"
+        runOptions = DomFileName + " " + str(flag) + " " + str(finishTime) + " " + continueFileName
+        
+        nodeCount = self.dmodel.getNodeCount()
+         
+        spmdFile = open(OutputSpmdFile, "w")
+        spmdFile.write("0 python " + pythonMaster + " " + str(jobId) + " " + runOptions + "\n")
+        spmdFile.write("1-" + str(nodeCount) + " " + solverExecutable + " " + runOptions + "\n") 
+        
+        spmdFile.close()
+        
+        
+        runFile = open(OutputRunFile, "w")
+        runFile.write("echo Welcome to generated kernel launcher!\n")
+        runFile.write("export LD_LIBRARY_PATH="+projectDir+":$LD_LIBRARY_PATH\n")
+        runFile.write("srun -N "+ str(nodeCount) + " "+ partitionOption+ "--multi-prog " + OutputSpmdFile +"\n")        
+        runFile.close()
+        

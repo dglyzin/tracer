@@ -7,6 +7,19 @@ Created on Sep 23, 2015
 from mpi4py import MPI
 import numpy as np
 
+
+def polling_receive(comm, source):
+    # Set this to 0 for maximum responsiveness, but that will peg CPU to 100%
+    sleep_seconds = 0.1
+    if sleep_seconds > 0:
+        while not comm.Iprobe(source=MPI.ANY_SOURCE):
+            time.sleep(sleep_seconds)
+    
+    status = MPI.Status()
+    result = comm.recv(source=MPI.ANY_SOURCE, status=status)
+            
+    return result
+
 def get_acquainted():
     pass
 

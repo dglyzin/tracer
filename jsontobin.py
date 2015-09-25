@@ -78,6 +78,7 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
     OutputDataFile = projectName+".dom"
     OutputFuncFile = projectName+".cpp"
     OutputRunFile = projectName+".sh"
+    OutputSpmdFile = projectName+".spmd"
 
     #we want to find the last computed state to continue if user does not provide filename but tell us to continue
     print projectDir
@@ -110,7 +111,7 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
 
     if not (jobId is None):
         updateDbRecord(jobId)
-        bm.createMixRunFile(OutputRunFile, projectDir, tracerFolder, jobId, debug, 
+        bm.createMixRunFile(OutputRunFile, OutputSpmdFile, projectDir, tracerFolder, jobId, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)        
     else:               
         bm.createCOnlyRunFile(OutputRunFile, projectDir, tracerFolder, debug, 
