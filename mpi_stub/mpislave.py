@@ -14,7 +14,7 @@ def start_serving():
     comm = MPI.COMM_WORLD
     rank = comm.Get_rank()
     size = comm.Get_size()
-    print "i am master", rank
+    print "i am slave", rank
     print MPI.Get_processor_name()
 if __name__ == '__main__':
     start_serving()

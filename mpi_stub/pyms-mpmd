@@ -1,0 +1,2 @@
+0 python mpimaster.py
+1-3 python mpislave.py 
