@@ -12,19 +12,8 @@
 model -> mapped model -> domain.dom+funcs.cpp+run.sh
 '''
 
-JS_STARTED = 0
-JS_PREPROCESSING = 1
-JS_QUEUED = 2
-JS_RUNNING = 3
-JS_CANCELLED = 4
-JS_FINISHED = 5
-JS_FAILED = 6
 
-USER_STATUS_STOP = 0
-USER_STATUS_START = 1
-USER_STATUS_SLEEP = 2
-USER_STATUS_END = 3
-
+from enums import *
 import argparse
 from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel
@@ -32,35 +21,7 @@ from domainmodel.decomposer import partitionAndMap
 
 from fileUtils import getSortedBinFileList
 import os
-import MySQLdb
-
-def updateDbRecord(jobId):
-    db = MySQLdb.connect(host="127.0.0.1", # your host, usually localhost
-                         user="cherry", # your username
-                         passwd="sho0ro0p", # your password
-                         db="cluster") # name of the data base
-    # you must create a Cursor object. It will let
-    #  you execute all the queries you need
-    cur = db.cursor() 
-    #1. get task id
-    #command = 'python '+connection.preprocessorFolder+'/jsontobin.py '+str(jobId)+' '   +projFolder+'/'+remoteProjectFileName + " " + 
-    #                       connection.solverExecutable + " " + connection.preprocessorFolder
-    #2. add task to db
-    #3. generate launcher script
-
-    # Use all the SQL you like
-    
-   
-    cur.execute("DELETE FROM task_results WHERE task_id="+str(jobId) )
-    
-
-    #now record is created form web ui
-    #cur.execute("DELETE FROM jobs WHERE id="+str(jobId) )
-    #cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state, userstatus) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+", "+str(USER_STATUS_START)+")")
-    #cur.execute("UPDATE tasks SET  state=17 WHERE id=2")
-    
-    cur.execute("UPDATE tasks SET  state="+str(JS_PREPROCESSING)+" WHERE id="+str(jobId) )    
-    db.commit()
+from dbConnector import setDbJobState
 
 
 def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):    
@@ -110,7 +71,7 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
     print "jobID:", jobId
 
     if not (jobId is None):
-        updateDbRecord(jobId)
+        setDbJobState(jobId, JS_PREPROCESSING)
         bm.createMixRunFile(OutputRunFile, OutputSpmdFile, projectDir, tracerFolder, jobId, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)        
     else:               
