@@ -66,9 +66,6 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
     figure.clear()
 
 
-
-
-
 def savePng2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
     figure = Figure()
     canvas = FigureCanvas(figure)
@@ -98,12 +95,7 @@ def savePng2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
     figure.savefig(filename, format='png')            
     figure.clear()
     
-    
-    
-    
 
-  
-  
 def calcAreaCharacteristics(info):
     minZ = 0
     maxZ = 0
@@ -145,14 +137,7 @@ def calcAreaCharacteristics(info):
     
     return countZ, countY, countX, offsetZ, offsetY, offsetX
   
-  
-  
-  
-  
-  
-  
-  
-  
+    
 def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize):
     maxValue = []#sys.float_info.min
     minValue = []#sys.float_info.max

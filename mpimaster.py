@@ -8,6 +8,9 @@ from mpi4py import MPI
 import numpy as np
 import argparse
 from domainmodel.binaryFileReader import readDomFile
+from domainmodel.dbConnector import setDbJobState
+from domainmodel.enums import *
+import time
 
 def polling_receive(comm, source):
     # Set this to 0 for maximum responsiveness, but that will peg CPU to 100%
@@ -38,6 +41,7 @@ def start_serving(args, geometry, dimension):
     #3. collect solution if it is time to save it
     #4. broadcast user status from db, goto 1 or exit
     
+    #-1
     comm = MPI.COMM_WORLD
     python_comm = comm.Split(0, 0)
    
@@ -48,7 +52,8 @@ def start_serving(args, geometry, dimension):
     user_status = np.zeros(1, dtype="int32")
     
     user_status[0] = USER_STATUS_START
-    
+    #0.
+    comm.Bcast([user_status, MPI.INT], root=0)
 
 
 
