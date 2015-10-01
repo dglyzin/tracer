@@ -33,28 +33,31 @@ def get_acquainted():
 def start_serving(args, geometry, dimension):
     #compute cycle:
     #-1. split workers into separate communicator
-    #0. broadcast to everyone user status from db
-    
-    #1. collect from everyone step processing status
-    #    if step was successful, continue
-    #2. get new time step here and new time
-    #3. collect solution if it is time to save it
-    #4. broadcast user status from db, goto 1 or exit
-    
-    #-1
-    comm = MPI.COMM_WORLD
-    python_comm = comm.Split(0, 0)
+    world = MPI.COMM_WORLD
+    python_comm = world.Split(0, 0)
    
 
-    rank = comm.Get_rank()
-    size = comm.Get_size()
+    rank = world.Get_rank()
+    size = world.Get_size()
 
     user_status = np.zeros(1, dtype="int32")
     
     user_status[0] = USER_STATUS_START
-    #0.
-    comm.Bcast([user_status, MPI.INT], root=0)
+    #    Порядок работы
+    #                    1. WORLD+COMP                          2. WORLD ONLY
+    #+    1. WORLD Bcast user-status, источник - world-0    |    +
+    #+                 xx.  идет расчет шага, используется только COMP
+    #пока нет    2. WORLD Allreduce compute-status                 |    +
+    #пока нет       xx.  идет расчет ошибки, используется только COMP
+    #+    5. accept/reject, comp-0 -> world-0               |    -
+    #+    6. new timestep, comp-0 -> world-0                |    -
+    #+    7. ready to collect data, comp-0 -> world-0       |    -
+    #+    8. WORLD collect data                             |    +
+    ##  9. stop/continue comp-0 -> world-0                |    -
 
+    #1.
+    world.Bcast([user_status, MPI.INT], root=0)
+    world.Recv([data, MPI.DOUBLE], source=idx, tag = 0)
 
 
 if __name__ == '__main__':

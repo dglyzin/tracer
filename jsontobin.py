@@ -13,7 +13,7 @@ model -> mapped model -> domain.dom+funcs.cpp+run.sh
 '''
 
 
-from enums import *
+from domainmodel.enums import *
 import argparse
 from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel
@@ -21,7 +21,7 @@ from domainmodel.decomposer import partitionAndMap
 
 from fileUtils import getSortedBinFileList
 import os
-from dbConnector import setDbJobState
+from domainmodel.dbConnector import setDbJobState
 
 
 def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):    
