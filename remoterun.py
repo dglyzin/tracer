@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 '''
 Аргументы:
-1. json-файл проекта
-2. json-файл подключения
+1. json-файл подключения
+2. json-файл проекта
 3. уникальный id задачи, если параметра нет, то работаем без базы
 4.
 Если этот аргумент не указан, то вычисления начинаются с нуля
@@ -122,7 +122,7 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         cftp.close()
         
         #3 Run jsontobin on json
-        print 'Running preprocessor:'
+        print '\nRunning preprocessor:'
         command = 'python '+connection.tracerFolder+'/hybriddomain/jsontobin.py '+ projFolder+'/'+remoteProjectFileName + " " + connection.tracerFolder
         
         print command, optionalArgs
