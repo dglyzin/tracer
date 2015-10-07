@@ -128,7 +128,9 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         print command, optionalArgs
         stdin, stdout, stderr = client.exec_command(command+optionalArgs)
         print stdout.read()
-
+        print "jsontobin stderr:"
+        print stderr.read()
+        print "stderr END"
         #4 Run Solver binary on created files
         print "Checking if solver executable at "+connection.tracerFolder+"/hybridsolver/bin/HS exists..."
         stdin, stdout, stderr = client.exec_command('test -f '+connection.tracerFolder + "/hybridsolver/bin/HS")
@@ -143,9 +145,9 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         print stderr.read()
         
         #get resulting files
-        #cftp=client.open_sftp()
-        #cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
-        #cftp.close()
+        cftp=client.open_sftp()
+        cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
+        cftp.close()
         
         client.close()
 
