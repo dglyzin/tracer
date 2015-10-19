@@ -72,7 +72,7 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
 
     if not (jobId is None):
         setDbJobState(jobId, JS_PREPROCESSING)
-        bm.createMixRunFile(OutputRunFile, OutputSpmdFile, projectDir, tracerFolder, jobId, debug, 
+        bm.createMixRunFile(OutputSpmdFile, OutputRunFile, projectDir, tracerFolder, jobId, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)        
     else:               
         bm.createCOnlyRunFile(OutputRunFile, projectDir, tracerFolder, debug, 

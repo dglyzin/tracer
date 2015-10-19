@@ -10,6 +10,7 @@ encoding//domainmodel/derivCodeGenerator.py=utf-8
 encoding//domainmodel/equation.py=utf-8
 encoding//domainmodel/equationParser.py=utf-8
 encoding//domainmodel/funcGenerator.py=utf-8
+encoding//domainmodel/generator1D.py=utf-8
 encoding//domainmodel/gridprocessing.py=utf-8
 encoding//domainmodel/interconnect.py=utf-8
 encoding//domainmodel/libGenerateC.py=utf-8
