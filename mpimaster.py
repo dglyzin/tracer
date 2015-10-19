@@ -65,9 +65,10 @@ def start_serving(args, geometry, dimension):
     #1.
     world.Bcast([user_status, MPI.INT], root=0)
     world.Recv([comp_status, MPI.INT], source=1, tag = 0)
+    #todo change state in db to running& ser slurm task ID
     
     #main computing cycle
-    while (user_status[0] != USER_STATUS_STOP) and (comp_status[0] != JS_RUNNING):
+    while (user_status[0] != USER_STATUS_STOP) and (comp_status[0] == JS_RUNNING):
         world.Recv([lastStepAccepted, MPI.INT], source=1, tag = 0)
         world.Recv([timeStep, MPI.DOUBLE], source=1, tag = 0)
         world.Recv([problemTime, MPI.DOUBLE], source=1, tag = 0)
