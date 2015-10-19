@@ -48,8 +48,8 @@ def start_serving(args, geometry, dimension):
     problemTime = np.zeros(1, dtype="float64")
     readyToSave = np.zeros(1, dtype="int32")
     
-    #user_status[0] = USER_STATUS_START
-    user_status[0] = USER_STATUS_STOP
+    user_status[0] = USER_STATUS_START
+    #user_status[0] = USER_STATUS_STOP
     #    Порядок работы
     #                    1. WORLD+COMP                          2. WORLD ONLY
     #+    1. WORLD Bcast user-status, источник - world-0    |    +
@@ -90,7 +90,7 @@ def start_serving(args, geometry, dimension):
         
         
     #end of computing cycle    
-    if (user_status[0] != USER_STATUS_STOP):
+    if (user_status[0] == USER_STATUS_STOP):
         print "Leaving main cycle with user status ", user_status[0]
     if (comp_status[0] != JS_RUNNING):
         print "Leaving main cycle with job state ", comp_status[0]
