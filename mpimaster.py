@@ -72,5 +72,5 @@ if __name__ == '__main__':
     parser.add_argument('contFileName', type=str, help = "filename to continue from")
     
     args = parser.parse_args()
-    geometry, _, _, _, _, dimension = readDomFile(args.domainFilename)
+    geometry, _, _, _, _, dimension = readDomFile(args.domainFileName)
     start_serving(args, geometry, dimension)
