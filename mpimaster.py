@@ -42,7 +42,8 @@ def start_serving(args, geometry, dimension):
 
     user_status = np.zeros(1, dtype="int32")
     
-    user_status[0] = USER_STATUS_START
+    #user_status[0] = USER_STATUS_START
+    user_status[0] = USER_STATUS_STOP
     #    Порядок работы
     #                    1. WORLD+COMP                          2. WORLD ONLY
     #+    1. WORLD Bcast user-status, источник - world-0    |    +
