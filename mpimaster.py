@@ -68,8 +68,8 @@ if __name__ == '__main__':
     parser.add_argument('jobId', type = int, help = "unique job ID")
     parser.add_argument('domainFileName', type = str, help = ".dom file")    
     parser.add_argument('flag', type = int, help = "secret flag")
-    parser.add_argument('finishTime', type=float, help = "new finish time to override json value")
-    parser.add_argument('contFileName', type=float, help = "filename to continue from")
+    parser.add_argument('finishTime', type=str, help = "new finish time to override json value")
+    parser.add_argument('contFileName', type=str, help = "filename to continue from")
     
     args = parser.parse_args()
     geometry, _, _, _, _, dimension = readDomFile(args.domainFilename)
