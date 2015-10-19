@@ -22,6 +22,7 @@ encoding//domainmodel/someFuncs.py=utf-8
 encoding//domainmodel/tester1.py=utf-8
 encoding/inputtest.py=utf-8
 encoding/jsontobin.py=utf-8
+encoding/mpimaster.py=utf-8
 encoding/postprocessor.py=utf-8
 encoding/remoterun.py=utf-8
 encoding/schemaValidator.py=utf-8
