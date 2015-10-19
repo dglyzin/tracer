@@ -74,3 +74,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     geometry, _, _, _, _, dimension = readDomFile(args.domainFileName)
     start_serving(args, geometry, dimension)
+    print "Python Master finished OK."
