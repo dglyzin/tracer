@@ -59,7 +59,7 @@ def start_serving(args, geometry, dimension):
 
     #1.
     world.Bcast([user_status, MPI.INT], root=0)
-    world.Recv([data, MPI.DOUBLE], source=idx, tag = 0)
+    #world.Recv([data, MPI.DOUBLE], source=idx, tag = 0)
 
 
 if __name__ == '__main__':
