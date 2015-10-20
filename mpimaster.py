@@ -84,7 +84,7 @@ def start_serving(args, geometry, dimension):
 
         world.Recv([readyToSave, MPI.INT], source=1, tag = 0)
         world.Recv([comp_status, MPI.INT], source=1, tag = 0)
-        #ready to save is actually a moment for lenghty IO
+        #ready to save is actually a moment for lenghty 
         #read/write the db
         #save solution/pictures
         if (readyToSave[0] == 1):
@@ -93,7 +93,7 @@ def start_serving(args, geometry, dimension):
             #we should receive all the data and save it
             #also save pictures and filename to database
             #world.Recv([data, MPI.DOUBLE], source=idx, tag = 0)    
-            dbc.setDbSlurmId(db, cur, args.jobId, slurmId)
+            dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
             user_status[0] = dbc.getDbUserStatus(cur, args.jobId) 
 
         
@@ -108,7 +108,8 @@ def start_serving(args, geometry, dimension):
     if (comp_status[0] != JS_RUNNING):
         print "Leaving main loop with job state ", comp_status[0]
 
-
+    dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
+    
     dbc.freeDbConn(db, cur)
 
 
