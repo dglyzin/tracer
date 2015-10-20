@@ -33,10 +33,15 @@ def setDbJobState(db, cur, jobId, state):
     #cur.execute("DELETE FROM jobs WHERE id="+str(jobId) )
     #cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state, userstatus) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+", "+str(USER_STATUS_START)+")")
     #cur.execute("UPDATE tasks SET  state=17 WHERE id=2")    
-    cur.execute("UPDATE tasks SET  state="+str(state)+" WHERE id="+str(jobId) )    
+    cur.execute("UPDATE tasks SET state="+str(state)+" WHERE id="+str(jobId) )    
+    db.commit()
+
+def setDbSlurmId(db, cur, jobId, slurmId):    
+    cur.execute("UPDATE tasks SET slurm_job="+str(slurmId)+" WHERE id="+str(jobId) )    
     db.commit()
     
 def getDbUserStatus(cur, jobId):
     cur.execute("SELECT status FROM tasks WHERE id="+str(jobId))
-    data = cur.fetchone()    
-    return data[0]
+    data = cur.fetchone()
+    #returns LONG somehow, so int it    
+    return int(data[0])
