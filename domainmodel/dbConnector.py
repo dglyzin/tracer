@@ -46,6 +46,11 @@ def setDbJobState(db, cur, jobId, state):
 def setDbSlurmId(db, cur, jobId, slurmId):    
     cur.execute("UPDATE tasks SET slurm_job="+str(slurmId)+" WHERE id="+str(jobId) )    
     db.commit()
+
+def setDbJobPercentage(db, cur, jobId, percentage):    
+    cur.execute("UPDATE tasks SET readiness="+str(percentage)+" WHERE id="+str(jobId) )    
+    db.commit()
+
     
 def getDbUserStatus(cur, jobId):
     cur.execute("SELECT status FROM tasks WHERE id="+str(jobId))

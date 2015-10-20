@@ -48,9 +48,11 @@ def start_serving(args, geometry, dimension):
     timeStep = np.zeros(1, dtype="float64")
     problemTime = np.zeros(1, dtype="float64")
     readyToSave = np.zeros(1, dtype="int32")
+    percentChanged = np.zeros(1, dtype="int32")
+    percentage = np.zeros(1, dtype="int32")
     
     db,cur = dbc.getDbConn(args.jobId)
-     
+    dbc.setDbJobPercentage(db, cur, args.jobId, 0)
     
     user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
     #user_status[0] = USER_STATUS_STOP
@@ -81,6 +83,10 @@ def start_serving(args, geometry, dimension):
         world.Recv([timeStep, MPI.DOUBLE], source=1, tag = 0)
         world.Recv([problemTime, MPI.DOUBLE], source=1, tag = 0)
 
+        world.Recv([percentChanged, MPI.INT], source=1, tag = 0)
+        if percentChanged[0] == 1:
+            world.Recv([percentage, MPI.INT], source=1, tag = 0)
+            dbc.setDbJobPercentage(db, cur, args.jobId, percentage[0])
 
         world.Recv([readyToSave, MPI.INT], source=1, tag = 0)
         world.Recv([comp_status, MPI.INT], source=1, tag = 0)
@@ -94,7 +100,8 @@ def start_serving(args, geometry, dimension):
             #also save pictures and filename to database
             #world.Recv([data, MPI.DOUBLE], source=idx, tag = 0)    
             dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
-            user_status[0] = dbc.getDbUserStatus(cur, args.jobId) 
+            user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
+             
 
         
         
@@ -109,7 +116,8 @@ def start_serving(args, geometry, dimension):
         print "Leaving main loop with job state ", comp_status[0]
 
     dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
-    
+    if comp_status[0] == JS_FINISHED:
+        dbc.setDbJobPercentage(db, cur, args.jobId, 100)    
     dbc.freeDbConn(db, cur)
 
 
