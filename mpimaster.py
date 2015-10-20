@@ -92,10 +92,10 @@ def start_serving(args, geometry, dimension):
             pass
 
         
-        #todo check status in the db
+        user_status[0] = dbc.getDbUserStatus(cur, args.jobId) 
         world.Bcast([user_status, MPI.INT], root=0)
         world.Recv([comp_status, MPI.INT], source=1, tag = 0)
-        #todo store state to db
+        dbc.setDbSlurmId(db, cur, args.jobId, slurmId)
         
         
     #end of computing loop    
