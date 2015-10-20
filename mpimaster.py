@@ -50,7 +50,7 @@ def start_serving(args, geometry, dimension):
     readyToSave = np.zeros(1, dtype="int32")
     
     db,cur = dbc.getDbConn(args.jobId)
-    
+     
     
     user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
     #user_status[0] = USER_STATUS_STOP
@@ -83,26 +83,30 @@ def start_serving(args, geometry, dimension):
 
 
         world.Recv([readyToSave, MPI.INT], source=1, tag = 0)
+        world.Recv([comp_status, MPI.INT], source=1, tag = 0)
+        #ready to save is actually a moment for lenghty IO
+        #read/write the db
+        #save solution/pictures
         if (readyToSave[0] == 1):
             print "PM: time to save but nothing I can do so far: ", problemTime[0]
             #core decided it's saving time
             #we should receive all the data and save it
             #also save pictures and filename to database
             #world.Recv([data, MPI.DOUBLE], source=idx, tag = 0)    
-            pass
+            dbc.setDbSlurmId(db, cur, args.jobId, slurmId)
+            user_status[0] = dbc.getDbUserStatus(cur, args.jobId) 
 
         
-        user_status[0] = dbc.getDbUserStatus(cur, args.jobId) 
+        
         world.Bcast([user_status, MPI.INT], root=0)
-        world.Recv([comp_status, MPI.INT], source=1, tag = 0)
-        dbc.setDbSlurmId(db, cur, args.jobId, slurmId)
+        
         
         
     #end of computing loop    
     if (user_status[0] != USER_STATUS_START):
-        print "Leaving main cycle with user status ", user_status[0]
+        print "Leaving main loop with user status ", user_status[0]
     if (comp_status[0] != JS_RUNNING):
-        print "Leaving main cycle with job state ", comp_status[0]
+        print "Leaving main loop with job state ", comp_status[0]
 
 
     dbc.freeDbConn(db, cur)
