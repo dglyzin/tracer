@@ -9,9 +9,10 @@ from mpi4py import MPI
 import numpy as np
 import argparse
 from domainmodel.binaryFileReader import readDomFile
-from domainmodel.dbConnector import setDbJobState
+import domainmodel.dbConnector as dbc
 from domainmodel.enums import *
 import time
+import os
 
 def polling_receive(comm, source):
     # Set this to 0 for maximum responsiveness, but that will peg CPU to 100%
@@ -48,7 +49,10 @@ def start_serving(args, geometry, dimension):
     problemTime = np.zeros(1, dtype="float64")
     readyToSave = np.zeros(1, dtype="int32")
     
-    user_status[0] = USER_STATUS_START
+    db,cur = dbc.getDbConn(args.jobId)
+    
+    
+    user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
     #user_status[0] = USER_STATUS_STOP
     #    Порядок работы
     #                    1. WORLD+COMP                          2. WORLD ONLY
@@ -64,11 +68,15 @@ def start_serving(args, geometry, dimension):
 
     #1.
     world.Bcast([user_status, MPI.INT], root=0)
-    world.Recv([comp_status, MPI.INT], source=1, tag = 0)
+    world.Recv([comp_status, MPI.INT], source=1, tag = 0)    
     #todo change state in db to running& ser slurm task ID
+    dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
     
-    #main computing cycle
-    while (user_status[0] != USER_STATUS_STOP) and (comp_status[0] == JS_RUNNING):
+    slurmId = os.getenv("SLURM_JOB_ID")
+    dbc.setDbSlurmId(db, cur, args.jobId, slurmId)
+    
+    #main computing loop
+    while (user_status[0] == USER_STATUS_START) and (comp_status[0] == JS_RUNNING):
         world.Recv([lastStepAccepted, MPI.INT], source=1, tag = 0)
         world.Recv([timeStep, MPI.DOUBLE], source=1, tag = 0)
         world.Recv([problemTime, MPI.DOUBLE], source=1, tag = 0)
@@ -76,7 +84,7 @@ def start_serving(args, geometry, dimension):
 
         world.Recv([readyToSave, MPI.INT], source=1, tag = 0)
         if (readyToSave[0] == 1):
-            print "PM: time to save but nothing I can do so far"
+            print "PM: time to save but nothing I can do so far: ", problemTime[0]
             #core decided it's saving time
             #we should receive all the data and save it
             #also save pictures and filename to database
@@ -90,14 +98,14 @@ def start_serving(args, geometry, dimension):
         #todo store state to db
         
         
-    #end of computing cycle    
-    if (user_status[0] == USER_STATUS_STOP):
+    #end of computing loop    
+    if (user_status[0] != USER_STATUS_START):
         print "Leaving main cycle with user status ", user_status[0]
     if (comp_status[0] != JS_RUNNING):
         print "Leaving main cycle with job state ", comp_status[0]
 
 
-
+    dbc.freeDbConn(db, cur)
 
 
 

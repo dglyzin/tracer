@@ -17,6 +17,13 @@ def getDbConn(jobId):
     db.commit()    
     return db, cur
 
+def freeDbConn(db, cur):
+    # close the cursor object
+    cur.close ()
+    # close the connection
+    db.close ()
+
+
 def setDbJobState(db, cur, jobId, state):    
     # you must create a Cursor object. It will let
     #  you execute all the queries you need
