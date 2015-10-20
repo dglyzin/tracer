@@ -37,6 +37,6 @@ def setDbJobState(db, cur, jobId, state):
     db.commit()
     
 def getDbUserStatus(cur, jobId):
-    cur.execute("SELECT userstatus FROM tasks WHERE id="+str(jobId))
+    cur.execute("SELECT status FROM tasks WHERE id="+str(jobId))
     data = cur.fetchone()    
     return data[0]
