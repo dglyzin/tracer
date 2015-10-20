@@ -38,6 +38,7 @@ def setDbJobState(db, cur, jobId, state):
         
     #now record is created form web ui
     #cur.execute("DELETE FROM jobs WHERE id="+str(jobId) )
+    #UPDATE `tasks` SET `date_start`="2000-10-10 08:30" WHERE id=2 
     #cur.execute("INSERT INTO jobs (id, slurmid, starttime, finishtime, percentage, state, userstatus) VALUES ("+str(jobId)+", 0, NOW(), NOW(), 0, "+str(JS_PREPROCESSING)+", "+str(USER_STATUS_START)+")")
     #cur.execute("UPDATE tasks SET  state=17 WHERE id=2")    
     cur.execute("UPDATE tasks SET state="+str(state)+" WHERE id="+str(jobId) )    
@@ -49,6 +50,19 @@ def setDbSlurmId(db, cur, jobId, slurmId):
 
 def setDbJobPercentage(db, cur, jobId, percentage):    
     cur.execute("UPDATE tasks SET readiness="+str(percentage)+" WHERE id="+str(jobId) )    
+    db.commit()
+
+def setDbJobStartTime(db, cur, jobId):    
+    cur.execute("UPDATE tasks SET date_start=NOW()  WHERE id="+str(jobId) )    
+    db.commit()
+
+
+def setDbJobFinishTime(db, cur, jobId):    
+    cur.execute("UPDATE tasks SET date_end=NOW()  WHERE id="+str(jobId) )    
+    db.commit()
+
+def clearDbJobFinishTime(db, cur, jobId):    
+    cur.execute("UPDATE tasks SET date_end=NULL  WHERE id="+str(jobId) )    
     db.commit()
 
     

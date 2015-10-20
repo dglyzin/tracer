@@ -76,6 +76,8 @@ def start_serving(args, geometry, dimension):
     
     slurmId = os.getenv("SLURM_JOB_ID")
     dbc.setDbSlurmId(db, cur, args.jobId, slurmId)
+    dbc.setDbJobStartTime(db, cur, args.jobId)
+    dbc.clearDbJobFinishTime(db, cur, args.jobId)
     
     #main computing loop
     while (user_status[0] == USER_STATUS_START) and (comp_status[0] == JS_RUNNING):
@@ -114,6 +116,8 @@ def start_serving(args, geometry, dimension):
         print "Leaving main loop with user status ", user_status[0]
     if (comp_status[0] != JS_RUNNING):
         print "Leaving main loop with job state ", comp_status[0]
+
+    dbc.setDbJobFinishTime(db, cur, args.jobId)
 
     dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
     if comp_status[0] == JS_FINISHED:
