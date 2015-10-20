@@ -72,7 +72,7 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
 
     if not (jobId is None):
         db, cur = dbc.getDbConn(args.jobId)
-        dbc.setDbJobState(jobId, JS_PREPROCESSING)
+        dbc.setDbJobState(db, cur, jobId, JS_PREPROCESSING)
         dbc.freeDbConn(db, cur)
         bm.createMixRunFile(OutputSpmdFile, OutputRunFile, projectDir, tracerFolder, jobId, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)        
