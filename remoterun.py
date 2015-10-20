@@ -67,7 +67,33 @@ class Connection(object):
         self.tracerFolder = connDict["TracerFolder"]
         
         
-def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, optionalArgs):
+def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug):
+    '''
+      connection: file with connection settings
+      inputFile:  project file
+      continueEnabled: true if user wants to continue from computed file 
+      continueFnameProvided: true if user wants to continue from specific file, false if the last computed file to be used
+      continueFileName:
+      jobId: id of the task in the db
+      finishTimeProvided: true if user wants to override json value for finish time
+      finishTime:
+      debug: true if user wants to run small problem (10 min. max)
+    '''
+    
+    #prepare command line argumetnts for preprocessor
+    optionalArgs=''    
+    if not (jobId is None):
+        optionalArgs+=" -jobId "+str(jobId)
+    if finishTimeProvided:
+        optionalArgs+=" -finish "+str(finishTime)
+    if continueEnabled:
+        optionalArgs+=" -cont"
+        if continueFnameProvided:
+            optionalArgs+=" "+continueFileName
+    if debug:
+        optionalArgs+=" -debug"
+    
+    
     #get project file name without extension
     print inputFile
     projectPathName, _ = os.path.splitext(inputFile)   
@@ -181,32 +207,14 @@ if __name__=='__main__':
     args = parser.parse_args()
     
     connFileName = args.connFileName    
-    inputFile = args.projectFileName
+    inputFileName = args.projectFileName
     
-    
-    
-    finishTime = args.finish
-    finishTimeProvided = not (finishTime is None)
+       
+    finishTimeProvided = not (args.finish is None)
     continueFileName = args.cont  
     continueEnabled = not (continueFileName is None)
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
-        
-    
-  
-    optionalArgs=''
-    
-    if not (args.jobId is None):
-        optionalArgs+=" -jobId "+str(args.jobId)
-    if finishTimeProvided:
-        optionalArgs+=" -finish "+str(finishTime)
-    if continueEnabled:
-        optionalArgs+=" -cont"
-        if continueFnameProvided:
-            optionalArgs+=" "+continueFileName
-    if args.debug:
-        optionalArgs+=" -debug"
-        
-        
+          
     connFile = open(connFileName,"r")    
     connDict = json.loads(connFile.read())
     connFile.close()
@@ -214,6 +222,6 @@ if __name__=='__main__':
     connection = Connection()
     connection.fromDict(connDict)        
        
-    remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, optionalArgs)
+    remoteProjectRun(connection, inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug)
 
 
