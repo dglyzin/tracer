@@ -21,7 +21,7 @@ from domainmodel.decomposer import partitionAndMap
 
 from fileUtils import getSortedBinFileList
 import os
-from domainmodel.dbConnector import setDbJobState
+import domainmodel.dbConnector as dbc
 
 
 def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):    
@@ -71,7 +71,9 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
     print "jobID:", jobId
 
     if not (jobId is None):
-        setDbJobState(jobId, JS_PREPROCESSING)
+        db, cur = dbc.getDbConn(args.jobId)
+        dbc.setDbJobState(jobId, JS_PREPROCESSING)
+        dbc.freeDbConn(db, cur)
         bm.createMixRunFile(OutputSpmdFile, OutputRunFile, projectDir, tracerFolder, jobId, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)        
     else:               
