@@ -8,7 +8,7 @@ Created on Sep 30, 2015
 import MySQLdb
 
 def getDbConn(jobId):
-    db = MySQLdb.connect(host="127.0.0.1", # your host, usually localhost
+    db = MySQLdb.connect(host="192.168.10.100", # your host, usually localhost
                          user="cherry", # your username
                          passwd="sho0ro0p", # your password
                          db="cluster") # name of the data base
