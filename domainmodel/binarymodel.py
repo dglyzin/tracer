@@ -762,6 +762,8 @@ class BinaryModel(object):
         runFile = open(OutputRunFile, "w")
         runFile.write("echo Welcome to generated kernel launcher!\n")
         runFile.write("export LD_LIBRARY_PATH="+projectDir+":$LD_LIBRARY_PATH\n")
+        #dirty trick to let python process consume one processor core 
+        runFile.write("export OMP_NUM_THREADS=15\n")
         runFile.write("srun -N "+ str(nodeCount) + " "+ partitionOption+ "--multi-prog " + OutputSpmdFile +"\n")        
         runFile.close()
         
