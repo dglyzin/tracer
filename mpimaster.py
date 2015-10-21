@@ -31,7 +31,7 @@ def CollectSolution(world, geometry, cellSize):
     for blockInfo in geometry:
         total = blockInfo[3] * blockInfo[4] * blockInfo[5] * cellSize
         blockState = np.zeros(total,dtype='float64')
-        print "receiving ", total, "doubles from node ", blockInfo[6]
+        #print "receiving ", total, "doubles from node ", blockInfo[6]
         world.Recv([blockState, MPI.DOUBLE], source=blockInfo[6]+1, tag = 999)
         
         state.append(blockState)
@@ -104,7 +104,7 @@ def start_serving(args, geometry, cellSize, dimension):
         #read/write the db
         #save solution/pictures
         if (readyToSave[0] == 1):
-            print "PM: time to save but nothing I can do so far: ", problemTime[0]
+            #print "PM: time to save but nothing I can do so far: ", problemTime[0]
             #core decided it's saving time
             #we should receive all the data and save it
             #also save pictures and filename to database
