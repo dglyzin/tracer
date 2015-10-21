@@ -73,7 +73,7 @@ def getDbUserStatus(cur, jobId):
     return int(data[0])
 
 def addDbTaskResFile(db, cur, jobId, fileName ):
-    cur.execute("SELECT COUNT(task_id) AS NumberOfFiles FROM task_results WHERE task_id="+jobId);
+    cur.execute("SELECT COUNT(task_id) AS NumberOfFiles FROM task_results WHERE task_id="+str(jobId) );
     num = cur.fetchone[0]
     cur.execute("INSERT INTO task_results (num, filename, task_id) VALUES ("+str(num)+", '"+ fileName+"', "+ str(jobId)+")")    
     db.commit()
