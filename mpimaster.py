@@ -102,7 +102,7 @@ def SavePicture(folder, solution, problemTime, geometry, dx, dy, dz, cellSize, d
     
     
 
-def start_serving(args, geometry, dx, dy, dz, cellSize, dimension):
+def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
     #compute cycle:
     #-1. split workers into separate communicator
     
@@ -183,7 +183,7 @@ def start_serving(args, geometry, dx, dy, dz, cellSize, dimension):
             #print "receiving solution"
             solution = CollectSolution(world, geometry, cellSize)           
             SaveSolution(saveFolder, solution, problemTime[0])
-            SavePicture(saveFolder, solution, problemTime[0])
+            SavePicture(saveFolder, solution, problemTime[0], geometry, dx, dy, dz, cellSize, dimension)            
             #print "received:", solution[0][4]
             #save solution
             #save picture
