@@ -183,9 +183,9 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
             
             solution = CollectSolution(world, geometry, cellSize)           
             SaveSolution(saveFolder, solution, problemTime[0])
-            SavePicture(saveFolder, solution, problemTime[0], geometry, dx, dy, dz, cellSize, dimension)            
+            picFileName = SavePicture(saveFolder, solution, problemTime[0], geometry, dx, dy, dz, cellSize, dimension)            
             #print "PM: received:", solution[0][4]
-            
+            dbc.addDbTaskResFile(db, cur, args.jobId, picFileName)
             #store to db
         
         
