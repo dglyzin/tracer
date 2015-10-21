@@ -26,11 +26,16 @@ def polling_receive(comm, source):
             
     return result
 
-def get_acquainted():
-    pass
-
-
-    
+def CollectSolution(world, geometry):
+    state = []
+    for blockInfo in geometry:
+        total = blockInfo[3] * blockInfo[4] * blockInfo[5]
+        blockState = np.zeros(total,dtype='float64')
+        
+        world.Recv([blockState, MPI.DOUBLE], source=blockInfo[6], tag = 999)
+        
+        state.append(blockState)
+    return state
 
 def start_serving(args, geometry, dimension):
     #compute cycle:
@@ -103,8 +108,13 @@ def start_serving(args, geometry, dimension):
             #world.Recv([data, MPI.DOUBLE], source=idx, tag = 0)    
             dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
             user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
-             
-
+            #receive solution
+            print "receiving solution"
+            solution = CollectSolution(world, geometry)
+            print "received:", solution[0][4]
+            #save solution
+            #save picture
+            #store to db
         
         
         world.Bcast([user_status, MPI.INT], root=0)

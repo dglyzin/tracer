@@ -43,7 +43,7 @@ def readDomFile(fileName):
         deviceType, = struct.unpack('i', dom.read(4))
         deviveNumber, = struct.unpack('i', dom.read(4))
         
-        blockInfo = [0,0,0,1,1,1]
+        blockInfo = [0,0,0,1,1,1, node]
         
         for x in range(dimension) :
             coord, = struct.unpack('i', dom.read(4))
