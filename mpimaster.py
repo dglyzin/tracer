@@ -31,7 +31,7 @@ def CollectSolution(world, geometry):
     for blockInfo in geometry:
         total = blockInfo[3] * blockInfo[4] * blockInfo[5]
         blockState = np.zeros(total,dtype='float64')
-        
+        print "receiving ", total, "doubles from node ", blockInfo[6]
         world.Recv([blockState, MPI.DOUBLE], source=blockInfo[6], tag = 999)
         
         state.append(blockState)
