@@ -4,6 +4,12 @@ Created on Sep 23, 2015
 
 @author: dglyzin
 '''
+SAVE_FILE_CODE = 253
+GEOM_FILE_CODE = 254
+VERSION_MAJOR = 1
+VERSION_MINOR = 0
+
+
 
 from mpi4py import MPI
 import numpy as np
@@ -37,6 +43,26 @@ def CollectSolution(world, geometry, cellSize):
         state.append(blockState)
     return state
 
+def SaveSolution(folder, solution, problemTime):
+    #sprintf(saveFile, "%s%s%f%s", saveFile, "/project-", currentTime, ".bin");
+    fileName = os.path.join(folder, "project-"+str(problemTime)+".bin")    
+    
+    versionArr = np.zeros(3, dtype=np.uint8)
+    versionArr[0] = SAVE_FILE_CODE
+    versionArr[1] = VERSION_MAJOR
+    versionArr[2] = VERSION_MINOR
+    timeArr = np.zeros(1, dtype="float64")
+    timeArr[0] = problemTime
+    binfile = open(fileName, "wb")
+    #1. Save common settings
+    versionArr.tofile(binfile)
+    timeArr.tofile(binfile)
+    for block in solution:
+        block.tofile(binfile)
+    binfile.close()   
+
+
+
 def start_serving(args, geometry, cellSize, dimension):
     #compute cycle:
     #-1. split workers into separate communicator
@@ -49,7 +75,10 @@ def start_serving(args, geometry, cellSize, dimension):
 
     rank = world.Get_rank()
     size = world.Get_size()
-
+    
+    #stateFileNameBase, _ = os.path.splitext(args.domainFileName)
+    saveFolder, _ = os.path.split(args.domainFileName)
+    
     user_status = np.zeros(1, dtype="int32")
     comp_status = np.zeros(1, dtype="int32")
     lastStepAccepted = np.zeros(1, dtype="int32")
@@ -113,7 +142,8 @@ def start_serving(args, geometry, cellSize, dimension):
             user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
             #receive solution
             #print "receiving solution"
-            solution = CollectSolution(world, geometry, cellSize)
+            solution = CollectSolution(world, geometry, cellSize)           
+            SaveSolution(saveFolder, solution, problemTime)
             #print "received:", solution[0][4]
             #save solution
             #save picture
@@ -143,6 +173,7 @@ if __name__ == '__main__':
     #input args
     parser = argparse.ArgumentParser(description='Master MPI process.', epilog = "Have fun!")
     parser.add_argument('jobId', type = int, help = "unique job ID")
+    #parser.add_argument('projectName', type = str, help = ".json pathfilename ")
     parser.add_argument('domainFileName', type = str, help = ".dom file")    
     parser.add_argument('flag', type = int, help = "secret flag")
     parser.add_argument('finishTime', type=str, help = "new finish time to override json value")
