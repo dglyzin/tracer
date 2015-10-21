@@ -40,6 +40,9 @@ def CollectSolution(world, geometry):
 def start_serving(args, geometry, dimension):
     #compute cycle:
     #-1. split workers into separate communicator
+    
+    print "PM: Started serving"
+    
     world = MPI.COMM_WORLD
     python_comm = world.Split(0, 0)
    
