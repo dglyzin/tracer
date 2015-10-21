@@ -113,7 +113,7 @@ def start_serving(args, geometry, dimension):
             user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
             #receive solution
             print "receiving solution"
-            #solution = CollectSolution(world, geometry)
+            solution = CollectSolution(world, geometry)
             print "received:", solution[0][4]
             #save solution
             #save picture
