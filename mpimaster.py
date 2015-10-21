@@ -26,10 +26,10 @@ def polling_receive(comm, source):
             
     return result
 
-def CollectSolution(world, geometry):
+def CollectSolution(world, geometry, cellSize):
     state = []
     for blockInfo in geometry:
-        total = blockInfo[3] * blockInfo[4] * blockInfo[5]
+        total = blockInfo[3] * blockInfo[4] * blockInfo[5] * cellSize
         blockState = np.zeros(total,dtype='float64')
         print "receiving ", total, "doubles from node ", blockInfo[6]
         world.Recv([blockState, MPI.DOUBLE], source=blockInfo[6]+1, tag = 999)
@@ -37,7 +37,7 @@ def CollectSolution(world, geometry):
         state.append(blockState)
     return state
 
-def start_serving(args, geometry, dimension):
+def start_serving(args, geometry, cellSize, dimension):
     #compute cycle:
     #-1. split workers into separate communicator
     
@@ -113,7 +113,7 @@ def start_serving(args, geometry, dimension):
             user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
             #receive solution
             print "receiving solution"
-            solution = CollectSolution(world, geometry)
+            solution = CollectSolution(world, geometry, cellSize)
             print "received:", solution[0][4]
             #save solution
             #save picture
@@ -149,6 +149,6 @@ if __name__ == '__main__':
     parser.add_argument('contFileName', type=str, help = "filename to continue from")
     
     args = parser.parse_args()
-    geometry, _, _, _, _, dimension = readDomFile(args.domainFileName)
-    start_serving(args, geometry, dimension)
+    geometry, cellSize, _, _, _, dimension = readDomFile(args.domainFileName)
+    start_serving(args, geometry, cellSize, dimension)
     print "Python Master finished OK."
