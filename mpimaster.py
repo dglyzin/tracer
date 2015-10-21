@@ -32,7 +32,7 @@ def CollectSolution(world, geometry):
         total = blockInfo[3] * blockInfo[4] * blockInfo[5]
         blockState = np.zeros(total,dtype='float64')
         print "receiving ", total, "doubles from node ", blockInfo[6]
-        world.Recv([blockState, MPI.DOUBLE], source=blockInfo[6], tag = 999)
+        world.Recv([blockState, MPI.DOUBLE], source=blockInfo[6]+1, tag = 999)
         
         state.append(blockState)
     return state
@@ -113,7 +113,7 @@ def start_serving(args, geometry, dimension):
             user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
             #receive solution
             print "receiving solution"
-            solution = CollectSolution(world, geometry)
+            #solution = CollectSolution(world, geometry)
             print "received:", solution[0][4]
             #save solution
             #save picture
