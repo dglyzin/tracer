@@ -143,7 +143,7 @@ def start_serving(args, geometry, cellSize, dimension):
             #receive solution
             #print "receiving solution"
             solution = CollectSolution(world, geometry, cellSize)           
-            SaveSolution(saveFolder, solution, problemTime)
+            SaveSolution(saveFolder, solution, problemTime[0])
             #print "received:", solution[0][4]
             #save solution
             #save picture
