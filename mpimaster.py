@@ -112,9 +112,9 @@ def start_serving(args, geometry, cellSize, dimension):
             dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
             user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
             #receive solution
-            print "receiving solution"
+            #print "receiving solution"
             solution = CollectSolution(world, geometry, cellSize)
-            print "received:", solution[0][4]
+            #print "received:", solution[0][4]
             #save solution
             #save picture
             #store to db
