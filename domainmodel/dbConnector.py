@@ -74,6 +74,5 @@ def getDbUserStatus(cur, jobId):
 
 def addDbTaskResFile(db, cur, jobId, fileName ):
     num = 34
-    cur.execute("INSERT INTO task_results (num, filename, task_id) VALUES ("+str(num)+", "+ fileName+", "+ str(jobId)+")")
-    cur.execute("DELETE FROM task_results WHERE task_id="+str(jobId) )
+    cur.execute("INSERT INTO task_results (num, filename, task_id) VALUES ('"+str(num)+"', "+ fileName+", "+ str(jobId)+")")    
     db.commit()
