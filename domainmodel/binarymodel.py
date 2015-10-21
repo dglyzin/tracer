@@ -765,7 +765,7 @@ class BinaryModel(object):
         #dirty trick to let python process consume one processor core 
         runFile.write("export OMP_NUM_THREADS=15\n")
         runFile.write("srun -N "+ str(nodeCount) + " "+ partitionOption+ "--multi-prog " + OutputSpmdFile +"\n")        
-        postprocessor = tracerFolder + "/hybriddomain/postprocessor.py"
-        runFile.write("srun -n1" + partitionOption +"python " + postprocessor +" " + projectDir+"/" )
+        #postprocessor = tracerFolder + "/hybriddomain/postprocessor.py"
+        #runFile.write("srun -n1" + partitionOption +"python " + postprocessor +" " + projectDir+"/" )
         runFile.close()
         

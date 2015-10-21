@@ -13,12 +13,22 @@ VERSION_MINOR = 0
 
 from mpi4py import MPI
 import numpy as np
+
+import matplotlib
+matplotlib.use('Agg')
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib import cm
+
+import math
+
 import argparse
-from domainmodel.binaryFileReader import readDomFile
+from domainmodel.binaryFileReader import readDomFile, combineBlocks
 import domainmodel.dbConnector as dbc
 from domainmodel.enums import *
 import time
 import os
+import postprocessor as pp
 
 def polling_receive(comm, source):
     # Set this to 0 for maximum responsiveness, but that will peg CPU to 100%
@@ -61,9 +71,38 @@ def SaveSolution(folder, solution, problemTime):
         block.tofile(binfile)
     binfile.close()   
 
+def SavePicture(folder, solution, problemTime, geometry, dx, dy, dz, cellSize, dimension):    
+    figure = Figure()
+    canvas = FigureCanvas(figure)
+    
+    t = str(problemTime)
+    filename = os.path.join(folder, "project-"+str(problemTime)+".png") 
+    
+    countZ, countY, countX, offsetZ, offsetY, offsetX = pp.calcAreaCharacteristics(geometry)
+    data = combineBlocks(solution, geometry, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
+    
+    row = round(math.sqrt(cellSize))
+    column = math.ceil(cellSize / row)
+    
+    for i in range(cellSize):
+        m = 100 * row + 10 * column + i + 1
+        axes = figure.add_subplot(m, title=t)        
+        amp = 5.0#maxValue[i] - minValue[i]
+        minV = 0 - amp/10
+        maxV = 5 + amp/10
+        
+        layer = data[0,0,:,i]
+        axes.set_ylim(minV, maxV)
+        axes.plot(layer)
+        
+    ###    
+    canvas.draw()
+    figure.savefig(filename, format='png')            
+    figure.clear()
+    
+    
 
-
-def start_serving(args, geometry, cellSize, dimension):
+def start_serving(args, geometry, dx, dy, dz, cellSize, dimension):
     #compute cycle:
     #-1. split workers into separate communicator
     
@@ -144,6 +183,7 @@ def start_serving(args, geometry, cellSize, dimension):
             #print "receiving solution"
             solution = CollectSolution(world, geometry, cellSize)           
             SaveSolution(saveFolder, solution, problemTime[0])
+            SavePicture(saveFolder, solution, problemTime[0])
             #print "received:", solution[0][4]
             #save solution
             #save picture
@@ -180,6 +220,6 @@ if __name__ == '__main__':
     parser.add_argument('contFileName', type=str, help = "filename to continue from")
     
     args = parser.parse_args()
-    geometry, cellSize, _, _, _, dimension = readDomFile(args.domainFileName)
-    start_serving(args, geometry, cellSize, dimension)
+    geometry, cellSize, dx, dy, dz, dimension = readDomFile(args.domainFileName)
+    start_serving(args, geometry, cellSize, dx, dy, dz, dimension)
     print "Python Master finished OK."

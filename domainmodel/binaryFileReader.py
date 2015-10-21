@@ -61,6 +61,25 @@ def readDomFile(fileName):
     
     return info, cellSize, dx, dy, dz, dimension
 
+def combineBlocks(solution, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize):
+    data = np.zeros((countZ, countY, countX, cellSize), dtype=np.float64)
+        
+    for j in range( len(info) ) :
+        countZBlock = info[j][5]
+        countYBlock = info[j][4]
+        countXBlock = info[j][3]
+    
+        coordZBlock = info[j][2] - offsetZ
+        coordYBlock = info[j][1] - offsetY
+        coordXBlock = info[j][0] - offsetX
+    
+        total = countZBlock * countYBlock * countXBlock * cellSize
+    
+        blockData = solution[j]
+        blockData = blockData.reshape(countZBlock, countYBlock, countXBlock, cellSize)
+        data[coordZBlock : coordZBlock + countZBlock, coordYBlock : coordYBlock + countYBlock, coordXBlock : coordXBlock + countXBlock, :] = blockData[:, :, :, :]
+    
+    return data
 
   
 def readBinFile(fileName, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize):
