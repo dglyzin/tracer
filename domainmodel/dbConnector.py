@@ -71,3 +71,8 @@ def getDbUserStatus(cur, jobId):
     data = cur.fetchone()
     #returns LONG somehow, so int it    
     return int(data[0])
+
+def addDbTaskResFile(cur, db, jobId, fileName ):
+    num = 34
+    cur.execute("INSERT INTO task_results (num, filename, task_id) VALUES ("+str(num)+", "+ fileName+", "+ str(jobId)+")")
+    cur.execute("DELETE FROM task_results WHERE task_id="+str(jobId) )

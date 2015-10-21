@@ -47,14 +47,13 @@ def CollectSolution(world, geometry, cellSize):
     for blockInfo in geometry:
         total = blockInfo[3] * blockInfo[4] * blockInfo[5] * cellSize
         blockState = np.zeros(total,dtype='float64')
-        #print "receiving ", total, "doubles from node ", blockInfo[6]
+        #print "PM: receiving ", total, "doubles from node ", blockInfo[6]
         world.Recv([blockState, MPI.DOUBLE], source=blockInfo[6]+1, tag = 999)
         
         state.append(blockState)
     return state
 
-def SaveSolution(folder, solution, problemTime):
-    #sprintf(saveFile, "%s%s%f%s", saveFile, "/project-", currentTime, ".bin");
+def SaveSolution(folder, solution, problemTime):    
     fileName = os.path.join(folder, "project-"+str(problemTime)+".bin")    
     
     versionArr = np.zeros(3, dtype=np.uint8)
@@ -76,7 +75,7 @@ def SavePicture(folder, solution, problemTime, geometry, dx, dy, dz, cellSize, d
     canvas = FigureCanvas(figure)
     
     t = str(problemTime)
-    filename = os.path.join(folder, "project-"+str(problemTime)+".png") 
+    fileName = os.path.join(folder, "project-"+str(problemTime)+".png") 
     
     countZ, countY, countX, offsetZ, offsetY, offsetX = pp.calcAreaCharacteristics(geometry)
     data = combineBlocks(solution, geometry, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
@@ -97,9 +96,9 @@ def SavePicture(folder, solution, problemTime, geometry, dx, dy, dz, cellSize, d
         
     ###    
     canvas.draw()
-    figure.savefig(filename, format='png')            
+    figure.savefig(fileName, format='png')            
     figure.clear()
-    
+    return fileName
     
 
 def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
@@ -180,13 +179,13 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
             dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
             user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
             #receive solution
-            #print "receiving solution"
+            #print "PM: receiving solution"
+            
             solution = CollectSolution(world, geometry, cellSize)           
             SaveSolution(saveFolder, solution, problemTime[0])
             SavePicture(saveFolder, solution, problemTime[0], geometry, dx, dy, dz, cellSize, dimension)            
-            #print "received:", solution[0][4]
-            #save solution
-            #save picture
+            #print "PM: received:", solution[0][4]
+            
             #store to db
         
         
@@ -196,9 +195,9 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
         
     #end of computing loop    
     if (user_status[0] != USER_STATUS_START):
-        print "Leaving main loop with user status ", user_status[0]
+        print "PM: Leaving main loop with user status ", user_status[0]
     if (comp_status[0] != JS_RUNNING):
-        print "Leaving main loop with job state ", comp_status[0]
+        print "PM: Leaving main loop with job state ", comp_status[0]
 
     dbc.setDbJobFinishTime(db, cur, args.jobId)
 
@@ -222,4 +221,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
     geometry, cellSize, dx, dy, dz, dimension = readDomFile(args.domainFileName)
     start_serving(args, geometry, cellSize, dx, dy, dz, dimension)
-    print "Python Master finished OK."
+    print "PM: Python Master finished OK."
