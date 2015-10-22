@@ -72,8 +72,12 @@ def getDbUserStatus(cur, jobId):
     #returns LONG somehow, so int it    
     return int(data[0])
 
-def addDbTaskResFile(db, cur, jobId, fileName ):
-    cur.execute("SELECT COUNT(task_id) AS NumberOfFiles FROM task_results WHERE task_id="+str(jobId) );
-    num = cur.fetchone()[0]
-    cur.execute("INSERT INTO task_results (num, filename, task_id) VALUES ("+str(num)+", '"+ fileName+"', "+ str(jobId)+")")    
+def addDbTaskResFile(db, cur, jobId, fileName, probTime ):
+    #cur.execute("SELECT COUNT(task_id) AS NumberOfFiles FROM task_results WHERE task_id="+str(jobId) );
+    #num = cur.fetchone()[0]
+    #cur.execute("INSERT INTO task_results (num, filename, task_id) VALUES ("+str(picIdx)+", '"+ fileName+"', "+ str(jobId)+")")    
+    picIdx = 0 #index of a picture in a group of requested results 
+    picData = open(fileName, 'rb').read()
+    sql = "INSERT INTO task_results (num, filename, task_id, prob_time, picture) VALUES (%s, %s, %s, %s)"
+    cur.execute(sql, (str(picIdx), fileName, str(jobId), str(probTime), picData) )        
     db.commit()
