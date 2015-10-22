@@ -81,3 +81,4 @@ def addDbTaskResFile(db, cur, jobId, fileName, probTime ):
     sql = "INSERT INTO task_results (num, filename, task_id, prob_time, picture) VALUES (%d, '%s', %d, %s, '%s')"
     cur.execute(sql % (picIdx, fileName, jobId, str(probTime), MySQLdb.escape_string(picData)  ) )        
     db.commit()
+
