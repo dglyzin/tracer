@@ -185,7 +185,7 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
             SaveSolution(saveFolder, solution, problemTime[0])
             picFileName = SavePicture(saveFolder, solution, problemTime[0], geometry, dx, dy, dz, cellSize, dimension)            
             #print "PM: received:", solution[0][4]
-            dbc.addDbTaskResFile(db, cur, args.jobId, picFileName)
+            dbc.addDbTaskResFile(db, cur, args.jobId, picFileName, problemTime[0])
             #store to db
         
         
