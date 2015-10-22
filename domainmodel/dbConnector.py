@@ -75,10 +75,10 @@ def getDbUserStatus(cur, jobId):
 def addDbTaskResFile(db, cur, jobId, fileName, probTime ):
     #cur.execute("SELECT COUNT(task_id) AS NumberOfFiles FROM task_results WHERE task_id="+str(jobId) );
     #num = cur.fetchone()[0]
-    #cur.execute("INSERT INTO task_results (num, filename, task_id) VALUES ("+str(picIdx)+", '"+ fileName+"', "+ str(jobId)+")")    
-    picIdx = 0 #index of a picture in a group of requested results 
+    #cur.execute("INSERT INTO task_results (num, filename, task_id) VALUES ("+str(picIdx)+", '"+ fileName+"', "+ str(jobId)+")")  
+    isFinal = 0
     picData = open(fileName, 'rb').read()
-    sql = "INSERT INTO task_results (num, filename, task_id, prob_time, picture) VALUES (%d, '%s', %d, %s, '%s')"
-    cur.execute(sql % (picIdx, fileName, jobId, str(probTime), MySQLdb.escape_string(picData)  ) )        
+    sql = "INSERT INTO task_results (is_final, task_id, prob_time, picture) VALUES (%d, %d, %s, '%s')"
+    cur.execute(sql % (isFinal, jobId, str(probTime), MySQLdb.escape_string(picData)  ) )        
     db.commit()
 
