@@ -78,6 +78,6 @@ def addDbTaskResFile(db, cur, jobId, fileName, probTime ):
     #cur.execute("INSERT INTO task_results (num, filename, task_id) VALUES ("+str(picIdx)+", '"+ fileName+"', "+ str(jobId)+")")    
     picIdx = 0 #index of a picture in a group of requested results 
     picData = open(fileName, 'rb').read()
-    sql = "INSERT INTO task_results (num, filename, task_id, prob_time, picture) VALUES (%s, %s, %s, %s)"
-    cur.execute(sql, (str(picIdx), fileName, str(jobId), str(probTime), picData) )        
+    sql = "INSERT INTO task_results (num, filename, task_id, prob_time, picture) VALUES (%d, %s, %s, %s)"
+    cur.execute(sql % (picIdx, fileName, str(probTime), picData) )        
     db.commit()
