@@ -117,7 +117,7 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
     #stateFileNameBase, _ = os.path.splitext(args.domainFileName)
     saveFolder, _ = os.path.split(args.domainFileName)
     
-    user_status = np.zeros(1, dtype="int32")
+    user_is_running = np.zeros(1, dtype="int32")
     comp_status = np.zeros(1, dtype="int32")
     lastStepAccepted = np.zeros(1, dtype="int32")
     timeStep = np.zeros(1, dtype="float64")
@@ -129,8 +129,8 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
     db,cur = dbc.getDbConn(args.jobId)
     dbc.setDbJobPercentage(db, cur, args.jobId, 0)
     
-    user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
-    #user_status[0] = USER_STATUS_STOP
+    user_is_running[0] = dbc.getDbUserStatus(cur, args.jobId)
+    #user_is_running[0] = USER_STATUS_STOP
     #    Порядок работы
     #                    1. WORLD+COMP                          2. WORLD ONLY
     #+    1. WORLD Bcast user-status, источник - world-0    |    +
@@ -144,7 +144,8 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
     ##  9. stop/continue comp-0 -> world-0                |    -
 
     #1.
-    world.Bcast([user_status, MPI.INT], root=0)
+    print "db sais is_running =", user_is_running
+    world.Bcast([user_is_running, MPI.INT], root=0)
     world.Recv([comp_status, MPI.INT], source=1, tag = 0)    
     #todo change state in db to running& ser slurm task ID
     dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
@@ -155,7 +156,7 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
     dbc.clearDbJobFinishTime(db, cur, args.jobId)
     
     #main computing loop
-    while (user_status[0] == USER_STATUS_START) and (comp_status[0] == JS_RUNNING):
+    while (user_is_running[0]==USER_RUN ) and (comp_status[0] == JS_RUNNING):
         world.Recv([lastStepAccepted, MPI.INT], source=1, tag = 0)
         world.Recv([timeStep, MPI.DOUBLE], source=1, tag = 0)
         world.Recv([problemTime, MPI.DOUBLE], source=1, tag = 0)
@@ -177,7 +178,7 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
             #also save pictures and filename to database
             #world.Recv([data, MPI.DOUBLE], source=idx, tag = 0)    
             dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
-            user_status[0] = dbc.getDbUserStatus(cur, args.jobId)
+            user_is_running[0] = dbc.getDbUserStatus(cur, args.jobId)
             #receive solution
             #print "PM: receiving solution"
             
@@ -189,21 +190,28 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
             #store to db
         
         
-        world.Bcast([user_status, MPI.INT], root=0)
+        world.Bcast([user_is_running, MPI.INT], root=0)
         
         
         
     #end of computing loop    
-    if (user_status[0] != USER_STATUS_START):
-        print "PM: Leaving main loop with user status ", user_status[0]
+    if (user_is_running[0] == USER_STOP):
+        print "PM: Leaving main loop with user status ", user_is_running[0]
     if (comp_status[0] != JS_RUNNING):
         print "PM: Leaving main loop with job state ", comp_status[0]
 
     dbc.setDbJobFinishTime(db, cur, args.jobId)
-
-    dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
+    
     if comp_status[0] == JS_FINISHED:
-        dbc.setDbJobPercentage(db, cur, args.jobId, 100)    
+        dbc.setDbJobPercentage(db, cur, args.jobId, 100)   
+        
+    if  user_is_running[0] == USER_STOP: 
+        #user cancelled the job
+        comp_status[0] = JS_CANCELLED    
+    
+    dbc.setDbJobState(db, cur, args.jobId, comp_status[0])
+    #dbc.setDbUserStatus(db, cur, args.jobId, USER_STOP)
+     
     dbc.freeDbConn(db, cur)
 
 

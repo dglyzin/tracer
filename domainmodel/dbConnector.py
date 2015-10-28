@@ -67,10 +67,17 @@ def clearDbJobFinishTime(db, cur, jobId):
 
     
 def getDbUserStatus(cur, jobId):
-    cur.execute("SELECT status FROM tasks WHERE id="+str(jobId))
+    cur.execute("SELECT is_running FROM tasks WHERE id="+str(jobId))
     data = cur.fetchone()
     #returns LONG somehow, so int it    
-    return int(data[0])
+    return data[0]
+
+def setDbUserStatus(db, cur, jobId, status):
+    sql = "UPDATE tasks SET is_running=%d WHERE id=%d"
+    cur.execute(sql % (jobId, status))
+    db.commit()
+
+
 
 def addDbTaskResFile(db, cur, jobId, fileName, probTime ):
     #cur.execute("SELECT COUNT(task_id) AS NumberOfFiles FROM task_results WHERE task_id="+str(jobId) );
