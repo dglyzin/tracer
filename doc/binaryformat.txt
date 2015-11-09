@@ -8,6 +8,7 @@
 
 ##!  3*float64: StartTime, FinishTime, Initial timestep
 ##!  float64: save interval
+##!  int32 dimension Db (can be 1,2 or 3) 
 ##!  3* float64: dx, dy, dz
 ##!  int32 Cell Size
 ##!  int32 Halo Size
