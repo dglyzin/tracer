@@ -24,7 +24,7 @@ import math
 
 import argparse
 from domainmodel.binaryFileReader import readDomFile, combineBlocks
-import domainmodel.dbConnector as dbc
+import domainmodel.agentConnector as dbc
 from domainmodel.enums import *
 import time
 import os
