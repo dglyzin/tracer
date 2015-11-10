@@ -24,6 +24,8 @@ def readDomFile(fileName):
     dy, = struct.unpack('d', dom.read(8))
     dz, = struct.unpack('d', dom.read(8))
     
+    tmp_dim, = struct.unpack('i', dom.read(4))
+    
     cellSize, = struct.unpack('i', dom.read(4))
     haloSize, = struct.unpack('i', dom.read(4))
     
