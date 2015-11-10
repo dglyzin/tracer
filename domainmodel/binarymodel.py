@@ -339,10 +339,13 @@ class BinaryModel(object):
         self.timeAndStepArr[5] = self.dmodel.gridStepY
         self.timeAndStepArr[6] = self.dmodel.gridStepZ
 
-        self.paramsArr = np.zeros(3, dtype=np.int32)
-        self.paramsArr[0] = self.dmodel.getCellSize()
-        self.paramsArr[1] = self.dmodel.getHaloSize()
-        self.paramsArr[2] = self.dmodel.solverIndex
+        self.paramsArr = np.zeros(4, dtype=np.int32)
+        # TODO Убрать размерности из блоков.
+        # TODO Перенести размерность на уровень выше. Описывать до блоков. Перед CellSize
+        self.paramsArr[0] = self.dmodel.blocks[0].dimension
+        self.paramsArr[1] = self.dmodel.getCellSize()
+        self.paramsArr[2] = self.dmodel.getHaloSize()
+        self.paramsArr[3] = self.dmodel.solverIndex
         
         self.toleranceArr = np.zeros(2, dtype=np.float64)
         self.toleranceArr[0] = self.dmodel.solverAtol

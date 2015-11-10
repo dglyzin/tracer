@@ -8,8 +8,8 @@
 
 ##!  3*float64: StartTime, FinishTime, Initial timestep
 ##!  float64: save interval
-##!  int32 dimension Db (can be 1,2 or 3) 
 ##!  3* float64: dx, dy, dz
+##!  int32 dimension Db (can be 1,2 or 3) 
 ##!  int32 Cell Size
 ##!  int32 Halo Size
 ##!  int32 Solver number (0=Euler, 1= RK4, etc,  see solver.h)
