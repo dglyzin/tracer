@@ -1,5 +1,5 @@
 {
-    "ProjectName": "Like in Pena&Perez-Garcia", 
+    "ProjectName": "Like in Hairer&Wanner", 
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
@@ -34,21 +34,7 @@
             "EquationRegions": []
         }
     ], 
-    "Interconnects": [       
-        {
-            "Name": "connection 1", 
-            "Block1": 0, 
-            "Block2": 0, 
-            "Block1Side": 1, 
-            "Block2Side": 0
-        },
-        {
-            "Name": "connection 2", 
-            "Block1": 0, 
-            "Block2": 0, 
-            "Block1Side": 3, 
-            "Block2Side": 2
-        }
+    "Interconnects": [              
     ], 
     "Equations": [
         {
@@ -58,24 +44,22 @@
                 "y"
             ], 
             "System": [
-                "U'=A-( Bc*(mu+1)  +1)*U+U*U*V+ D[U,{x,2}]+D[U,{y,2}]", 
-                "V'=Bc*(mu+1)*U-U*U*V+d*(D[V,{x,2}] + D[V,{y,2}]"
+                "U'=A-( B+1)*U+U*U*V+ alpha*(D[U,{x,2}]+D[U,{y,2}])", 
+                "V'=B*U-U*U*V+alpha*(D[V,{x,2}] + D[V,{y,2}])"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
             "A", 
-            "d", 
-            "Bc",
-            "mu"
+            "alpha", 
+            "B"
         ], 
         "ParamValues": [
             {
-                "A": 4.5, 
-                "d": 8, 
-                "Bc": 6.7132,
-                "mu": 0.3
+                "A": 1, 
+                "alpha": 0.002, 
+                "B": 3.4
             }
         ], 
         "DefaultParamsIndex": 0
@@ -87,8 +71,8 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "1+sin(6.28*(x+y))", 
-                "3+sin(6.28*(x+y))"
+                "0.5+y", 
+                "1+ 5*x"
             ]
         }
     ], 

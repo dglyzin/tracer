@@ -95,6 +95,28 @@ def savePng2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
     figure.savefig(filename, format='png')            
     figure.clear()
     
+    
+def saveTxt2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
+    txtFile = open(filename,"w")
+    
+    t = str(currentTime)
+    
+    _, m,n, _ = data.shape
+    
+    line = "Y X values \n"
+    
+    txtFile.write(line)
+    
+    for i in range(m):
+        for j in range(n):
+            line = "{0} {1} ".format(str(Y[i,j]), str(X[i,j]) )
+            for k in range(cellSize):
+                line = line + str(data[0,i,j,k]) + " "      
+            line = line+"\n"
+            txtFile.write(line)                        
+    txtFile.close()  
+
+
 
 def calcAreaCharacteristics(info):
     minZ = 0
@@ -172,7 +194,7 @@ def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, o
 
 
 
-def createPng1D( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) ):
+def saveResults1D( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) ):
    #for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     
@@ -198,8 +220,8 @@ def createPng1D( (projectDir, binFile, info, countZ, countY, countX, offsetZ, of
 
 
   
-def createPng2D( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) ):
-   #for idx, binFile in enumerate(binFileList):
+def saveResults2D( (projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) ):
+    #for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     
     xs = np.arange(0, countX)*dx
@@ -220,9 +242,11 @@ def createPng2D( (projectDir, binFile, info, countZ, countY, countX, offsetZ, of
     t = t.split(".bin")[0]
     
     savePng2D(filename, X, Y, data, maxValue, minValue, t, cellSize)
-        
-        
-        
+    if saveText:
+        filenameTxt = projectDir+"txtFile-" + str(idx) + ".txt"        
+        saveTxt2D(filenameTxt, X, Y, data, maxValue, minValue, t, cellSize)
+
+       
         
 def createVideoFile(projectDir):
     print "Creating video file:"
@@ -238,6 +262,7 @@ def createVideoFile(projectDir):
   
   
 def createMovie(projectDir):
+    saveText = False
     info, cellSize, dx, dy, dz, dimension = readDomFile(projectDir+"project.dom")
     
     countZ, countY, countX, offsetZ, offsetY, offsetX = calcAreaCharacteristics(info)
@@ -257,9 +282,9 @@ def createMovie(projectDir):
     pool = mp.Pool(processes=16)
     #pool = mp.Semaphore(4)
     if dimension == 1:
-        pool.map(createPng1D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
+        pool.map(saveResults1D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
     if dimension == 2:
-        pool.map(createPng2D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx) for idx, binFile in enumerate(binFileList)] )
+        pool.map(saveResults2D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
     #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
     t2 = time.time()
     
