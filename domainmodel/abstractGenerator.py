@@ -351,20 +351,23 @@ class AbstractGenerator(object):
             function.extend(['//'+str(num)+' central function for '+str(len(self.userIndepVars))+'d model for block with number ' + str(blockNumber) + '\n'])    
             name = 'Block' + str(blockNumber) + 'CentralFunction' + str(numsForEquats[num])
             arrWithFuncNames.append(name)
-            function.extend(self.generateFunctionSignature(blockNumber, name, strideList))
+            function.extend(self.generateFunctionSignature(blockNumber, name, strideList, True))
             
             variables = parser.getVariableList(equation.system)
 #         Во все парсеры необходимо передавать именно userIndepVars!
             b = RHSCodeGenerator()
             for i, equationString in enumerate(equation.system):
                 equationRightHandSide = parser.parseMathExpression(equationString, variables, self.params, self.userIndepVars)
-                function.extend([b.generateRightHandSideCode(blockNumber, variables[i], equationRightHandSide, self.userIndepVars, variables, self.params)])
+                function.extend([b.generateRightHandSideCode(blockNumber, variables[i], equationRightHandSide, self.userIndepVars, variables, self.params, list(), self.delay_lst)])
             function.extend(['}\n\n'])
         
         return ''.join(function), arrWithFuncNames
 
-    def generateFunctionSignature(self, blockNumber, name, strideList):
-        signatureStart = 'void ' + name + '(double* result, double* source, double t,'
+    def generateFunctionSignature(self, blockNumber, name, strideList, isCenter):
+        if isCenter:
+            signatureStart = 'void ' + name + '(double* result, double** source, double t,'
+        else:
+            signatureStart = 'void ' + name + '(double* result, double* source, double t,'
         signatureMiddle = ' int idx' + self.defaultIndepVars[0].upper() + ','
 #         Делаем срез нулевого элемента, т.к. его уже учли
         for indepVar in self.defaultIndepVars[1:]:
@@ -422,7 +425,7 @@ class AbstractGenerator(object):
         for indepVar in self.defaultIndepVars:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
             
-        function = self.generateFunctionSignature(blockNumber, name, strideList)
+        function = self.generateFunctionSignature(blockNumber, name, strideList, False)
 #         А здесь используем userIndepVariables.        
         indepVarValueList = list([])
         for indepVar in self.userIndepVars:
@@ -444,12 +447,12 @@ class AbstractGenerator(object):
         for indepVar in self.defaultIndepVars:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
         
-        function = self.generateFunctionSignature(blockNumber, name, strideList)
+        function = self.generateFunctionSignature(blockNumber, name, strideList, False)
 #         А здесь используем userIndepVariables.
         b = RHSCodeGenerator()
         for i, equation in enumerate(parsedEquationsList):
 #             Для трехмерного случая все должно усложниться в следующей команде
-            function.extend([b.generateRightHandSideCode(blockNumber, unknownVars[i], equation, self.userIndepVars, unknownVars, self.params, pBCL)])
+            function.extend([b.generateRightHandSideCode(blockNumber, unknownVars[i], equation, self.userIndepVars, unknownVars, self.params, pBCL, list())])
         function.extend(['}\n'])
         return ''.join(function)
         
