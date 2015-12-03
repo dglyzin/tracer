@@ -87,7 +87,8 @@ class InterconnectRegion3D:
     
 class AbstractGenerator(object):
 # Генерирует выходную строку для записи в файл
-    def __init__(self, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamsIndex):
+    def __init__(self, delay_lst, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamsIndex):
+        self.delay_lst = delay_lst
         self.maxDerivOrder = maxDerivOrder
         self.haloSize = haloSize
         self.equations = equations

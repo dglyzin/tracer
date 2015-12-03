@@ -45,8 +45,12 @@ class RHSCodeGenerator:
                 varIndex = vrbls.index(expressionList[1])
                 self.callDerivGenerator(outputList, blockNumber, expressionList, varIndex, userIndepVariables, pbcl)
             elif expressionList in vrbls:
-                varIndex = vrbls.index(expressionList)
-                outputList.extend(['source[idx + ' + str(varIndex) + ']'])
+                # если переменная не в конце и за ней стоит скобка -- запаздывание
+                if j != len(rightHandSide)-1 and rightHandSide[j+1] == '(':
+                    outputList.extend(['DELAY'])
+                else:
+                    varIndex = vrbls.index(expressionList)
+                    outputList.extend(['source[idx + ' + str(varIndex) + ']'])
             elif expressionList in params:
                 parIndex = params.index(expressionList)
                 outputList.extend(['params[' + str(parIndex) + ']'])

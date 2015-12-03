@@ -5,7 +5,7 @@ from generator3D import Generator3D
 
 class FuncGenerator:
     def __init__(self, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex, preprocessorFolder):
-        dimension = len(equations[0].vars)
+        dimension = len(equations[0].vars) #number of independent variables
         if dimension == 1:
             self.generator = Generator1D(maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex)
         elif dimension == 2:

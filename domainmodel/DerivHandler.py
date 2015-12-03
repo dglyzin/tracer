@@ -19,4 +19,5 @@ class DerivativeHandler:
                         if symbol == '{':
                             order = order + int(expressionList[i+3])
                     orderList.extend([order])
+                    
         return max(orderList)
