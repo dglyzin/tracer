@@ -22,6 +22,6 @@ class DelayHandler:
                     and equation[i+3] == '-'
                     and equation[i+4].isdigit()
                     and equation[i+5] == ')'):
-                        delay_set.add(equation[i+4])
+                        delay_set.add(int(equation[i+4]))
                        
         return sorted(delay_set)
