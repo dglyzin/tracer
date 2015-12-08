@@ -351,7 +351,7 @@ class AbstractGenerator(object):
             function.extend(['//'+str(num)+' central function for '+str(len(self.userIndepVars))+'d model for block with number ' + str(blockNumber) + '\n'])    
             name = 'Block' + str(blockNumber) + 'CentralFunction' + str(numsForEquats[num])
             arrWithFuncNames.append(name)
-            function.extend(self.generateFunctionSignature(blockNumber, name, strideList, True))
+            function.extend(self.generateFunctionSignature(blockNumber, name, strideList))
             
             variables = parser.getVariableList(equation.system)
 #         Во все парсеры необходимо передавать именно userIndepVars!
@@ -363,11 +363,8 @@ class AbstractGenerator(object):
         
         return ''.join(function), arrWithFuncNames
 
-    def generateFunctionSignature(self, blockNumber, name, strideList, isCenter):
-        if isCenter:
-            signatureStart = 'void ' + name + '(double* result, double** source, double t,'
-        else:
-            signatureStart = 'void ' + name + '(double* result, double* source, double t,'
+    def generateFunctionSignature(self, blockNumber, name, strideList):
+        signatureStart = 'void ' + name + '(double* result, double** source, double t,'
         signatureMiddle = ' int idx' + self.defaultIndepVars[0].upper() + ','
 #         Делаем срез нулевого элемента, т.к. его уже учли
         for indepVar in self.defaultIndepVars[1:]:
@@ -425,7 +422,7 @@ class AbstractGenerator(object):
         for indepVar in self.defaultIndepVars:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
             
-        function = self.generateFunctionSignature(blockNumber, name, strideList, False)
+        function = self.generateFunctionSignature(blockNumber, name, strideList)
 #         А здесь используем userIndepVariables.        
         indepVarValueList = list([])
         for indepVar in self.userIndepVars:
@@ -447,7 +444,7 @@ class AbstractGenerator(object):
         for indepVar in self.defaultIndepVars:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
         
-        function = self.generateFunctionSignature(blockNumber, name, strideList, False)
+        function = self.generateFunctionSignature(blockNumber, name, strideList)
 #         А здесь используем userIndepVariables.
         b = RHSCodeGenerator()
         for i, equation in enumerate(parsedEquationsList):
