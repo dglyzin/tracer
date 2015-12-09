@@ -63,8 +63,8 @@ class PureDerivGenerator:
 
     def commonPureDerivativeAlternative(self, increment, stride):
         if self.derivOrder == 1:
-            toLeft = 'source[idx - ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
-            toRight = 'source[idx + ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            toLeft = 'source[0][idx - ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            toRight = 'source[0][idx + ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
             return '0.5 * ' + increment + ' * ' + '(' + toRight + ' - ' + toLeft + ')'
         else:
             indicesList = self.createIndicesList()
@@ -76,7 +76,7 @@ class PureDerivGenerator:
                 m3 = i > 0
                 m4 = coefficientList[i] != '1.0'
                 startOfLine = finiteDifference + m1 * ' - ' + m2 * m3 * ' + ' + m4 * (str(coefficientList[i]) + ' * ')
-                restOfLine = 'source[idx' + str(index) + ' * ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+                restOfLine = 'source[0][idx' + str(index) + ' * ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
                 finiteDifference = startOfLine + restOfLine
             return '(' + increment + ' * ' + '(' + finiteDifference + ')' + ')'
 
@@ -91,25 +91,25 @@ class PureDerivGenerator:
         if self.derivOrder == 1:
             return boundaryValue
         elif self.derivOrder == 2:
-            second = 'source[idx + ' + str(self.unknownVarIndex) + ']'
+            second = 'source[0][idx + ' + str(self.unknownVarIndex) + ']'
             m1 = leftOrRightBoundary % 2
             m2 = (leftOrRightBoundary - 1) % 2
-            first = 'source[idx' + m1 * ' + ' + m2 * ' - ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            first = 'source[0][idx' + m1 * ' + ' + m2 * ' - ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
             return '(2.0 * '+increment+' * '+'('+first+' - '+second+ m1 * ' - ' + m2 * ' + ' + '(' + boundaryValue + ') * ' + specialIncrement + '))'
         else:
             raise SyntaxError("The highest derivative order of the system greater than 2! I don't know how to generate boundary function in this case!")
     
     def interconnectPureDerivAlternative(self, increment, stride):
         if self.side % 2 == 0:
-            first = 'source[idx + ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            first = 'source[0][idx + ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
             second = 'ic['+str(self.firstIndex)+'][' + self.secondIndexSTR + ' + ' + str(self.unknownVarIndex) + ']'
         else:
             first = 'ic['+str(self.firstIndex)+'][' + self.secondIndexSTR + ' + ' + str(self.unknownVarIndex) + ']'
-            second = 'source[idx - ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            second = 'source[0][idx - ' + stride + ' * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
         if self.derivOrder == 1:
             return '0.5 * ' + increment + ' * ' + '(' + first + ' - ' + second + ')'
         elif self.derivOrder == 2:
-            third = '2.0 * source[idx + ' + str(self.unknownVarIndex) + ']'
+            third = '2.0 * source[0][idx + ' + str(self.unknownVarIndex) + ']'
             return '(' + increment + ' * ' + '(' + first + ' - ' + third + ' + ' + second + ')' + ')'
         else:
             raise AttributeError("Pure derivative in some equation has order greater than 2!")
@@ -136,10 +136,10 @@ class MixDerivGenerator:
 # Способ генерирования кода для смешанной производной для CentralFunction и иногда для граничных функций
         length = len(strideList)
         if length == 2:
-            first = 'source[idx + (' + strideList[0] + ' + ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
-            second = ' - source[idx - (' + strideList[0] + ' - ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
-            third = ' - source[idx + (' + strideList[0] + ' - ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
-            fourth = ' + source[idx - (' + strideList[0] + ' + ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            first = 'source[0][idx + (' + strideList[0] + ' + ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            second = ' - source[0][idx - (' + strideList[0] + ' - ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            third = ' - source[0][idx + (' + strideList[0] + ' - ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            fourth = ' + source[0][idx - (' + strideList[0] + ' + ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
             finiteDifference = first + second + third + fourth
             return '(' + increment + ' * ' + '(' + finiteDifference + ')' + ')'
         else:

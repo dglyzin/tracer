@@ -125,66 +125,66 @@ void releaseInitFuncArray(initfunc_fill_ptr_t* InitFuncs){
 //=========================CENTRAL FUNCTION FOR BLOCK WITH NUMBER 0========================//
 
 //Central function for 2d model for block with number 0
-void Block0CentralFunction(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0CentralFunction(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
-	 result[idx + 0] = (DXM2 * (1 * source[idx + 1 * Block0StrideX * Block0CELLSIZE + 0] - 2 * source[idx + 0 * Block0StrideX * Block0CELLSIZE + 0] + 1 * source[idx-1 * Block0StrideX * Block0CELLSIZE + 0])) + (DYM2 * (1 * source[idx + 1 * Block0StrideY * Block0CELLSIZE + 0] - 2 * source[idx + 0 * Block0StrideY * Block0CELLSIZE + 0] + 1 * source[idx-1 * Block0StrideY * Block0CELLSIZE + 0]));
+	 result[idx + 0] = (DXM2 * (1 * source[0][idx + 1 * Block0StrideX * Block0CELLSIZE + 0] - 2 * source[0][idx + 0 * Block0StrideX * Block0CELLSIZE + 0] + 1 * source[0][idx-1 * Block0StrideX * Block0CELLSIZE + 0])) + (DYM2 * (1 * source[0][idx + 1 * Block0StrideY * Block0CELLSIZE + 0] - 2 * source[0][idx + 0 * Block0StrideY * Block0CELLSIZE + 0] + 1 * source[0][idx-1 * Block0StrideY * Block0CELLSIZE + 0]));
 }
 
 
 //=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER 0======================//
 
 //Default boundary condition for boundary y = 0
-void Block0DefaultNeumannBound2(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DefaultNeumannBound2(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
-	 result[idx + 0] = (DXM2 * (1 * source[idx + 1 * Block0StrideX * Block0CELLSIZE + 0] - 2 * source[idx + 0 * Block0StrideX * Block0CELLSIZE + 0] + 1 * source[idx-1 * Block0StrideX * Block0CELLSIZE + 0])) + (2.0 * DYM2 * (source[idx + Block0StrideY * Block0CELLSIZE + 0] - source[idx + 0] - (0.0) * DY));
+	 result[idx + 0] = (DXM2 * (1 * source[0][idx + 1 * Block0StrideX * Block0CELLSIZE + 0] - 2 * source[0][idx + 0 * Block0StrideX * Block0CELLSIZE + 0] + 1 * source[0][idx-1 * Block0StrideX * Block0CELLSIZE + 0])) + (2.0 * DYM2 * (source[0][idx + Block0StrideY * Block0CELLSIZE + 0] - source[0][idx + 0] - (0.0) * DY));
 }
 //Non-default boundary condition for boundary y = 0
-void Block0DirichletBound2_0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DirichletBound2_0(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
 	 result[idx + 0] = 0.0;
 }
 //Default boundary condition for boundary y = y_max
-void Block0DefaultNeumannBound3(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DefaultNeumannBound3(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
-	 result[idx + 0] = (DXM2 * (1 * source[idx + 1 * Block0StrideX * Block0CELLSIZE + 0] - 2 * source[idx + 0 * Block0StrideX * Block0CELLSIZE + 0] + 1 * source[idx-1 * Block0StrideX * Block0CELLSIZE + 0])) + (2.0 * DYM2 * (source[idx - Block0StrideY * Block0CELLSIZE + 0] - source[idx + 0] + (0.0) * DY));
+	 result[idx + 0] = (DXM2 * (1 * source[0][idx + 1 * Block0StrideX * Block0CELLSIZE + 0] - 2 * source[0][idx + 0 * Block0StrideX * Block0CELLSIZE + 0] + 1 * source[0][idx-1 * Block0StrideX * Block0CELLSIZE + 0])) + (2.0 * DYM2 * (source[0][idx - Block0StrideY * Block0CELLSIZE + 0] - source[0][idx + 0] + (0.0) * DY));
 }
 //Default boundary condition for boundary x = 0
-void Block0DefaultNeumannBound0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DefaultNeumannBound0(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
-	 result[idx + 0] = (2.0 * DXM2 * (source[idx + Block0StrideX * Block0CELLSIZE + 0] - source[idx + 0] - (0.0) * DX)) + (DYM2 * (1 * source[idx + 1 * Block0StrideY * Block0CELLSIZE + 0] - 2 * source[idx + 0 * Block0StrideY * Block0CELLSIZE + 0] + 1 * source[idx-1 * Block0StrideY * Block0CELLSIZE + 0]));
+	 result[idx + 0] = (2.0 * DXM2 * (source[0][idx + Block0StrideX * Block0CELLSIZE + 0] - source[0][idx + 0] - (0.0) * DX)) + (DYM2 * (1 * source[0][idx + 1 * Block0StrideY * Block0CELLSIZE + 0] - 2 * source[0][idx + 0 * Block0StrideY * Block0CELLSIZE + 0] + 1 * source[0][idx-1 * Block0StrideY * Block0CELLSIZE + 0]));
 }
 //Non-default boundary condition for boundary x = 0
-void Block0DirichletBound0_0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DirichletBound0_0(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
 	 result[idx + 0] = 0.0;
 }
 //Default boundary condition for boundary x = x_max
-void Block0DefaultNeumannBound1(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DefaultNeumannBound1(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
-	 result[idx + 0] = (2.0 * DXM2 * (source[idx - Block0StrideX * Block0CELLSIZE + 0] - source[idx + 0] + (0.0) * DX)) + (DYM2 * (1 * source[idx + 1 * Block0StrideY * Block0CELLSIZE + 0] - 2 * source[idx + 0 * Block0StrideY * Block0CELLSIZE + 0] + 1 * source[idx-1 * Block0StrideY * Block0CELLSIZE + 0]));
+	 result[idx + 0] = (2.0 * DXM2 * (source[0][idx - Block0StrideX * Block0CELLSIZE + 0] - source[0][idx + 0] + (0.0) * DX)) + (DYM2 * (1 * source[0][idx + 1 * Block0StrideY * Block0CELLSIZE + 0] - 2 * source[0][idx + 0 * Block0StrideY * Block0CELLSIZE + 0] + 1 * source[0][idx-1 * Block0StrideY * Block0CELLSIZE + 0]));
 }
 //Non-default boundary condition for boundary x = x_max
-void Block0DirichletBound1_0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DirichletBound1_0(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
 	 result[idx + 0] = 0.0;
 }
 //Non-default boundary condition for Vertex between boundaries x = 0 and y = 0
-void Block0DirichletBoundForVertex0_2(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DirichletBoundForVertex0_2(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
 	 result[idx + 0] = 0.0;
 }
 //Default boundary condition for Vertex between boundaries x = x_max and y = 0
-void Block0DefaultNeumannBoundForVertex1_2(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DefaultNeumannBoundForVertex1_2(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
-	 result[idx + 0] = (2.0 * DXM2 * (source[idx - Block0StrideX * Block0CELLSIZE + 0] - source[idx + 0] + (0.0) * DX)) + (2.0 * DYM2 * (source[idx + Block0StrideY * Block0CELLSIZE + 0] - source[idx + 0] - (0.0) * DY));
+	 result[idx + 0] = (2.0 * DXM2 * (source[0][idx - Block0StrideX * Block0CELLSIZE + 0] - source[0][idx + 0] + (0.0) * DX)) + (2.0 * DYM2 * (source[0][idx + Block0StrideY * Block0CELLSIZE + 0] - source[0][idx + 0] - (0.0) * DY));
 }
 //Default boundary condition for Vertex between boundaries x = 0 and y = y_max
-void Block0DefaultNeumannBoundForVertex0_3(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DefaultNeumannBoundForVertex0_3(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
-	 result[idx + 0] = (2.0 * DXM2 * (source[idx + Block0StrideX * Block0CELLSIZE + 0] - source[idx + 0] - (0.0) * DX)) + (2.0 * DYM2 * (source[idx - Block0StrideY * Block0CELLSIZE + 0] - source[idx + 0] + (0.0) * DY));
+	 result[idx + 0] = (2.0 * DXM2 * (source[0][idx + Block0StrideX * Block0CELLSIZE + 0] - source[0][idx + 0] - (0.0) * DX)) + (2.0 * DYM2 * (source[0][idx - Block0StrideY * Block0CELLSIZE + 0] - source[0][idx + 0] + (0.0) * DY));
 }
 //Non-default boundary condition for Vertex between boundaries x = x_max and y = y_max
-void Block0DirichletBoundForVertex1_3(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block0DirichletBoundForVertex1_3(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block0StrideY + idxZ * Block0StrideZ) * Block0CELLSIZE;
 	 result[idx + 0] = 0.0;
 }
@@ -192,63 +192,63 @@ void Block0DirichletBoundForVertex1_3(double* result, double* source, double t, 
 //=========================CENTRAL FUNCTION FOR BLOCK WITH NUMBER 1========================//
 
 //Central function for 2d model for block with number 1
-void Block1CentralFunction(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1CentralFunction(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
-	 result[idx + 0] = (DXM2 * (1 * source[idx + 1 * Block1StrideX * Block1CELLSIZE + 0] - 2 * source[idx + 0 * Block1StrideX * Block1CELLSIZE + 0] + 1 * source[idx-1 * Block1StrideX * Block1CELLSIZE + 0])) + (DYM2 * (1 * source[idx + 1 * Block1StrideY * Block1CELLSIZE + 0] - 2 * source[idx + 0 * Block1StrideY * Block1CELLSIZE + 0] + 1 * source[idx-1 * Block1StrideY * Block1CELLSIZE + 0]));
+	 result[idx + 0] = (DXM2 * (1 * source[0][idx + 1 * Block1StrideX * Block1CELLSIZE + 0] - 2 * source[0][idx + 0 * Block1StrideX * Block1CELLSIZE + 0] + 1 * source[0][idx-1 * Block1StrideX * Block1CELLSIZE + 0])) + (DYM2 * (1 * source[0][idx + 1 * Block1StrideY * Block1CELLSIZE + 0] - 2 * source[0][idx + 0 * Block1StrideY * Block1CELLSIZE + 0] + 1 * source[0][idx-1 * Block1StrideY * Block1CELLSIZE + 0]));
 }
 
 
 //=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER 1======================//
 
 //Default boundary condition for boundary y = 0
-void Block1DefaultNeumannBound2(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1DefaultNeumannBound2(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
-	 result[idx + 0] = (DXM2 * (1 * source[idx + 1 * Block1StrideX * Block1CELLSIZE + 0] - 2 * source[idx + 0 * Block1StrideX * Block1CELLSIZE + 0] + 1 * source[idx-1 * Block1StrideX * Block1CELLSIZE + 0])) + (2.0 * DYM2 * (source[idx + Block1StrideY * Block1CELLSIZE + 0] - source[idx + 0] - (0.0) * DY));
+	 result[idx + 0] = (DXM2 * (1 * source[0][idx + 1 * Block1StrideX * Block1CELLSIZE + 0] - 2 * source[0][idx + 0 * Block1StrideX * Block1CELLSIZE + 0] + 1 * source[0][idx-1 * Block1StrideX * Block1CELLSIZE + 0])) + (2.0 * DYM2 * (source[0][idx + Block1StrideY * Block1CELLSIZE + 0] - source[0][idx + 0] - (0.0) * DY));
 }
 //Default boundary condition for boundary y = y_max
-void Block1DefaultNeumannBound3(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1DefaultNeumannBound3(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
-	 result[idx + 0] = (DXM2 * (1 * source[idx + 1 * Block1StrideX * Block1CELLSIZE + 0] - 2 * source[idx + 0 * Block1StrideX * Block1CELLSIZE + 0] + 1 * source[idx-1 * Block1StrideX * Block1CELLSIZE + 0])) + (2.0 * DYM2 * (source[idx - Block1StrideY * Block1CELLSIZE + 0] - source[idx + 0] + (0.0) * DY));
+	 result[idx + 0] = (DXM2 * (1 * source[0][idx + 1 * Block1StrideX * Block1CELLSIZE + 0] - 2 * source[0][idx + 0 * Block1StrideX * Block1CELLSIZE + 0] + 1 * source[0][idx-1 * Block1StrideX * Block1CELLSIZE + 0])) + (2.0 * DYM2 * (source[0][idx - Block1StrideY * Block1CELLSIZE + 0] - source[0][idx + 0] + (0.0) * DY));
 }
 //Default boundary condition for boundary x = 0
-void Block1DefaultNeumannBound0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1DefaultNeumannBound0(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
-	 result[idx + 0] = (2.0 * DXM2 * (source[idx + Block1StrideX * Block1CELLSIZE + 0] - source[idx + 0] - (0.0) * DX)) + (DYM2 * (1 * source[idx + 1 * Block1StrideY * Block1CELLSIZE + 0] - 2 * source[idx + 0 * Block1StrideY * Block1CELLSIZE + 0] + 1 * source[idx-1 * Block1StrideY * Block1CELLSIZE + 0]));
+	 result[idx + 0] = (2.0 * DXM2 * (source[0][idx + Block1StrideX * Block1CELLSIZE + 0] - source[0][idx + 0] - (0.0) * DX)) + (DYM2 * (1 * source[0][idx + 1 * Block1StrideY * Block1CELLSIZE + 0] - 2 * source[0][idx + 0 * Block1StrideY * Block1CELLSIZE + 0] + 1 * source[0][idx-1 * Block1StrideY * Block1CELLSIZE + 0]));
 }
 //Non-default boundary condition for boundary x = 0
-void Block1DirichletBound0_0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1DirichletBound0_0(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
 	 result[idx + 0] = 0.0;
 }
 //Default boundary condition for boundary x = x_max
-void Block1DefaultNeumannBound1(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1DefaultNeumannBound1(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
-	 result[idx + 0] = (2.0 * DXM2 * (source[idx - Block1StrideX * Block1CELLSIZE + 0] - source[idx + 0] + (0.0) * DX)) + (DYM2 * (1 * source[idx + 1 * Block1StrideY * Block1CELLSIZE + 0] - 2 * source[idx + 0 * Block1StrideY * Block1CELLSIZE + 0] + 1 * source[idx-1 * Block1StrideY * Block1CELLSIZE + 0]));
+	 result[idx + 0] = (2.0 * DXM2 * (source[0][idx - Block1StrideX * Block1CELLSIZE + 0] - source[0][idx + 0] + (0.0) * DX)) + (DYM2 * (1 * source[0][idx + 1 * Block1StrideY * Block1CELLSIZE + 0] - 2 * source[0][idx + 0 * Block1StrideY * Block1CELLSIZE + 0] + 1 * source[0][idx-1 * Block1StrideY * Block1CELLSIZE + 0]));
 }
 //Non-default boundary condition for boundary x = x_max
-void Block1DirichletBound1_0(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1DirichletBound1_0(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
 	 result[idx + 0] = 0.0;
 }
 //Default boundary condition for Vertex between boundaries x = 0 and y = 0
-void Block1DefaultNeumannBoundForVertex0_2(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1DefaultNeumannBoundForVertex0_2(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
-	 result[idx + 0] = (2.0 * DXM2 * (source[idx + Block1StrideX * Block1CELLSIZE + 0] - source[idx + 0] - (0.0) * DX)) + (2.0 * DYM2 * (source[idx + Block1StrideY * Block1CELLSIZE + 0] - source[idx + 0] - (0.0) * DY));
+	 result[idx + 0] = (2.0 * DXM2 * (source[0][idx + Block1StrideX * Block1CELLSIZE + 0] - source[0][idx + 0] - (0.0) * DX)) + (2.0 * DYM2 * (source[0][idx + Block1StrideY * Block1CELLSIZE + 0] - source[0][idx + 0] - (0.0) * DY));
 }
 //Default boundary condition for Vertex between boundaries x = x_max and y = 0
-void Block1DefaultNeumannBoundForVertex1_2(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1DefaultNeumannBoundForVertex1_2(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
-	 result[idx + 0] = (2.0 * DXM2 * (source[idx - Block1StrideX * Block1CELLSIZE + 0] - source[idx + 0] + (0.0) * DX)) + (2.0 * DYM2 * (source[idx + Block1StrideY * Block1CELLSIZE + 0] - source[idx + 0] - (0.0) * DY));
+	 result[idx + 0] = (2.0 * DXM2 * (source[0][idx - Block1StrideX * Block1CELLSIZE + 0] - source[0][idx + 0] + (0.0) * DX)) + (2.0 * DYM2 * (source[0][idx + Block1StrideY * Block1CELLSIZE + 0] - source[0][idx + 0] - (0.0) * DY));
 }
 //Default boundary condition for Vertex between boundaries x = 0 and y = y_max
-void Block1DefaultNeumannBoundForVertex0_3(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1DefaultNeumannBoundForVertex0_3(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
-	 result[idx + 0] = (2.0 * DXM2 * (source[idx + Block1StrideX * Block1CELLSIZE + 0] - source[idx + 0] - (0.0) * DX)) + (2.0 * DYM2 * (source[idx - Block1StrideY * Block1CELLSIZE + 0] - source[idx + 0] + (0.0) * DY));
+	 result[idx + 0] = (2.0 * DXM2 * (source[0][idx + Block1StrideX * Block1CELLSIZE + 0] - source[0][idx + 0] - (0.0) * DX)) + (2.0 * DYM2 * (source[0][idx - Block1StrideY * Block1CELLSIZE + 0] - source[0][idx + 0] + (0.0) * DY));
 }
 //Default boundary condition for Vertex between boundaries x = x_max and y = y_max
-void Block1DefaultNeumannBoundForVertex1_3(double* result, double* source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+void Block1DefaultNeumannBoundForVertex1_3(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block1StrideY + idxZ * Block1StrideZ) * Block1CELLSIZE;
-	 result[idx + 0] = (2.0 * DXM2 * (source[idx - Block1StrideX * Block1CELLSIZE + 0] - source[idx + 0] + (0.0) * DX)) + (2.0 * DYM2 * (source[idx - Block1StrideY * Block1CELLSIZE + 0] - source[idx + 0] + (0.0) * DY));
+	 result[idx + 0] = (2.0 * DXM2 * (source[0][idx - Block1StrideX * Block1CELLSIZE + 0] - source[0][idx + 0] + (0.0) * DX)) + (2.0 * DYM2 * (source[0][idx - Block1StrideY * Block1CELLSIZE + 0] - source[0][idx + 0] + (0.0) * DY));
 }
 void getBlock0BoundFuncArray(func_ptr_t** ppBoundFuncs){
 	func_ptr_t* pBoundFuncs = *ppBoundFuncs;
@@ -294,7 +294,7 @@ void getFuncArray(func_ptr_t** ppBoundFuncs, int blockIdx){
 		getBlock1BoundFuncArray(ppBoundFuncs);
 }
 
-void releaseBoundFuncArray(func_ptr_t* BoundFuncs){
-	free(BoundFuncs);
+void releaseFuncArray(func_ptr_t* Funcs){
+	free(Funcs);
 }
 

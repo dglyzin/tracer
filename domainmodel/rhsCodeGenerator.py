@@ -31,7 +31,7 @@ class RHSCodeGenerator:
         else:
             raise SyntaxError('Power should be greater than zero!')
     
-    def generateRightHandSideCode(self, blockNumber, leftHandSide, rightHandSide, userIndepVariables, vrbls, params, pbcl = []):
+    def generateRightHandSideCode(self, blockNumber, leftHandSide, rightHandSide, userIndepVariables, vrbls, params, pbcl = [], delay_lst=[]):
 #         pbcl (parsedBoundaryConditionList) --- это список, содержащий от 1 до 3 граничных условий
 #         rightHandSide -- распарсенная правая часть уравнения, массив строк.
         varIndex = vrbls.index(leftHandSide)
@@ -40,6 +40,7 @@ class RHSCodeGenerator:
         elemFuncsList = ['exp','sin','sinh','cos','tan','tanh','sqrt','log']
         operatorList = ['+','-','*','/']
         
+        """
         for j,expressionList in enumerate(rightHandSide):
             if expressionList[0] == 'D[':
                 varIndex = vrbls.index(expressionList[1])
@@ -57,8 +58,52 @@ class RHSCodeGenerator:
             elif expressionList in elemFuncsList:
                 outputList.extend([expressionList])
             else:
+                #откидываем лишнее от запаздывания
+                try: #исключения, чтобы выход за массив был корректным и программа не падала
+                    if ((expressionList=='(' and rightHandSide[j-1] in vrbls)
+                    or (expressionList=='t' and rightHandSide[j-2] in vrbls)
+                    or (expressionList=='-' and rightHandSide[j-3] in vrbls)
+                    or (expressionList.isdigit() and rightHandSide[j-4] in vrbls)
+                    or (expressionList==')' and rightHandSide[j-5] in vrbls)):
+                        continue
+                except:
+                    pass
+                
                 outputList.extend([expressionList])
-    
+        """
+        
+        j=0
+        rhsLen = len(rightHandSide)
+        while j < rhsLen:
+            expressionList = rightHandSide[j]
+           
+            if expressionList[0] == 'D[':
+                varIndex = vrbls.index(expressionList[1])
+                self.callDerivGenerator(outputList, blockNumber, expressionList, varIndex, userIndepVariables, pbcl)
+            elif expressionList in vrbls:
+                # если переменная не в конце и за ней стоит скобка -- запаздывание
+                if (j < len(rightHandSide)-5 and rightHandSide[j+1] == '('):
+                    delay = int(rightHandSide[j+4])
+                    sourceIndex = delay_lst.index(delay)+1
+                    j = j + 5 # сразу переходим на правую круглую скобку
+                else:
+                    sourceIndex = 0
+                varIndex = vrbls.index(expressionList)
+                outputList.extend(['source[' + str(sourceIndex) + '][idx + ' + str(varIndex) + ']'])
+            elif expressionList in params:
+                parIndex = params.index(expressionList)
+                outputList.extend(['params[' + str(parIndex) + ']'])
+            elif expressionList in operatorList:
+                outputList.extend([' ' + expressionList + ' '])
+            elif expressionList[0] == '^':
+                self.generateCodeForPower(rightHandSide[j-1], outputList, expressionList)
+            elif expressionList in elemFuncsList:
+                outputList.extend([expressionList])
+            else:                
+                outputList.extend([expressionList])
+                
+            j = j + 1
+   
         string = ''.join(outputList) + ';\n'
         return string
     

@@ -25,6 +25,7 @@ from initial import Initial
 from compnode import Compnode
 
 from DerivHandler import DerivativeHandler
+from DelayHandler import DelayHandler
 #generators
 from customOfficer import Reviewer
 from funcGenerator import FuncGenerator
@@ -510,6 +511,10 @@ class Model(QObject):
     def getMaxDerivOrder(self):
         d = DerivativeHandler()
         return d.orderOfSystem(self.equations[0].system,self.params, self.equations[0].vars)
+        
+    def determineDelay(self):
+        d = DelayHandler()
+        return d.determineDelay(self.equations[0].system,self.params, self.equations[0].vars)
 
     def createCPPandGetFunctionMaps(self, cppFileName, preprocessorFolder):
         #generator1
@@ -519,7 +524,8 @@ class Model(QObject):
             reviewer.ReviewInput()
             haloSize = self.getHaloSize()
             mDO = self.getMaxDerivOrder()
-            gen = FuncGenerator(mDO, haloSize, self.equations, self.blocks, self.initials, self.bounds, self.interconnects, gridStep, self.params, self.paramValues, self.defaultParamsIndex, preprocessorFolder)
+            delay_lst = self.determineDelay()
+            gen = FuncGenerator(delay_lst, mDO, haloSize, self.equations, self.blocks, self.initials, self.bounds, self.interconnects, gridStep, self.params, self.paramValues, self.defaultParamsIndex, preprocessorFolder)
             outputStr, functionMaps = gen.generateAllFunctions()
         except Exception as ex:
             print(ex)

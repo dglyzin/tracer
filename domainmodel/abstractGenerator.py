@@ -87,7 +87,8 @@ class InterconnectRegion3D:
     
 class AbstractGenerator(object):
 # Генерирует выходную строку для записи в файл
-    def __init__(self, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamsIndex):
+    def __init__(self, delay_lst, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamsIndex):
+        self.delay_lst = delay_lst
         self.maxDerivOrder = maxDerivOrder
         self.haloSize = haloSize
         self.equations = equations
@@ -357,13 +358,13 @@ class AbstractGenerator(object):
             b = RHSCodeGenerator()
             for i, equationString in enumerate(equation.system):
                 equationRightHandSide = parser.parseMathExpression(equationString, variables, self.params, self.userIndepVars)
-                function.extend([b.generateRightHandSideCode(blockNumber, variables[i], equationRightHandSide, self.userIndepVars, variables, self.params)])
+                function.extend([b.generateRightHandSideCode(blockNumber, variables[i], equationRightHandSide, self.userIndepVars, variables, self.params, list(), self.delay_lst)])
             function.extend(['}\n\n'])
         
         return ''.join(function), arrWithFuncNames
 
     def generateFunctionSignature(self, blockNumber, name, strideList):
-        signatureStart = 'void ' + name + '(double* result, double* source, double t,'
+        signatureStart = 'void ' + name + '(double* result, double** source, double t,'
         signatureMiddle = ' int idx' + self.defaultIndepVars[0].upper() + ','
 #         Делаем срез нулевого элемента, т.к. его уже учли
         for indepVar in self.defaultIndepVars[1:]:
@@ -448,7 +449,7 @@ class AbstractGenerator(object):
         b = RHSCodeGenerator()
         for i, equation in enumerate(parsedEquationsList):
 #             Для трехмерного случая все должно усложниться в следующей команде
-            function.extend([b.generateRightHandSideCode(blockNumber, unknownVars[i], equation, self.userIndepVars, unknownVars, self.params, pBCL)])
+            function.extend([b.generateRightHandSideCode(blockNumber, unknownVars[i], equation, self.userIndepVars, unknownVars, self.params, pBCL, list())])
         function.extend(['}\n'])
         return ''.join(function)
         

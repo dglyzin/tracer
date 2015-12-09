@@ -1,0 +1,8 @@
+{
+        "Host": "corp7.uniyar.ac.ru", 
+        "Port": 2222, 
+        "Username": "frolenko.io", 
+        "Password": "", 
+        "Workspace": "/home/frolenko.io/Tracer/projects",
+        "TracerFolder": "/home/dglyzin/Tracer"
+}

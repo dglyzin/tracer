@@ -57,7 +57,15 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
   
     model = Model()
     model.loadFromFile(inputFile)
-    print "Max derivative order is ", model.getMaxDerivOrder()
+    
+    print "\nMax derivative order is ", model.getMaxDerivOrder()
+    
+    model.delay_lst = model.determineDelay()
+    model.isdelay = bool(model.delay_lst)
+    print 'There is a delay?', model.isdelay
+    print 'Delays:', model.delay_lst, '\n'
+   
+    
     if model.isMapped:
         partModel = model
     else:
