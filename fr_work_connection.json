@@ -4,6 +4,5 @@
         "Username": "frolov2", 
         "Password": "", 
         "Workspace": "/home/frolov2/Tracer_project", 
-        "SolverExecutable": "/home/frolov2/HybridSolver/bin/HS",
-        "PreprocessorFolder": "/home/frolov2/HybridDomain"
+        "TracerFolder": "/home/frolov2"
 }
