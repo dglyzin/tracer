@@ -18,8 +18,7 @@
 ### blocks 
 ##!  int32: number of blocks N_B
 ### following are N_B 1-2-3d blocks one by one
-### BEGINNING OF BLOCK
-##!  int32 dimension Db (can be 1,2 or 3) 
+### BEGINNING OF BLOCK 
 ##!  int32 computation node
 ##!  int32 computation device type
 ##!  int32 computation device number

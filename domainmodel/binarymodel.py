@@ -339,10 +339,8 @@ class BinaryModel(object):
         self.timeAndStepArr[5] = self.dmodel.gridStepY
         self.timeAndStepArr[6] = self.dmodel.gridStepZ
 
-        self.paramsArr = np.zeros(4, dtype=np.int32)
-        # TODO Убрать размерности из блоков.
-        # TODO Перенести размерность на уровень выше. Описывать до блоков. Перед CellSize
-        self.paramsArr[0] = self.dmodel.blocks[0].dimension
+        self.paramsArr = np.zeros(4, dtype=np.int32)        
+        self.paramsArr[0] = self.dmodel.dimension
         self.paramsArr[1] = self.dmodel.getCellSize()
         self.paramsArr[2] = self.dmodel.getHaloSize()
         self.paramsArr[3] = self.dmodel.solverIndex
@@ -364,11 +362,11 @@ class BinaryModel(object):
         self.blockPropArrList = []
         self.blockInitFuncArrList = []
         self.blockCompFuncArrList = []
+        domainDim = self.dmodel.dimension
         for blockIdx in range(self.blockCount):
             print "Saving block", blockIdx
             block = self.dmodel.blocks[blockIdx]
-            #1. Fill block params
-            blockDim = block.dimension
+            #1. Fill block params            
             cellCountList = block.getCellCount(self.dmodel.gridStepX, self.dmodel.gridStepY,
                                            self.dmodel.gridStepZ )
             cellOffsetList = block.getCellOffset(self.dmodel.gridStepX, self.dmodel.gridStepY,
@@ -376,49 +374,48 @@ class BinaryModel(object):
             cellCount = cellCountList[0]*cellCountList[1]*cellCountList[2]
             zc, yc, xc = cellCountList[2], cellCountList[1] , cellCountList[0]
 
-            blockPropArr = np.zeros(4+2*blockDim, dtype=np.int32)
+            blockPropArr = np.zeros(3+2*domainDim, dtype=np.int32)
             blockInitFuncArr = np.zeros(cellCount, dtype=np.int16)
             blockCompFuncArr = np.zeros(cellCount, dtype=np.int16)
-
-            blockPropArr[0] = blockDim
+            
             mapping = self.dmodel.mapping[blockIdx]
-            blockPropArr[1] = mapping["NodeIdx"]
-            blockPropArr[2] = devType[ mapping["DeviceType"] ]
-            blockPropArr[3] = mapping["DeviceIdx"]
-            idx = 4
+            blockPropArr[0] = mapping["NodeIdx"]
+            blockPropArr[1] = devType[ mapping["DeviceType"] ]
+            blockPropArr[2] = mapping["DeviceIdx"]
+            idx = 3
             blockPropArr[idx] = cellOffsetList[0]
             idx += 1
-            if blockDim>1:
+            if domainDim>1:
                 blockPropArr[idx] = cellOffsetList[1]
                 idx+=1
-            if blockDim>2:
+            if domainDim>2:
                 blockPropArr[idx] = cellOffsetList[2]
                 idx+=1
             blockPropArr[idx] = cellCountList[0]
             idx += 1
-            if blockDim>1:
+            if domainDim>1:
                 blockPropArr[idx] = cellCountList[1]
                 idx+=1
-            if blockDim>2:
+            if domainDim>2:
                 blockPropArr[idx] = cellCountList[2]
             self.blockPropArrList.append(blockPropArr)
             print blockPropArr
             #2. Fill block functions
-            if blockDim==1:
+            if domainDim==1:
                 self.fill1dInitFuncs(blockInitFuncArr, block, cellCountList)
                 print "Initial function indices:"
                 print blockInitFuncArr
                 self.fill1dCompFuncs(blockCompFuncArr, block, self.functionMaps[blockIdx], cellCountList)
                 print "Computation function indices:"
                 print blockCompFuncArr
-            elif blockDim==2:
+            elif domainDim==2:
                 self.fill2dInitFuncs(blockInitFuncArr.reshape([yc, xc]), block, cellCountList)
                 print "Initial function indices:"
                 print blockInitFuncArr.reshape([yc, xc])
                 self.fill2dCompFuncs(blockCompFuncArr.reshape([yc, xc]), block, self.functionMaps[blockIdx], cellCountList)                
                 print "Computation function indices:"
                 print blockCompFuncArr.reshape([yc, xc])
-            elif blockDim==3:
+            elif domainDim==3:
                 self.fill3dInitFuncs(blockInitFuncArr.reshape([zc, yc, xc]), block, cellCountList)
                 print "Initial function indices:"
                 print blockInitFuncArr.reshape([zc, yc, xc])

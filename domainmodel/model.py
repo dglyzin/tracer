@@ -142,6 +142,7 @@ class Model(QObject):
             self.gridStepX = 1.0
             self.gridStepY = 1.0
             self.gridStepZ = 1.0
+            self.dimension = 1
             self.defaultParamsIndex = -1
         else:
             self.projectName = projdict["ProjectName"]
@@ -155,6 +156,7 @@ class Model(QObject):
             self.gridStepX = projdict["Grid"]["dx"]
             self.gridStepY = projdict["Grid"]["dy"]
             self.gridStepZ = projdict["Grid"]["dz"]
+            self.dimension = projdict["Grid"]["Dimension"]
             
             self.params = projdict["EquationParams"]["Params"]
             self.paramValues = projdict["EquationParams"]["ParamValues"]
@@ -250,7 +252,7 @@ class Model(QObject):
 
         self.setSimpleValues(projectDict)
         for blockDict in projectDict["Blocks"]:
-            self.addBlock(blockDict)
+            self.addBlock(blockDict, projectDict["Grid"]["Dimension"])
         for icDict in projectDict["Interconnects"]:
             self.addInterconnect(icDict)
         for equationDict in projectDict["Equations"]:
@@ -337,8 +339,8 @@ class Model(QObject):
 
 
     ###Blocks
-    def addBlankBlock(self, dimension):
-        block = Block(u"Block {num}".format(num = len(self.blocks) + 1), dimension)
+    def addBlankBlock(self):
+        block = Block(u"Block {num}".format(num = len(self.blocks) + 1), self.dimension)
         self.blocks.append(block)
         self.blockAdded.emit(block)
 
@@ -346,9 +348,9 @@ class Model(QObject):
         self.blocks[index].fillProperties(bdict)
         self.blockChanged.emit(index)
 
-    def addBlock(self, bdict):
+    def addBlock(self, bdict, dimension):
         index = len(self.blocks)
-        self.addBlankBlock(bdict["Dimension"])
+        self.addBlankBlock()
         self.fillBlockProperties(index, bdict)
 
     def deleteBlock(self, index):

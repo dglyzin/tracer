@@ -54,8 +54,7 @@ class Block(object):
         return [xc, yc, zc]
         
     def fillProperties(self, bdict):
-        self.name = bdict["Name"]
-        self.dimension = bdict["Dimension"]
+        self.name = bdict["Name"]        
         self.offsetX = bdict["Offset"]["x"]
         self.sizeX = bdict["Size"]["x"]        
         if self.dimension > 1:
