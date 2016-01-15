@@ -49,6 +49,7 @@
 ##!  uint8: file format version minor
 
 ##!  float64 current time 
+##!  float64 current timestep
 ###  following is the N_B  blocks one by one
 ###  BEGINNING OF THE BLOCK##!   
 ##!   total*cellsize*float64: state 

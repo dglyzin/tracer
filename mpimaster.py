@@ -53,15 +53,16 @@ def CollectSolution(world, geometry, cellSize):
         state.append(blockState)
     return state
 
-def SaveSolution(folder, solution, problemTime):    
+def SaveSolution(folder, solution, problemTime, currentStep):    
     fileName = os.path.join(folder, "project-"+str(problemTime)+".bin")    
     
     versionArr = np.zeros(3, dtype=np.uint8)
     versionArr[0] = SAVE_FILE_CODE
     versionArr[1] = VERSION_MAJOR
     versionArr[2] = VERSION_MINOR
-    timeArr = np.zeros(1, dtype="float64")
+    timeArr = np.zeros(2, dtype="float64")
     timeArr[0] = problemTime
+    timeArr[1] = currentStep
     binfile = open(fileName, "wb")
     #1. Save common settings
     versionArr.tofile(binfile)
@@ -144,7 +145,7 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
     ##  9. stop/continue comp-0 -> world-0                |    -
 
     #1.
-    print "db sais is_running =", user_is_running
+    print "db says is_running =", user_is_running
     world.Bcast([user_is_running, MPI.INT], root=0)
     world.Recv([comp_status, MPI.INT], source=1, tag = 0)    
     #todo change state in db to running& ser slurm task ID
