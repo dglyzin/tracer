@@ -3,13 +3,14 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 1.0, 
+        "FinishTime": 0.05, 
         "TimeStep": 1e-07, 
-        "SaveInterval": 0.05, 
+        "SaveInterval": 0.005, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 1, 
         "dx": 0.025, 
         "dy": 1, 
         "dz": 1
@@ -17,7 +18,6 @@
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 1, 
             "Offset": {
                 "x": 0.0                
             }, 
@@ -109,21 +109,21 @@
             }
         ]
     },
-    "Results": {        
-        "PointOnTime":[
-                      ],
-        "Plots1d":[
+    "Results": [
             {
-                "Expression":"U",        
+                "Title":"U-plot",
+                "Type":"plot1d",
+                "Expression":"U"
             },
-            {
-                "Expression":"V",                
+            {   
+                "Title":"V-plot",
+                "Type":"plot1d",
+                "Expression":"V"
             },
-            {
-                "Expression":"U^2+V^2",                
+            {  
+                "Title":"Squares-plot",
+                "Type":"plot1d",
+                "Expression":"U^2+V^2"
             }                   
-        ],
-        "Plots2d":[
         ]
-    }
 }

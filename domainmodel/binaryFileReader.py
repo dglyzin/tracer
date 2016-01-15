@@ -84,11 +84,11 @@ def combineBlocks(solution, info, countZ, countY, countX, offsetZ, offsetY, offs
 def readBinFile(fileName, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize):
     data = np.zeros((countZ, countY, countX, cellSize), dtype=np.float64)
     
-    bin = open(fileName, 'rb')
-    m253, = struct.unpack('b', bin.read(1))
-    versionMajor, = struct.unpack('b', bin.read(1))
-    versionMinor, = struct.unpack('b', bin.read(1))
-    time, = struct.unpack('d', bin.read(8))
+    binF = open(fileName, 'rb')
+    m253, = struct.unpack('b', binF.read(1))
+    versionMajor, = struct.unpack('b', binF.read(1))
+    versionMinor, = struct.unpack('b', binF.read(1))
+    time, = struct.unpack('d', binF.read(8))
 
     for j in range( len(info) ) :
         countZBlock = info[j][5]
@@ -101,9 +101,9 @@ def readBinFile(fileName, info, countZ, countY, countX, offsetZ, offsetY, offset
     
         total = countZBlock * countYBlock * countXBlock * cellSize
     
-        blockData = np.fromfile(bin, dtype=np.float64, count=total)
+        blockData = np.fromfile(binF, dtype=np.float64, count=total)
         blockData = blockData.reshape(countZBlock, countYBlock, countXBlock, cellSize);
         data[coordZBlock : coordZBlock + countZBlock, coordYBlock : coordYBlock + countYBlock, coordXBlock : coordXBlock + countXBlock, :] = blockData[:, :, :, :]
-    bin.close()
+    binF.close()
     
     return data
