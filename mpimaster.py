@@ -216,7 +216,6 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
     dbc.freeDbConn(db, cur)
 
 
-
 if __name__ == '__main__':
     #input args
     parser = argparse.ArgumentParser(description='Master MPI process.', epilog = "Have fun!")

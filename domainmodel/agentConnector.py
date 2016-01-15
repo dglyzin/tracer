@@ -7,10 +7,34 @@ Created on Nov 10, 2015
 import socket
  
  
+def fromClient():
+    import socket
+    import json
+    import base64
+    import struct
+    
+    TCP_IP = '192.168.10.100'
+    TCP_PORT = 8888
+    BUFFER_SIZE = 1024
+    
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.connect((TCP_IP, TCP_PORT))
+    
+    with open('image.jpg', 'rb') as f:
+        data = f.read()
+    
+    pic1 = {"title":"uplot", "data":base64.b64encode(data)}
+    mydict = {"Results":[pic1]}
+    djson = json.dumps(mydict)
+    ssize = struct.pack("I",len(djson))
+    
+    MESSAGE = ssize + djson
+    
+    s.send(MESSAGE)
+    s.close()
 
-#for idx in range(200000000):
-#    s.send(MESSAGE)
-#data = s.recv(BUFFER_SIZE)
+
+
 
 
 
