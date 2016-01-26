@@ -89,6 +89,7 @@ def readBinFile(fileName, info, countZ, countY, countX, offsetZ, offsetY, offset
     versionMajor, = struct.unpack('b', binF.read(1))
     versionMinor, = struct.unpack('b', binF.read(1))
     time, = struct.unpack('d', binF.read(8))
+    timeStep, = struct.unpack('d', binF.read(8))
 
     for j in range( len(info) ) :
         countZBlock = info[j][5]
