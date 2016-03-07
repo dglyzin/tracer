@@ -3,7 +3,6 @@
         "Port": 2222, 
         "Username": "dglyzin", 
         "Password": "", 
-        "Workspace": "/home/dglyzin/Tracer/projects", 
-        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS",
-        "PreprocessorFolder": "/home/dglyzin/Tracer/hybriddomain"
+        "Workspace": "/home/dglyzin/TracerFromHome/projects", 
+        "TracerFolder": "/home/dglyzin/TracerFromHome"        
 }
