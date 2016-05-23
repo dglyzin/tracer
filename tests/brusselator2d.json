@@ -3,21 +3,21 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 1.0, 
+        "FinishTime": 10.0, 
         "TimeStep": 1e-06, 
-        "SaveInterval": 0.05, 
+        "SaveInterval": 0.02, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
-        "dx": 0.01, 
-        "dy": 0.01, 
-        "dz": 1
+        "dx": 0.002, 
+        "dy": 0.002, 
+        "dz": 1,
+        "Dimension": 2
     }, 
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 2, 
             "Offset": {
                 "x": 0.0, 
                 "y": 0.0
