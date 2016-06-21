@@ -5,14 +5,24 @@ Created on Nov 10, 2015
 '''
 
 import socket
+import json
+import base64
+import struct
+    
+
  
+def envelope(jobId, messages, sysTime, timeStep, state):
+    mydict = {"JobId": jobId,
+              "Results":messages, 
+              "MessageType":"state", 
+              "Time":sysTime, 
+              "TimeStep":timeStep, 
+              "State":state}
+    dumpedJson = json.dumps(mydict)
+    ssize = struct.pack("I",len(dumpedJson))
+    return ssize + dumpedJson
  
 def fromClient():
-    import socket
-    import json
-    import base64
-    import struct
-    
     TCP_IP = '192.168.10.100'
     TCP_PORT = 8888
     BUFFER_SIZE = 1024
@@ -23,18 +33,9 @@ def fromClient():
     with open('image.jpg', 'rb') as f:
         data = f.read()
     
-    pic1 = {"title":"uplot", "data":base64.b64encode(data)}
-    mydict = {"Results":[pic1]}
-    djson = json.dumps(mydict)
-    ssize = struct.pack("I",len(djson))
-    
-    MESSAGE = ssize + djson
-    
-    s.send(MESSAGE)
+    message1 = {"title":"uplot", "data":base64.b64encode(data)}
+    s.send(envelope([message1], 0.5, 0.001, "ok"))
     s.close()
-
-
-
 
 
 
