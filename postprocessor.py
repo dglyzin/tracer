@@ -25,7 +25,7 @@ import multiprocessing as mp
 from multiprocessing import Pool
 
 import time
-from fileUtils import getSortedBinFileList, defaultProjFname
+from fileUtils import getSortedBinFileList, defaultProjFname, defaultProjFexp
 
 import math
 from domainmodel.binaryFileReader import readBinFile, readDomFile
@@ -213,7 +213,7 @@ def saveResults1D( (projectDir, binFile, info, countZ, countY, countX, offsetZ, 
     #plt.clf()
     
     t = binFile.split("-")[1]
-    t = t.split(".bin")[0]
+    t = t.split(defaultProjFexp)[0]
     
     savePng1D(filename, X, data, maxValue, minValue, t, cellSize)
 
@@ -239,7 +239,7 @@ def saveResults2D( (projectDir, binFile, info, countZ, countY, countX, offsetZ, 
     #plt.clf()
     
     t = binFile.split("-")[1]
-    t = t.split(".bin")[0]
+    t = t.split(defaultProjFexp)[0]
     
     savePng2D(filename, X, Y, data, maxValue, minValue, t, cellSize)
     if saveText:
