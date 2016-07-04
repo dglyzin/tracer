@@ -1,0 +1,127 @@
+{
+    "project":"rvstsg.json",
+    "runs": [
+    {
+            "name": "cpu_64",
+            "devices": [0],
+            "double": true
+        },
+        {
+            "name": "cpu",
+            "devices": [0],
+            "double": false
+        }
+        
+    ],
+    "tests":
+        [
+            {
+            "run1": "cpu",
+            "run2": "cpu",
+            "postfix1": "4-final",
+            "postfix2": "6-finalfromhalf",
+            "tolerances":
+                {
+                    "temperature":{"max": 0.0, "ave": 0.0},
+                    "enthalpy":{"max": 0.0, "ave": 0.0}
+                }
+           },
+           {
+            "run1": "cpu",
+            "run2": "cpu",
+            "postfix1": "3-half",
+            "postfix2": "5-halfresave",
+            "tolerances":
+                {
+                    "temperature":{"max": 0.0, "ave": 0.0},
+                    "enthalpy":{"max": 0.0, "ave": 0.0}
+                }
+           },
+           {
+            "run1": "cpu",
+            "run2": "cpu_64",
+            "postfix1": "0-generated",
+            "postfix2": "0-generated",
+            "tolerances":
+                {
+                    "temperature":{"max": 0.0, "ave": 0.0},
+                    "enthalpy":{"max": 0.0, "ave": 0.0}
+                }
+           },
+           {
+            "run1": "cpu",
+            "run2": "cpu",
+            "postfix1": "0-generated",
+            "postfix2": "1-resave",
+            "tolerances":
+                {
+                    "temperature":{"max": 9.54e-07, "ave": 4.56e-07}                    
+                }
+           },
+           {
+            "run1": "cpu_64",
+            "run2": "cpu_64",
+            "postfix1": "0-generated",
+            "postfix2": "1-resave",
+            "tolerances":
+                {
+                    "temperature":{"max": 1.32e-06, "ave": 7.27e-07}                    
+                }
+           },
+           {
+            "run1": "cpu",
+            "run2": "cpu_64",
+            "postfix1": "1-resave",
+            "postfix2": "1-resave",
+            "tolerances":
+                {
+                    "temperature":{"max": 8.37e-07, "ave": 4.26e-07},
+                    "enthalpy":{"max": 0.0033, "ave": 0.00095}
+                }
+           },
+           {
+            "run1": "cpu",
+            "run2": "cpu_64",
+            "postfix1": "2-onestep",
+            "postfix2": "2-onestep",
+            "tolerances":
+                {
+                    "temperature":{"max": 8.37e-07, "ave": 4.23e-07},
+                    "enthalpy":{"max": 0.0033, "ave": 0.00091}
+                }
+           },
+           {
+            "run1": "cpu",
+            "run2": "cpu_64",
+            "postfix1": "3-half",
+            "postfix2": "3-half",
+            "tolerances":
+                {
+                    "temperature":{"max": 3.56e-06, "ave": 6.25e-07},
+                    "enthalpy":{"max": 0.015, "ave": 0.0017}
+                }
+           },
+           {
+            "run1": "cpu",
+            "run2": "cpu_64",
+            "postfix1": "4-final",
+            "postfix2": "4-final",
+            "tolerances":
+                {
+                    "temperature":{"max": 5.51e-06, "ave": 8.63e-07},
+                    "enthalpy":{"max": 0.023, "ave": 0.0024}
+                }
+           },
+           {
+            "run1": "cpu",
+            "run2": "reference_float_xeon6core",
+            "postfix1": "4-final",
+            "postfix2": "4-final",
+            "tolerances":
+                {
+                    "temperature":{"max": 1.0e-07, "ave": 1.0e-07},
+                    "enthalpy":{"max": 0.0001, "ave": 0.0001}
+                }
+           }
+       ]
+}
