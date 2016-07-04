@@ -1,0 +1,12 @@
+1d regression tests 
+
+001 brusselator 1d
+  consistency
+  001. compare brusselator with reference
+  002. compare brusselator (t1+t2) vs (t1, save, load, t2)
+  003. compare brusselator for 1, 2, 3, 4 nodes
+
+  performance
+  004. reference performance for 1 node
+  005. reference speedup for 2, 3, 4 nodes
+
