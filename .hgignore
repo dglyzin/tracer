@@ -4,4 +4,4 @@ syntax: glob
 *.dom
 *.txt
 *.png
-.ptp-sync-folder
+.ptp-sync*
