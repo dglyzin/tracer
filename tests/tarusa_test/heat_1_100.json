@@ -1,0 +1,103 @@
+{
+    "ProjectName": "Heat", 
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 50.0, 
+        "TimeStep": 0.00001, 
+        "SaveInterval": 0.0, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "dx": 0.01, 
+        "dy": 0.01, 
+        "dz": 1,
+        "Dimension": 2
+    }, 
+    "Blocks": [
+        {
+            "Name": "Block 0", 
+            "Offset": {
+                "x": 0.0,
+                "y": 0.0
+            }, 
+            "Size": {
+                "x": 1.0,
+                "y": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [
+                {
+                    "BoundNumber": 0, 
+                    "Side": 2,
+                    "xfrom": 0.25, 
+                    "xto": 0.75, 
+                    "yfrom": 0.0, 
+                    "yto": 0.0
+                }
+            ], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }
+    ], 
+    "Interconnects": [], 
+    "Equations": [
+        {
+            "Name": "Heat normal", 
+            "Vars": [
+                "x",
+                "y"
+            ], 
+            "System": [
+                "U'=a*(D[U,{x,2}] + D[U,{y,2}])"
+            ]
+        }
+    ], 
+    "EquationParams": {
+        "Params": [
+            "a"
+        ], 
+        "ParamValues": [
+            {
+                "a": 1.0
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
+    "Bounds": [
+        {
+            "Name": "N 1", 
+            "Type": 1, 
+            "Values": [
+                "50.0"
+            ]
+        }
+    ], 
+    "Initials": [
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "0.0"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
+        ]
+    }
+}
