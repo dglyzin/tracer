@@ -2,16 +2,17 @@
 Created on June 21, 2016
 
 @author: dglyzin
+
+
+идем по всем папкам в regression
+запускаем remoterun на все проекты с параметрами из спека 
+запускаем удаленно компаратор -> лог сравнений
+лог сравнений копируем домой
 '''
 
 import argparse
 import sys
 import os
-from permafrost.coreinterface import *
-from permafrost.domdefmodel.binarymodel import BinaryModel
-from shared.base.model import Model
-from permafrost.domdefmodel.compresources import CompNode, CompResources
-from permafrost.domdefmodel.binlogger import ModelLogger, LL_DEVEL
 from comparator import compareData
 import json
 from glob import glob
@@ -46,29 +47,11 @@ def testrun(inputFile, outfnBase, devices, fpDouble, logger):
     finishTime = laputa.GetFinishTime()
     currentTime = laputa.GetTime()
     
-    while laputa.GetTime()<currentTime+ (finishTime-currentTime)/2.0:
-        #print "step {}".format(laputa.GetTime())
-        laputa.ProcessOneStep()
-    laputa.Save(outfnBase+"_3-half", fullText)
-    while laputa.GetTime()<finishTime:
-        laputa.ProcessOneStep()
-    laputa.Save(outfnBase+"_4-final", fullText)
-    laputa.ReleaseResources()
-    
-    laputa = Dom3d()
-    laputa.Load(outfnBase+".dom", outfnBase+"_3-half.bin", loglevel=0)    
-    laputa.Save(outfnBase+"_5-halfresave", fullText)    
-    while laputa.GetTime()<finishTime:
-        laputa.ProcessOneStep()
-    laputa.Save(outfnBase+"_6-finalfromhalf", fullText)
-    laputa.ReleaseResources()
-    
-    
-def removeBinaries(path):
-    for fileName in glob(os.path.join(path, "*.bin")):      
-        os.remove(fileName)
-    for fileName in glob(os.path.join(path, "*.dom")): 
-        os.remove(fileName)
+#def removeBinaries(path):
+#    for fileName in glob(os.path.join(path, "*.bin")):      
+#        os.remove(fileName)
+#    for fileName in glob(os.path.join(path, "*.dom")): 
+#        os.remove(fileName)
 
 def constest(filename, noRun, keepBinaries):
     testdict = json.load(open(filename))
@@ -103,12 +86,12 @@ def constest(filename, noRun, keepBinaries):
             print "  {}_{} vs {}_{} passed.".format(run1, postfix1, run2, postfix2)
     
     logger.clean()
-    if testPassed and not keepBinaries:
-        removeBinaries(folder)
+    #if testPassed and not keepBinaries:
+    #    removeBinaries(folder)
     return testPassed
 
-def regtest(folder, specfile, noRun, keepBinaries):    
-    result =constest(os.path.join(folder, specfile), noRun, keepBinaries) 
+def regtest(folder, specfile, noRun):    
+    result =constest(os.path.join(folder, specfile), noRun) 
     if result:
         print "Test {} OK!\n".format(folder)
     else:
@@ -117,9 +100,8 @@ def regtest(folder, specfile, noRun, keepBinaries):
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Tracer regression tester.', epilog = "Have fun!")    
-    parser.add_argument('-folder', type = str, default="regression", help = "Folder to search tests in (including subfolders).")
-    parser.add_argument('-keep', help="Do not remove binary files after testing.", action="store_true")
-    parser.add_argument('-norun', help="Do not make runs, only compare existing date.", action="store_true")
+    parser.add_argument('-folder', type = str, default="regression", help = "Folder to search tests in (including subfolders).")    
+    parser.add_argument('-norun', help="Do not make runs, only compare existing data.", action="store_true")
     
     args = parser.parse_args()
     path = args.folder    
@@ -129,7 +111,7 @@ if __name__=='__main__':
         for jsonfile in files:
             if jsonfile.endswith("spec.test"):                
                 print(os.path.join(root, jsonfile))
-                if not regtest(root,jsonfile, args.norun, args.keep):
+                if not regtest(root,jsonfile, args.norun):
                     allOK = False
     if allOK:
         print "Tests finished successfully."
