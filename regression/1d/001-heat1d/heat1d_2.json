@@ -1,0 +1,133 @@
+{
+    "ProjectName": "Heat 1d 2node", 
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 0.1, 
+        "TimeStep": 0.0000001, 
+        "SaveInterval": 0.0, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "Dimension": 1,
+        "dx": 0.001, 
+        "dy": 1, 
+        "dz": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "Block#0",  
+            "Offset": {
+                "x": 0.0                
+            }, 
+            "Size": {
+                "x": 0.5
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 0.25, 
+                    "xto": 0.5
+                }
+            ], 
+            "EquationRegions": []
+        },
+        {
+            "Name": "Block#1",  
+            "Offset": {
+                "x": 0.5                
+            }, 
+            "Size": {
+                "x": 0.5
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.25
+                }
+            ], 
+            "EquationRegions": []
+        }
+    ], 
+    "Interconnects": [
+        {
+            "Name": "connection 1", 
+            "Block1": 0, 
+            "Block2": 1, 
+            "Block1Side": 1, 
+            "Block2Side": 0
+        }
+    ], 
+    "Equations": [
+        {
+            "Name": "Flat Brusselator", 
+            "Vars": [
+                "x"                
+            ], 
+            "System": [
+                "U'=a * D[U,{x,2}]"
+            ]
+        }
+    ], 
+    "EquationParams": {
+        "Params": [
+            "a"
+        ], 
+        "ParamValues": [
+            {
+                "a": 1.0
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
+    "Bounds": [], 
+    "Initials": [
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "0.0"
+            ]
+        },
+        {
+            "Name": "Initial values 1", 
+            "Values": [
+                "1.0"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        },
+        {
+            "Name": "cnode2", 
+            "CpuCount": 1, 
+            "GpuCount": 3
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            },
+            {
+                "NodeIdx": 1, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
+        ]
+    }
+}
