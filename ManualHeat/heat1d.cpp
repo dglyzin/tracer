@@ -71,6 +71,8 @@ int main(int argc, char * argv[]) {
   
   currentState[0] = 0.0;
   currentState[gridNodeCount-1] = 10.0;
+  nextState[0] = 0.0;
+  nextState[gridNodeCount-1] = 10.0;
   
   double dx2 = dx*dx;
   double* tmp;
@@ -94,6 +96,7 @@ int main(int argc, char * argv[]) {
   
   finish = omp_get_wtime();
   printf("Time: %f\n", finish - start);
+  printf("currentTime: %.8f\n", currentTime);
   
   saveState("heat1dResult.lbin", currentTime, dt, currentState, gridNodeCount);
   
