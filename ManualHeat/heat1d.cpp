@@ -47,6 +47,11 @@ void saveState(char* path, double currentTime, double timeStep, double* array, i
   saveStateData(path, array, size);
 }
 
+void initArray(double* array, int size, double value) {
+  for(int i = 0; i < size; i++)
+    array[i] = value;
+}
+
 int main(int argc, char * argv[]) {
   double fromX = atof(argv[1]);
   double toX = atof(argv[2]);
@@ -61,7 +66,36 @@ int main(int argc, char * argv[]) {
   double* currentState = new double [gridNodeCount];
   double* nextState = new double [gridNodeCount];
   
-  saveState("test", 0.0, dt, currentState, gridNodeCount);
+  initArray(currentState, gridNodeCount, 0.0);
+  initArray(nextState, gridNodeCount, 0.0);
+  
+  currentState[0] = 0.0;
+  currentState[gridNodeCount-1] = 10.0;
+  
+  double dx2 = dx*dx;
+  double* tmp;
+  
+  double start;
+  double finish;
+  
+  start = omp_get_wtime();
+  
+  while(currentTime < finishTime) {
+#pragma omp parallel for
+    for(int i = 1; i < gridNodeCount-1; i++)
+      nextState[i] = currentState[i] + dt * (currentState[i-1] - 2 * currentState[i] + currentState[i+1]) / dx2;
+    
+    tmp = currentState;
+    currentState = nextState;
+    nextState = tmp;
+    
+    currentTime += dt;
+  }
+  
+  finish = omp_get_wtime();
+  printf("Time: %f\n", finish - start);
+  
+  saveState("heat1dResult.lbin", currentTime, dt, currentState, gridNodeCount);
   
   delete currentState;
   delete nextState;
