@@ -4,14 +4,14 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 1.0, 
-        "TimeStep": 0.0000001, 
+        "TimeStep": 0.001, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
         "Dimension": 1,
-        "dx": 0.001, 
+        "dx": 0.1, 
         "dy": 1, 
         "dz": 1
     }, 
