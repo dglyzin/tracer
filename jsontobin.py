@@ -82,10 +82,10 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
         db, cur = dbc.getDbConn(args.jobId)
         dbc.setDbJobState(db, cur, jobId, JS_PREPROCESSING)
         dbc.freeDbConn(db, cur)
-        bm.createMixRunFile(OutputSpmdFile, OutputRunFile, projectDir, tracerFolder, jobId, debug, 
+        bm.createMixRunFile(OutputSpmdFile, OutputRunFile, projectDir, projectTitle, tracerFolder, jobId, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)        
     else:               
-        bm.createCOnlyRunFile(OutputRunFile, projectDir, tracerFolder, debug, 
+        bm.createCOnlyRunFile(OutputRunFile, projectDir, projectTitle, tracerFolder, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)
                 
 if __name__=='__main__':

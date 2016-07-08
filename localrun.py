@@ -20,16 +20,13 @@ Created on July 07, 2016
 
 model -> mapped model -> domain.dom+funcs.cpp+run.sh
 '''
-remoteRunScriptName='project.sh'
-remoteProjectFileName='project.json'
 
-import json
 import os
-import getpass
 import argparse
-
+from subprocess import call
+import glob
         
-def localProjectRun(inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug, projectFolder):
+def localProjectRun(inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug):
     '''      
       inputFile:  project file
       continueEnabled: true if user wants to continue from computed file 
@@ -39,94 +36,82 @@ def localProjectRun(inputFile, continueEnabled, continueFnameProvided, continueF
       finishTimeProvided: true if user wants to override json value for finish time
       finishTime:
       debug: true if user wants to run small problem (10 min. max)
-      projectFolder: defaults to json file name unless specified
+      
     '''
-    
+    tracerFolder = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/..")
     #prepare command line argumetnts for preprocessor
-    optionalArgs=''    
+    optionalArgs=[]    
     if not (jobId is None):
-        optionalArgs+=" -jobId "+str(jobId)
+        optionalArgs+=["-jobId", str(jobId)]
     if finishTimeProvided:
-        optionalArgs+=" -finish "+str(finishTime)
-    if continueEnabled:
-        optionalArgs+=" -cont"
+        optionalArgs+=["-finish", str(finishTime)]
+    if continueEnabled: 
+        optionalArgs+=["-cont"]
         if continueFnameProvided:
-            optionalArgs+=" "+continueFileName
+            optionalArgs+=[continueFileName]
     if debug:
-        optionalArgs+=" -debug"
+        optionalArgs+=["-debug"]
     
     
     #get project file name without extension
-    print inputFile
-    if projectFolder is None:
-        projectPathName, _ = os.path.splitext(inputFile)   
-        projectFolder = os.path.basename(projectPathName)
+    inputFile = os.path.abspath(inputFile)
+    print "Absolute project path:", inputFile        
+    projectFolder = os.path.dirname(inputFile)
+    print projectFolder
+    projectPathName, _ = os.path.splitext(inputFile)   
     
-
-    print "Checking if folder "+connection.workspace+" exists..."
-    stdin, stdout, stderr = client.exec_command('test -d '+connection.workspace)
-    if stdout.channel.recv_exit_status():
-        print "Please create workspace folder and put hybriddomain preprocessor into it"
-        return
+    if not continueEnabled:  
+        call(["rm", projectPathName+'.cpp'])
+        call(["rm", projectFolder+'/libuserfuncs.so'])
+        call(["rm", projectPathName+'.sh'])
+        call(["rm", projectPathName+'.dom'])
+        files = glob.glob(projectPathName+'*.lbin')        
+        call(["rm"] + files)     
+        files = glob.glob(projectPathName+'*.dbin')
+        call(["rm"] + files)        
+        print "Folder cleaned."                
     else:
-        print "Workspace OK."
+        print "Folder exists, no cleaning needed."
+        #now check if file to continue from exists
+        if continueFnameProvided:
+            print "Checking if file to continue from  ("+continueFileName+") exists..."            
+            if call(['test', '-f', continueFileName]):
+                print "File not found, please specify existing file to continue"
+                return
+            else:
+                print "File OK."
 
-    projFolder = connection.workspace+"/"+projectFolder
-    print "Creating/cleaning project folder: "
-    stdin, stdout, stderr = client.exec_command('test -d  '+projFolder)
-    if stdout.channel.recv_exit_status():
-        stdin, stdout, stderr = client.exec_command('mkdir  '+projFolder)
-        print "Folder created."
-    else:
-        if not continueEnabled:  
-            stdin, stdout, stderr = client.exec_command('rm -rf '+projFolder+'/*')
-            stdout.read()
-            print "Folder cleaned."                
-        else:
-            print "Folder exists, no cleaning needed."
-            #now check if file to continue from exists
-            if continueFnameProvided:
-                print "Checking if file to continue from  ("+continueFileName+") exists..."
-                stdin, stdout, stderr = client.exec_command('test -f '+continueFileName)
-                if stdout.channel.recv_exit_status():
-                    print "File not found, please specify existing file to continue"
-                    return
-                else:
-                    print "File OK."
-        
-    #copy instead
-    cftp.put(inputFile, projFolder+"/"+remoteProjectFileName)
+
     
-    #3 Run jsontobin on json
-    print '\nRunning preprocessor:'
-    command = 'python '+connection.tracerFolder+'/hybriddomain/jsontobin.py '+ projFolder +    '/'+remoteProjectFileName + " " + connection.tracerFolder
-        
-    print command, optionalArgs
-    
+    #3 Run jsontobin on json    
+    command = ['python', tracerFolder+'/hybriddomain/jsontobin.py', inputFile, tracerFolder]
+    print '\nRunning preprocessor:', command    
+    call(command+optionalArgs)
+
     #4 Run Solver binary on created files
-    print "Checking if solver executable at "+connection.tracerFolder+"/hybridsolver/bin/HS exists..."
-    stdin, stdout, stderr = client.exec_command('test -f '+connection.tracerFolder + "/hybridsolver/bin/HS")
-    if stdout.channel.recv_exit_status():
+    print "Checking if solver executable at "+tracerFolder+"/hybridsolver/bin/HS exists..."    
+    if call(['test', '-f', tracerFolder + "/hybridsolver/bin/HS"]):
         print "Please provide correct path to the solver executable."
         return
     else:
         print "Solver executable found."
+    
+    call(['sh', projectPathName+'.sh'])
 
 
-def finalParseAndRun(inputFileName, args, projectFolder):
+def finalParseAndRun(inputFileName, args):
     finishTimeProvided = not (args.finish is None)
     continueFileName = args.cont  
     continueEnabled = not (continueFileName is None)
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
        
-    localProjectRun(connection, inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug, projectFolder)
+    localProjectRun(inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug)
 
 
 if __name__=='__main__':    
     parser = argparse.ArgumentParser(description='Processing json file on a local cluster.', epilog = "Have fun!")
     #mandatory argument, json filename
     parser.add_argument('projectFileName', type = str, help = "local json file to process")
-    parser.add_argument('projectFolder', type = str, help = "folder to store project data")
     #optional argument, unique job Id for identification in database
     parser.add_argument('-jobId', type = int, help = "unique job ID") 
     #optional argument, exactly one float to override json finish time

@@ -2,7 +2,7 @@
 from os import listdir
 import numpy as np
 
-defaultProjFname = 'project'
+defaultGeomExt = '.dom'
 defaultProjFexp = '.dbin'
   
 def getSortedBinFileList(projectDir, title):

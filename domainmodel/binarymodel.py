@@ -696,7 +696,7 @@ class BinaryModel(object):
         print "compilation finished"
 
 
-    def createCOnlyRunFile(self, OutputRunFile, projectDir, tracerFolder, debug, 
+    def createCOnlyRunFile(self, OutputRunFile, projectDir, projectTitle, tracerFolder, debug, 
                      DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
         '''
         in this case we run only c mpi workers and then process results
@@ -725,7 +725,7 @@ class BinaryModel(object):
         runFile.close()
    
                    
-    def createMixRunFile(self, OutputSpmdFile, OutputRunFile, projectDir, tracerFolder, jobId, debug, 
+    def createMixRunFile(self, OutputSpmdFile, OutputRunFile, projectDir, projectTitle, tracerFolder, jobId, debug, 
                     DomFileName, finishTimeProvided, finish, continueEnabled, continueFileName):
         '''
           here we want to run mpi in mpmd mode with one python master process

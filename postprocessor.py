@@ -6,7 +6,7 @@
 склеено в видеофайл.
 '''
 
-import struct
+import argparse
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -19,13 +19,14 @@ import subprocess
 from domainmodel.model import Model
 import getpass
 #import paramiko, socket
+import os
 from os import listdir
 
 import multiprocessing as mp
 from multiprocessing import Pool
 
 import time
-from fileUtils import getSortedBinFileList, defaultProjFname, defaultProjFexp
+from fileUtils import getSortedBinFileList, defaultProjFexp, defaultGeomExt
 
 import math
 from domainmodel.binaryFileReader import readBinFile, readDomFile
@@ -261,9 +262,11 @@ def createVideoFile(projectDir):
   
   
   
-def createMovie(projectDir):
+def createMovie(projectDir, projectName):    
     saveText = False
-    info, cellSize, dx, dy, dz, dimension = readDomFile(projectDir+"project.dom")
+    
+    
+    info, cellSize, dx, dy, dz, dimension = readDomFile(os.path.join(projectDir, projectName + defaultGeomExt) )
     
     countZ, countY, countX, offsetZ, offsetY, offsetX = calcAreaCharacteristics(info)
     
@@ -271,14 +274,13 @@ def createMovie(projectDir):
     print command
     subprocess.call(command, shell=True)
     
-    binFileList = getSortedBinFileList(projectDir, defaultProjFname)
+    binFileList = getSortedBinFileList(projectDir, projectName)
     
     t1 = time.time()
     maxValue, minValue = calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     t2 = time.time()
     #print "Расчет минимума / максимума: ", t2 - t1
     
-    t1 = time.time()
     pool = mp.Pool(processes=16)
     #pool = mp.Semaphore(4)
     if dimension == 1:
@@ -286,8 +288,6 @@ def createMovie(projectDir):
     if dimension == 2:
         pool.map(saveResults2D, [(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
     #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
-    t2 = time.time()
-    
     
     #for idx, binFile in enumerate(binFileList):
     #    createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)
@@ -300,13 +300,15 @@ def createMovie(projectDir):
 if __name__ == "__main__":
     t1 = time.time()
     
-    if len(sys.argv)<2:
-        print "Please specify a project directory"
-    else:
-        projectDir = sys.argv[1]
+    parser = argparse.ArgumentParser(description='Creating pictures and a movie for a given folder.', epilog = "Have fun!")
+    #mandatory argument, project folder
+    parser.add_argument('projectDir', type = str, help = "local folder to process")
+    #mandatory argument, project name without extension
+    parser.add_argument('projectName', type = str, help = "project name without extension")
+    args = parser.parse_args()
         
-        createMovie(projectDir)
+    createMovie(args.projectDir, args.projectName)
         
     t2 = time.time()
     
-    print "Общее время выполнения: ", t2 - t1
+    print "Postprocessor running time: ", t2 - t1
