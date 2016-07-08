@@ -52,6 +52,13 @@ void initArray(double* array, int size, double value) {
     array[i] = value;
 }
 
+void printArray(double* array, int size) {
+  printf("\n\n");
+  for(int i = 0; i < size; i++)
+    printf("%.16f ", array[i]);
+  printf("\n\n");
+}
+
 int main(int argc, char * argv[]) {
   double fromX = atof(argv[1]);
   double toX = atof(argv[2]);
@@ -98,6 +105,7 @@ int main(int argc, char * argv[]) {
   printf("Time: %f\n", finish - start);
   printf("currentTime: %.8f\n", currentTime);
   
+  printArray(currentState, gridNodeCount);
   saveState("heat1dResult.lbin", currentTime, dt, currentState, gridNodeCount);
   
   delete currentState;
