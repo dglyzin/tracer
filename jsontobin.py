@@ -19,7 +19,7 @@ from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel
 from domainmodel.decomposer import partitionAndMap
 
-from fileUtils import getSortedBinFileList
+from fileUtils import getSortedLoadBinFileList
 import os
 import domainmodel.dbConnector as dbc
 
@@ -50,7 +50,7 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
     
     if continueEnabled and not continueFnameProvided:
         try:
-            continueFileName = os.path.join(projectDir, getSortedBinFileList(projectDir, projectTitle)[-1])
+            continueFileName = os.path.join(projectDir, getSortedLoadBinFileList(projectDir, projectTitle)[-1])
         except:
             print "No bin file to continue from!"
             return
