@@ -3,6 +3,6 @@
         "Port": 2222, 
         "Username": "dglyzin", 
         "Password": "", 
-        "Workspace": "/home/dglyzin/TracerFromHome/projects", 
-        "TracerFolder": "/home/dglyzin/TracerFromHome"        
+        "Workspace": "/home/dglyzin/Tracer_local/projects", 
+        "TracerFolder": "/home/dglyzin/Tracer_local"        
 }

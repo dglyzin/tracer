@@ -24,9 +24,9 @@
 
 model -> mapped model -> domain.dom+funcs.cpp+run.sh
 '''
-remoteRunScriptName='project.sh'
-remoteProjectFileName='project.json'
-remoteMp4Name = 'project.mp4'
+#remoteRunScriptName='project.sh'
+#remoteProjectFileName='project.json'
+#remoteMp4Name = 'project.mp4'
 
 import json
 import os
@@ -102,6 +102,12 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         projectPathName, _ = os.path.splitext(inputFile)   
         projectFolder = os.path.basename(projectPathName)
     
+    projectTitle = projectFolder
+    remoteRunScriptName = projectTitle+'.sh'
+    remoteProjectFileName = projectTitle+'.json'
+    remoteMp4Name = projectTitle+'.mp4'
+
+
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
