@@ -721,7 +721,7 @@ class BinaryModel(object):
         runFile.write("echo Welcome to generated kernel launcher!\n")
         runFile.write("export LD_LIBRARY_PATH="+projectDir+":$LD_LIBRARY_PATH\n")
         runFile.write("srun -N "+str(nodeCount)+ partitionOption +solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
-        runFile.write("srun -n1" + partitionOption +"python " + postprocessor +" " + projectDir+"/" )
+        runFile.write("srun -n1" + partitionOption +"python " + postprocessor +" " + projectDir+"/" +" " + projectTitle )
         runFile.close()
    
                    
