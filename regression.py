@@ -20,45 +20,53 @@ Created on June 21, 2016
 import argparse
 import sys
 import os
-from comparator import compareData
+#from comparator import compareData
 import json
 from glob import glob
 import logging
-from remoterun import getConnection, remoteProjectRun, finalParseAndRun
+from localrun import finalParseAndRun
 
-def constest(filename, connection, noRun, nodeCount, debugQueue):
-    testdict = json.load(open(filename))
-    folder = os.path.dirname(filename)
-    project = os.path.join(folder, testdict["project"])
-    fnBase, _ = os.path.splitext(project) #name without extension    
-    logging.info("testing {}".format(filename))    
+
+ 
+def regtest(specfile, noRun, nodeCount, debugQueue):
+    testdict = json.load(open(specfile))
+    folder = os.path.dirname(specfile)
+        
+    logging.info("testing {}".format(specfile))    
     if not noRun:
-        print "Runs for {}".format(filename)
+        logging.info("Runs for {}".format(specfile))
         for run in testdict["runs"]:
+            project = os.path.join(folder, run["project"])
+            fnBase, _ = os.path.splitext(project) #name without extension
+            
+            
             #1. get project filename            
             projectFileName = run["project"]
             paramString = run["params"]
+            paramList = []
+            if paramString !="":
+                paramList = paramString.split(" ") 
+            
             postfix = run["postfix"]
             projectFolder, _ = os.path.splitext(projectFileName)
             if postfix != "":
                 projectFolder = projectFolder + "-" + postfix
-            print "  running {} with params {} in the folder {}".format(title, paramString, folder)
+            logging.info("  running {} with params {} in the folder {}".format(projectFileName, paramString, folder))
             #2. parse parameters
             lineParser = argparse.ArgumentParser()
-            parser.add_argument('-jobId', type = int, help = "unique job ID") 
+            lineParser.add_argument('-jobId', type = int, help = "unique job ID") 
             #optional argument, exactly one float to override json finish time
-            parser.add_argument('-finish', type=float, help = "new finish time to override json value")
+            lineParser.add_argument('-finish', type=float, help = "new finish time to override json value")
             #optional argument with one or no argument, filename to continue computations from
             #if no filename is provided with this option, the last state is taken
-            parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
-            parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
-            args = parser.parse_args(paramString.split(" "))
-            
-            finalParseAndRun(connection, projectFileName, args, ProjectFolder)
-            print "    done."
+            lineParser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
+            lineParser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
+            args = lineParser.parse_args(paramList)
+                        
+            logging.info("    done.")
             
     testPassed = True    
-'''    print "Tests for {}".format(filename)
+    '''    print "Tests for {}".format(filename)
     for test in testdict["tests"]:
         run1 = test["run1"]
         run2 = test["run2"]
@@ -71,17 +79,13 @@ def constest(filename, connection, noRun, nodeCount, debugQueue):
             break
         else:
             print "  {}_{} vs {}_{} passed.".format(run1, postfix1, run2, postfix2)
-'''    
+    '''    
     
-    return testPassed
-
-def regtest(folder, specfile, connection, noRun, nodeCount, debugQueue):    
-    result = constest(os.path.join(folder, specfile), connection, noRun, nodeCount, debugQueue) 
-    if result:
-        print "Test {} OK!\n".format(folder)
+    if testPassed:
+        logging.info("Test {} OK!\n".format(folder))
     else:
-        print "Test {} FAILED!\n".format(folder)
-    return result
+        logging.info("Test {} FAILED!\n".format(folder))
+    return testPassed
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Tracer regression tester.', epilog = "Have fun!") 
@@ -95,16 +99,14 @@ if __name__=='__main__':
     path = args.folder    
     allOK = True
        
-    logging.basicConfig(filename='example.log', filemode='w', level=logging.DEBUG)
+    logging.basicConfig(filename=os.path.join(path,'regression.log'), filemode='w', level=logging.DEBUG)
     logging.info("Regression tests started")
-   
-    getGonnection(connFileName)
     
     for root, dirs, files in os.walk(path):
-        for jsonfile in files:
-            if jsonfile.endswith("spec.test"):                
-                print(os.path.join(root, jsonfile))
-                if not regtest(root,jsonfile, connection, args.norun, args.nodecount, args.debug):
+        for specfile in files:
+            if specfile.endswith("test.spec"):                
+                print(os.path.join(root, specfile))
+                if not regtest(os.path.join(root, specfile), args.norun, args.nodecount, args.debug):
                     allOK = False
     if allOK:
         print "Tests finished successfully."
