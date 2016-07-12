@@ -24,22 +24,25 @@ import os
 import domainmodel.dbConnector as dbc
 
 
-def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):    
+def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, outFileName):    
     finishTimeProvided = not (finish is None)   
     continueEnabled = not (cont is None)
     continueFnameProvided =  not (cont  == "/") if continueEnabled else False
     
     projectDir = os.path.dirname(inputFile)
-    projectName, _ = os.path.splitext(inputFile)   
-    projectTitle = os.path.basename(projectName)
-    if projectName == '':
-        print "Bad file name"
+    inProjectName, _ = os.path.splitext(inputFile)  
+    if outFileName is None: 
+        outProjectTitle = os.path.basename(inProjectName)
+    else:
+        outProjectTitle = outFileName 
+    if inProjectName == '':
+        print "Bad input file name"
         return
 
-    OutputDataFile = projectName+".dom"
-    OutputFuncFile = projectName+".cpp"
-    OutputRunFile = projectName+".sh"
-    OutputSpmdFile = projectName+".spmd"
+    OutputDataFile = os.path.join(projectDir, outProjectTitle) + ".dom"
+    OutputFuncFile = os.path.join(projectDir, outProjectTitle) + ".cpp"
+    OutputRunFile =  os.path.join(projectDir, outProjectTitle) + ".sh"
+    OutputSpmdFile = os.path.join(projectDir, outProjectTitle) + ".spmd"
 
     #we want to find the last computed state to continue if user does not provide filename but tell us to continue
     print projectDir
@@ -50,7 +53,7 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
     
     if continueEnabled and not continueFnameProvided:
         try:
-            continueFileName = os.path.join(projectDir, getSortedLoadBinFileList(projectDir, projectTitle)[-1])
+            continueFileName = os.path.join(projectDir, getSortedLoadBinFileList(projectDir, outProjectTitle)[-1])
         except:
             print "No bin file to continue from!"
             return
@@ -82,10 +85,10 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug):
         db, cur = dbc.getDbConn(args.jobId)
         dbc.setDbJobState(db, cur, jobId, JS_PREPROCESSING)
         dbc.freeDbConn(db, cur)
-        bm.createMixRunFile(OutputSpmdFile, OutputRunFile, projectDir, projectTitle, tracerFolder, jobId, debug, 
+        bm.createMixRunFile(OutputSpmdFile, OutputRunFile, projectDir, outProjectTitle, tracerFolder, jobId, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)        
     else:               
-        bm.createCOnlyRunFile(OutputRunFile, projectDir, projectTitle, tracerFolder, debug, 
+        bm.createCOnlyRunFile(OutputRunFile, projectDir, outProjectTitle, tracerFolder, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)
                 
 if __name__=='__main__':
@@ -103,8 +106,9 @@ if __name__=='__main__':
     #if no filename is provided with this option, the last state is taken
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
     parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
+    parser.add_argument('-outFileName', type = str, help="specify output project filename (fileName is default)")
     args = parser.parse_args()
   
-    print "jsontobin input!", args.fileName, args.tracerFolder, args.jobId, args.finish, args.cont, args.debug 
-    createBinaries(args.fileName, args.tracerFolder, args.jobId, args.finish, args.cont, args.debug)
+    print "jsontobin input:", args
+    createBinaries(args.fileName, args.tracerFolder, args.jobId, args.finish, args.cont, args.debug, args.outFileName)
     

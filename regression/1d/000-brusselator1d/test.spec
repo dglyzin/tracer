@@ -1,19 +1,19 @@
 {    
     "runs": [
         {
-            "project": "brusselator1d.json",
+            "project": "heat_2_2200.json",
             "postfix": "half",
             "params": ""
         },
         {
-            "project": "brusselator1d.json",
+            "project": "heat_2_2200.json",
             "postfix": "half", 
-            "params": "-cont -finish 0.1"
+            "params": "-cont -finish 0.002"
         },
         {
-            "project": "brusselator1d.json",
+            "project": "heat_2_2200.json",
             "postfix": "full", 
-            "params": "-finish 0.1"
+            "params": "-finish 0.002"
         }
         
     ],

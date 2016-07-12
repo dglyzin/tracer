@@ -26,7 +26,7 @@ import argparse
 from subprocess import call
 import glob
         
-def localProjectRun(inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug):
+def localProjectRun(inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug, outFileName):
     '''      
       inputFile:  project file
       continueEnabled: true if user wants to continue from computed file 
@@ -38,6 +38,7 @@ def localProjectRun(inputFile, continueEnabled, continueFnameProvided, continueF
       debug: true if user wants to run small problem (10 min. max)
       
     '''
+    runOk = True
     tracerFolder = os.path.abspath(os.path.dirname(os.path.realpath(__file__)) + "/..")
     #prepare command line argumetnts for preprocessor
     optionalArgs=[]    
@@ -51,14 +52,16 @@ def localProjectRun(inputFile, continueEnabled, continueFnameProvided, continueF
             optionalArgs+=[continueFileName]
     if debug:
         optionalArgs+=["-debug"]
-    
-    
+    if not (outFileName is None):
+        optionalArgs+=["-outFileName", outFileName]
     #get project file name without extension
     inputFile = os.path.abspath(inputFile)
     print "Absolute project path:", inputFile        
     projectFolder = os.path.dirname(inputFile)
     print projectFolder
-    projectPathName, _ = os.path.splitext(inputFile)   
+    projectPathName, _ = os.path.splitext(inputFile)
+    if not (outFileName is None):
+        projectPathName = os.path.join(projectFolder, outFileName )  
     
     if not continueEnabled:  
         call(["rm", projectPathName+'.cpp'])
@@ -96,7 +99,9 @@ def localProjectRun(inputFile, continueEnabled, continueFnameProvided, continueF
     else:
         print "Solver executable found."
     
-    call(['sh', projectPathName+'.sh'])
+    call(['sh', projectPathName + '.sh'])
+    
+    return runOk
 
 
 def finalParseAndRun(inputFileName, args):
@@ -105,7 +110,7 @@ def finalParseAndRun(inputFileName, args):
     continueEnabled = not (continueFileName is None)
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
        
-    localProjectRun(inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug)
+    return localProjectRun(inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug, args.outFileName)
 
 
 if __name__=='__main__':    
@@ -120,7 +125,7 @@ if __name__=='__main__':
     #if no filename is provided with this option, the last state is taken
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
     parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
-    
+    parser.add_argument('-outFileName', type = str, help="specify output project filename (fileName is default)")
     args = parser.parse_args()
     
     inputFileName = args.projectFileName

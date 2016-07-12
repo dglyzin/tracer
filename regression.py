@@ -27,12 +27,49 @@ import logging
 from localrun import finalParseAndRun
 
 
+def regrun(run, folder):
+    """
+    run: description of run from test spec
+    folder: working folder where spec was found
+    """
+    projectFileName = run["project"]
+    paramString = run["params"]
+    paramList = []
+    if paramString !="":
+        paramList = paramString.split(" ") 
+            
+    postfix = run["postfix"]
+    outFileName, _ = os.path.splitext(projectFileName)
+    if postfix != "":
+        outFileName = outFileName + "-" + postfix
+    paramList += ["-outFileName", outFileName]
+    
+    logging.info("  running {} with params {} in the folder {}".format(projectFileName, paramString, folder))
+    #2. parse parameters
+    lineParser = argparse.ArgumentParser()
+    lineParser.add_argument('-jobId', type = int, help = "unique job ID") 
+    #optional argument, exactly one float to override json finish time
+    lineParser.add_argument('-finish', type=float, help = "new finish time to override json value")
+    #optional argument with one or no argument, filename to continue computations from
+    #if no filename is provided with this option, the last state is taken
+    lineParser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
+    lineParser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
+    lineParser.add_argument('-outFileName', type = str, help="specify output project filename (fileName is default)")
+    args = lineParser.parse_args(paramList)
+    args.debug = True
+    #print "ARGS TO PASS TO JSONTOBIN ", args
+    #print "PARAMLIST:", paramList
+    #localrun
+    return finalParseAndRun(os.path.join(folder, projectFileName), args)
+
  
 def regtest(specfile, noRun, nodeCount, debugQueue):
     testdict = json.load(open(specfile))
     folder = os.path.dirname(specfile)
         
     logging.info("testing {}".format(specfile))    
+    testPassed = True
+    
     if not noRun:
         logging.info("Runs for {}".format(specfile))
         for run in testdict["runs"]:
@@ -42,30 +79,20 @@ def regtest(specfile, noRun, nodeCount, debugQueue):
             
             #1. get project filename            
             projectFileName = run["project"]
-            paramString = run["params"]
-            paramList = []
-            if paramString !="":
-                paramList = paramString.split(" ") 
+            projectDict = json.load(open(os.path.join(folder, projectFileName) ))            
+            #if project needs more nodes than available, skip the test
+            requiredNodes = len(projectDict["Hardware"])
+            if requiredNodes <= nodeCount:
+                runOk = regrun(run, folder)
+                if not runOk:
+                    testPassed = False 
+                    logging.info("Run {} failed.".format)           
+            else:
+                logging.info("Test skipped. Project requires more nodes than provided")
             
-            postfix = run["postfix"]
-            projectFolder, _ = os.path.splitext(projectFileName)
-            if postfix != "":
-                projectFolder = projectFolder + "-" + postfix
-            logging.info("  running {} with params {} in the folder {}".format(projectFileName, paramString, folder))
-            #2. parse parameters
-            lineParser = argparse.ArgumentParser()
-            lineParser.add_argument('-jobId', type = int, help = "unique job ID") 
-            #optional argument, exactly one float to override json finish time
-            lineParser.add_argument('-finish', type=float, help = "new finish time to override json value")
-            #optional argument with one or no argument, filename to continue computations from
-            #if no filename is provided with this option, the last state is taken
-            lineParser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
-            lineParser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
-            args = lineParser.parse_args(paramList)
-                        
             logging.info("    done.")
             
-    testPassed = True    
+        
     '''    print "Tests for {}".format(filename)
     for test in testdict["tests"]:
         run1 = test["run1"]
@@ -88,8 +115,7 @@ def regtest(specfile, noRun, nodeCount, debugQueue):
     return testPassed
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='Tracer regression tester.', epilog = "Have fun!") 
-    parser.add_argument('connFileName', type = str, help = "local json file with connection info")    
+    parser = argparse.ArgumentParser(description='Tracer regression tester.', epilog = "Have fun!")        
     parser.add_argument('-nodecount', type = int, default=4, help = "Number of available nodes to run tests on.")    
     parser.add_argument('-folder', type = str, default="regression", help = "Folder to search tests in (including subfolders).")    
     parser.add_argument('-norun', help="Do not make runs, only compare existing data.", action="store_true")
