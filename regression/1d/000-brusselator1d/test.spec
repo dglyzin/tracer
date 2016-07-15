@@ -19,11 +19,11 @@
     ],
     "tests":
         [
-            {
-            "run1": "brusselator1d-half",
-            "run2": "brusselator1d-full",
-            "timestamp1": "0.1",
-            "timestamp2": "0.1",
+           {
+            "run1": "heat_2_2200-half",
+            "run2": "heat_2_2200-full",
+            "timestamp1": "0.00200005",
+            "timestamp2": "0.00200005",
             "tolerances":
                 {
                     "max": 0.0, 
@@ -31,10 +31,10 @@
                 }
            },
            {
-            "run1": "brusselator1d-half",
-            "run2": "reference-brusselator1d-half",
-            "timestamp1": "0.05",
-            "timestamp2": "0.05",
+            "run1": "heat_2_2200-half",
+            "run2": "reference-heat_2_2200-half",
+            "timestamp1": "0.00100000",
+            "timestamp2": "0.00100000",
             "tolerances":
                 {
                     "max": 0.0, 
@@ -42,10 +42,10 @@
                 }
            },
            {
-            "run1": "brusselator1d-full",
-            "run2": "reference-brusselator1d-full",
-            "timestamp1": "0.1",
-            "timestamp2": "0.1",
+            "run1": "heat_2_2200-full",
+            "run2": "reference-heat_2_2200-full",
+            "timestamp1": "0.00200005",
+            "timestamp2": "0.00200005",
             "tolerances":
                 {
                     "max": 0.0, 
@@ -53,6 +53,5 @@
                 }
            }
 
-           
        ]
 }

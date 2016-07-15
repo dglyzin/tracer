@@ -6,10 +6,16 @@ Created on Sep 30, 2015
 import struct
 import numpy as np
 from domainmodel.enums import *
+import logging
 
 def readDomFile(fileName):
     #reading dom file
-    dom = open(fileName, 'rb')    
+    try:
+        dom = open(fileName, 'rb')    
+    except:
+        logging.error("Can not open file {}".format(fileName) )
+        return   
+        
     m254, = struct.unpack('b', dom.read(1))
     versionMajor, = struct.unpack('b', dom.read(1))
     versionMinor, = struct.unpack('b', dom.read(1))
@@ -84,7 +90,13 @@ def combineBlocks(solution, info, countZ, countY, countX, offsetZ, offsetY, offs
 def readBinFile(fileName, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize):
     data = np.zeros((countZ, countY, countX, cellSize), dtype=np.float64)
     
-    binF = open(fileName, 'rb')
+    
+    try:
+        binF = open(fileName, 'rb')    
+    except:
+        logging.error("Can not open file {}".format(fileName) )
+        return 
+    
     m253, = struct.unpack('b', binF.read(1))
     versionMajor, = struct.unpack('b', binF.read(1))
     versionMinor, = struct.unpack('b', binF.read(1))
@@ -106,5 +118,60 @@ def readBinFile(fileName, info, countZ, countY, countX, offsetZ, offsetY, offset
         blockData = blockData.reshape(countZBlock, countYBlock, countXBlock, cellSize);
         data[coordZBlock : coordZBlock + countZBlock, coordYBlock : coordYBlock + countYBlock, coordXBlock : coordXBlock + countXBlock, :] = blockData[:, :, :, :]
     binF.close()
-    
     return data
+
+
+  
+def getDomainProperties(info):
+    minZ = 0
+    maxZ = 0
+    
+    minY = 0
+    maxY = 0
+    
+    minX = 0
+    maxX = 0
+    
+    for i in range( len(info) ) :
+        if info[i][2] < minZ :
+            minZ = info[i][2]
+    
+        if info[i][2] + info[i][5] > maxZ :
+            maxZ = info[i][2] + info[i][5]
+    
+        if info[i][1] < minY :
+            minY = info[i][1]
+    
+        if info[i][1] + info[i][4] > maxY :
+            maxY = info[i][1] + info[i][4]
+    
+        if info[i][0] < minX :
+            minX = info[i][2]
+    
+        if info[i][0] + info[i][3] > maxX :
+            maxX = info[i][0] + info[i][3]
+    
+    
+    countZ = maxZ - minZ
+    countY = maxY - minY
+    countX = maxX - minX
+    
+    
+    offsetZ = -minZ
+    offsetY = -minY
+    offsetX = -minX
+    
+    return countZ, countY, countX, offsetZ, offsetY, offsetX
+  
+  
+    
+def getBinaryData(domFileName, lbinFileName):
+    '''
+      returns state from lbinFileName according to geometry from domFileName    
+    '''
+    info, cellSize, dx, dy, dz, dimension = readDomFile(domFileName)
+    countZ, countY, countX, offsetZ, offsetY, offsetX = getDomainProperties(info)
+    data = readBinFile(lbinFileName, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
+    return data
+    
+    

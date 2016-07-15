@@ -29,7 +29,7 @@ import time
 from fileUtils import getSortedDrawBinFileList, drawExtension, defaultGeomExt
 
 import math
-from domainmodel.binaryFileReader import readBinFile, readDomFile
+from domainmodel.binaryFileReader import readBinFile, readDomFile, getDomainProperties
 
 
 def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
@@ -116,50 +116,7 @@ def saveTxt2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
             line = line+"\n"
             txtFile.write(line)                        
     txtFile.close()  
-
-
-
-def calcAreaCharacteristics(info):
-    minZ = 0
-    maxZ = 0
-    
-    minY = 0
-    maxY = 0
-    
-    minX = 0
-    maxX = 0
-    
-    for i in range( len(info) ) :
-        if info[i][2] < minZ :
-            minZ = info[i][2]
-    
-        if info[i][2] + info[i][5] > maxZ :
-            maxZ = info[i][2] + info[i][5]
-    
-        if info[i][1] < minY :
-            minY = info[i][1]
-    
-        if info[i][1] + info[i][4] > maxY :
-            maxY = info[i][1] + info[i][4]
-    
-        if info[i][0] < minX :
-            minX = info[i][2]
-    
-        if info[i][0] + info[i][3] > maxX :
-            maxX = info[i][0] + info[i][3]
-    
-    
-    countZ = maxZ - minZ
-    countY = maxY - minY
-    countX = maxX - minX
-    
-    
-    offsetZ = -minZ
-    offsetY = -minY
-    offsetX = -minX
-    
-    return countZ, countY, countX, offsetZ, offsetY, offsetX
-  
+ 
     
 def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize):
     maxValue = []#sys.float_info.min
@@ -268,7 +225,7 @@ def createMovie(projectDir, projectName):
     
     info, cellSize, dx, dy, dz, dimension = readDomFile(os.path.join(projectDir, projectName + defaultGeomExt) )
     
-    countZ, countY, countX, offsetZ, offsetY, offsetX = calcAreaCharacteristics(info)
+    countZ, countY, countX, offsetZ, offsetY, offsetX = getDomainProperties(info)
     
     command = "rm " + projectDir + projectName + "-image-*.png " + projectDir + projectName + ".mp4"
     print command

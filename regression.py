@@ -18,13 +18,14 @@ Created on June 21, 2016
 '''
 
 import argparse
-import sys
+#import sys
 import os
-#from comparator import compareData
+from fileDiff import compareData
 import json
-from glob import glob
+#from glob import glob
 import logging
 from localrun import finalParseAndRun
+from domainmodel.binaryFileReader import getBinaryData
 
 
 def regrun(run, folder):
@@ -44,7 +45,7 @@ def regrun(run, folder):
         outFileName = outFileName + "-" + postfix
     paramList += ["-outFileName", outFileName]
     
-    logging.info("  running {} with params {} in the folder {}".format(projectFileName, paramString, folder))
+    logging.info("  running {} with params {} in the folder {} into {}".format(projectFileName, paramString, folder, outFileName))
     #2. parse parameters
     lineParser = argparse.ArgumentParser()
     lineParser.add_argument('-jobId', type = int, help = "unique job ID") 
@@ -67,16 +68,12 @@ def regtest(specfile, noRun, nodeCount, debugQueue):
     testdict = json.load(open(specfile))
     folder = os.path.dirname(specfile)
         
-    logging.info("testing {}".format(specfile))    
+    logging.info("Testing {}".format(specfile))    
     testPassed = True
     
     if not noRun:
         logging.info("Runs for {}".format(specfile))
         for run in testdict["runs"]:
-            project = os.path.join(folder, run["project"])
-            fnBase, _ = os.path.splitext(project) #name without extension
-            
-            
             #1. get project filename            
             projectFileName = run["project"]
             projectDict = json.load(open(os.path.join(folder, projectFileName) ))            
@@ -86,32 +83,39 @@ def regtest(specfile, noRun, nodeCount, debugQueue):
                 runOk = regrun(run, folder)
                 if not runOk:
                     testPassed = False 
-                    logging.info("Run {} failed.".format)           
+                    logging.error("  Run {} failed.".format(projectFileName))           
             else:
-                logging.info("Test skipped. Project requires more nodes than provided")
+                logging.warning("  Test skipped. Project requires more nodes than provided")
             
-            logging.info("    done.")
+            logging.info("  done.")
             
         
-    '''    print "Tests for {}".format(filename)
+    logging.info("Tests for {}".format(folder) )
     for test in testdict["tests"]:
         run1 = test["run1"]
         run2 = test["run2"]
-        postfix1 = test["postfix1"]
-        postfix2 = test["postfix2"]
-        tolerances = test["tolerances"]    
-        testPassed = compareData(fnBase+"_"+run1+".dom", fnBase+"_"+run2+".dom", fnBase+"_"+run1+"_"+postfix1+".bin", fnBase+"_"+run2+"_"+postfix2+".bin", tolerances, logger)
+        timestamp1 = test["timestamp1"]
+        timestamp2 = test["timestamp2"]
+        tolerances = test["tolerances"] 
+        fnBase1 = os.path.join(folder, run1)
+        fnBase2 = os.path.join(folder, run2)
+        
+        logging.info("  Testing {}_{} vs {}_{}.".format(run1, timestamp1, run2, timestamp2) )
+        
+        data1 = getBinaryData(fnBase1+".dom", fnBase1+"-"+timestamp1+".lbin")
+        data2 = getBinaryData(fnBase1+".dom", fnBase2+"-"+timestamp2+".lbin")
+      
+        testPassed = compareData(data1, data2, tolerances)
         if not testPassed:
-            print "  {}_{} vs {}_{} failed! See log file for detais.".format(run1, postfix1, run2, postfix2)            
-            break
+            logging.error("  {}_{} vs {}_{} failed! See log file for detais.".format(run1, timestamp1, run2, timestamp2) )            
         else:
-            print "  {}_{} vs {}_{} passed.".format(run1, postfix1, run2, postfix2)
-    '''    
+            logging.info("  {}_{} vs {}_{} passed.".format(run1, timestamp1, run2, timestamp2) )
+    
     
     if testPassed:
         logging.info("Test {} OK!\n".format(folder))
     else:
-        logging.info("Test {} FAILED!\n".format(folder))
+        logging.error("Test {} FAILED!\n".format(folder))
     return testPassed
 
 if __name__=='__main__':
