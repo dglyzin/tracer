@@ -131,8 +131,8 @@ int main(int argc, char * argv[]) {
   printf("Time: %f\n", finish - start);
   printf("currentTime: %.8f\n", currentTime);
   
-  printArray(currentState, gridNodeCount);
-  saveState("heat1dResult.lbin", currentTime, dt, currentState, gridNodeCount);
+  //printArray(currentState, gridNodeCount);
+  saveState("heat2dResult.lbin", currentTime, dt, currentState, gridNodeCount);
   
   delete currentState;
   delete nextState;
