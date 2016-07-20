@@ -55,7 +55,7 @@ void initArray(double* array, int size, double value) {
 void printArray(double* array, int size) {
   printf("\n\n");
   for(int i = 0; i < size; i++)
-    printf("%.16f ", array[i]);
+    printf("%.8f ", array[i]);
   printf("\n\n");
 }
 
@@ -131,7 +131,7 @@ int main(int argc, char * argv[]) {
   printf("Time: %f\n", finish - start);
   printf("currentTime: %.8f\n", currentTime);
   
-  //printArray(currentState, gridNodeCount);
+  printArray(currentState, gridNodeCount);
   saveState("heat2dResult.lbin", currentTime, dt, currentState, gridNodeCount);
   
   delete currentState;
