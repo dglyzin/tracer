@@ -110,12 +110,13 @@ int main(int argc, char * argv[]) {
     /*for(int i = 1; i < gridNodeCount-1; i++)
       nextState[i] = currentState[i] + dt * (currentState[i-1] - 2 * currentState[i] + currentState[i+1]) / dx2;*/
     for(int i = 1; i < sideLength - 1; i++) {
-      int yShift = sideLength * i;
       for(int j = 1; j < sideLength - 1; j++) {
-	int xShift = j;
-	nextState[yShift + xShift] =
-	  currentState[yShift + xShift] +
-	  dt * ((currentState[i-1] - 2 * currentState[i] + currentState[i+1]) / dx2 + );
+	int idx = sideLength * i + j;
+	
+	nextState[idx] = currentState[idx] + dt * (
+	  ((currentState[idx - 1] - 2 * currentState[idx] + currentState[idx + 1]) / dx2) + 
+	  ((currentState[idx - sideLength] - 2 * currentState[idx] + currentState[idx + sideLength]) / dx2)
+	);
       }
     }
     
