@@ -3,6 +3,9 @@
 #include <omp.h>
 #include <fstream>
 
+#include <iostream>
+#include <vector>
+
 
 #define SAVE_FILE_CODE 253
 #define GEOM_FILE_CODE 254
@@ -76,8 +79,15 @@ int main(int argc, char * argv[]) {
   double* currentState = new double [gridNodeCount];
   double* nextState = new double [gridNodeCount];
   
+  /*std::vector<double> currentState(gridNodeCount);
+  std::vector<double> nextState(gridNodeCount);*/
+  
   initArray(currentState, gridNodeCount, 0.0);
   initArray(nextState, gridNodeCount, 0.0);
+  
+  /*for(int i = 0; i < gridNodeCount; i++) {
+    currentState[i] = nextState[i] = 0.0;
+  }*/
   
   /*currentState[0] = 0.0;
   currentState[gridNodeCount-1] = 10.0;
