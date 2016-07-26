@@ -95,8 +95,8 @@ int main(int argc, char * argv[]) {
   nextState[gridNodeCount-1] = 10.0;*/
   
   for(int i = 0; i < sideLength; i++) {
-    currentState[i] = 100;
-    nextState[i] = 100;
+    currentState[i] = 10;
+    nextState[i] = 10;
     
     currentState[sideLength * i + 0] = 0;
     nextState[sideLength * i + 0] = 0;
