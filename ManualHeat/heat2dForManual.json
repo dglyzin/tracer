@@ -10,7 +10,7 @@
         "RelTolerance": 0.001
     }, 
     "Grid": {
-        "Dimension": 1,
+        "Dimension": 2,
         "dx": 0.01, 
         "dy": 0.01, 
         "dz": 1
