@@ -22,7 +22,7 @@
         },
         {
             "project": "heat1d_2.json",
-            "postfix": "full",
+            "postfix": "half",
             "params": "-cont"
         }        
     ],
@@ -63,7 +63,7 @@
            },
            {
             "run1": "heat1d_2",
-            "run2": "heat1d_2-full",
+            "run2": "heat1d_2-half",
             "timestamp1": "0.10000000",
             "timestamp2": "0.10000000",
             "tolerances":
