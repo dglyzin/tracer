@@ -76,6 +76,8 @@ int main(int argc, char * argv[]) {
   int sideLength = (int)((toX - fromX) / dx );
   int gridNodeCount = (int)((toX - fromX) / dx2 );
   
+  printf("Hello %d %d",sideLength, gridNodeCount); 
+  
   double* currentState = new double [gridNodeCount];
   double* nextState = new double [gridNodeCount];
   
@@ -115,10 +117,10 @@ int main(int argc, char * argv[]) {
   
   start = omp_get_wtime();
   
-  while(currentTime < finishTime) {
+  /*while(currentTime < finishTime) {
 #pragma omp parallel for
     /*for(int i = 1; i < gridNodeCount-1; i++)
-      nextState[i] = currentState[i] + dt * (currentState[i-1] - 2 * currentState[i] + currentState[i+1]) / dx2;*/
+      nextState[i] = currentState[i] + dt * (currentState[i-1] - 2 * currentState[i] + currentState[i+1]) / dx2;
     for(int i = 1; i < sideLength - 1; i++) {
       for(int j = 1; j < sideLength - 1; j++) {
 	int idx = sideLength * i + j;
@@ -135,13 +137,13 @@ int main(int argc, char * argv[]) {
     nextState = tmp;
     
     currentTime += dt;
-  }
+  }*/
   
   finish = omp_get_wtime();
   printf("Time: %f\n", finish - start);
   printf("currentTime: %.8f\n", currentTime);
   
-  printArray(currentState, gridNodeCount);
+  //printArray(currentState, gridNodeCount);
   saveState("heat2dResult.lbin", currentTime, dt, currentState, gridNodeCount);
   
   delete currentState;
