@@ -74,9 +74,9 @@ int main(int argc, char * argv[]) {
   double currentTime = 0.0;
   
   int sideLength = (int)((toX - fromX) / dx );
-  int gridNodeCount = (int)((toX - fromX) / dx2 );
+  int gridNodeCount = sideLength * sideLength;
   
-  printf("Hello %d %d",sideLength, gridNodeCount); 
+  printf("Hello %d %d\n",sideLength, gridNodeCount); 
   
   double* currentState = new double [gridNodeCount];
   double* nextState = new double [gridNodeCount];
@@ -100,14 +100,14 @@ int main(int argc, char * argv[]) {
     currentState[i] = 10;
     nextState[i] = 10;
     
-    currentState[sideLength * i + 0] = 0;
-    nextState[sideLength * i + 0] = 0;
+    currentState[sideLength * i + 0] = 0.0;
+    nextState[sideLength * i + 0] = 0.0;
     
-    currentState[sideLength * i + sideLength - 1] = 0;
-    nextState[sideLength * i + sideLength - 1] = 0;
+    currentState[sideLength * i + sideLength - 1] = 0.0;
+    nextState[sideLength * i + sideLength - 1] = 0.0;
     
-    currentState[sideLength * (sideLength - 1) + i] = 0;
-    nextState[sideLength * (sideLength - 1) + i] = 0;
+    currentState[sideLength * (sideLength - 1) + i] = 0.0;
+    nextState[sideLength * (sideLength - 1) + i] = 0.0;
   }
   
   double* tmp;
@@ -117,10 +117,8 @@ int main(int argc, char * argv[]) {
   
   start = omp_get_wtime();
   
-  /*while(currentTime < finishTime) {
+  while(currentTime < finishTime) {
 #pragma omp parallel for
-    /*for(int i = 1; i < gridNodeCount-1; i++)
-      nextState[i] = currentState[i] + dt * (currentState[i-1] - 2 * currentState[i] + currentState[i+1]) / dx2;
     for(int i = 1; i < sideLength - 1; i++) {
       for(int j = 1; j < sideLength - 1; j++) {
 	int idx = sideLength * i + j;
@@ -137,7 +135,7 @@ int main(int argc, char * argv[]) {
     nextState = tmp;
     
     currentTime += dt;
-  }*/
+  }
   
   finish = omp_get_wtime();
   printf("Time: %f\n", finish - start);
