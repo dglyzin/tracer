@@ -55,7 +55,10 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
         
         layer = data[0,0,:,i]
         axes.set_ylim(minV, maxV)
-        axes.plot(layer)
+        #axes.set_xlim(0, 1)
+        #axes.axis([X.min(), X.max(), minValue, maxValue])
+        a = np.arange(X.min(), X.max(), (X.max() - X.min()) / layer.size)
+        axes.plot(a, layer)
 
         #cb = axes.pcolormesh(X, Y, layer, vmin=minValue[i], vmax=maxValue[i])
         #axes.axis([X.min(), X.max(), minValue, maxValue])
