@@ -138,8 +138,17 @@ int main(int argc, char * argv[]) {
   }
   
   finish = omp_get_wtime();
-  printf("Time: %f\n", finish - start);
+  
+  double t = finish - start;
+  
+  printf("Time: %f\n", t);
   printf("currentTime: %.8f\n", currentTime);
+  
+  int stepCount = (int)(finishTime / dt);
+  double speed = (double) (gridNodeCount) * stepCount / t / 1000000;
+  
+  printf("Stepcount: %d\n", stepCount);
+  printf("Speed: %.8f\n", speed);
   
   //printArray(currentState, gridNodeCount);
   saveState("heat2dResult.lbin", currentTime, dt, currentState, gridNodeCount);
