@@ -1,0 +1,1 @@
+void computeOneNode(double* result, double* source, double dt, double dx2, int idx, int sideLength);
