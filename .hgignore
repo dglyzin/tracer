@@ -7,3 +7,4 @@ syntax: glob
 .ptp-sync*
 *.mp4
 .hgempty
+.settings*
