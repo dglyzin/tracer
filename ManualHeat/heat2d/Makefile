@@ -1,3 +1,5 @@
+all: simple withfunc depend lib
+
 simple:
 	g++ -O3 heat2dSimple.cpp -o heat2dSimple -fopenmp
 
