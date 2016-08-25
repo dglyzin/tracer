@@ -110,6 +110,7 @@ def regtest(specfile, noRun, nodeCount, debugQueue):
             logging.error("  {}_{} vs {}_{} failed! See log file for detais.".format(run1, timestamp1, run2, timestamp2) )            
         else:
             logging.info("  {}_{} vs {}_{} passed.".format(run1, timestamp1, run2, timestamp2) )
+        logging.info("")
     
     
     if testPassed:
