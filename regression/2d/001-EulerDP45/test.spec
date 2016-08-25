@@ -16,7 +16,7 @@
             {
             "run1": "heat_1_100e",
             "run2": "heat_1_100d",
-            "timestamp1": "0.10001000",
+            "timestamp1": "0.10000000",
             "timestamp2": "0.10001950",
             "tolerances":
                 {
