@@ -25,8 +25,8 @@
             "timestamp2": "0.10001000",
             "tolerances":
                 {
-                    "max": 2.0, 
-                    "ave": 2.0
+                    "max": 0.0, 
+                    "ave": 0.0
                 }
             },
             {
@@ -36,8 +36,8 @@
             "timestamp2": "0.10001950",
             "tolerances":
                 {
-                    "max": 2.0, 
-                    "ave": 2.0
+                    "max": 1.0, 
+                    "ave": 1.0
                 }
             },
             {
@@ -47,8 +47,8 @@
             "timestamp2": "0.10001950",
             "tolerances":
                 {
-                    "max": 2.0, 
-                    "ave": 2.0
+                    "max": 1.0, 
+                    "ave": 1.0
                 }
             }
        ]
