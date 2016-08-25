@@ -4,7 +4,7 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 0.1, 
-        "TimeStep": 0.00001, 
+        "TimeStep": 0.000001, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
