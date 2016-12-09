@@ -50,6 +50,7 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
         cmap=cm.jet
         
         amp = maxValue[i] - minValue[i]
+        
         minV = minValue[i] - amp/10
         maxV = maxValue[i] + amp/10
         
@@ -57,8 +58,9 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
         axes.set_ylim(minV, maxV)
         #axes.set_xlim(0, 1)
         #axes.axis([X.min(), X.max(), minValue, maxValue])
-        a = np.arange(X.min(), X.max(), (X.max() - X.min()) / layer.size)
-        axes.plot(a, layer)
+        #a = np.arange(X.min(), X.max(), (X.max() - X.min()) / layer.size)
+        #print a.size, layer.size
+        axes.plot(X, layer)
 
         #cb = axes.pcolormesh(X, Y, layer, vmin=minValue[i], vmax=maxValue[i])
         #axes.axis([X.min(), X.max(), minValue, maxValue])
@@ -145,6 +147,11 @@ def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, o
             if tmpMinValue < minValue[i]:
                 minValue[i] = tmpMinValue
                 
+        for i in range(cellSize):
+            if (maxValue[i] - minValue[i]) < 1e-300:
+                maxValue[i] = maxValue[i] + 1
+                minValue[i] = minValue[i] - 1
+                
     print maxValue
     print minValue
            
@@ -160,10 +167,11 @@ def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, coun
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     
     xs = np.arange(0, countX)*dx
-    ys = np.arange(0, countY)*dy
+    #ys = np.arange(0, countY)*dy
+    #print "xs", xs
 
-
-    X,Y = np.meshgrid(xs,ys)
+    #X,Y = np.meshgrid(xs,ys)
+    #print "X", X
 
     #plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
     #plt.colorbar()
@@ -176,7 +184,7 @@ def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, coun
     t = binFile.split("-")[1]
     t = t.split(drawExtension)[0]
     
-    savePng1D(filename, X, data, maxValue, minValue, t, cellSize)
+    savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
 
 
 
@@ -244,7 +252,9 @@ def createMovie(projectDir, projectName):
     pool = mp.Pool(processes=16)
     #pool = mp.Semaphore(4)
     if dimension == 1:
-        pool.map(saveResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
+        for idx, binFile in enumerate(binFileList):
+            saveResults1D([projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText])
+        #pool.map(saveResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
     if dimension == 2:
         pool.map(saveResults2D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
     #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
