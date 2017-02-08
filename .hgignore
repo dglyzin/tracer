@@ -9,3 +9,5 @@ syntax: glob
 .hgempty
 .settings*
 config/*
+.project
+.pydevproject

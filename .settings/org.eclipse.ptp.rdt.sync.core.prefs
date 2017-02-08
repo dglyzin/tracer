@@ -1,3 +1,0 @@
-eclipse.preferences.version=1
-project-sync-config=<?xml version\="1.0" encoding\="UTF-8"?>\n<sync-configs active\="cluster-dom">\n<sync-config config-name\="cluster-dom" connection-name\="cluster" location\="/home/dglyzin/Tracer/hybriddomain" remote-services-id\="org.eclipse.remote.JSch" sync-on-postbuild\="true" sync-on-prebuild\="true" sync-on-save\="true" sync-provider-id\="org.eclipse.ptp.rdt.sync.git.core.synchronizeService">\n<config-properties/>\n</sync-config>\n</sync-configs>
-sync-mode=ACTIVE
