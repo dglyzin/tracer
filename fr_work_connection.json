@@ -1,8 +1,0 @@
-{
-        "Host": "10.7.129.222", 
-        "Port": 22, 
-        "Username": "frolov2", 
-        "Password": "", 
-        "Workspace": "/home/frolov2/Tracer_project", 
-        "TracerFolder": "/home/frolov2"
-}

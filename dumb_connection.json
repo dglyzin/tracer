@@ -1,9 +1,0 @@
-{
-        "Host": "10.8.0.10", 
-        "Port": 22, 
-        "Username": "tester", 
-        "Password": "tester", 
-        "Workspace": "/home/tester/tracer_workspace", 
-        "SolverExecutable": "/home/dglyzin/hybridsolver/bin/HS",
-        "PreprocessorFolder": "/home/dglyzin/Tracer/hybriddomain"
-}
