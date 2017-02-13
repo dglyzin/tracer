@@ -156,6 +156,8 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         
         print command, optionalArgs
         stdin, stdout, stderr = client.exec_command(command+optionalArgs)
+        
+        print("finally")
         print stdout.read()
         print "jsontobin stderr:"
         print stderr.read()
@@ -169,7 +171,10 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         else:
             print "Solver executable found."
 
+        #stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName, get_pty=True)
         stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName)
+        for line in iter(lambda: stdout.readline(2048), ""): print(line)
+        
         print stdout.read()
         print stderr.read()
         
