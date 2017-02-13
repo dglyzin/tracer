@@ -27,6 +27,7 @@ model -> mapped model -> domain.dom+funcs.cpp+run.sh
 #remoteRunScriptName='project.sh'
 #remoteProjectFileName='project.json'
 #remoteMp4Name = 'project.mp4'
+from __future__ import print_function
 
 import json
 import os
@@ -35,6 +36,7 @@ import getpass
 import paramiko
 import argparse
 from collections import OrderedDict
+
 
 
 
@@ -97,7 +99,7 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
     
     
     #get project file name without extension
-    print inputFile
+    print (inputFile)
     if projectFolder is None:
         projectPathName, _ = os.path.splitext(inputFile)   
         projectFolder = os.path.basename(projectPathName)
@@ -115,68 +117,68 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
     try:
         client.connect(hostname=connection.host, username=connection.username, password=connection.password, port=connection.port )
 
-        print "Checking if folder "+connection.workspace+" exists..."
+        print ("Checking if folder "+connection.workspace+" exists...")
         stdin, stdout, stderr = client.exec_command('test -d '+connection.workspace)
         if stdout.channel.recv_exit_status():
-            print "Please create workspace folder and put hybriddomain preprocessor into it"
+            print ("Please create workspace folder and put hybriddomain preprocessor into it")
             return
         else:
-            print "Workspace OK."
+            print ("Workspace OK.")
 
         projFolder = connection.workspace+"/"+projectFolder
-        print "Creating/cleaning project folder: "
+        print ("Creating/cleaning project folder: ")
         stdin, stdout, stderr = client.exec_command('test -d  '+projFolder)
         if stdout.channel.recv_exit_status():
             stdin, stdout, stderr = client.exec_command('mkdir  '+projFolder)
-            print "Folder created."
+            print ("Folder created.")
         else:
             if not continueEnabled:  
                 stdin, stdout, stderr = client.exec_command('rm -rf '+projFolder+'/*')
                 stdout.read()
-                print "Folder cleaned."                
+                print ("Folder cleaned.")                
             else:
-                print "Folder exists, no cleaning needed."
+                print ("Folder exists, no cleaning needed.")
                 #now check if file to continue from exists
                 if continueFnameProvided:
-                    print "Checking if file to continue from  ("+continueFileName+") exists..."
+                    print ("Checking if file to continue from  ("+continueFileName+") exists...")
                     stdin, stdout, stderr = client.exec_command('test -f '+continueFileName)
                     if stdout.channel.recv_exit_status():
-                        print "File not found, please specify existing file to continue"
+                        print("File not found, please specify existing file to continue")
                         return
                     else:
-                        print "File OK."
+                        print("File OK.")
                                       
         cftp=client.open_sftp()
         cftp.put(inputFile, projFolder+"/"+remoteProjectFileName)
         cftp.close()
         
         #3 Run jsontobin on json
-        print '\nRunning preprocessor:'
+        print ('\nRunning preprocessor:')
         command = 'python '+connection.tracerFolder+'/hybriddomain/jsontobin.py '+ projFolder+'/'+remoteProjectFileName + " " + connection.tracerFolder
         
-        print command, optionalArgs
+        print (command, optionalArgs)
         stdin, stdout, stderr = client.exec_command(command+optionalArgs)
         
         print("finally")
-        print stdout.read()
-        print "jsontobin stderr:"
-        print stderr.read()
-        print "stderr END"
+        print( stdout.read())
+        print ("jsontobin stderr:")
+        print (stderr.read())
+        print ("stderr END")
         #4 Run Solver binary on created files
-        print "Checking if solver executable at "+connection.tracerFolder+"/hybridsolver/bin/HS exists..."
+        print ("Checking if solver executable at "+connection.tracerFolder+"/hybridsolver/bin/HS exists...")
         stdin, stdout, stderr = client.exec_command('test -f '+connection.tracerFolder + "/hybridsolver/bin/HS")
         if stdout.channel.recv_exit_status():
-            print "Please provide correct path to the solver executable."
+            print ("Please provide correct path to the solver executable.")
             return
         else:
-            print "Solver executable found."
+            print( "Solver executable found.")
 
         #stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName, get_pty=True)
         stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName)
-        for line in iter(lambda: stdout.readline(2048), ""): print(line)
+        for line in iter(lambda: stdout.readline(2048), ""): print(line, end='' )
         
-        print stdout.read()
-        print stderr.read()
+        print (stdout.read())
+        print (stderr.read())
         
         #get resulting files
         cftp=client.open_sftp()
@@ -205,7 +207,7 @@ def getGonnection(connFileName):
     if connection.password == "":
         connection.password = os.getenv("CLUSTER_PASS")
         if connection.password is None:
-            print "Please enter password for user "+ connection.username+":"
+            print ("Please enter password for user "+ connection.username+":")
             connection.password = getpass.getpass()
     return connection
 
