@@ -720,6 +720,7 @@ class BinaryModel(object):
         nodeCount = self.dmodel.getNodeCount()
         runFile.write("echo Welcome to generated kernel launcher!\n")
         runFile.write("export LD_LIBRARY_PATH="+projectDir+":$LD_LIBRARY_PATH\n")
+        runFile.write("export OMP_NUM_THREADS=16\n")
         runFile.write("salloc -N "+str(nodeCount) + " -n "+ str(nodeCount) +  partitionOption + " mpirun "+ solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
         runFile.write("srun -n1" + partitionOption +"python " + postprocessor +" " + projectDir+"/" +" " + projectTitle )
         runFile.close()
