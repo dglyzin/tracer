@@ -1,5 +1,6 @@
 import sys
 from time import sleep
+from mpi4py import MPI
 
 print ("Welcome to job runner!")
 
