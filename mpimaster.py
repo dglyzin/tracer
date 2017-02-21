@@ -114,7 +114,7 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
 
     rank = world.Get_rank()
     size = world.Get_size()
-    
+    print ("PM: World split done", rank, size)
     #stateFileNameBase, _ = os.path.splitext(args.domainFileName)
     saveFolder, _ = os.path.split(args.domainFileName)
     
@@ -126,6 +126,7 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
     readyToSave = np.zeros(1, dtype="int32")
     percentChanged = np.zeros(1, dtype="int32")
     percentage = np.zeros(1, dtype="int32")
+    percenttime = np.zeros(1, dtype="float64")
     
     ##db,cur = dbc.getDbConn(args.jobId)
     ##dbc.setDbJobPercentage(db, cur, args.jobId, 0)
@@ -170,7 +171,9 @@ def start_serving(args, geometry, cellSize, dx, dy, dz, dimension):
         world.Recv([percentChanged, MPI.INT], source=1, tag = 0)
         if percentChanged[0] == 1:
             world.Recv([percentage, MPI.INT], source=1, tag = 0)
-            dbc.setDbJobPercentage(db, cur, args.jobId, percentage[0])
+            world.Recv([percenttime, MPI.INT], source=1, tag = 0)
+            print("PM: Done {}% in {} seconds".format(percentage[0], percenttime[0]) )
+            #dbc.setDbJobPercentage(db, cur, args.jobId, percentage[0])
 
         world.Recv([readyToSave, MPI.INT], source=1, tag = 0)
         world.Recv([comp_status, MPI.INT], source=1, tag = 0)
