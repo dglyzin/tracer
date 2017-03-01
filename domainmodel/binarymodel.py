@@ -649,7 +649,15 @@ class BinaryModel(object):
             elif icDim == 2:
                 self.interconnect2dFill(icIdx)
 
-    
+    def fillBinaryPlots(self):
+        self.plotCount = len(self.dmodel.plots)
+        self.plotCountArr = np.zeros(1, dtype=np.int32)
+        self.plotCountArr[0] = self.plotCount
+        self.plotPeriodsArr = np.zeros(self.plotCount, dtype=np.float64)
+        for plotIdx in range(self.plotCount):
+            self.plotPeriodsArr[plotIdx] = self.dmodel.plots[plotIdx]["Period"]
+        
+        
     #this will only work if saveFuncs was called and self.functionMaps are filled
     def saveDomain(self, fileName):
         print "saving domain..."
@@ -678,6 +686,11 @@ class BinaryModel(object):
         self.icCountArr.tofile(domfile)
         for icArr in self.icList:
             icArr.tofile(domfile)
+        
+        self.fillBinaryPlots()
+        self.plotCountArr.tofile(domfile)
+        self.plotPeriodsArr.tofile(domfile)
+        #print "plot periods:", self.plotCountArr, self.plotPeriodsArr          
         domfile.close()
     
     

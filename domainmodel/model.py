@@ -270,8 +270,13 @@ class Model(QObject):
                                      ("DeviceIdx", block["DeviceIdx"])
                                      ])                                   
                                      for block in projectDict["Mapping"]["BlockMapping"] ]
-
-
+       
+        self.plots = [ OrderedDict([("Title", plot["Title"]),
+                                    ("Period", plot["Period"])
+                                    ]
+                                   )
+             for plot in projectDict["Plots"] ]
+        
         self.initSessionSettings()
         self.projectFileAssigned = True
         self.projectFile = fileName
@@ -314,7 +319,8 @@ class Model(QObject):
             ("Hardware", [compnode.getPropertiesDict() for compnode in self.compnodes]),
             ("Mapping", OrderedDict ([("IsMapped", self.isMapped),
                                       ("BlockMapping", self.mapping) 
-                                    ]) )
+                                    ]) ),
+            ("Plots", self.plots)
         ])
         return modelDict
 

@@ -42,6 +42,12 @@
 ##!  I_d*int32 source offset 
 ##!  I_d*int32 destination offset
 ### END OF IC
+
+### Plot config
+##!  int32: number of plots N_P
+##!  N_P * float64 interval values
+### End of plot config
+
 ===============================================================================
 ## State file format (*.bin)
 ##!  uint8: 253

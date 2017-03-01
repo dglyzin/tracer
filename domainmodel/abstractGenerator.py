@@ -325,7 +325,7 @@ class AbstractGenerator(object):
         countOfBlocks = len(self.blocks)
         strCountOfBlocks = str(countOfBlocks)
         output = list(["void getInitFuncArray(initfunc_fill_ptr_t** ppInitFuncs){\n"])
-        output.append('\tprintf("Welcome into userfuncs.so. Getting initial functions...\\n");\n')
+        #output.append('\tprintf("Welcome into userfuncs.so. Getting initial functions...\\n");\n')
         output.append("\tinitfunc_fill_ptr_t* pInitFuncs;\n")
         output.append("\tpInitFuncs = (initfunc_fill_ptr_t*) malloc( " + strCountOfBlocks + " * sizeof(initfunc_fill_ptr_t) );\n")
         output.append("\t*ppInitFuncs = pInitFuncs;\n")
