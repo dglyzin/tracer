@@ -4,22 +4,22 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 0.1, 
-        "TimeStep": 0.0000001, 
+        "TimeStep": 1e-07, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
-        "Dimension": 1,
+        "Dimension": 1, 
         "dx": 0.001, 
         "dy": 1, 
         "dz": 1
     }, 
     "Blocks": [
         {
-            "Name": "Block#0",  
+            "Name": "Block#0", 
             "Offset": {
-                "x": 0.0                
+                "x": 0.0
             }, 
             "Size": {
                 "x": 1.0
@@ -29,22 +29,19 @@
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
-                    "Side": 0, 
-                    "yfrom": 0.0, 
-                    "yto": 0.0
+                    "Side": 0
                 }
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
         }
     ], 
-    "Interconnects": [       
-    ], 
+    "Interconnects": [], 
     "Equations": [
         {
             "Name": "Flat Brusselator", 
             "Vars": [
-                "x"                
+                "x"
             ], 
             "System": [
                 "U'=a * D[U,{x,2}]"
@@ -95,5 +92,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

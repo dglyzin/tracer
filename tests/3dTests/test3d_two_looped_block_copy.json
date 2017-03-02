@@ -10,6 +10,7 @@
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 3, 
         "dx": 0.1, 
         "dy": 0.1, 
         "dz": 0.1
@@ -17,164 +18,166 @@
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 3, 
             "Offset": {
                 "x": 0.0, 
-                "y": 0.0,
-		"z": 0.0
+                "y": 0.0, 
+                "z": 0.0
             }, 
             "Size": {
                 "x": 1.0, 
-                "y": 1.0,
-		"z": 1.0
+                "y": 1.0, 
+                "z": 1.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [{
-		    "BoundNumber": 0, 
+            "BoundRegions": [
+                {
+                    "BoundNumber": 0, 
                     "Side": 0, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
-                    "yto": 0.5,
-		    "zfrom": 0.0,
-		    "zto": 0.5
-				}], 
+                    "yto": 0.5, 
+                    "zfrom": 0.0, 
+                    "zto": 0.5
+                }
+            ], 
             "InitialRegions": [], 
             "EquationRegions": []
-        },
+        }, 
         {
             "Name": "MainBlock", 
-            "Dimension": 3, 
             "Offset": {
                 "x": 1.0, 
-                "y": 0.0,
-		"z": 0.0
+                "y": 0.0, 
+                "z": 0.0
             }, 
             "Size": {
                 "x": 1.0, 
-                "y": 1.0,
-		"z": 1.0
+                "y": 1.0, 
+                "z": 1.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [{
-		    "BoundNumber": 1, 
+            "BoundRegions": [
+                {
+                    "BoundNumber": 1, 
                     "Side": 1, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
-                    "yto": 0.5,
-		    "zfrom": 0.0,
-		    "zto": 0.5
-				}], 
+                    "yto": 0.5, 
+                    "zfrom": 0.0, 
+                    "zto": 0.5
+                }
+            ], 
             "InitialRegions": [], 
             "EquationRegions": []
         }
     ], 
     "Interconnects": [
-		{
-			"Name": "loop connection along x",
-			"Block1": 0,
-			"Block2": 1,
-			"Block1Side": 1,
-			"Block2Side": 0
-		},
-		{
-			"Name": "loop connection along y",
-			"Block1": 0,
-			"Block2": 0,
-			"Block1Side": 2,
-			"Block2Side": 3
-		},
-		{
-			"Name": "loop connection along y",
-			"Block1": 1,
-			"Block2": 1,
-			"Block1Side": 2,
-			"Block2Side": 3
-		},
-		{
-			"Name": "loop connection along y",
-			"Block1": 0,
-			"Block2": 0,
-			"Block1Side": 4,
-			"Block2Side": 5
-		},
-		{
-			"Name": "loop connection along y",
-			"Block1": 1,
-			"Block2": 1,
-			"Block1Side": 4,
-			"Block2Side": 5
-		}
-	], 
-    "Equations": [ 
+        {
+            "Name": "loop connection along x", 
+            "Block1": 0, 
+            "Block2": 1, 
+            "Block1Side": 1, 
+            "Block2Side": 0
+        }, 
+        {
+            "Name": "loop connection along y", 
+            "Block1": 0, 
+            "Block2": 0, 
+            "Block1Side": 2, 
+            "Block2Side": 3
+        }, 
+        {
+            "Name": "loop connection along y", 
+            "Block1": 1, 
+            "Block2": 1, 
+            "Block1Side": 2, 
+            "Block2Side": 3
+        }, 
+        {
+            "Name": "loop connection along y", 
+            "Block1": 0, 
+            "Block2": 0, 
+            "Block1Side": 4, 
+            "Block2Side": 5
+        }, 
+        {
+            "Name": "loop connection along y", 
+            "Block1": 1, 
+            "Block2": 1, 
+            "Block1Side": 4, 
+            "Block2Side": 5
+        }
+    ], 
+    "Equations": [
         {
             "Name": "Heat1", 
             "Vars": [
                 "x", 
-                "y",
-				"z"
+                "y", 
+                "z"
             ], 
             "System": [
                 "U'=a*(D[U,{x,2}] + D[U,{y,2}] + D[U,{z,2}])"
             ]
-        },
-		{
-			"Name": "Heat2", 
+        }, 
+        {
+            "Name": "Heat2", 
             "Vars": [
                 "x", 
-                "y",
-				"z"
+                "y", 
+                "z"
             ], 
             "System": [
                 "U'=b*(D[U,{x,2}] + D[U,{y,2}] + D[U,{z,2}])"
             ]
-		}
+        }
     ], 
     "EquationParams": {
         "Params": [
-            "a",
-			"b"
+            "a", 
+            "b"
         ], 
         "ParamValues": [
             {
-                "a": 1,
-				"b": 8
+                "a": 1, 
+                "b": 8
             }
         ], 
         "DefaultParamsIndex": 0
     }, 
     "Bounds": [
-    {
+        {
             "Name": "N 1", 
             "Type": 0, 
             "Values": [
                 "100.0"
-            ],
+            ], 
             "Derivative": [
                 "0.0"
             ]
-        },
+        }, 
         {
             "Name": "N 2", 
             "Type": 0, 
             "Values": [
                 "-100.0"
-            ],
+            ], 
             "Derivative": [
                 "0.0"
             ]
         }
-        ], 
+    ], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
                 "0.0"
             ]
-        },
+        }, 
         {
             "Name": "Initial values 0", 
             "Values": [
@@ -187,7 +190,7 @@
             "Name": "cnode1", 
             "CpuCount": 1, 
             "GpuCount": 3
-        },
+        }, 
         {
             "Name": "cnode1", 
             "CpuCount": 1, 
@@ -201,12 +204,13 @@
                 "NodeIdx": 0, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
-            },
+            }, 
             {
-                "NodeIdx": 0 , 
+                "NodeIdx": 0, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

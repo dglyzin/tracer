@@ -10,6 +10,7 @@
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 2, 
         "dx": 0.008, 
         "dy": 0.008, 
         "dz": 1
@@ -17,31 +18,29 @@
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 2, 
             "Offset": {
-                "x": 0.0,
+                "x": 0.0, 
                 "y": 0.0
             }, 
             "Size": {
-                "x": 1.0,
+                "x": 1.0, 
                 "y": 1.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [                
-            ], 
+            "BoundRegions": [], 
             "InitialRegions": [], 
             "EquationRegions": []
         }
     ], 
-    "Interconnects": [     
-     {
+    "Interconnects": [
+        {
             "Name": "connection 1", 
             "Block1": 0, 
             "Block2": 0, 
             "Block1Side": 1, 
             "Block2Side": 0
-        },
+        }, 
         {
             "Name": "connection 2", 
             "Block1": 0, 
@@ -54,7 +53,7 @@
         {
             "Name": "Flat Brusselator", 
             "Vars": [
-                "x",
+                "x", 
                 "y"
             ], 
             "System": [
@@ -78,9 +77,7 @@
         ], 
         "DefaultParamsIndex": 0
     }, 
-    "Bounds": [
-        
-    ], 
+    "Bounds": [], 
     "Initials": [
         {
             "Name": "Initial values 0", 
@@ -106,5 +103,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

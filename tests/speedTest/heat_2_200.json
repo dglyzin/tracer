@@ -4,26 +4,26 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 20.0, 
-        "TimeStep": 0.000005, 
+        "TimeStep": 5e-06, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 2, 
         "dx": 0.005, 
         "dy": 0.005, 
-        "dz": 1,
-        "Dimension": 2
+        "dz": 1
     }, 
     "Blocks": [
         {
             "Name": "Block 0", 
             "Offset": {
-                "x": 0.0,
+                "x": 0.0, 
                 "y": 0.0
             }, 
             "Size": {
-                "x": 1.0,
+                "x": 1.0, 
                 "y": 0.5
             }, 
             "DefaultEquation": 0, 
@@ -31,7 +31,7 @@
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
-                    "Side": 2,
+                    "Side": 2, 
                     "xfrom": 0.25, 
                     "xto": 0.75, 
                     "yfrom": 0.0, 
@@ -40,15 +40,15 @@
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
-        },
+        }, 
         {
             "Name": "Block 1", 
             "Offset": {
-                "x": 0.0,
+                "x": 0.0, 
                 "y": 0.5
             }, 
             "Size": {
-                "x": 1.0,
+                "x": 1.0, 
                 "y": 0.5
             }, 
             "DefaultEquation": 0, 
@@ -71,7 +71,7 @@
         {
             "Name": "Heat normal", 
             "Vars": [
-                "x",
+                "x", 
                 "y"
             ], 
             "System": [
@@ -112,7 +112,7 @@
             "Name": "cnode1", 
             "CpuCount": 1, 
             "GpuCount": 3
-        },
+        }, 
         {
             "Name": "cnode1", 
             "CpuCount": 1, 
@@ -126,12 +126,13 @@
                 "NodeIdx": 0, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
-            },
+            }, 
             {
                 "NodeIdx": 1, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

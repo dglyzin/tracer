@@ -10,6 +10,7 @@
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 1, 
         "dx": 0.1, 
         "dy": 1, 
         "dz": 1
@@ -17,7 +18,6 @@
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 1, 
             "Offset": {
                 "x": 0.0
             }, 
@@ -32,7 +32,6 @@
         }, 
         {
             "Name": "SubBlock", 
-            "Dimension": 1, 
             "Offset": {
                 "x": 1.0
             }, 
@@ -116,5 +115,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

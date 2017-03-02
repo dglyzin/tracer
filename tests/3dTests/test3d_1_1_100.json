@@ -4,75 +4,72 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 0.001, 
-        "TimeStep": 0.000001, 
+        "TimeStep": 1e-06, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 3, 
         "dx": 0.002, 
         "dy": 0.002, 
         "dz": 0.002
     }, 
     "Blocks": [
         {
-            "Name": "MainBlock",
-            "Dimension": 3,
-            "Offset":
-                {
-                    "x": 0.0,
-                    "y": 0.0,
-                    "z": 0.0
-                }, 
-            "Size":
-                {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0
-                },
-            "DefaultEquation": 0,
-            "DefaultInitial": 0,
-            "BoundRegions": [],
+            "Name": "MainBlock", 
+            "Offset": {
+                "x": 0.0, 
+                "y": 0.0, 
+                "z": 0.0
+            }, 
+            "Size": {
+                "x": 1.0, 
+                "y": 1.0, 
+                "z": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
             "InitialRegions": [
                 {
-                    "InitialNumber" : 1,
-                    "xfrom": 0.0,
-                    "xto": 0.5,
-                    "yfrom": 0.0,
-                    "yto": 0.5,
-                    "zfrom": 0.0,
+                    "InitialNumber": 1, 
+                    "xfrom": 0.0, 
+                    "xto": 0.5, 
+                    "yfrom": 0.0, 
+                    "yto": 0.5, 
+                    "zfrom": 0.0, 
                     "zto": 0.5
                 }
-            ],
+            ], 
             "EquationRegions": []
         }
     ], 
-    "Interconnects": [],
+    "Interconnects": [], 
     "Equations": [
         {
-            "Name": "Heat1",
+            "Name": "Heat1", 
             "Vars": [
-                "x",
-                "y",
+                "x", 
+                "y", 
                 "z"
-            ],
+            ], 
             "System": [
                 "U'=a*(D[U,{x,2}] + D[U,{y,2}] + D[U,{z,2}])"
             ]
         }
     ], 
-    "EquationParams":
-        {
-            "Params": [
-                "a",
-                "b"
-            ],
-            "ParamValues": [
-                {
-                    "a": 1,
-                    "b": 8
-                }
-            ],
+    "EquationParams": {
+        "Params": [
+            "a", 
+            "b"
+        ], 
+        "ParamValues": [
+            {
+                "a": 1, 
+                "b": 8
+            }
+        ], 
         "DefaultParamsIndex": 0
     }, 
     "Bounds": [], 
@@ -82,7 +79,7 @@
             "Values": [
                 "0.0"
             ]
-        },
+        }, 
         {
             "Name": "Initial values 0", 
             "Values": [
@@ -106,5 +103,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

@@ -19,7 +19,7 @@
         {
             "Name": "MainBlock", 
             "Offset": {
-                "x": 0.0                
+                "x": 0.0
             }, 
             "Size": {
                 "x": 1.0
@@ -30,7 +30,7 @@
                 {
                     "BoundNumber": 0, 
                     "Side": 0
-                },
+                }, 
                 {
                     "BoundNumber": 0, 
                     "Side": 1
@@ -40,13 +40,12 @@
             "EquationRegions": []
         }
     ], 
-    "Interconnects": [       
-    ], 
+    "Interconnects": [], 
     "Equations": [
         {
             "Name": "Flat Brusselator", 
             "Vars": [
-                "x"                
+                "x"
             ], 
             "System": [
                 "U'=a+U*U*V-(b+1)*U+c*D[U,{x,2}]", 
@@ -108,22 +107,6 @@
                 "DeviceIdx": 0
             }
         ]
-    },
-    "Results": [
-            {
-                "Title":"U-plot",
-                "Type":"plot1d",
-                "Expression":"U"
-            },
-            {   
-                "Title":"V-plot",
-                "Type":"plot1d",
-                "Expression":"V"
-            },
-            {  
-                "Title":"Squares-plot",
-                "Type":"plot1d",
-                "Expression":"U^2+V^2"
-            }                   
-        ]
+    }, 
+    "Plots": []
 }

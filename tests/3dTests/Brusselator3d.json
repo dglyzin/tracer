@@ -4,12 +4,13 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 10.0, 
-        "TimeStep": 1e-03, 
+        "TimeStep": 0.001, 
         "SaveInterval": 0.05, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 3, 
         "dx": 0.1, 
         "dy": 0.1, 
         "dz": 0.1
@@ -17,16 +18,15 @@
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 3, 
             "Offset": {
                 "x": 0.0, 
-                "y": 0.0,
-				"z": 0.0
+                "y": 0.0, 
+                "z": 0.0
             }, 
             "Size": {
                 "x": 1.0, 
-                "y": 1.0,
-				"z": 1.0
+                "y": 1.0, 
+                "z": 1.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -42,14 +42,14 @@
             "Block2": 0, 
             "Block1Side": 1, 
             "Block2Side": 0
-        },
+        }, 
         {
             "Name": "connection 2", 
             "Block1": 0, 
             "Block2": 0, 
             "Block1Side": 3, 
             "Block2Side": 2
-        },
+        }, 
         {
             "Name": "connection 3", 
             "Block1": 0, 
@@ -63,8 +63,8 @@
             "Name": "Flat Brusselator", 
             "Vars": [
                 "x", 
-                "y",
-				"z"
+                "y", 
+                "z"
             ], 
             "System": [
                 "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}] + D[U,{y,2}] + D[U,{z,2}])", 
@@ -113,5 +113,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

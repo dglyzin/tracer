@@ -4,26 +4,26 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 0.05, 
-        "TimeStep": 0.00000005, 
+        "TimeStep": 5e-08, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 2, 
         "dx": 0.001, 
         "dy": 0.0004, 
-        "dz": 1,
-        "Dimension": 2
+        "dz": 1
     }, 
     "Blocks": [
         {
             "Name": "Block 0", 
             "Offset": {
-                "x": 0.0,
+                "x": 0.0, 
                 "y": 0.0
             }, 
             "Size": {
-                "x": 1.0,
+                "x": 1.0, 
                 "y": 0.25
             }, 
             "DefaultEquation": 0, 
@@ -31,7 +31,7 @@
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
-                    "Side": 2,
+                    "Side": 2, 
                     "xfrom": 0.25, 
                     "xto": 0.75, 
                     "yfrom": 0.0, 
@@ -40,15 +40,15 @@
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
-        },
+        }, 
         {
             "Name": "Block 1", 
             "Offset": {
-                "x": 0.0,
+                "x": 0.0, 
                 "y": 0.25
             }, 
             "Size": {
-                "x": 1.0,
+                "x": 1.0, 
                 "y": 0.25
             }, 
             "DefaultEquation": 0, 
@@ -56,15 +56,15 @@
             "BoundRegions": [], 
             "InitialRegions": [], 
             "EquationRegions": []
-        },
+        }, 
         {
             "Name": "Block 2", 
             "Offset": {
-                "x": 0.0,
+                "x": 0.0, 
                 "y": 0.5
-            },
+            }, 
             "Size": {
-                "x": 1.0,
+                "x": 1.0, 
                 "y": 0.25
             }, 
             "DefaultEquation": 0, 
@@ -72,15 +72,15 @@
             "BoundRegions": [], 
             "InitialRegions": [], 
             "EquationRegions": []
-        },
+        }, 
         {
             "Name": "Block 3", 
             "Offset": {
-                "x": 0.0,
+                "x": 0.0, 
                 "y": 0.75
             }, 
             "Size": {
-                "x": 1.0,
+                "x": 1.0, 
                 "y": 0.25
             }, 
             "DefaultEquation": 0, 
@@ -97,14 +97,14 @@
             "Block2": 1, 
             "Block1Side": 3, 
             "Block2Side": 2
-        },
+        }, 
         {
             "Name": "connection 1", 
             "Block1": 1, 
             "Block2": 2, 
             "Block1Side": 3, 
             "Block2Side": 2
-        },
+        }, 
         {
             "Name": "connection 1", 
             "Block1": 2, 
@@ -117,7 +117,7 @@
         {
             "Name": "Heat normal", 
             "Vars": [
-                "x",
+                "x", 
                 "y"
             ], 
             "System": [
@@ -158,17 +158,17 @@
             "Name": "cnode1", 
             "CpuCount": 1, 
             "GpuCount": 3
-        },
+        }, 
         {
             "Name": "cnode1", 
             "CpuCount": 1, 
             "GpuCount": 3
-        },
+        }, 
         {
             "Name": "cnode1", 
             "CpuCount": 1, 
             "GpuCount": 3
-        },
+        }, 
         {
             "Name": "cnode1", 
             "CpuCount": 1, 
@@ -182,22 +182,23 @@
                 "NodeIdx": 0, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
-            },
+            }, 
             {
                 "NodeIdx": 1, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
-            },
+            }, 
             {
                 "NodeIdx": 2, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
-            },
+            }, 
             {
                 "NodeIdx": 3, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

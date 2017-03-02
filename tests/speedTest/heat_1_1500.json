@@ -4,26 +4,26 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 0.005, 
-        "TimeStep": 0.00000005, 
+        "TimeStep": 5e-08, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 2, 
         "dx": 0.0006666, 
         "dy": 0.0006666, 
-        "dz": 1,
-        "Dimension": 2
+        "dz": 1
     }, 
     "Blocks": [
         {
             "Name": "Block 0", 
             "Offset": {
-                "x": 0.0,
+                "x": 0.0, 
                 "y": 0.0
             }, 
             "Size": {
-                "x": 1.0,
+                "x": 1.0, 
                 "y": 1.0
             }, 
             "DefaultEquation": 0, 
@@ -31,7 +31,7 @@
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
-                    "Side": 2,
+                    "Side": 2, 
                     "xfrom": 0.25, 
                     "xto": 0.75, 
                     "yfrom": 0.0, 
@@ -47,7 +47,7 @@
         {
             "Name": "Heat normal", 
             "Vars": [
-                "x",
+                "x", 
                 "y"
             ], 
             "System": [
@@ -99,5 +99,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

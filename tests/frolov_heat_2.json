@@ -2,14 +2,15 @@
     "ProjectName": "fr_heat_test", 
     "Solver": {
         "SolverIdx": 0, 
-        "StartTime":    0.0, 
-        "FinishTime":   0.02, 
-        "TimeStep":     0.0000001, 
+        "StartTime": 0.0, 
+        "FinishTime": 0.02, 
+        "TimeStep": 1e-07, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 2, 
         "dx": 0.001, 
         "dy": 0.001, 
         "dz": 1
@@ -17,7 +18,6 @@
     "Blocks": [
         {
             "Name": "upperLeft", 
-            "Dimension": 2, 
             "Offset": {
                 "x": 0.0, 
                 "y": 0.0
@@ -42,7 +42,6 @@
         }, 
         {
             "Name": "lowerLeft", 
-            "Dimension": 2, 
             "Offset": {
                 "x": 1.0, 
                 "y": 0.0
@@ -131,5 +130,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

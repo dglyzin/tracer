@@ -4,12 +4,13 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 0.1, 
-        "TimeStep":   0.00001, 
+        "TimeStep": 1e-05, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 2, 
         "dx": 0.01, 
         "dy": 0.01, 
         "dz": 1
@@ -17,7 +18,6 @@
     "Blocks": [
         {
             "Name": "upperLeft", 
-            "Dimension": 2, 
             "Offset": {
                 "x": 0.0, 
                 "y": 0.0
@@ -96,5 +96,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

@@ -10,6 +10,7 @@
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 3, 
         "dx": 0.1, 
         "dy": 0.1, 
         "dz": 0.1
@@ -17,16 +18,15 @@
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 3, 
             "Offset": {
                 "x": 0.0, 
-                "y": 0.0,
-				"z": 0.0
+                "y": 0.0, 
+                "z": 0.0
             }, 
             "Size": {
                 "x": 6.0, 
-                "y": 6.0,
-				"z": 3.0
+                "y": 6.0, 
+                "z": 3.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -36,61 +36,61 @@
         }
     ], 
     "Interconnects": [
-		{
-			"Name": "loop connection along x",
-			"Block1": 0,
-			"Block2": 0,
-			"Block1Side": 0,
-			"Block2Side": 1
-		},
-		{
-			"Name": "loop connection along z",
-			"Block1": 0,
-			"Block2": 0,
-			"Block1Side": 4,
-			"Block2Side": 5
-		},
-		{
-			"Name": "loop connection along y",
-			"Block1": 0,
-			"Block2": 0,
-			"Block1Side": 2,
-			"Block2Side": 3
-		}
-	], 
-    "Equations": [ 
+        {
+            "Name": "loop connection along x", 
+            "Block1": 0, 
+            "Block2": 0, 
+            "Block1Side": 0, 
+            "Block2Side": 1
+        }, 
+        {
+            "Name": "loop connection along z", 
+            "Block1": 0, 
+            "Block2": 0, 
+            "Block1Side": 4, 
+            "Block2Side": 5
+        }, 
+        {
+            "Name": "loop connection along y", 
+            "Block1": 0, 
+            "Block2": 0, 
+            "Block1Side": 2, 
+            "Block2Side": 3
+        }
+    ], 
+    "Equations": [
         {
             "Name": "Heat1", 
             "Vars": [
                 "x", 
-                "y",
-				"z"
+                "y", 
+                "z"
             ], 
             "System": [
                 "U'=a*(D[U,{x,2}] + D[U,{y,2}] + D[U,{z,2}])"
             ]
-        },
-		{
-			"Name": "Heat2", 
+        }, 
+        {
+            "Name": "Heat2", 
             "Vars": [
                 "x", 
-                "y",
-				"z"
+                "y", 
+                "z"
             ], 
             "System": [
                 "U'=b*(D[U,{x,2}] + D[U,{y,2}] + D[U,{z,2}])"
             ]
-		}
+        }
     ], 
     "EquationParams": {
         "Params": [
-            "a",
-			"b"
+            "a", 
+            "b"
         ], 
         "ParamValues": [
             {
-                "a": 1,
-				"b": 8
+                "a": 1, 
+                "b": 8
             }
         ], 
         "DefaultParamsIndex": 0
@@ -120,5 +120,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

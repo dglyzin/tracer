@@ -10,6 +10,7 @@
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 1, 
         "dx": 0.01, 
         "dy": 1, 
         "dz": 1
@@ -17,7 +18,6 @@
     "Blocks": [
         {
             "Name": "firstBlock", 
-            "Dimension": 1, 
             "Offset": {
                 "x": 0.0
             }, 
@@ -38,7 +38,6 @@
         }, 
         {
             "Name": "secBlock", 
-            "Dimension": 1, 
             "Offset": {
                 "x": -5.0
             }, 
@@ -64,7 +63,6 @@
         }, 
         {
             "Name": "thirdBlock", 
-            "Dimension": 1, 
             "Offset": {
                 "x": 5.0
             }, 
@@ -204,5 +202,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }

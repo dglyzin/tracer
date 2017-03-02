@@ -10,6 +10,7 @@
         "RelTolerance": 0.001
     }, 
     "Grid": {
+        "Dimension": 3, 
         "dx": 0.1, 
         "dy": 0.1, 
         "dz": 0.1
@@ -17,89 +18,88 @@
     "Blocks": [
         {
             "Name": "MainBlock", 
-            "Dimension": 3, 
             "Offset": {
                 "x": 0.0, 
-                "y": 0.0,
-				"z": 0.0
+                "y": 0.0, 
+                "z": 0.0
             }, 
             "Size": {
                 "x": 6.0, 
-                "y": 6.0,
-				"z": 3.0
+                "y": 6.0, 
+                "z": 3.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [
-				{
-					"BoundNumber": 0, 
+                {
+                    "BoundNumber": 0, 
                     "Side": 5, 
                     "xfrom": 2.0, 
                     "xto": 6.0, 
                     "yfrom": 0.0, 
-                    "yto": 5.0,
-					"zfrom": 0.0,
-					"zto": 0.0
-				},
-				{
-					"BoundNumber": 1, 
+                    "yto": 5.0, 
+                    "zfrom": 0.0, 
+                    "zto": 0.0
+                }, 
+                {
+                    "BoundNumber": 1, 
                     "Side": 1, 
                     "xfrom": 0.0, 
                     "xto": 0.0, 
                     "yfrom": 0.0, 
-                    "yto": 3.0,
-					"zfrom": 1.0,
-					"zto": 3.0
-				}
-			], 
+                    "yto": 3.0, 
+                    "zfrom": 1.0, 
+                    "zto": 3.0
+                }
+            ], 
             "InitialRegions": [], 
             "EquationRegions": [
-				{
+                {
                     "EquationNumber": 1, 
                     "xfrom": 0.0, 
                     "xto": 3.0, 
                     "yfrom": 0.0, 
-                    "yto": 6.0,
-					"zfrom": 0.0,
-					"zto": 3.0
+                    "yto": 6.0, 
+                    "zfrom": 0.0, 
+                    "zto": 3.0
                 }
-			]
+            ]
         }
     ], 
     "Interconnects": [], 
-    "Equations": [ 
+    "Equations": [
         {
             "Name": "Heat1", 
             "Vars": [
                 "x", 
-                "y",
-				"z"
+                "y", 
+                "z"
             ], 
             "System": [
                 "U'=a*(D[U,{x,2}] + D[U,{y,2}] + D[U,{z,2}])"
             ]
-        },
-		{
-			"Name": "Heat2", 
+        }, 
+        {
+            "Name": "Heat2", 
             "Vars": [
                 "x", 
-                "y",
-				"z"
+                "y", 
+                "z"
             ], 
             "System": [
                 "U'=b*(D[U,{x,2}] + D[U,{y,2}] + D[U,{z,2}])"
             ]
-		}
+        }
     ], 
     "EquationParams": {
         "Params": [
-            "a",
-			"b"
+            "a", 
+            "b"
         ], 
         "ParamValues": [
             {
-                "a": 1,
-				"b": 8
+                "a": 1, 
+                "b": 8
             }
         ], 
         "DefaultParamsIndex": 0
@@ -111,8 +111,8 @@
             "Values": [
                 "10*y"
             ]
-        },
-		{
+        }, 
+        {
             "Name": "N 2", 
             "Type": 1, 
             "Values": [
@@ -144,5 +144,6 @@
                 "DeviceIdx": 0
             }
         ]
-    }
+    }, 
+    "Plots": []
 }
