@@ -193,7 +193,7 @@ class Model(QObject):
 
     ##LOAD
     #the following function is useful for json format updating
-    '''
+    
     def loadFromFileOld(self, fileName):
         self.deleteAllBlocks()
         self.deleteAllInterconnects()
@@ -205,11 +205,11 @@ class Model(QObject):
         projectDict = json.loads(projectFile.read())
         projectFile.close()
 
-        self.connection.fromDict(projectDict["Connection"])
+        #self.connection.fromDict(projectDict["Connection"])
 
-        self.setSimpleValuesOld(projectDict)
+        self.setSimpleValues(projectDict)
         for blockDict in projectDict["Blocks"]:
-            self.addBlock(blockDict)
+            self.addBlock(blockDict, projectDict["Grid"]["Dimension"])
         for icDict in projectDict["Interconnects"]:
             self.addInterconnect(icDict)
         for equationDict in projectDict["Equations"]:
@@ -222,20 +222,21 @@ class Model(QObject):
             self.addCompnode(compnodeDict)
 
         self.isMapped = projectDict["Mapping"]["IsMapped"]
-        #self.mapping = projectDict["Mapping"]["BlockMapping"]
-        self.mapping = [OrderedDict([("NodeIdx", block[0]),
-                                     ("DeviceType", block[1]),
-                                     ("DeviceIdx", block[2])
+        self.mapping = [OrderedDict([("NodeIdx", block["NodeIdx"]),
+                                     ("DeviceType", block["DeviceType"]),
+                                     ("DeviceIdx", block["DeviceIdx"])
                                      ])                                   
                                      for block in projectDict["Mapping"]["BlockMapping"] ]
-
+       
+        self.plots = [ ]
+        
         self.initSessionSettings()
         self.projectFileAssigned = True
         self.projectFile = fileName
         self.workDirectory = os.path.dirname(str(fileName))
 
         self.modelUpdated.emit()
-    '''
+    
         
     def loadFromFile(self, fileName):
         self.deleteAllBlocks()
