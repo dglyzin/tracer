@@ -1,6 +1,8 @@
 syntax: glob
 *.pyc
 *.bin
+*.lbin
+*.dbin
 *.dom
 *.txt
 *.png
@@ -11,3 +13,4 @@ syntax: glob
 config/*
 .project
 .pydevproject
+ManualHeat/*
