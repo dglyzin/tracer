@@ -93,7 +93,7 @@ class Model(QObject):
         self.compnodes = []
 
     #the following function is useful for json format updating
-    '''
+    
     def setSimpleValuesOld(self, projdict=[]):
         if projdict == []:
             self.projectName = "New project"
@@ -107,27 +107,35 @@ class Model(QObject):
             self.gridStepX = 1.0
             self.gridStepY = 1.0
             self.gridStepZ = 1.0
+            self.dimension = 1
             self.defaultParamsIndex = -1
         else:
             self.projectName = projdict["ProjectName"]
-            self.startTime = projdict["StartTime"]
-            self.finishTime = projdict["FinishTime"]
-            self.timeStep = projdict["TimeStep"]
-            self.saveInterval = projdict["SaveInterval"]
-            self.solverIndex = projdict["Solver"]
-            self.solverAtol = projdict["SolverAbsTolerance"]
-            self.solverRtol = projdict["SolverRelTolerance"]
-            self.params = projdict["Params"]
-            self.paramValues = projdict["ParamValues"]
+            self.startTime = projdict["Solver"]["StartTime"]
+            self.finishTime = projdict["Solver"]["FinishTime"]
+            self.timeStep = projdict["Solver"]["TimeStep"]
+            self.saveInterval = projdict["Solver"]["SaveInterval"]
+            self.solverIndex = projdict["Solver"]["SolverIdx"]
+            self.solverAtol = projdict["Solver"]["AbsTolerance"]
+            self.solverRtol = projdict["Solver"]["RelTolerance"]
+            
+            try:
+                self.dimension = projdict["Grid"]["Dimension"]
+            except:
+                self.dimension = projdict["Blocks"][0]["Dimension"]
+            
+            self.gridStepX = projdict["Grid"]["dx"]
+            self.gridStepY = projdict["Grid"]["dy"]
+            self.gridStepZ = projdict["Grid"]["dz"]
+            
+            
+            self.params = projdict["EquationParams"]["Params"]
+            self.paramValues = projdict["EquationParams"]["ParamValues"]
             if len(self.paramValues) == 1:
                 self.defaultParamsIndex = 0
             elif len(self.paramValues) > 1:
-                self.defaultParamsIndex = projdict["DefaultParamsIndex"]
-            self.gridStepX = projdict["GridStep"]["x"]
-            self.gridStepY = projdict["GridStep"]["y"]
-            self.gridStepZ = projdict["GridStep"]["z"]
-    '''
-
+                self.defaultParamsIndex = projdict["EquationParams"]["DefaultParamsIndex"]
+        
 
     def setSimpleValues(self, projdict=[]):
         if projdict == []:
@@ -153,10 +161,12 @@ class Model(QObject):
             self.solverIndex = projdict["Solver"]["SolverIdx"]
             self.solverAtol = projdict["Solver"]["AbsTolerance"]
             self.solverRtol = projdict["Solver"]["RelTolerance"]
+            
+            self.dimension = projdict["Grid"]["Dimension"]
             self.gridStepX = projdict["Grid"]["dx"]
             self.gridStepY = projdict["Grid"]["dy"]
             self.gridStepZ = projdict["Grid"]["dz"]
-            self.dimension = projdict["Grid"]["Dimension"]
+            
             
             self.params = projdict["EquationParams"]["Params"]
             self.paramValues = projdict["EquationParams"]["ParamValues"]
@@ -207,7 +217,7 @@ class Model(QObject):
 
         #self.connection.fromDict(projectDict["Connection"])
 
-        self.setSimpleValues(projectDict)
+        self.setSimpleValuesOld(projectDict)
         for blockDict in projectDict["Blocks"]:
             self.addBlock(blockDict, projectDict["Grid"]["Dimension"])
         for icDict in projectDict["Interconnects"]:
@@ -253,7 +263,7 @@ class Model(QObject):
 
         self.setSimpleValues(projectDict)
         for blockDict in projectDict["Blocks"]:
-            self.addBlock(blockDict, projectDict["Grid"]["Dimension"])
+            self.addBlock(blockDict, self.dimension)
         for icDict in projectDict["Interconnects"]:
             self.addInterconnect(icDict)
         for equationDict in projectDict["Equations"]:
@@ -302,9 +312,10 @@ class Model(QObject):
                             ("RelTolerance", self.solverRtol),                                                    
                         ]) ),
             ("Grid", OrderedDict([
+                            ("Dimension", self.dimension),
                             ("dx", self.gridStepX),
                             ("dy", self.gridStepY),
-                            ("dz", self.gridStepZ)
+                            ("dz", self.gridStepZ)                            
                         ]) ),            
             ("Blocks", [block.getPropertiesDict() for block in self.blocks] ),
             ("Interconnects", [ic.getPropertiesDict() for ic in self.interconnects] ),

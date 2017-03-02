@@ -88,7 +88,7 @@ class Block(object):
             sizeDict.update({"z":self.sizeZ})            
         propDict = OrderedDict([            
             ("Name", self.name),
-            ("Dimension", self.dimension),
+            #("Dimension", self.dimension),
             ("Offset", offsetDict),
             ("Size", sizeDict),            
             ("DefaultEquation", self.defaultEquation),
