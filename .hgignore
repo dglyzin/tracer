@@ -14,3 +14,8 @@ config/*
 .project
 .pydevproject
 ManualHeat/*
+*.log
+*statistic
+*.so
+*.cpp
+*.sh
