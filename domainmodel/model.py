@@ -219,7 +219,7 @@ class Model(QObject):
 
         self.setSimpleValuesOld(projectDict)
         for blockDict in projectDict["Blocks"]:
-            self.addBlock(blockDict, projectDict["Grid"]["Dimension"])
+            self.addBlock(blockDict, self.dimension)
         for icDict in projectDict["Interconnects"]:
             self.addInterconnect(icDict)
         for equationDict in projectDict["Equations"]:
