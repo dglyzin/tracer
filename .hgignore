@@ -19,3 +19,4 @@ ManualHeat/*
 *.so
 *.cpp
 *.sh
+*tempFile
