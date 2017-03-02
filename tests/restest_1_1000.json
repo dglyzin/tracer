@@ -104,13 +104,13 @@
          {
 
              "Title": "u(t)",
-             "Period": 2         
+             "Period": 0.0001         
 
          },
          {
 
              "Title": "u(x)",
-             "Period": 1     
+             "Period": 0.00012     
 
          }]
 }
