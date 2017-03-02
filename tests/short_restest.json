@@ -100,5 +100,17 @@
             }
         ]
     }, 
-    "Plots": []
+    "Plots": [
+         {
+
+             "Title": "u(t)",
+             "Period": 2         
+
+         },
+         {
+
+             "Title": "u(x)",
+             "Period": 1     
+
+         }]
 }
