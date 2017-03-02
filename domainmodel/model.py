@@ -15,7 +15,6 @@ Use add*(dict) to create * from existing dict
 
 import json
 from collections import OrderedDict
-from PyQt4.QtCore import QObject, pyqtSignal
 import os
 from block import Block
 from interconnect import Interconnect
@@ -42,42 +41,8 @@ ZEND   = 5
 
 
 
-class Model(QObject):
-    equationAdded = pyqtSignal(object)
-    equationDeleted = pyqtSignal(object)
-    equationChanged = pyqtSignal(object)
-    allEquationsDeleted = pyqtSignal()
-    equationNameChanged = pyqtSignal(object, object)
-
-    boundAdded = pyqtSignal(object)
-    boundDeleted = pyqtSignal(object)
-    boundChanged = pyqtSignal(object)
-    allBoundsDeleted = pyqtSignal()
-    boundNameChanged = pyqtSignal(object, object)
-
-    blockAdded = pyqtSignal(object)
-    blockDeleted = pyqtSignal(object)
-    blockChanged = pyqtSignal(object)
-    allBlocksDeleted = pyqtSignal()
-
-    interconnectAdded = pyqtSignal(object)
-    interconnectDeleted = pyqtSignal(object)
-    interconnectChanged = pyqtSignal(object)
-    allInterconnectsDeleted = pyqtSignal()
-
-    initialAdded = pyqtSignal(object)
-    initialDeleted = pyqtSignal(object)
-    initialChanged = pyqtSignal(object)
-    allInitialsDeleted = pyqtSignal()
-    initialNameChanged = pyqtSignal(object, object)
-
-    compnodeAdded = pyqtSignal(object)
-    compnodeDeleted = pyqtSignal(object)
-    compnodeChanged = pyqtSignal(object)
-    allCompnodesDeleted = pyqtSignal()
-
-    modelUpdated = pyqtSignal()
-
+class Model(object):
+    
     def __init__(self):
         super(Model, self).__init__()
         self.initSessionSettings()
@@ -198,8 +163,6 @@ class Model(QObject):
         self.addBlankBlock()             #and one block
         self.addBlankInitial()           #and one initial value
 
-        self.modelUpdated.emit()
-
 
     ##LOAD
     #the following function is useful for json format updating
@@ -238,14 +201,19 @@ class Model(QObject):
                                      ])                                   
                                      for block in projectDict["Mapping"]["BlockMapping"] ]
        
-        self.plots = [ ]
+        try:
+            self.plots = [ OrderedDict([("Title", plot["Title"]),
+                                    ("Period", plot["Period"])
+                                    ]
+                                   )
+                 for plot in projectDict["Plots"] ]
+        except:        
+            self.plots = [ ]
         
         self.initSessionSettings()
         self.projectFileAssigned = True
         self.projectFile = fileName
         self.workDirectory = os.path.dirname(str(fileName))
-
-        self.modelUpdated.emit()
     
         
     def loadFromFile(self, fileName):
@@ -293,7 +261,6 @@ class Model(QObject):
         self.projectFile = fileName
         self.workDirectory = os.path.dirname(str(fileName))
 
-        self.modelUpdated.emit()
 
 
 
@@ -360,11 +327,11 @@ class Model(QObject):
     def addBlankBlock(self):
         block = Block(u"Block {num}".format(num = len(self.blocks) + 1), self.dimension)
         self.blocks.append(block)
-        self.blockAdded.emit(block)
+        
 
     def fillBlockProperties(self, index, bdict):
         self.blocks[index].fillProperties(bdict)
-        self.blockChanged.emit(index)
+        
 
     def addBlock(self, bdict, dimension):
         index = len(self.blocks)
@@ -373,11 +340,11 @@ class Model(QObject):
 
     def deleteBlock(self, index):
         del self.blocks[index]
-        self.blockDeleted.emit(index)
+        
 
     def deleteAllBlocks(self):
         self.blocks = []
-        self.allBlocksDeleted.emit()
+        
 
     def blockToJson(self, index):
         return self.blocks[index].toJson()
@@ -386,11 +353,9 @@ class Model(QObject):
     def addBlankInterconnect(self):
         ic  = Interconnect(u"Connection {num}".format(num = len(self.interconnects) + 1))
         self.interconnects.append(ic)
-        self.interconnectAdded.emit(ic)
 
     def fillInterconnectProperties(self, index, idict):
         self.interconnects[index].fillProperties(idict)
-        self.interconnectChanged.emit(index)
 
     def addInterconnect(self, idict):
         index = len(self.interconnects)
@@ -399,11 +364,9 @@ class Model(QObject):
 
     def deleteInterconnect(self, index):
         del self.interconnects[index]
-        self.interconnectDeleted.emit(index)
 
     def deleteAllInterconnects(self):
         self.interconnects = []
-        self.allInterconnectsDeleted.emit()
 
     def interconnectToJson(self, index):
         return self.interconnects[index].toJson()
@@ -414,8 +377,7 @@ class Model(QObject):
     def addBlankEquation(self):
         equation = Equation(u"Equation {num}".format(num = len(self.equations) + 1))
         self.equations.append(equation)
-        self.equationAdded.emit(equation)
-
+        
     def addEquation(self, edict):
         index = len(self.equations)
         self.addBlankEquation()
@@ -423,15 +385,12 @@ class Model(QObject):
 
     def fillEquationProperties(self, index, edict):
         self.equations[index].fillProperties(edict)
-        self.equationChanged.emit(index)
 
     def deleteEquation(self, index):
         del self.equations[index]
-        self.equationDeleted.emit(index)
 
     def deleteAllEquations(self):
         self.equations = []
-        self.allEquationsDeleted.emit()
 
     def equationToJson(self, index):
         return self.equations[index].toJson()
@@ -441,7 +400,6 @@ class Model(QObject):
     def addBlankBound(self):
         bound = Bound(u"Bound {num}".format(num = len(self.bounds) + 1))
         self.bounds.append(bound)
-        self.boundAdded.emit(bound)
 
     def addBound(self, bdict):
         index = len(self.bounds)
@@ -450,15 +408,12 @@ class Model(QObject):
 
     def fillBoundProperties(self, index, bdict):
         self.bounds[index].fillProperties(bdict)
-        self.boundChanged.emit(index)
 
     def deleteBound(self, index):
         del self.bounds[index]
-        self.boundDeleted.emit(index)
 
     def deleteAllBounds(self):
         self.bounds = []
-        self.allBoundsDeleted.emit()
 
     def boundToJson(self, index):
         return self.bounds[index].toJson()
@@ -467,7 +422,6 @@ class Model(QObject):
     def addBlankInitial(self):
         initial = Initial(u"Initial {num}".format(num = len(self.initials) + 1))
         self.initials.append(initial)
-        self.initialAdded.emit(initial)
 
     def addInitial(self, idict):
         index = len(self.initials)
@@ -476,15 +430,12 @@ class Model(QObject):
 
     def fillInitialProperties(self, index, idict):
         self.initials[index].fillProperties(idict)
-        self.initialChanged.emit(index)
 
     def deleteInitial(self, index):
         del self.initials[index]
-        self.initialDeleted.emit(index)
 
     def deleteAllInitials(self):
         self.initials = []
-        self.allInitialsDeleted.emit()
 
     def initialToJson(self, index):
         return self.initials[index].toJson()
@@ -493,7 +444,6 @@ class Model(QObject):
     def addBlankCompnode(self):
         compnode = Compnode()
         self.compnodes.append(compnode)
-        self.compnodeAdded.emit(compnode)
 
     def addCompnode(self, cdict):
         index = len(self.compnodes)
@@ -502,15 +452,12 @@ class Model(QObject):
 
     def fillCompnodeProperties(self,index,cdict):
         self.compnodes[index].fillProperties(cdict)
-        self.compnodeChanged.emit(index)
 
     def deleteCompnode(self, index):
         del self.compnodex[index]
-        self.compnodeDeleted.emit(index)
 
     def deleteAllCompnodes(self):
         self.compnodes = []
-        self.allCompnodesDeleted.emit()
 
     def compnodeToJson(self, index):
         return self.compnodes[index].toJson()
