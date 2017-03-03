@@ -101,7 +101,8 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
     #get project file name without extension
     print (inputFile)
     if projectFolder is None:
-        projectPathName, _ = os.path.splitext(inputFile)   
+        projectPathName, _ = os.path.splitext(inputFile)  
+        localProjectPath, _ = os.path.split(projectPathName) 
         projectFolder = os.path.basename(projectPathName)
     
     projectTitle = projectFolder
@@ -186,7 +187,7 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         cftp.chdir(projFolder)
         for filename in sorted(cftp.listdir()):
             if filename.endswith('mp4'):        
-                cftp.get(filename, projectPathName + filename)
+                cftp.get(filename, os.path.join(localProjectPath, filename) )
             
                 #cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+"-plot"+str(plotIdx)+".mp4")            
         cftp.close()
