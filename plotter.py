@@ -17,6 +17,7 @@ from matplotlib import cm
 from domainmodel.model import Model
 from domainmodel.binaryFileReader import readBinFile, readDomFile, getDomainProperties
 from postprocessor import calcMinMax, saveResults1D, saveResults2D
+from fileUtils import getPlotValList
 
 def decodePlotNumbers(plot_code):
     plot_code = plot_code/2
@@ -29,36 +30,36 @@ def decodePlotNumbers(plot_code):
         plot_code = plot_code/2
     return plot_nums
 
-def getDomAndJsonFile(dbin_fname):
-    base = '-'.join(dbin_fname.split('-')[:-1])
+def getDomAndJsonFile(dbin_pathNameExt):
+    base = '-'.join(dbin_pathNameExt.split('-')[:-2])
     return base+".dom", base+".json"
 
-def createPlots(dbin_fname, plot_code):
+def createPlots(dbin_pathNameExt, plot_code):
     #code into list
     plot_nums = decodePlotNumbers(plot_code)
-    dom_fname, projectName = getDomAndJsonFile(dbin_fname)
-    projectDir, dbinFile = os.path.split(dbin_fname) 
-    
-    print("decoded: ", plot_nums)
-    print(dom_fname, projectName)
+    dom_pathNameExt, projectPathNameExt = getDomAndJsonFile(dbin_pathNameExt)
+    projectDir, dbinNameExt = os.path.split(dbin_pathNameExt) 
+    _, projectNameExt = os.path.split(projectPathNameExt)
+    projectName, _ = os.path.splitext(projectNameExt)
+    #print("decoded: ", plot_nums)
+    #print(dom_pathNameExt, projectPathNameExt)
     model = Model()
-    model.loadFromFile(projectName)
+    model.loadFromFile(projectPathNameExt)
     
     
-    info, cellSize, dx, dy, dz, dimension = readDomFile(dom_fname )
+    info, cellSize, dx, dy, dz, dimension = readDomFile(dom_pathNameExt )
     
     countZ, countY, countX, offsetZ, offsetY, offsetX = getDomainProperties(info)
     
-    binFileList = [dbinFile]
-        
-    maxValue, minValue = calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
+    binTimeStr = dbin_pathNameExt.split('-')[-2]
+         
+    maxValue, minValue = calcMinMax(projectDir, [dbinNameExt], info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     saveText=0
-    if dimension == 1:
-        for idx, binFile in enumerate(binFileList):
-            saveResults1D([projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText])
-    if dimension == 2:
-        for idx, binFile in enumerate(binFileList):
-            saveResults2D([projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText] )
+    for plotIdx in plot_nums:    
+        if dimension == 1:        
+            saveResults1D([projectDir, projectName, dbinNameExt, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-current-" + binTimeStr, plotIdx, saveText])
+        if dimension == 2:        
+            saveResults2D([projectDir, projectName, dbinNameExt, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-current-" + binTimeStr, plotIdx, saveText] )
     
     
     
@@ -66,9 +67,12 @@ def createPlots(dbin_fname, plot_code):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Creating pictures for a given draw binary file.', epilog = "Have fun!")
     #mandatory argument, dbin file name
-    parser.add_argument('dbin_fname', type = str, help = "dbin file from which .dom and .json can be obtained too")
-    #mandatory argument, plot numbers needed for the file encoded in one integer 
-    parser.add_argument('plot_code', type = int, help = "plots to build")
-    args = parser.parse_args()
-        
-    createPlots(args.dbin_fname, args.plot_code)
+    parser.add_argument('dbin_pathNameExt', type = str, help = "dbin file from which .dom and .json can be obtained too")
+    
+    args = parser.parse_args()    
+    vals = getPlotValList([args.dbin_pathNameExt])    
+    createPlots(args.dbin_pathNameExt, vals[0])
+    
+    
+    
+    
