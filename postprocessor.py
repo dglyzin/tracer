@@ -26,7 +26,7 @@ import multiprocessing as mp
 from multiprocessing import Pool
 
 import time
-from fileUtils import getSortedDrawBinFileList, drawExtension, defaultGeomExt
+from fileUtils import getSortedDrawBinFileList, drawExtension, defaultGeomExt, getPlotValList
 
 import math
 from domainmodel.binaryFileReader import readBinFile, readDomFile, getDomainProperties
@@ -162,8 +162,8 @@ def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, o
 
 
 
-def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) ):
-   #for idx, binFile in enumerate(binFileList):
+def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, plotIdx, saveText) ):
+    #for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     
     xs = np.arange(0, countX)*dx
@@ -176,7 +176,7 @@ def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, coun
     #plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
     #plt.colorbar()
   
-    filename = projectDir+projectName+"-image-" + str(idx) + ".png"        
+    filename = projectDir+projectName+"-plot"+str(plotIdx) + "-image-" + str(idx) + ".png"        
     #plt.savefig(filename, format='png')        
     #print 'save #', idx, binFile, "->", filename
     #plt.clf()
@@ -189,7 +189,7 @@ def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, coun
 
 
   
-def saveResults2D( (projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) ):
+def saveResults2D( (projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, plotIdx, saveText) ):
     #for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     
@@ -202,7 +202,7 @@ def saveResults2D( (projectDir, projectName, binFile, info, countZ, countY, coun
     #plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
     #plt.colorbar()
   
-    filename = projectDir+projectName+"-image-" + str(idx) + ".png"        
+    filename = projectDir+projectName+"-plot"+str(plotIdx)+"-image-" + str(idx) + ".png"        
     #plt.savefig(filename, format='png')        
     #print 'save #', idx, binFile, "->", filename
     #plt.clf()
@@ -217,9 +217,9 @@ def saveResults2D( (projectDir, projectName, binFile, info, countZ, countY, coun
 
        
         
-def createVideoFile(projectDir, projectName):
+def createVideoFile(projectDir, projectName, plotIdx):
     print "Creating video file:"
-    command = "avconv -r 5 -i "+projectDir+projectName+"-image-%d.png -b:v 1000k "+projectDir+projectName+".mp4"
+    command = "avconv -r 5 -i "+projectDir+projectName+"-plot"+str(plotIdx)+"-image-%d.png -b:v 1000k "+projectDir+projectName+"-plot"+str(plotIdx)+".mp4"
     print command
     #PIPE = subprocess.PIPE
     #proc = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
@@ -227,7 +227,20 @@ def createVideoFile(projectDir, projectName):
     subprocess.call(command, shell=True)
     print "Done" 
 
+def plot_contains(idx, val):
+    plotcode = 1 << (idx+1)
+    return val&plotcode  
   
+def getBinFilesByPlot(binFileList, plotValList, plotCount):  
+    #separate binFileList into sublists according to plotValList    
+    result = []
+    for _ in range(plotCount):
+        result.append([])
+    for fileName, plotVal in zip(binFileList, plotValList):
+        for plotIdx in range(plotCount):
+            if plot_contains(plotIdx, plotVal):
+                result[plotIdx].append(fileName)
+    return result
   
   
 def createMovie(projectDir, projectName):    
@@ -243,27 +256,36 @@ def createMovie(projectDir, projectName):
     subprocess.call(command, shell=True)
     
     binFileList = getSortedDrawBinFileList(projectDir, projectName)
+    plotValList = getPlotValList(binFileList)
+    #print plotValList
     
-    t1 = time.time()
-    maxValue, minValue = calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
-    t2 = time.time()
-    #print "Расчет минимума / максимума: ", t2 - t1
+    model = Model()
+    model.loadFromFile(os.path.join(projectDir, projectName + '.json'))
+    plotCount = len(model.plots)    
+    plotFileLists=getBinFilesByPlot(binFileList, plotValList, plotCount)
+    #print plotFileLists
+
+    for plotIdx in range(plotCount):    
+        #t1 = time.time()
+        maxValue, minValue = calcMinMax(projectDir, plotFileLists[plotIdx], info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
+        #t2 = time.time()
+        #print "Расчет минимума / максимума: ", t2 - t1
     
-    pool = mp.Pool(processes=16)
-    #pool = mp.Semaphore(4)
-    if dimension == 1:
-        for idx, binFile in enumerate(binFileList):
-            saveResults1D([projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText])
-        #pool.map(saveResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
-    if dimension == 2:
-        pool.map(saveResults2D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
-    #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
+        pool = mp.Pool(processes=16)
+        #pool = mp.Semaphore(4)
+        if dimension == 1:
+            for idx, binFile in enumerate(plotFileLists[plotIdx]):
+                saveResults1D([projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, plotIdx, saveText])
+            #pool.map(saveResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
+        if dimension == 2:
+            pool.map(saveResults2D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, plotIdx, saveText) for idx, binFile in enumerate(plotFileLists[plotIdx]) ] )
+        #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
     
-    #for idx, binFile in enumerate(binFileList):
-    #    createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)
-    #print "Создание изображений: ", t2 - t1
+        #for idx, binFile in enumerate(binFileList):
+        #    createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)
+        #print "Создание изображений: ", t2 - t1
     
-    createVideoFile(projectDir, projectName)
+        createVideoFile(projectDir, projectName,plotIdx)
   
   
   

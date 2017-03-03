@@ -181,10 +181,16 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         print (stderr.read())
         
         #get resulting files
+        print("Downloading results...")
         cftp=client.open_sftp()
-        cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+".mp4")
+        cftp.chdir(projFolder)
+        for filename in sorted(cftp.listdir()):
+            if filename.endswith('mp4'):        
+                cftp.get(filename, projectPathName + filename)
+            
+                #cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+"-plot"+str(plotIdx)+".mp4")            
         cftp.close()
-        
+        print("Done!")
         client.close()
 
     #Обрабатываю исключения
