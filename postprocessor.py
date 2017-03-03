@@ -253,7 +253,7 @@ def createMovie(projectDir, projectName):
     
     countZ, countY, countX, offsetZ, offsetY, offsetX = getDomainProperties(info)
     
-    command = "rm " + projectDir + projectName + "-final-*.png " + projectDir + projectName + ".mp4"
+    command = "rm " + projectDir + projectName + "-final-*.png " + projectDir + projectName + "-plot*.mp4"
     print command
     subprocess.call(command, shell=True)
     
