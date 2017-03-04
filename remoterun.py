@@ -175,7 +175,7 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
             print( "Solver executable found.")
 
         #stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName, get_pty=True)
-        stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName)
+        stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName + " 2>&1")
         for line in iter(lambda: stdout.readline(2048), ""): print(line, end='' )
         
         print (stdout.read())
