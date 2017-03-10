@@ -13,7 +13,8 @@
         "Dimension": 2, 
         "dx": 0.01, 
         "dy": 0.01, 
-        "dz": 1
+        "dz": 1,
+        "Dimension": 2
     }, 
     "Blocks": [
         {
@@ -181,16 +182,6 @@
             "Name": "cnode1", 
             "CpuCount": 1, 
             "GpuCount": 3
-        }, 
-        {
-            "Name": "cnode1", 
-            "CpuCount": 1, 
-            "GpuCount": 3
-        }, 
-        {
-            "Name": "cnode1", 
-            "CpuCount": 1, 
-            "GpuCount": 3
         }
     ], 
     "Mapping": {
@@ -207,12 +198,12 @@
                 "DeviceIdx": 0
             }, 
             {
-                "NodeIdx": 2, 
+                "NodeIdx": 0, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
             }, 
             {
-                "NodeIdx": 3, 
+                "NodeIdx": 1, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
             }
