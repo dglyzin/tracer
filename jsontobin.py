@@ -24,7 +24,7 @@ import os
 import domainmodel.dbConnector as dbc
 
 
-def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, outFileName):    
+def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, nortpng, outFileName):    
     finishTimeProvided = not (finish is None)   
     continueEnabled = not (cont is None)
     continueFnameProvided =  not (cont  == "/") if continueEnabled else False
@@ -88,7 +88,7 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, outFileN
         bm.createMixRunFile(OutputSpmdFile, OutputRunFile, projectDir, outProjectTitle, tracerFolder, jobId, debug, 
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)        
     else:               
-        bm.createCOnlyRunFile(OutputRunFile, projectDir, outProjectTitle, tracerFolder, debug, 
+        bm.createCOnlyRunFile(OutputRunFile, projectDir, outProjectTitle, tracerFolder, debug, nortpng,
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)
                 
 if __name__=='__main__':
@@ -107,8 +107,9 @@ if __name__=='__main__':
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
     parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
     parser.add_argument('-outFileName', type = str, help="specify output project filename (fileName is default)")
+    parser.add_argument('-nortpng', help="add this flag to not create png in real time", action="store_true")
     args = parser.parse_args()
   
     print "jsontobin input:", args
-    createBinaries(args.fileName, args.tracerFolder, args.jobId, args.finish, args.cont, args.debug, args.outFileName)
+    createBinaries(args.fileName, args.tracerFolder, args.jobId, args.finish, args.cont, args.debug, args.nortpng, args.outFileName)
     

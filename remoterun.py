@@ -70,7 +70,7 @@ class Connection(object):
         
 
         
-def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug, projectFolder):
+def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug, nortpng, projectFolder):
     '''
       connection: file with connection settings
       inputFile:  project file
@@ -96,6 +96,8 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
             optionalArgs+=" "+continueFileName
     if debug:
         optionalArgs+=" -debug"
+    if nortpng
+        optionalArgs+=" -nortpng"
     
     
     #get project file name without extension
@@ -225,7 +227,7 @@ def finalParseAndRun(connection, inputFileName, args, projectFolder=None):
     continueEnabled = not (continueFileName is None)
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
        
-    remoteProjectRun(connection, inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug, projectFolder)
+    remoteProjectRun(connection, inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug, args.nortpng, projectFolder)
 
 
 if __name__=='__main__':    
@@ -241,6 +243,7 @@ if __name__=='__main__':
     #if no filename is provided with this option, the last state is taken
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
     parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
+    parser.add_argument('-nortpng', help="add this flag to not create png in real time", action="store_true")
     
     args = parser.parse_args()
     

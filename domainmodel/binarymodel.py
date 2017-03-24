@@ -709,7 +709,7 @@ class BinaryModel(object):
         print "compilation finished"
 
 
-    def createCOnlyRunFile(self, OutputRunFile, projectDir, projectTitle, tracerFolder, debug, 
+    def createCOnlyRunFile(self, OutputRunFile, projectDir, projectTitle, tracerFolder, debug, nortpng,
                      DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
         '''
         in this case we run only c mpi workers and then process results
@@ -720,6 +720,7 @@ class BinaryModel(object):
         else: finishTime = -1.1
         if continueEnabled: flag +=2
         else: continueFileName = "n_a"
+        if nortpng: flag+=4
         #print OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName
         runFile = open(OutputRunFile, "w")        
         postprocessor = tracerFolder + "/hybriddomain/postprocessor.py"
