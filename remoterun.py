@@ -96,7 +96,7 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
             optionalArgs+=" "+continueFileName
     if debug:
         optionalArgs+=" -debug"
-    if nortpng
+    if nortpng:
         optionalArgs+=" -nortpng"
     
     
