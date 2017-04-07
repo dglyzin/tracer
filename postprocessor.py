@@ -147,13 +147,14 @@ def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, o
             if tmpMinValue < minValue[i]:
                 minValue[i] = tmpMinValue
                 
-        for i in range(cellSize):
-            if (maxValue[i] - minValue[i]) < 1e-300:
-                maxValue[i] = maxValue[i] + 1
-                minValue[i] = minValue[i] - 1
+        
+    for i in range(cellSize):
+        if (maxValue[i] - minValue[i]) < 1e-300:
+            maxValue[i] = maxValue[i] + 1
+            minValue[i] = minValue[i] - 1
                 
-    #print maxValue
-    #print minValue
+    print maxValue
+    print minValue
            
     return maxValue, minValue
   
