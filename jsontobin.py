@@ -21,7 +21,6 @@ from domainmodel.decomposer import partitionAndMap
 
 from fileUtils import getSortedLoadBinFileList
 import os
-import domainmodel.dbConnector as dbc
 
 
 def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, nortpng, outFileName):    
