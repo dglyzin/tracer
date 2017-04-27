@@ -186,7 +186,8 @@ def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, coun
     t = t.split(drawExtension)[0]
     
     savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
-    print("produced png: "+ filename)
+    #print("produced png: "+ filename)
+    return "produced png: "+ filename
 
 
 
@@ -222,7 +223,7 @@ def saveResults2D( (projectDir, projectName, binFile, info, countZ, countY, coun
         
 def createVideoFile(projectDir, projectName, plotIdx):
     print "Creating video file:"
-    command = "avconv -r 5 -i "+projectDir+projectName+"-plot"+str(plotIdx)+"-final-%d.png -b:v 1000k "+projectDir+projectName+"-plot"+str(plotIdx)+".mp4"
+    command = "avconv -r 5 -loglevel panic -i "+projectDir+projectName+"-plot"+str(plotIdx)+"-final-%d.png -b:v 1000k "+projectDir+projectName+"-plot"+str(plotIdx)+".mp4"
     print command
     #PIPE = subprocess.PIPE
     #proc = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
@@ -277,8 +278,11 @@ def createMovie(projectDir, projectName):
         pool = mp.Pool(processes=16)
         #pool = mp.Semaphore(4)
         if dimension == 1:
-            for idx, binFile in enumerate(plotFileLists[plotIdx]):
-                saveResults1D([projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx), plotIdx, saveText])
+            log = pool.map(saveResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx), plotIdx, saveText) for idx, binFile in enumerate(plotFileLists[plotIdx]) ] )
+            for el in log:
+                print el
+            #for idx, binFile in enumerate(plotFileLists[plotIdx]):
+                #saveResults1D([projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx), plotIdx, saveText])
             #pool.map(saveResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
         if dimension == 2:
             pool.map(saveResults2D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx), plotIdx, saveText) for idx, binFile in enumerate(plotFileLists[plotIdx]) ] )
