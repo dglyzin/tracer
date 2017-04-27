@@ -276,21 +276,16 @@ def createMovie(projectDir, projectName):
         #print "Расчет минимума / максимума: ", t2 - t1
     
         pool = mp.Pool(processes=16)
-        #pool = mp.Semaphore(4)
+        saveResultFunc = saveResults1D
         if dimension == 1:
-            log = pool.map(saveResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx), plotIdx, saveText) for idx, binFile in enumerate(plotFileLists[plotIdx]) ] )
-            for el in log:
-                print el
-            #for idx, binFile in enumerate(plotFileLists[plotIdx]):
-                #saveResults1D([projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx), plotIdx, saveText])
-            #pool.map(saveResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx, saveText) for idx, binFile in enumerate(binFileList)] )
+            saveResultFunc = saveResults1D
         if dimension == 2:
-            pool.map(saveResults2D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx), plotIdx, saveText) for idx, binFile in enumerate(plotFileLists[plotIdx]) ] )
-        #[pool.apply(createPng, args=(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)) for idx, binFile in enumerate(binFileList)]
-    
-        #for idx, binFile in enumerate(binFileList):
-        #    createPng(projectDir, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, idx)
-        #print "Создание изображений: ", t2 - t1
+            saveResultFunc = saveResults2D
+            
+        log = pool.map(saveResultFunc, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx), plotIdx, saveText) for idx, binFile in enumerate(plotFileLists[plotIdx]) ] )
+        
+        for element in log:
+            print element
     
         createVideoFile(projectDir, projectName,plotIdx)
   
