@@ -56,7 +56,7 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
         
         layer = data[0,0,:,i]
         axes.set_ylim(minV, maxV)
-        #axes.set_xlim(0, 1)
+        axes.set_xlim(X.min(), X.max())
         #axes.axis([X.min(), X.max(), minValue, maxValue])
         #a = np.arange(X.min(), X.max(), (X.max() - X.min()) / layer.size)
         #print a.size, layer.size
