@@ -34,11 +34,19 @@ class Block(object):
 
     def getCellCount(self, dx, dy, dz ):        
         yc, zc = 1, 1
-        xc = getCellCountAlongLine(self.sizeX, dx) 
+        #TODO При вычислении количества ячеек блока нужно учитывать, что формула их расчета
+        #     ДлинаБлока / ШагПоПространсту + 1
+        #     Если блок от 0 до 1, а шаг 0,1, то расчет без прибавления 1 даст 10
+        #     В таком случае последняя точка будет иметь индект 9 и координату 0,9, что неверно
+        #     Если выполнить прибавление 1, то точек будет 11, и последняя будет иметь индекс 10 и координа 1
+        #     Изменение функции getCellCountAlongLine делать нельзя, так как она занимается расчетом и значений сдвигов,
+        #     которые не подчиняются правилу выше
+        #     Необходимо убедиться, что изменение ниже (+1 ко всем координатам, если они актуальны) правильное
+        xc = getCellCountAlongLine(self.sizeX, dx) +1
         if self.dimension >1:
-            yc = getCellCountAlongLine(self.sizeY, dy)
+            yc = getCellCountAlongLine(self.sizeY, dy) +1
         if self.dimension >2:
-            zc = getCellCountAlongLine(self.sizeZ, dz)
+            zc = getCellCountAlongLine(self.sizeZ, dz) +1
         return [xc, yc, zc]
 
     def getCellOffset(self, dx, dy, dz ):
