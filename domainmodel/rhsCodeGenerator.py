@@ -4,32 +4,53 @@ from derivCodeGenerator import PureDerivGenerator, MixDerivGenerator
 
 class RHSCodeGenerator:
 # Генерирует код правой части уравнения в случае центральной функции, Неймановского кр. усл-я, соединения.    
-    def generateCodeForPower(self, preventElementInParsedExpression, creatingOutputList, expressionWithPower):
-        power = int(expressionWithPower[1])
-        if power > 0:
-            if preventElementInParsedExpression != ')':
-                expressionToPower = creatingOutputList.pop()
-                poweredExpression = expressionToPower
-                for i in np.arange(1,power):
-                    poweredExpression = poweredExpression + ' * ' + expressionToPower
-            else:
-                expressionToPower = list([creatingOutputList.pop()])
-                count = 1
-                while count != 0:
-                    helpStr = creatingOutputList.pop()
-                    if helpStr == ')':
-                        count = count + 1
-                    elif helpStr == '(':
-                        count = count - 1
-                    expressionToPower.extend([helpStr])
-#             reverse expression and convert it to string
-                expressionToPower = ''.join(expressionToPower[::-1])
-                poweredExpression = expressionToPower
-                for i in np.arange(1,power):
-                    poweredExpression = poweredExpression + ' * ' + expressionToPower
-            creatingOutputList.extend([poweredExpression])
+    def generateCodeForPower(self, preventElementInParsedExpression, creatingOutputList, expressionWithPower, params):
+        #power = int(expressionWithPower[1])
+        #if power > 0:
+            #if preventElementInParsedExpression != ')':
+                #expressionToPower = creatingOutputList.pop()
+                #poweredExpression = expressionToPower
+                #for i in np.arange(1,power):
+                    #poweredExpression = poweredExpression + ' * ' + expressionToPower
+            #else:
+                #expressionToPower = list([creatingOutputList.pop()])
+                #count = 1
+                #while count != 0:
+                    #helpStr = creatingOutputList.pop()
+                    #if helpStr == ')':
+                        #count = count + 1
+                    #elif helpStr == '(':
+                        #count = count - 1
+                    #expressionToPower.extend([helpStr])
+##             reverse expression and convert it to string
+                #expressionToPower = ''.join(expressionToPower[::-1])
+                #poweredExpression = expressionToPower
+                #for i in np.arange(1,power):
+                    #poweredExpression = poweredExpression + ' * ' + expressionToPower
+            #creatingOutputList.extend([poweredExpression])
+        #else:
+            #raise SyntaxError('Power should be greater than zero!')
+        power = expressionWithPower[1:]
+        if power in params:
+            parIndex = params.index(power)
+            power = 'params[' + str(parIndex) + ']'
+            
+        if preventElementInParsedExpression != ')':
+            expressionToPower = creatingOutputList.pop()
         else:
-            raise SyntaxError('Power should be greater than zero!')
+            expressionToPower = list([creatingOutputList.pop()])
+            count = 1
+            while count != 0:
+                helpStr = creatingOutputList.pop()
+                if helpStr == ')':
+                    count = count + 1
+                elif helpStr == '(':
+                    count = count - 1
+                expressionToPower.extend([helpStr])
+#             reverse expression and convert it to string
+            expressionToPower = ''.join(expressionToPower[::-1])
+        poweredExpression = 'pow(' + expressionToPower + ', ' + power + ')'
+        creatingOutputList.extend([poweredExpression])
     
     def generateRightHandSideCode(self, blockNumber, leftHandSide, rightHandSide, userIndepVariables, vrbls, params, pbcl = [], delay_lst=[]):
 #         pbcl (parsedBoundaryConditionList) --- это список, содержащий от 1 до 3 граничных условий
@@ -96,7 +117,7 @@ class RHSCodeGenerator:
             elif expressionList in operatorList:
                 outputList.extend([' ' + expressionList + ' '])
             elif expressionList[0] == '^':
-                self.generateCodeForPower(rightHandSide[j-1], outputList, expressionList)
+                self.generateCodeForPower(rightHandSide[j-1], outputList, expressionList, params)
             elif expressionList in elemFuncsList:
                 outputList.extend([expressionList])
             else:                

@@ -43,8 +43,8 @@ class CorrectnessController:
                 power = ''
                 if i < len(parsedStringForControl) - 1:
                     power = parsedStringForControl[i + 1]
-                if not power.isdigit():
-                    raise SyntaxError('A power is absent or not an integer in some inputed function or equation!')
+                #if not power.isdigit():
+                #    raise SyntaxError('A power is absent or not an integer in some inputed function or equation!')
     
     def controlDerivatives(self, parsedStringForControl, independentVariableList):
         for expressionList in parsedStringForControl:
