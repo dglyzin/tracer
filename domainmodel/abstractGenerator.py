@@ -139,7 +139,9 @@ class AbstractGenerator(object):
             countList = list([])
             for (d, sizeForIndepVar) in zip(self.gridStep, blockSizeList):
                 #countList.append(int(sizeForIndepVar / d))
-                countList.append(getCellCountAlongLine(sizeForIndepVar, d) )                                
+                # TODO: Исправление проблемы, которая аналогична исправленной в коммите fe154c5
+                # см. TODO domainmodel/block.py:37
+                countList.append(getCellCountAlongLine(sizeForIndepVar, d) + 1 )                                
             allCountLists.append(countList)
             for indepVarIndex,count in enumerate(countList):
                 if indepVarIndex == 0:
