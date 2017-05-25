@@ -218,7 +218,8 @@ def saveResults2D( (projectDir, projectName, binFile, info, countZ, countY, coun
         filenameTxt = projectDir+projectName+"-txtFile-" + str(idx) + ".txt"        
         saveTxt2D(filenameTxt, X, Y, data, maxValue, minValue, t, cellSize)
 
-    print("produced png: "+ filename)
+    #print("produced png: "+ filename)
+    return "produced png: "+ filename
     
         
 def createVideoFile(projectDir, projectName, plotIdx):
