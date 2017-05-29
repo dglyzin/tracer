@@ -2,11 +2,15 @@
 
 import itertools
 
-def getCellCountAlongLine(lengthInCoords, step):
+def getCellCountInHalfInterval(lengthInCoords, step):
     count = lengthInCoords/step# +1
     return int(round(count))
 
-def getRanges(XData, YData = [], ZData = []):
+def getCellCountInClosedInterval(lengthInCoords, step):
+    count = lengthInCoords/step
+    return int(round(count)) + 1
+
+def getRangesInHalfInterval(XData, YData = [], ZData = []):
         #Диапазоны в кординатах преобразует в диапазоны в клетках
         #XData = [xfrom, xto, stepX, xmax]
         allData = [XData]
@@ -20,9 +24,33 @@ def getRanges(XData, YData = [], ZData = []):
             varTo = data[1]
             stepVar = data[2]
             varMax = data[3]
-            maxIdxVar = getCellCountAlongLine(varMax, stepVar)
-            firstCellIdxVar = getCellCountAlongLine(varFrom, stepVar)
-            lastCellIdxVar = getCellCountAlongLine(varTo, stepVar)
+            maxIdxVar = getCellCountInHalfInterval(varMax, stepVar)
+            firstCellIdxVar = getCellCountInHalfInterval(varFrom, stepVar)
+            lastCellIdxVar = getCellCountInHalfInterval(varTo, stepVar)
+            if firstCellIdxVar == lastCellIdxVar == maxIdxVar:
+                firstCellIdxVar -= 1
+            elif firstCellIdxVar == lastCellIdxVar:
+                lastCellIdxVar += 1
+            ranges += [firstCellIdxVar, lastCellIdxVar]
+        return ranges
+    
+def getRangesInClosedInterval(XData, YData = [], ZData = []):
+        #Диапазоны в кординатах преобразует в диапазоны в клетках
+        #XData = [xfrom, xto, stepX, xmax]
+        allData = [XData]
+        if len(YData) != 0:
+            allData.append(YData)
+        if len(ZData) != 0:
+            allData.append(ZData)
+        ranges = []
+        for data in allData: 
+            varFrom = data[0]
+            varTo = data[1]
+            stepVar = data[2]
+            varMax = data[3]
+            maxIdxVar = getCellCountInClosedInterval(varMax, stepVar)
+            firstCellIdxVar = getCellCountInClosedInterval(varFrom, stepVar)
+            lastCellIdxVar = getCellCountInClosedInterval(varTo, stepVar)
             if firstCellIdxVar == lastCellIdxVar == maxIdxVar:
                 firstCellIdxVar -= 1
             elif firstCellIdxVar == lastCellIdxVar:
