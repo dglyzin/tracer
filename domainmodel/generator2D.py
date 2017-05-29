@@ -6,7 +6,7 @@ Created on 11 авг. 2015 г.
 '''
 from abstractGenerator import AbstractGenerator, BoundCondition, Connection, InterconnectRegion
 from equationParser import MathExpressionParser
-from someFuncs import determineNameOfBoundary, squareOrVolume, determineCellIndexOfStartOfConnection2D, getRanges
+from someFuncs import determineNameOfBoundary, squareOrVolume, determineCellIndexOfStartOfConnection2D, getRangesInClosedInterval
 
 class Generator2D(AbstractGenerator):
     def __init__(self, delay_lst, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):
@@ -108,7 +108,7 @@ class Generator2D(AbstractGenerator):
                 systemsForCentralFuncs.append(self.equations[eqRegion.equationNumber])
                 numsForSystems.append(eqRegion.equationNumber)
             if not cond1 and not cond2:
-                ranges = getRanges([eqRegion.xfrom, eqRegion.xto, self.gridStep[0], block.sizeX], [eqRegion.yfrom, eqRegion.yto, self.gridStep[1], block.sizeY])
+                ranges = getRangesInClosedInterval([eqRegion.xfrom, eqRegion.xto, self.gridStep[0]], [eqRegion.yfrom, eqRegion.yto, self.gridStep[1]])
                 blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber)] + ranges)
         if blockSquare > reservedSquare:
             systemsForCentralFuncs.append(self.equations[block.defaultEquation])
@@ -321,7 +321,7 @@ class Generator2D(AbstractGenerator):
                     continue
                 if not isinstance(condition, Connection):
                     if (condition.boundNumber, condition.equationNumber) in boundAndEquatNumbersList:
-                        ranges = getRanges([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0], block.sizeX], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1], block.sizeY])
+                        ranges = getRangesInClosedInterval([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0], block.sizeX], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1], block.sizeY])
                         sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
                         continue
                     boundAndEquatNumbersList.append((condition.boundNumber, condition.equationNumber))
@@ -338,7 +338,7 @@ class Generator2D(AbstractGenerator):
                     pBCL = [condition]
                     outputStr.append(self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL))
                 arrWithFunctionNames.append(condition.funcName)
-                ranges = getRanges([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0], block.sizeX], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1], block.sizeY])
+                ranges = getRangesInClosedInterval([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0]], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1]])
                 sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
             blockFunctionMap.update({sideName:sideLst}) 
         return ''.join(outputStr)

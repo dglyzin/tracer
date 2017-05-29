@@ -6,7 +6,7 @@ Created on 11 авг. 2015 г.
 '''
 from abstractGenerator import AbstractGenerator, BoundCondition, Connection, InterconnectRegion3D
 from equationParser import MathExpressionParser
-from someFuncs import determineNameOfBoundary, squareOrVolume, getRanges, splitBigRect, intersectionOfRects, getCellCountAlongLine
+from someFuncs import determineNameOfBoundary, squareOrVolume, splitBigRect, intersectionOfRects, getCellCountInClosedInterval, getCellIndex, getRangesInClosedInterval
 
 class Generator3D(AbstractGenerator):
     def __init__(self, delay_lst, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):
@@ -45,9 +45,9 @@ class Generator3D(AbstractGenerator):
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
             zfrom = max([secBlock.offsetZ, mainBlock.offsetZ]) - mainBlock.offsetZ
             zto = min([mainBlock.offsetZ + mainBlock.sizeZ, secBlock.offsetZ + secBlock.sizeZ]) - mainBlock.offsetZ
-            startCellIdx1Dir = getCellCountAlongLine(yfrom, self.gridStep[1])
-            startCellIdx2Dir = getCellCountAlongLine(zfrom, self.gridStep[2])
-            cellCountAlong1Dir = getCellCountAlongLine(yto - yfrom, self.gridStep[1])
+            startCellIdx1Dir = getCellIndex(yfrom, self.gridStep[1])
+            startCellIdx2Dir = getCellIndex(zfrom, self.gridStep[2])
+            cellCountAlong1Dir = getCellCountInClosedInterval(yto - yfrom, self.gridStep[1])
             secondIndex = '((idxY + ' + str(cellCountAlong1Dir) + ' * idxZ) - '
             if mainBlockSide == 0:
                 xfrom = 0
@@ -60,9 +60,9 @@ class Generator3D(AbstractGenerator):
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
             zfrom = max([secBlock.offsetZ, mainBlock.offsetZ]) - mainBlock.offsetZ
             zto = min([mainBlock.offsetZ + mainBlock.sizeZ, secBlock.offsetZ + secBlock.sizeZ]) - mainBlock.offsetZ
-            startCellIdx1Dir = getCellCountAlongLine(xfrom, self.gridStep[0])
-            startCellIdx2Dir = getCellCountAlongLine(zfrom, self.gridStep[2])
-            cellCountAlong1Dir = getCellCountAlongLine(xto - xfrom, self.gridStep[0])
+            startCellIdx1Dir = getCellIndex(xfrom, self.gridStep[0])
+            startCellIdx2Dir = getCellIndex(zfrom, self.gridStep[2])
+            cellCountAlong1Dir = getCellCountInClosedInterval(xto - xfrom, self.gridStep[0])
             secondIndex = '((idxX + ' + str(cellCountAlong1Dir) + ' * idxZ) - '
             if mainBlockSide == 2:
                 yfrom = 0
@@ -75,9 +75,9 @@ class Generator3D(AbstractGenerator):
             xto = min([mainBlock.offsetX + mainBlock.sizeX, secBlock.offsetX + secBlock.sizeX]) - mainBlock.offsetX
             yfrom = max([secBlock.offsetY, mainBlock.offsetY]) - mainBlock.offsetY
             yto = min([mainBlock.offsetY + mainBlock.sizeY, secBlock.offsetY + secBlock.sizeY]) - mainBlock.offsetY
-            startCellIdx1Dir = getCellCountAlongLine(xfrom, self.gridStep[0])
-            startCellIdx2Dir = getCellCountAlongLine(yfrom, self.gridStep[1])
-            cellCountAlong1Dir = getCellCountAlongLine(xto - xfrom, self.gridStep[0])
+            startCellIdx1Dir = getCellIndex(xfrom, self.gridStep[0])
+            startCellIdx2Dir = getCellIndex(yfrom, self.gridStep[1])
+            cellCountAlong1Dir = getCellCountInClosedInterval(xto - xfrom, self.gridStep[0])
             secondIndex = '((idxX + ' + str(cellCountAlong1Dir) + ' * idxY) - '
             if mainBlockSide == 4:
                 zfrom = 0
@@ -120,7 +120,7 @@ class Generator3D(AbstractGenerator):
                 systemsForCentralFuncs.append(self.equations[eqRegion.equationNumber])
                 numsForSystems.append(eqRegion.equationNumber)
             if not cond1 and not cond2 and not cond3:
-                ranges = getRanges([eqRegion.xfrom, eqRegion.xto, self.gridStep[0], block.sizeX], [eqRegion.yfrom, eqRegion.yto, self.gridStep[1], block.sizeY], [eqRegion.zfrom, eqRegion.zto, self.gridStep[2], block.sizeZ])
+                ranges = getRangesInClosedInterval([eqRegion.xfrom, eqRegion.xto, self.gridStep[0]], [eqRegion.yfrom, eqRegion.yto, self.gridStep[1]], [eqRegion.zfrom, eqRegion.zto, self.gridStep[2]])
                 blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber)] + ranges)
         if blockVolume > reservedVolume:
             systemsForCentralFuncs.append(self.equations[block.defaultEquation])
@@ -413,7 +413,7 @@ class Generator3D(AbstractGenerator):
                 if not isinstance(condition, Connection):
                     #Если для граничного условия с таким номером функцию уже создали, то заново создавать не надо.
                     if (condition.boundNumber, condition.equationNumber) in boundAndEquatNumbersList:
-                        ranges = getRanges([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0], block.sizeX], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1], block.sizeY], [condition.ranges[2][0], condition.ranges[2][1], self.gridStep[2], block.sizeZ])
+                        ranges = getRangesInClosedInterval([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0]], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1]], [condition.ranges[2][0], condition.ranges[2][1], self.gridStep[2]])
                         sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
                         continue
                     boundAndEquatNumbersList.append((condition.boundNumber, condition.equationNumber))
@@ -430,7 +430,7 @@ class Generator3D(AbstractGenerator):
                     pBCL = [condition]
                     outputStr.append(self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL))
                 arrWithFunctionNames.append(condition.funcName)
-                ranges = getRanges([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0], block.sizeX], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1], block.sizeY], [condition.ranges[2][0], condition.ranges[2][1], self.gridStep[2], block.sizeZ])
+                ranges = getRangesInClosedInterval([condition.ranges[0][0], condition.ranges[0][1], self.gridStep[0]], [condition.ranges[1][0], condition.ranges[1][1], self.gridStep[1]], [condition.ranges[2][0], condition.ranges[2][1], self.gridStep[2]])
                 sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
             blockFunctionMap.update({sideName:sideLst}) 
         return ''.join(outputStr)
@@ -660,7 +660,7 @@ class Generator3D(AbstractGenerator):
                 unknownVars = edgeCond[0].unknownVars
                 ranges1D = edgeCond[2]
                 ranges3D = self.determine3DCoordinatesForCondOnEdge(block, ranges1D, edge)
-                ranges = getRanges([ranges3D[0], ranges3D[1], self.gridStep[0], block.sizeX], [ranges3D[2], ranges3D[3], self.gridStep[1], block.sizeY], [ranges3D[4], ranges3D[5], self.gridStep[2], block.sizeZ])
+                ranges = getRangesInClosedInterval([ranges3D[0], ranges3D[1], self.gridStep[0]], [ranges3D[2], ranges3D[3], self.gridStep[1]], [ranges3D[4], ranges3D[5], self.gridStep[2]])
                 
                 boundaryName1 = determineNameOfBoundary(edgeCond[0].side)
                 boundaryName2 = determineNameOfBoundary(edgeCond[1].side)

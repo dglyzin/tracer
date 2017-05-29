@@ -7,7 +7,7 @@ Created on 11 авг. 2015 г.
 from equationParser import MathExpressionParser
 from someFuncs import generateCodeForMathFunction
 from rhsCodeGenerator import RHSCodeGenerator
-from someFuncs import getCellCountAlongLine
+from someFuncs import getCellCountInClosedInterval
 
 class BoundCondition:
     def __init__(self, values, btype, side, ranges, boundNumber, equationNumber, equation, funcName):
@@ -141,7 +141,7 @@ class AbstractGenerator(object):
                 #countList.append(int(sizeForIndepVar / d))
                 # TODO: Исправление проблемы, которая аналогична исправленной в коммите fe154c5
                 # см. TODO domainmodel/block.py:37
-                countList.append(getCellCountAlongLine(sizeForIndepVar, d) + 1 )                                
+                countList.append(getCellCountInClosedInterval(sizeForIndepVar, d) + 1 )                                
             allCountLists.append(countList)
             for indepVarIndex,count in enumerate(countList):
                 if indepVarIndex == 0:

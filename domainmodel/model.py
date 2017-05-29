@@ -28,7 +28,7 @@ from DelayHandler import DelayHandler
 #generators
 from customOfficer import Reviewer
 from funcGenerator import FuncGenerator
-from someFuncs import getRanges
+from someFuncs import getRangesInClosedInterval
 #from libGenerateC import generateCfromDict
 
 
@@ -508,7 +508,7 @@ class Model(object):
     def getXrange(self, block, xfrom, xto):
         #xfrom -= block.offsetX
         #xto -= block.offsetX
-        fromIdx, toIdx = getRanges([xfrom, xto, self.gridStepX, block.sizeX])
+        fromIdx, toIdx = getRangesInClosedInterval([xfrom, xto, self.gridStepX])
         #[xc, _, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
         #if fromIdx == 0: fromIdx = 1
         #if toIdx == xc: toIdx = xc-1
@@ -517,7 +517,7 @@ class Model(object):
     def getYrange(self, block, yfrom, yto):
         #yfrom -= block.offsetY
         #yto -= block.offsetY
-        fromIdx, toIdx = getRanges([yfrom, yto, self.gridStepY, block.sizeY])
+        fromIdx, toIdx = getRangesInClosedInterval([yfrom, yto, self.gridStepY])
         #[_, yc, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
         #if fromIdx == 0: fromIdx = 1
         #if toIdx == yc: toIdx = yc-1
@@ -526,7 +526,7 @@ class Model(object):
     def getZrange(self, block, zfrom, zto):
         #zfrom -= block.offsetZ
         #zto -= block.offsetZ
-        fromIdx, toIdx = getRanges([zfrom, zto, self.gridStepZ, block.sizeZ])
+        fromIdx, toIdx = getRangesInClosedInterval([zfrom, zto, self.gridStepZ])
         #[_, _, zc ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
         #if fromIdx == 0: fromIdx = 1
         #if toIdx == zc: toIdx = zc-1

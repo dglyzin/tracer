@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import itertools
-
 def getCellCountInHalfInterval(lengthInCoords, step):
-    count = lengthInCoords/step# +1
+    count = lengthInCoords/step
+    return int(round(count))
+
+def getCellIndex(lengthInCoords, step):
+    #lengthInCoords= coordinate of the cell we need
+    #returns index of the cell
+    count = lengthInCoords/step
     return int(round(count))
 
 def getCellCountInClosedInterval(lengthInCoords, step):
@@ -22,15 +26,9 @@ def getRangesInHalfInterval(XData, YData = [], ZData = []):
         for data in allData: 
             varFrom = data[0]
             varTo = data[1]
-            stepVar = data[2]
-            varMax = data[3]
-            maxIdxVar = getCellCountInHalfInterval(varMax, stepVar)
-            firstCellIdxVar = getCellCountInHalfInterval(varFrom, stepVar)
-            lastCellIdxVar = getCellCountInHalfInterval(varTo, stepVar)
-            if firstCellIdxVar == lastCellIdxVar == maxIdxVar:
-                firstCellIdxVar -= 1
-            elif firstCellIdxVar == lastCellIdxVar:
-                lastCellIdxVar += 1
+            stepVar = data[2]                        
+            firstCellIdxVar = getCellIndex(varFrom, stepVar)
+            lastCellIdxVar = getCellIndex(varTo, stepVar)
             ranges += [firstCellIdxVar, lastCellIdxVar]
         return ranges
     
@@ -46,15 +44,9 @@ def getRangesInClosedInterval(XData, YData = [], ZData = []):
         for data in allData: 
             varFrom = data[0]
             varTo = data[1]
-            stepVar = data[2]
-            varMax = data[3]
-            maxIdxVar = getCellCountInClosedInterval(varMax, stepVar)
-            firstCellIdxVar = getCellCountInClosedInterval(varFrom, stepVar)
-            lastCellIdxVar = getCellCountInClosedInterval(varTo, stepVar)
-            if firstCellIdxVar == lastCellIdxVar == maxIdxVar:
-                firstCellIdxVar -= 1
-            elif firstCellIdxVar == lastCellIdxVar:
-                lastCellIdxVar += 1
+            stepVar = data[2]            
+            firstCellIdxVar = getCellIndex(varFrom, stepVar)
+            lastCellIdxVar = getCellIndex(varTo, stepVar) + 1            
             ranges += [firstCellIdxVar, lastCellIdxVar]
         return ranges
 
@@ -180,4 +172,4 @@ def determineCellIndexOfStartOfConnection2D(icRegion):
         return 0
     else:
     #Найдем количество клеток между ними. Оно и будет индексом клетки, стоящей в начале соединения
-        return getCellCountAlongLine(icRegion.lenBetweenStartOfBlockSideAndStartOfConnection, icRegion.stepAlongSide)
+        return getCellIndex(icRegion.lenBetweenStartOfBlockSideAndStartOfConnection, icRegion.stepAlongSide)

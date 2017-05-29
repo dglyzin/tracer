@@ -6,7 +6,7 @@ Created on Mar 19, 2015
 '''
 
 from regions import  *
-from someFuncs import getCellCountAlongLine
+from someFuncs import getCellCountInClosedInterval, getCellCountInHalfInterval
 
 class Block(object):
     def __init__(self, name, dimension):
@@ -42,21 +42,21 @@ class Block(object):
         #     Изменение функции getCellCountAlongLine делать нельзя, так как она занимается расчетом и значений сдвигов,
         #     которые не подчиняются правилу выше
         #     Необходимо убедиться, что изменение ниже (+1 ко всем координатам, если они актуальны) правильное
-        xc = getCellCountAlongLine(self.sizeX, dx) +1
+        xc = getCellCountInClosedInterval(self.sizeX, dx) 
         if self.dimension >1:
-            yc = getCellCountAlongLine(self.sizeY, dy) +1
+            yc = getCellCountInClosedInterval(self.sizeY, dy) 
         if self.dimension >2:
-            zc = getCellCountAlongLine(self.sizeZ, dz) +1
+            zc = getCellCountInClosedInterval(self.sizeZ, dz) 
         return [xc, yc, zc]
 
     def getCellOffset(self, dx, dy, dz ):
         #TODO complete
         yc, zc = 1, 1
-        xc = getCellCountAlongLine(self.offsetX, dx) 
+        xc = getCellCountInHalfInterval(self.offsetX, dx) 
         if self.dimension >1:
-            yc = getCellCountAlongLine(self.offsetY,dy)
+            yc = getCellCountInHalfInterval(self.offsetY,dy)
         if self.dimension >2:
-            zc = getCellCountAlongLine(self.offsetZ,dz)
+            zc = getCellCountInHalfInterval(self.offsetZ,dz)
         print "block", self.name
         #print self.offsetX, self.offsetY
         return [xc, yc, zc]

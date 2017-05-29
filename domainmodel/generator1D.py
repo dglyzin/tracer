@@ -6,7 +6,7 @@ Created on 11 авг. 2015 г.
 '''
 from abstractGenerator import AbstractGenerator, BoundCondition, Connection
 from equationParser import MathExpressionParser
-from someFuncs import determineNameOfBoundary, getRanges
+from someFuncs import determineNameOfBoundary, getRangesInClosedInterval
 
 class Generator1D(AbstractGenerator):
     def __init__(self, delay_lst, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):
@@ -48,7 +48,7 @@ class Generator1D(AbstractGenerator):
                 numsForSystems.append(eqRegion.equationNumber)
             if not cond:
                 #Каждую функцию характеризует не длина в координатах, а диапазон клеток, которые эта функция должна пересчитывать
-                ranges = getRanges([eqRegion.xfrom, eqRegion.xto, self.gridStep[0], block.sizeX])
+                ranges = getRangesInClosedInterval([eqRegion.xfrom, eqRegion.xto, self.gridStep[0]])
                 blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber)] + ranges)
                 #blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber), eqRegion.xfrom, eqRegion.xto])
         if block.sizeX > reservedSpace:
