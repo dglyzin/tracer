@@ -677,7 +677,7 @@ class BinaryModel(object):
         
 	#1.1 
         problemTypeArr = np.zeros(1, dtype=np.int32)
-        problemType.tofile(domfile)
+        problemTypeArr.tofile(domfile)
 
         
         #2. Save blocks
