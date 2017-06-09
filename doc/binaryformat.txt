@@ -15,6 +15,13 @@
 ##!  int32 Solver number (0=Euler, 1= RK4, etc,  see solver.h)
 ##!  2* float64: Solver absolute and relative tolerance
 
+##!  1*int: problem type (0 - ordinary, 1 - delay)
+###  if problem type == 1
+##!  1*int number of delays N_D
+##!  N_D*float64 delay values
+###  endif
+
+
 ### blocks 
 ##!  int32: number of blocks N_B
 ### following are N_B 1-2-3d blocks one by one
