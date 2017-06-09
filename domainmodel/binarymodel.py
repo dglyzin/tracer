@@ -674,7 +674,12 @@ class BinaryModel(object):
         self.timeAndStepArr.tofile(domfile)
         self.paramsArr.tofile(domfile)
         self.toleranceArr.tofile(domfile)
+        
+	#1.1 
+        problemTypeArr = np.zeros(1, dtype=np.int32)
+        problemType.tofile(domfile)
 
+        
         #2. Save blocks
         self.blockCountArr.tofile(domfile)
         for blockIdx in range(self.blockCount):
