@@ -56,13 +56,53 @@
 ### End of plot config
 
 ===============================================================================
-## State file format (*.bin)
+## State file format for draw(*.dbin)
 ##!  uint8: 253
 ##!  uint8: file format version major
 ##!  uint8: file format version minor
 
 ##!  float64 current time 
 ##!  float64 current timestep
+###  following is the N_B  blocks one by one
+###  BEGINNING OF THE BLOCK##!   
+##!   total*cellsize*float64: state 
+###  END OF THE BLOCK
+
+
+===============================================================================
+## State file format for load (ODE) (*.lbin)
+##!  uint8: 253
+##!  uint8: file format version major
+##!  uint8: file format version minor
+
+##!  float64 current time 
+##!  float64 current timestep
+###  following is the N_B  blocks one by one
+###  BEGINNING OF THE BLOCK##!   
+##!  total*cellsize*float64: state 
+###  END OF THE BLOCK
+
+
+===============================================================================
+## State file format for load (DDE) (*.lbin)
+##!  uint8: 253
+##!  uint8: file format version major
+##!  uint8: file format version minor
+
+##!  float64 current time 
+##!  float64 current timestep
+
+##!  int32 currentStateNumber
+##!  int32*delaycount delay state indices
+##!  number of useful states*float64 state timestamps
+###  following is the N_B  blocks one by one
+###  BEGINNING OF THE BLOCK 
+##!  number of useful states*state size*float64
+###  END OF THE BLOCK
+
+
+
+
 ###  following is the N_B  blocks one by one
 ###  BEGINNING OF THE BLOCK##!   
 ##!   total*cellsize*float64: state 
