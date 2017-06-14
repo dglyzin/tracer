@@ -43,9 +43,11 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
     row = round(math.sqrt(cellSize))
     column = math.ceil(cellSize / row)
     
+    figure.suptitle(t)
+    
     for i in range(cellSize):
         m = 100 * row + 10 * column + i + 1
-        axes = figure.add_subplot(m, title=t)
+        axes = figure.add_subplot(m)
         #figure.subplots_adjust(right=0.8)
         #cbaxes = figure.add_axes([0.85, 0.15, 0.05, 0.5])
 
