@@ -31,6 +31,8 @@ from fileUtils import getSortedDrawBinFileList, drawExtension, defaultGeomExt, g
 import math
 from domainmodel.binaryFileReader import readBinFile, readDomFile, getDomainProperties
 
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
 
 def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
     figure = Figure()
@@ -81,10 +83,12 @@ def savePng2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
     row = round(math.sqrt(cellSize))
     column = math.ceil(cellSize / row)
     
+    figure.suptitle(t)
+    
     for i in range(cellSize):
         m = 100 * row + 10 * column + i + 1
-        axes = figure.add_subplot(m, title=t)
-        #figure.subplots_adjust(right=0.8)
+        axes = figure.add_subplot(m)
+        figure.subplots_adjust(right=0.8)
         #cbaxes = figure.add_axes([0.85, 0.15, 0.05, 0.5])
 
         cmap=cm.jet
@@ -92,11 +96,13 @@ def savePng2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
         layer = data[0,:,:,i]
 
         cb = axes.pcolormesh(X, Y, layer, vmin=minValue[i], vmax=maxValue[i])
+        
         axes.axis([X.min(), X.max(), Y.min(), Y.max()])
         axes.set_aspect('equal')
-        #figure.colorbar(cb, cax=cbaxes)
+        figure.colorbar(cb, ax=axes, fraction=0.046, pad=0.04)
         
-    ###    
+    ###
+    figure.tight_layout()
     canvas.draw()
     figure.savefig(filename, format='png')            
     figure.clear()
