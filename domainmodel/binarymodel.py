@@ -675,6 +675,12 @@ class BinaryModel(object):
         self.paramsArr.tofile(domfile)
         self.toleranceArr.tofile(domfile)
 
+        
+        #1.1 
+        problemTypeArr = np.zeros(1, dtype=np.int32)
+        problemTypeArr.tofile(domfile)
+
+        
         #2. Save blocks
         self.blockCountArr.tofile(domfile)
         for blockIdx in range(self.blockCount):
@@ -789,4 +795,46 @@ class BinaryModel(object):
         #postprocessor = tracerFolder + "/hybriddomain/postprocessor.py"
         #runFile.write("srun -n1" + partitionOption +"python " + postprocessor +" " + projectDir+"/" )
         runFile.close()
+    
+    def generateState(self, fillFunc, dbinFileName, stateTime=0.0, stateTimeStep=1.0):
+        ##!  uint8: 253
+        ##!  uint8: file format version major
+        ##!  uint8: file format version minor
         
+        ##!  float64 current time 
+        ##!  float64 current timestep
+        ###  following is the N_B  blocks one by one
+        ###  BEGINNING OF THE BLOCK##!   
+        ##!  total*cellsize*float64: state 
+        ###  END OF THE BLOCK
+        dbinFile = open(dbinFileName, "wb")
+        dbinVersionArr = np.zeros(3, dtype=np.uint8)
+        dbinVersionArr[0] = 253
+        dbinVersionArr[1] = 1
+        dbinVersionArr[2] = 0
+
+        dbinTimeAndStepArr = np.zeros(2, dtype=np.float64)
+        dbinTimeAndStepArr[0] = stateTime
+        dbinTimeAndStepArr[1] = stateTimeStep
+        dbinVersionArr.tofile(dbinFile)
+        dbinTimeAndStepArr.tofile(dbinFile)
+
+        
+        
+        blockCount = len(self.dmodel.blocks)        
+        domainDim = self.dmodel.dimension
+        for blockIdx in range(blockCount):            
+            block = self.dmodel.blocks[blockIdx]
+            cellCountList = block.getCellCount(self.dmodel.gridStepX, self.dmodel.gridStepY,
+                                           self.dmodel.gridStepZ )
+            zc, yc, xc = cellCountList[2], cellCountList[1] , cellCountList[0]
+            cellOffsetList = block.getCellOffset(self.dmodel.gridStepX, self.dmodel.gridStepY,
+                                           self.dmodel.gridStepZ )
+            cellCount = zc*yc*xc
+            cellSize = self.dmodel.getCellSize()            
+
+            blockState = np.zeros(cellCount*cellSize, dtype=np.float64)
+            
+            
+        
+            blockState.tofile(dbinFile)

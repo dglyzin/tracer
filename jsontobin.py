@@ -62,10 +62,11 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, nortpng,
     
     print "\nMax derivative order is ", model.getMaxDerivOrder()
     
-    model.delay_lst = model.determineDelay()
-    model.isdelay = bool(model.delay_lst)
-    print 'There is a delay?', model.isdelay
-    print 'Delays:', model.delay_lst, '\n'
+    #something not to be done here
+    #model.delay_lst = model.determineDelay()
+    #model.isdelay = bool(model.delay_lst)
+    #print 'There is a delay?', model.isdelay
+    #print 'Delays:', model.delay_lst, '\n'
    
     
     if model.isMapped:
@@ -89,6 +90,8 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, nortpng,
     else:               
         bm.createCOnlyRunFile(OutputRunFile, projectDir, outProjectTitle, tracerFolder, debug, nortpng,
                      OutputDataFile, finishTimeProvided, finish, continueEnabled, continueFileName)
+    
+    
                 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='Processing json file on a remote cluster.', epilog = "Have fun!")
@@ -106,7 +109,7 @@ if __name__=='__main__':
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
     parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
     parser.add_argument('-outFileName', type = str, help="specify output project filename (fileName is default)")
-    parser.add_argument('-nortpng', help="add this flag to not create png in real time", action="store_true")
+    parser.add_argument('-nortpng', help="add this flag to avoid creating png in real time", action="store_true")
     args = parser.parse_args()
   
     print "jsontobin input:", args
