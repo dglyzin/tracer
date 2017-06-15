@@ -389,14 +389,17 @@ class AbstractGenerator(object):
             # Во все парсеры необходимо передавать именно userIndepVars!
             b = RHSCodeGenerator()
             for i, equationString in enumerate(equation.system):
+                delays = []
+                delay_lst =[]
                 equationRightHandSide = parser.parseMathExpression(equationString, variables,
-                                                                   self.params, self.userIndepVars)
+                                                                   self.params, self.userIndepVars,
+                                                                   delays)
                 function.extend([
                     b.generateRightHandSideCodeDelay(blockNumber, variables[i],
                                                      equationRightHandSide,
                                                      self.userIndepVars, variables,
                                                      self.params, list(),
-                                                     self.delay_lst)])
+                                                     delays)])
 
             function.extend(['}\n\n'])
         

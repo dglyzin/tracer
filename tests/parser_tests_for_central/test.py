@@ -15,7 +15,7 @@ def test_delay_eqs():
     "hybriddomain/tests/parser_tests_for_central/src/"
     folder.
     '''
-    eqStrList = [u"U'=a*(D[U(t-1),{y,2}])",
+    eqStrList = [u"U'=D[U(t-1.1),{y,1}]+D[U(t-5.9),{y,2}]+U(t-1)",
                  u"U'=a*(D[U,{y,2}])+U(t-3)",
                  u"U'=a*(D[U(t-2),{y,3}])+U(t-3)",
                  u"U'=a*(D[U(t-1),{y,2}] + D[U(t-5),{x,1}])"]

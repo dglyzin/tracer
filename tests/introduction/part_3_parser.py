@@ -83,9 +83,12 @@ def test_parser_cpp(eqStr=u"U'=a*(D[U(t-1),{y,2}])"):
     
     equationStr = eqSys[0]
     
+    delays = []
+
     # equation string to parsing list
     equationRightHandSide = parser.parseMathExpression(equationStr, vars,
-                                                       params, userIndepVars)
+                                                       params, userIndepVars,
+                                                       delays)
     print("right = ")
     print(equationRightHandSide)
     
@@ -93,11 +96,32 @@ def test_parser_cpp(eqStr=u"U'=a*(D[U(t-1),{y,2}])"):
     b = RHSCodeGenerator()
     out = b.generateRightHandSideCodeDelay(0, vars[0], equationRightHandSide,
                                            userIndepVars, vars, params,
-                                           list())
+                                           delay_lst=delays)
     return(out)
 
 
-def test_parser_eq(eqStr=u"U'=a*(D[U(t-1),{x,2}] + D[U,{y,2}])"):
+def test_pypars():
+    pass
+    '''
+    variable = Literal("U")
+    variable = Group(variable+"("+"t"+"-"+real+")") ^ variable
+    for var in variableList:
+        variable = variable^Literal(var)
+
+    order = '{' + indepVariable + ',' + integer + '}'
+    derivative = 'D['+ variable + ','+ order + ZeroOrMore(',' + order) + ']'
+
+    funcSignature = Literal('exp')^Literal('sin')^Literal('cos')^Literal('tan')^Literal('sinh')^Literal('tanh')^Literal('sqrt')^Literal('log')
+    unaryOperation = Literal('-')^funcSignature
+    binaryOperation = Literal('+')^Literal('-')^Literal('*')^Literal('/')^Literal('^')
+    if countOfParams > 0:
+        operand = variable^parameter^Group(derivative)^real^indepVariable
+    else:
+        operand = variable^Group(derivative)^real^indepVariable
+    '''
+
+
+def test_parser_eq(eqStr=u"U'=a*(D[U(t-1),{x,2}] + D[U(t-9.2),{y,2}])"):
     '''
     DESCRIPTION:
     What is parser (MathExpressionParser)
@@ -127,12 +151,19 @@ def test_parser_eq(eqStr=u"U'=a*(D[U(t-1),{x,2}] + D[U,{y,2}])"):
 
     # load patterns
     ppc = ParsePatternCreater()
-    parsePattern = ppc.createParsePattern(vars, params, userIndepVars)
+    # parsePatternDelays = ppc.parserPreprocForDelays(vars, userIndepVars)
+
+    # return(parsePatternDelays.parseString(eqStr))
+    delays = []
+    parsePattern = ppc.createParsePattern(vars, params, userIndepVars, delays)
+
+
     print("parsePattern = ")
     print(parsePattern)
 
     # parse equation string
     parsedExpression = parsePattern.parseString(eqStr).asList()
+    return(delays)
     print("parsedExpression = ")
     print(parsedExpression)
 

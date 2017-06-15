@@ -58,7 +58,21 @@ class CorrectnessController:
 
 class ParsePatternCreater:
     
-    def __createParsePatternForDiffEquation(self, variableList, parameterList, indepVariableList):
+    def parserPreprocForDelays(self, variableList, indepVariableList):
+        real = Word(nums + '.')
+        integer = Word(nums)
+        
+        indepVariable = Literal('t')
+        for var in indepVariableList:
+            indepVariable = indepVariable ^ Literal(var)
+        
+        variable = Literal(variableList[0])
+        variable = Group(variable+"("+indepVariable+"-"+real+")")
+        # rhs_expr = Forward()
+        # rhs_expr << OneOrMore(variable) + ZeroOrMore(rhs_expr)
+        return(variable)
+
+    def __createParsePatternForDiffEquation(self, variableList, parameterList, indepVariableList, delays=[]):
         real = Word(nums + '.')
         integer = Word(nums)
         
@@ -73,7 +87,14 @@ class ParsePatternCreater:
             indepVariable = indepVariable^Literal(var)
         
         variable = Literal(variableList[0])
-        variable = Group(variable+"("+indepVariable+"-"+integer+")") ^ variable
+        
+        def add_delay(str, loc, toks):
+            delay = float(toks.asList()[0][4])
+            delays.append(delay)
+
+        varDelay = Group(variable+"("+indepVariable+"-"+real+")").setParseAction(add_delay)
+        
+        variable = varDelay ^ variable
         for var in variableList:
             variable = variable^Literal(var)
         
@@ -151,6 +172,9 @@ class ParsePatternCreater:
         elif length == 3:
             print("diffEq used")
             return self.__createParsePatternForDiffEquation(args[0], args[1], args[2])
+        elif length == 4:
+            print("diffEq delay used")
+            return self.__createParsePatternForDiffEquation(args[0], args[1], args[2], delays=args[3])
         else:
             raise AttributeError("Method createParsePattern() didn't take four or more arguments!")
 
@@ -173,17 +197,19 @@ class MathExpressionParser:
         controller.controlBrackets(mathExpressionForParsing)
         
         length = len(args)
-        if length < 2 or length  > 3:
+        if length < 2 or length  > 4:
             raise AttributeError("Method parseMathExpression() takes at least three arguments and didn't take five or more arguments!")
         
         ppc = ParsePatternCreater()
-        parsePattern = ppc.createParsePattern(*args)
-            
+        if length != 4:
+            parsePattern = ppc.createParsePattern(*args)
+        else:
+            parsePattern = ppc.createParsePattern(*args)
         parsedExpression = parsePattern.parseString(mathExpressionForParsing).asList()
         controller.controlPowers(parsedExpression)
         self.__concatPower(parsedExpression)
-        
-        controller.controlDerivatives(parsedExpression, args[-1])
+        if length != 4:
+            controller.controlDerivatives(parsedExpression, args[-1])
         
         return parsedExpression
 
