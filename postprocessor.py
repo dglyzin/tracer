@@ -104,7 +104,9 @@ def savePng2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
         figure.colorbar(cb, ax=axes, fraction=0.046, pad=0.04)
         
     ###
-    figure.tight_layout()
+    if cellSize > 1:
+        figure.tight_layout()
+        
     canvas.draw()
     figure.savefig(filename, format='png')            
     figure.clear()
