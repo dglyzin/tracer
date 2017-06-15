@@ -68,13 +68,14 @@ class ParsePatternCreater:
             for par in parameterList:
                 parameter = parameter^Literal(par)
             
-        variable = Literal(variableList[0])
-        for var in variableList:
-            variable = variable^Literal(var)
-        
         indepVariable = Literal('t')
         for var in indepVariableList:
             indepVariable = indepVariable^Literal(var)
+        
+        variable = Literal(variableList[0])
+        variable = Group(variable+"("+indepVariable+"-"+integer+")") ^ variable
+        for var in variableList:
+            variable = variable^Literal(var)
         
         order = '{' + indepVariable + ',' + integer + '}'
         derivative = 'D['+ variable + ','+ order + ZeroOrMore(',' + order) + ']'
@@ -86,11 +87,16 @@ class ParsePatternCreater:
             operand = variable^parameter^Group(derivative)^real^indepVariable
         else:
             operand = variable^Group(derivative)^real^indepVariable
-    
+        # print("operand = ")
+        # print(operand)
         recursiveUnaryOperation = Forward()
         recursiveUnaryOperation << (Literal('(')^unaryOperation) + Optional(recursiveUnaryOperation)
+        # print("recUnary = ")
+        # print(recursiveUnaryOperation)
         base_expr = Forward()
         base_expr << Optional(recursiveUnaryOperation) + operand + Optional(OneOrMore(')')) + Optional(binaryOperation) + Optional(base_expr)
+        #print("base_expr = ")
+        # print(base_expr)
         rhs_expr = Forward()
         rhs_expr << base_expr + Optional(OneOrMore(')')) + Optional(binaryOperation) + Optional(rhs_expr)
     
@@ -143,6 +149,7 @@ class ParsePatternCreater:
         elif length == 2:
             return self.__createParsePatternForMathFunction(args[0], args[1])
         elif length == 3:
+            print("diffEq used")
             return self.__createParsePatternForDiffEquation(args[0], args[1], args[2])
         else:
             raise AttributeError("Method createParsePattern() didn't take four or more arguments!")

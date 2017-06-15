@@ -20,3 +20,4 @@ ManualHeat/*
 *.cpp
 *.sh
 *tempFile
+*~

@@ -674,12 +674,7 @@ class BinaryModel(object):
         self.timeAndStepArr.tofile(domfile)
         self.paramsArr.tofile(domfile)
         self.toleranceArr.tofile(domfile)
-        
-	#1.1 
-        problemTypeArr = np.zeros(1, dtype=np.int32)
-        problemTypeArr.tofile(domfile)
 
-        
         #2. Save blocks
         self.blockCountArr.tofile(domfile)
         for blockIdx in range(self.blockCount):
@@ -700,7 +695,11 @@ class BinaryModel(object):
     
     
     def saveFuncs(self, fileName, tracerFolder):
+        print("from saveFuncs")
+        print(fileName)
         self.functionMaps = self.dmodel.createCPPandGetFunctionMaps(fileName, tracerFolder+"/hybriddomain")
+        print("from saveFuncs")
+        print(self.functionMaps)
 
     def compileFuncs(self, fileName):
         dirName = os.path.abspath(os.path.dirname(fileName))

@@ -341,49 +341,89 @@ class AbstractGenerator(object):
         return ''.join(output)
     
     def generateCentralFunctionCode(self, block, blockNumber, equationsList, numsForEquats):
-#         defaultIndepVars отличается лишь количеством элементов userIndepVars, т.к. считаем, что переменные могут называться только x,y,z.
+        '''
+        defaultIndepVars отличается лишь количеством
+        элементов userIndepVars, т.к. считаем, что
+        переменные могут называться только x,y,z.
+        '''
         function = list([])
-        function.extend(['\n//=========================CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER ' +str(blockNumber)+'========================//\n\n'])
+        function.extend(['\n//========================='
+                         + 'CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER '
+                         + str(blockNumber)
+                         + '========================//\n\n'])
         strideList = list([])
-#         Здесь используется defaultIndepVrbls, потому что договорились генерировать сигнатуры функций с одинаковым количеством параметров.
-        for indepVar in self.defaultIndepVars:
-            strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
+
+        # Здесь используется defaultIndepVrbls, потому что
+        # договорились генерировать сигнатуры функций с
+        # одинаковым количеством параметров.
         
+        print("defaultIndepVars = ")
+        print(self.defaultIndepVars)
+
+        for indepVar in self.defaultIndepVars:
+            strideList.extend(['Block' + str(blockNumber)
+                               + 'Stride' + indepVar.upper()])
+        
+        print("equationList = ")
+        print(equationsList)
         parser = MathExpressionParser()
         arrWithFuncNames = list()
-        for num, equation in enumerate(equationsList): 
-            function.extend(['//'+str(num)+' central function for '+str(len(self.userIndepVars))+'d model for block with number ' + str(blockNumber) + '\n'])    
-            name = 'Block' + str(blockNumber) + 'CentralFunction' + str(numsForEquats[num])
+        for num, equation in enumerate(equationsList):
+            function.extend(['//'+str(num)
+                             + ' central function for '
+                             + str(len(self.userIndepVars))
+                             + 'd model for block with number '
+                             + str(blockNumber)
+                             + '\n'])
+            name = ('Block' + str(blockNumber)
+                    + 'CentralFunction'
+                    + str(numsForEquats[num]))
             arrWithFuncNames.append(name)
-            function.extend(self.generateFunctionSignature(blockNumber, name, strideList))
+            function.extend(self.generateFunctionSignature(blockNumber,
+                                                           name, strideList))
             
             variables = parser.getVariableList(equation.system)
-#         Во все парсеры необходимо передавать именно userIndepVars!
+
+            print("equation.system = ")
+            print(equation.system)
+            # Во все парсеры необходимо передавать именно userIndepVars!
             b = RHSCodeGenerator()
             for i, equationString in enumerate(equation.system):
-                equationRightHandSide = parser.parseMathExpression(equationString, variables, self.params, self.userIndepVars)
-                function.extend([b.generateRightHandSideCode(blockNumber, variables[i], equationRightHandSide, self.userIndepVars, variables, self.params, list(), self.delay_lst)])
+                equationRightHandSide = parser.parseMathExpression(equationString, variables,
+                                                                   self.params, self.userIndepVars)
+                function.extend([
+                    b.generateRightHandSideCodeDelay(blockNumber, variables[i],
+                                                     equationRightHandSide,
+                                                     self.userIndepVars, variables,
+                                                     self.params, list(),
+                                                     self.delay_lst)])
+
             function.extend(['}\n\n'])
         
         return ''.join(function), arrWithFuncNames
 
+
     def generateFunctionSignature(self, blockNumber, name, strideList):
+
         signatureStart = 'void ' + name + '(double* result, double** source, double t,'
         signatureMiddle = ' int idx' + self.defaultIndepVars[0].upper() + ','
-#         Делаем срез нулевого элемента, т.к. его уже учли
+
+        # Делаем срез нулевого элемента, т.к. его уже учли
         for indepVar in self.defaultIndepVars[1:]:
             signatureMiddle = signatureMiddle + ' int idx' + indepVar.upper() + ','
+
         signatureEnd = ' double* params, double** ic){\n'
         signature = signatureStart + signatureMiddle + signatureEnd
           
         idx = '\t int idx = ( idx' + self.defaultIndepVars[0].upper()
-#         Опять срезаем нулевой элемент, т.к. его тоже уже учли
+        
+        # Опять срезаем нулевой элемент, т.к. его тоже уже учли
         changedStrideList = strideList[1:]
-        for i,indepVar in enumerate(self.defaultIndepVars[1:]):
+        for i, indepVar in enumerate(self.defaultIndepVars[1:]):
             idx = idx + ' + idx' + indepVar.upper() + ' * ' + changedStrideList[i]
         idx = idx + ') * Block' + str(blockNumber) + 'CELLSIZE;\n'
         
-        return list([signature,idx])
+        return list([signature, idx])
     
     def parseBoundaryConditions(self, totalBCondLst, parser):
         #Парсит краевые условия и создает список условий на углы (vertexCondList) 
@@ -453,7 +493,7 @@ class AbstractGenerator(object):
         b = RHSCodeGenerator()
         for i, equation in enumerate(parsedEquationsList):
 #             Для трехмерного случая все должно усложниться в следующей команде
-            function.extend([b.generateRightHandSideCode(blockNumber, unknownVars[i], equation, self.userIndepVars, unknownVars, self.params, pBCL, list())])
+            function.extend([b.generateRightHandSideCodeDelay(blockNumber, unknownVars[i], equation, self.userIndepVars, unknownVars, self.params, pBCL, list())])
         function.extend(['}\n'])
         return ''.join(function)
         
