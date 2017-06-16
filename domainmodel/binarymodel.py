@@ -691,7 +691,7 @@ class BinaryModel(object):
             problemDelaysLen.tofile(domfile)
             
             # delays list
-            problemDelaysList = np.array(delays, dtype=np.int32)
+            problemDelaysList = np.array(delays, dtype=np.float64)
             problemDelaysList.tofile(domfile)
 
         
