@@ -82,7 +82,12 @@ class RHSCodeGenerator:
                          'tan', 'tanh', 'sqrt', 'log']
         operatorList = ['+', '-', '*', '/']
         
+
         def convert_delay(val):
+            '''
+            DESCRIPTION:
+            Find index of floating delay val.
+            '''
             delay_lst.sort()
             print("delay_list")
             print(delay_lst)
@@ -103,12 +108,14 @@ class RHSCodeGenerator:
                     if type(expressionList[1]) == list:
                         print(expressionList[1][4])
                         delay_float = float(expressionList[1][4])
+                        
+                        # delay for source
                         delay = convert_delay(delay_float)
                         # int(float(expressionList[1][4]))
                         varIndex = vrbls.index(expressionList[1][0])
                         print("delay used")
                         print(delay)
-                        delay_lst.append([delay, expressionList[1][4]])
+                        # delay_lst.append([delay, expressionList[1][4]])
                     else:
                         delay = "0"
                         varIndex = vrbls.index(expressionList[1])
@@ -118,12 +125,15 @@ class RHSCodeGenerator:
 
                 # like: [u'U', '(', 't', '-', u'1', ')']
                 elif expressionList[0] in vrbls:
-                    print(expressionList[4])
+                    # print(expressionList[4])
+                    
                     delay_float = float(expressionList[4])
-                    delay = convert_delay(delay_float)# int(float(expressionList[1][4]))
+                    
+                    # delay for source
+                    delay = convert_delay(delay_float)
                         
                     # delay = int(float(expressionList[4]))
-                    delay_lst.append([delay, expressionList[4]])
+                    # delay_lst.append([delay, expressionList[4]])
                     # sourceIndex = delay_lst.index(delay)+1
                     sourceIndex = delay
                     varIndex = vrbls.index(expressionList[0])

@@ -485,22 +485,29 @@ class Model(object):
 
     def createCPPandGetFunctionMaps(self, cppFileName, preprocessorFolder):
         #generator1
-        try:
-            gridStep = [self.gridStepX, self.gridStepY, self.gridStepZ]
-            reviewer = Reviewer(self.equations, self.blocks, self.initials, self.bounds, gridStep, self.params, self.paramValues, self.defaultParamsIndex)
-            reviewer.ReviewInput()
-            haloSize = self.getHaloSize()
-            mDO = self.getMaxDerivOrder()
-            delay_lst = self.determineDelay()
-            gen = FuncGenerator(delay_lst, mDO, haloSize, self.equations, self.blocks, self.initials, self.bounds, self.interconnects, gridStep, self.params, self.paramValues, self.defaultParamsIndex, preprocessorFolder)
-            outputStr, functionMaps = gen.generateAllFunctions()
-        except Exception as ex:
-            print(ex)
-        else:
-            f = open(cppFileName,'w')
-            f.write(outputStr)
-            f.close()
-            return functionMaps
+        # try:
+        gridStep = [self.gridStepX, self.gridStepY, self.gridStepZ]
+        reviewer = Reviewer(self.equations, self.blocks, self.initials,
+                            self.bounds, gridStep, self.params,
+                            self.paramValues, self.defaultParamsIndex)
+        reviewer.ReviewInput()
+        haloSize = self.getHaloSize()
+        mDO = self.getMaxDerivOrder()
+        delay_lst = []  # self.determineDelay()
+        gen = FuncGenerator(delay_lst, mDO, haloSize, self.equations,
+                            self.blocks, self.initials, self.bounds,
+                            self.interconnects, gridStep, self.params,
+                            self.paramValues, self.defaultParamsIndex,
+                            preprocessorFolder)
+        outputStr, functionMaps = gen.generateAllFunctions()
+        # except Exception as ex:
+        #    print("###")
+        #    print(ex)
+        # else:
+        f = open(cppFileName,'w')
+        f.write(outputStr)
+        f.close()
+        return (functionMaps, gen.delays)
         #generator2
         #generateCfromDict(self.toDict(),cppFileName)
         

@@ -25,6 +25,7 @@ class FuncGenerator:
         for blockNumber, block in enumerate(self.generator.blocks):
             systemsForCentralFuncs, numsForSystems, totalBCondLst, totalInterconnectLst, blockFunctionMap = self.generator.getBlockInfo(block, blockNumber)
             cf, arrWithFunctionNames = self.generator.generateCentralFunctionCode(block, blockNumber, systemsForCentralFuncs, numsForSystems)
+            self.delays = self.generator.delays
             bf = self.generator.generateBoundsAndIcs(block, blockNumber, arrWithFunctionNames, blockFunctionMap, totalBCondLst, totalInterconnectLst)
             
             totalArrWithFunctionNames.append(arrWithFunctionNames)

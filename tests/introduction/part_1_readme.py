@@ -20,6 +20,8 @@ some tests for central functions in directory:
 "hybriddomain/tests/parser_tests_for_central/"
 
 for runing at server side:
-python2 remoterun.py config/examples/connection.json.example test/short_restest.json 
+python2 remoterun.py config/examples/connection.json.example test/short_restest.json
+
+jsontobin.py will be runing at server side 
 '''
 pass

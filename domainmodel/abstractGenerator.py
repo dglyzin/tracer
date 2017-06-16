@@ -86,6 +86,7 @@ class InterconnectRegion3D:
         self.zto = zto
         self.secondaryBlockNumber = secondaryBlockNumber
     
+
 class AbstractGenerator(object):
 # Генерирует выходную строку для записи в файл
     def __init__(self, delay_lst, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamsIndex):
@@ -105,6 +106,9 @@ class AbstractGenerator(object):
         self.params = params
         self.paramValues = paramValues
         self.defaultParamsIndex = defaultParamsIndex
+
+        # for saveDomain
+        self.delays = []
 
     def generateAllDefinitions(self):
 # allBlockSizeLists = [[Block0SizeX, Block0SizeY, Block0SizeZ], [Block1SizeX, Block1SizeY, Block1SizeZ]}, ...]
@@ -389,17 +393,24 @@ class AbstractGenerator(object):
             # Во все парсеры необходимо передавать именно userIndepVars!
             b = RHSCodeGenerator()
             for i, equationString in enumerate(equation.system):
+                
+                # for storing delays 
                 delays = []
-                delay_lst =[]
+                
                 equationRightHandSide = parser.parseMathExpression(equationString, variables,
                                                                    self.params, self.userIndepVars,
                                                                    delays)
+                
+                
                 function.extend([
                     b.generateRightHandSideCodeDelay(blockNumber, variables[i],
                                                      equationRightHandSide,
                                                      self.userIndepVars, variables,
                                                      self.params, list(),
                                                      delays)])
+                # for setDomain
+                if len(delays) > 0:
+                    self.delays.extend(delays)
 
             function.extend(['}\n\n'])
         
@@ -496,7 +507,10 @@ class AbstractGenerator(object):
         b = RHSCodeGenerator()
         for i, equation in enumerate(parsedEquationsList):
 #             Для трехмерного случая все должно усложниться в следующей команде
-            function.extend([b.generateRightHandSideCodeDelay(blockNumber, unknownVars[i], equation, self.userIndepVars, unknownVars, self.params, pBCL, list())])
+            function.extend([b.generateRightHandSideCodeDelay(blockNumber, unknownVars[i],
+                                                              equation, self.userIndepVars,
+                                                              unknownVars, self.params, pBCL,
+                                                              self.delays)])
         function.extend(['}\n'])
         return ''.join(function)
         

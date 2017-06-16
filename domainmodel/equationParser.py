@@ -72,7 +72,9 @@ class ParsePatternCreater:
         # rhs_expr << OneOrMore(variable) + ZeroOrMore(rhs_expr)
         return(variable)
 
-    def __createParsePatternForDiffEquation(self, variableList, parameterList, indepVariableList, delays=[]):
+    def __createParsePatternForDiffEquation(self, variableList,
+                                            parameterList, indepVariableList,
+                                            delays=[]):
         real = Word(nums + '.')
         integer = Word(nums)
         
@@ -80,44 +82,57 @@ class ParsePatternCreater:
         if countOfParams > 0:
             parameter = Literal(parameterList[0])
             for par in parameterList:
-                parameter = parameter^Literal(par)
+                parameter = parameter ^ Literal(par)
             
         indepVariable = Literal('t')
         for var in indepVariableList:
-            indepVariable = indepVariable^Literal(var)
+            indepVariable = indepVariable ^ Literal(var)
         
         variable = Literal(variableList[0])
         
-        def add_delay(str, loc, toks):
+        def action_add_delay(str, loc, toks):
+            '''
+            DESCRIPTION:
+            If delay U(t-k) found, add k to delays
+            where delays is global.
+            '''
             delay = float(toks.asList()[0][4])
             delays.append(delay)
 
-        varDelay = Group(variable+"("+indepVariable+"-"+real+")").setParseAction(add_delay)
+        varDelay = Group(variable
+                         + "("
+                         + indepVariable+"-"+real
+                         + ")").setParseAction(action_add_delay)
         
         variable = varDelay ^ variable
         for var in variableList:
-            variable = variable^Literal(var)
+            variable = variable ^ Literal(var)
         
         order = '{' + indepVariable + ',' + integer + '}'
         derivative = 'D['+ variable + ','+ order + ZeroOrMore(',' + order) + ']'
     
         funcSignature = Literal('exp')^Literal('sin')^Literal('cos')^Literal('tan')^Literal('sinh')^Literal('tanh')^Literal('sqrt')^Literal('log')
+
         unaryOperation = Literal('-')^funcSignature
         binaryOperation = Literal('+')^Literal('-')^Literal('*')^Literal('/')^Literal('^')
+
         if countOfParams > 0:
             operand = variable^parameter^Group(derivative)^real^indepVariable
         else:
             operand = variable^Group(derivative)^real^indepVariable
         # print("operand = ")
         # print(operand)
+
         recursiveUnaryOperation = Forward()
         recursiveUnaryOperation << (Literal('(')^unaryOperation) + Optional(recursiveUnaryOperation)
         # print("recUnary = ")
         # print(recursiveUnaryOperation)
+
         base_expr = Forward()
         base_expr << Optional(recursiveUnaryOperation) + operand + Optional(OneOrMore(')')) + Optional(binaryOperation) + Optional(base_expr)
         #print("base_expr = ")
         # print(base_expr)
+
         rhs_expr = Forward()
         rhs_expr << base_expr + Optional(OneOrMore(')')) + Optional(binaryOperation) + Optional(rhs_expr)
     

@@ -75,8 +75,8 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, nortpng,
         partModel = partitionAndMap(model)
     
     bm = BinaryModel(partModel)
-    bm.saveFuncs(OutputFuncFile, tracerFolder)
-    bm.saveDomain(OutputDataFile)
+    delays = bm.saveFuncs(OutputFuncFile, tracerFolder)
+    bm.saveDomain(OutputDataFile, delays)
     bm.compileFuncs(OutputFuncFile)
     
     print "jobID:", jobId
@@ -102,8 +102,10 @@ if __name__=='__main__':
     #optional argument, unique job Id for identification in database 
     #if no id provided, db is not used and separate python mpi process is not included 
     parser.add_argument('-jobId', type = int, help = "unique job ID")
+
     #optional argument, exactly one float to override json finish time
     parser.add_argument('-finish', type=float, help = "new finish time to override json value")
+
     #optional argument with one or no argument, filename to continue computations from
     #if no filename is provided with this option, the last state is taken
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")

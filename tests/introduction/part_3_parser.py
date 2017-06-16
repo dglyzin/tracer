@@ -82,7 +82,10 @@ def test_parser_cpp(eqStr=u"U'=a*(D[U(t-1),{y,2}])"):
     params = [u'a']
     
     equationStr = eqSys[0]
-    
+
+    # delays used for storing k 
+    # where k: U(t-k) exist in 
+    #          equation string
     delays = []
 
     # equation string to parsing list

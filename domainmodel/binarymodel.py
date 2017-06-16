@@ -659,7 +659,7 @@ class BinaryModel(object):
         
         
     #this will only work if saveFuncs was called and self.functionMaps are filled
-    def saveDomain(self, fileName):
+    def saveDomain(self, fileName, delays):
         print "saving domain..."
         #computing
         self.fillBinarySettings()
@@ -676,9 +676,23 @@ class BinaryModel(object):
         self.toleranceArr.tofile(domfile)
 
         
-        #1.1 
-        problemTypeArr = np.zeros(1, dtype=np.int32)
-        problemTypeArr.tofile(domfile)
+        #1.1. delays 
+        if len(delays) == 0:
+            # without delays
+            problemTypeArr = np.zeros(1, dtype=np.int32)
+            problemTypeArr.tofile(domfile)
+        else:
+            # delays
+            problemTypeArr = np.ones(1, dtype=np.int32)
+            problemTypeArr.tofile(domfile)
+            
+            # delays length
+            problemDelaysLen = np.array([len(delays)], dtype=np.int32)
+            problemDelaysLen.tofile(domfile)
+            
+            # delays list
+            problemDelaysList = np.array(delays, dtype=np.int32)
+            problemDelaysList.tofile(domfile)
 
         
         #2. Save blocks
@@ -703,9 +717,11 @@ class BinaryModel(object):
     def saveFuncs(self, fileName, tracerFolder):
         print("from saveFuncs")
         print(fileName)
-        self.functionMaps = self.dmodel.createCPPandGetFunctionMaps(fileName, tracerFolder+"/hybriddomain")
+        self.functionMaps, delays = self.dmodel.createCPPandGetFunctionMaps(fileName,
+                                                                            tracerFolder+"/hybriddomain")
         print("from saveFuncs")
         print(self.functionMaps)
+        return(delays)
 
     def compileFuncs(self, fileName):
         dirName = os.path.abspath(os.path.dirname(fileName))
