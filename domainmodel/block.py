@@ -7,8 +7,10 @@ Created on Mar 19, 2015
 
 from regions import  *
 from someFuncs import getCellCountInClosedInterval, getCellCountInHalfInterval
+from objectsTemplate import Object
 
-class Block(object):
+
+class Block(Object):
     def __init__(self, name, dimension):
         self.name = name
         self.dimension = dimension
@@ -82,9 +84,7 @@ class Block(object):
             self.initialRegions.append(InitialRegion(initDict,self.dimension))
         for equatDict in bdict["EquationRegions"]:
             self.equationRegions.append(EquationRegion(equatDict,self.dimension))		
-        
-        
-     
+    
     def getPropertiesDict(self):
         offsetDict = OrderedDict([("x", self.offsetX)])
         sizeDict = OrderedDict([("x", self.sizeX)])        

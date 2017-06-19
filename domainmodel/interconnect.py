@@ -6,9 +6,10 @@ Created on Mar 19, 2015
 
 '''
 from collections import OrderedDict
+from objectsTemplate import Object
 
 
-class Interconnect(object):
+class Interconnect(Object):
     def __init__(self, name):
         self.name = name
         self.block1 = 0

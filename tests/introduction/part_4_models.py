@@ -22,7 +22,17 @@ def test_binarymodel():
         partModel = partitionAndMap(model)
     
     bm = BinaryModel(partModel)
-    delays = bm.saveFuncs("outFunctFile.cpp", "")
-    bm.saveDomain("outDataFile.dom", delays)
+    delays = bm.saveFuncs(os.path.join(os.getcwd(),
+                                       'tests',
+                                       'introduction',
+                                       'src',
+                                       "outFunctFile.cpp"),
+                          "")
+    bm.saveDomain(os.path.join(os.getcwd(),
+                               'tests',
+                               'introduction',
+                               'src',
+                               "outDataFile.dom"),
+                  delays)
     # bm.compileFuncs(OutputFuncFile)
     

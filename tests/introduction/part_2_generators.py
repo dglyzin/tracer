@@ -28,14 +28,14 @@ from domainmodel.generator2D import Generator2D
 from domainmodel.abstractGenerator import AbstractGenerator
 
 
-def get_model_for_tests():
+def get_model_for_tests(modelFile="tests/short_restest_delay.json"):
     '''
     DESCRIPTION:
     What is model.
     Create model for all tests.
     '''
     model = Model()
-    model.loadFromFile("tests/short_restest_delay.json")
+    model.loadFromFile(modelFile)
     return(model)
 
 

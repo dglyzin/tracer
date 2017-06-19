@@ -6,8 +6,10 @@ Created on Mar 19, 2015
 '''
 
 from collections import OrderedDict
-      
-class Equation(object):
+from objectsTemplate import Object
+
+
+class Equation(Object):
     def __init__(self, name):
         self.name = name
         self.vars = "x"
@@ -18,6 +20,7 @@ class Equation(object):
         self.vars = edict["Vars"]
         self.system = edict["System"]
    
+    
     def getPropertiesDict(self):          
         propDict = OrderedDict([            
             ("Name", self.name),
