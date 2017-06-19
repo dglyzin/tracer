@@ -693,8 +693,9 @@ class BinaryModel(object):
             # delays list
             problemDelaysList = np.array(delays, dtype=np.float64)
             problemDelaysList.tofile(domfile)
-
-        
+            #also we have to provide the number of states that can be stored in memory
+            maxStatesCountArr = np.array([self.dmodel.getMaxStatesCount()], dtype=np.uint64)
+            #maxStatesCountArr.tofile(domfile)
         #2. Save blocks
         self.blockCountArr.tofile(domfile)
         for blockIdx in range(self.blockCount):

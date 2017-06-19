@@ -563,3 +563,12 @@ class Model(object):
         #if fromIdx == 0: fromIdx = 1
         #if toIdx == zc: toIdx = zc-1
         return fromIdx, toIdx
+    
+    def getMaxStatesCount(self):
+        '''
+        returns maximum number of states that can be 
+        stored in memory by ANY computing device
+        result = min_{for every computing device D} 
+                     (D.memory/sum_{for every block B inside D} (B.total) )
+        '''
+        pass
