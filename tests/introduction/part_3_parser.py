@@ -166,10 +166,10 @@ def test_parser_eq(eqStr=u"U'=a*(D[U(t-1),{x,2}] + D[U(t-9.2),{y,2}])"):
 
     # parse equation string
     parsedExpression = parsePattern.parseString(eqStr).asList()
-    return(delays)
+    
     print("parsedExpression = ")
     print(parsedExpression)
-
+    return(delays)
     # postprocessing
     controller.controlPowers(parsedExpression)
     # parser.__concatPower(parsedExpression)

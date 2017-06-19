@@ -7,8 +7,9 @@ Created on Mar 19, 2015
 bdict = {"dirichlet":0, "neumann":1}
 
 from collections import OrderedDict
+from objectsTemplate import Object
 
-class Bound(object):
+class Bound(Object):
     def __init__(self, name):
         self.name = name
         self.btype = 0
