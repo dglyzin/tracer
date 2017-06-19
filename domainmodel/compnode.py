@@ -17,26 +17,23 @@ class Compnode(object):
         self.cpuCount = 1
         self.cpuMemory = [1]
         self.gpuCount = 0
-        self.cpuMemory = []
+        self.gpuMemory = []
         
     def fillProperties(self,ndict):
         self.name = ndict["Name"]
         self.cpuCount = ndict["CpuCount"]
-        try:
-            self.cpuMemory = ndict["CpuMemory"]
-        except:
-            pass
+        #self.cpuMemory = self.cpuCount * [56]
+        self.cpuMemory = ndict["CpuMemory"]
+        
         self.gpuCount = ndict["GpuCount"]
-        try:
-            self.gpuMemory = ndict["GpuMemory"]
-        except:
-            pass
+        self.gpuMemory = ndict["GpuMemory"]
+        #self.gpuMemory = self.gpuCount * [5]
         
     def getPropertiesDict(self):          
         return OrderedDict([
                             ("Name", self.name),
                             ("CpuCount", self.cpuCount),
                             ("CpuMemory", self.cpuMemory),
-                            ("GpuCount", self.gpuCount) 
-                            ("GpuMemory", self.gpuMemory),                 
+                            ("GpuCount", self.gpuCount), 
+                            ("GpuMemory", self.gpuMemory)                 
                             ])
