@@ -571,4 +571,4 @@ class Model(object):
         result = min_{for every computing device D} 
                      (D.memory/sum_{for every block B inside D} (B.total) )
         '''
-        pass
+        return 100000; #like 100*100*100 000 elements = 8GB < 64GB
