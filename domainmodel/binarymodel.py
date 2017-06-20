@@ -752,18 +752,19 @@ class BinaryModel(object):
         runFile = open(OutputRunFile, "w")        
         postprocessor = tracerFolder + "/hybriddomain/postprocessor.py"
          
-        partitionOption = " "
-        if debug:
-            partitionOption = " -p debug "
+        partitionOption = " -p exp "
+        #if debug:
+        #    partitionOption = " -p debug "
         
         solverExecutable = tracerFolder+"/hybridsolver/bin/HS"
         
         nodeCount = self.dmodel.getNodeCount()
+        nodeSpec = self.dmodel.getNodeSpec()
         runFile.write("echo Welcome to generated kernel launcher!\n")
         runFile.write("export LD_LIBRARY_PATH="+projectDir+":$LD_LIBRARY_PATH\n")
         #runFile.write("export OMP_NUM_THREADS=16\n")
         runFile.write("export GOMP_CPU_AFFINITY='0-15'\n")
-        runFile.write("salloc -N "+str(nodeCount) + " -n "+ str(nodeCount)  + partitionOption + " mpirun --map-by ppr:1:node:pe=16 "+ solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
+        runFile.write("salloc -N "+str(nodeCount) + " -n "+ str(nodeCount) + " " + nodeSpec + partitionOption + " mpirun --map-by ppr:1:node:pe=16 "+ solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
         #runFile.write("srun -N "+str(nodeCount)+" " +  partitionOption + " "+ solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
         runFile.write("srun -n1" + partitionOption +"python " + postprocessor +" " + projectDir+"/" +" " + projectTitle )
         runFile.close()

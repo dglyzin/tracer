@@ -493,6 +493,21 @@ class Model(object):
 
     def getNodeCount(self):
         return len(self.compnodes)
+    
+    def getNodeSpec(self):
+        '''
+        returns parameter string to slurm:
+        -w cnodex cnodey ...
+        if no "any" node is present in json
+        and empty string otherwise
+        '''
+        paramLine = "-w"
+        for node in self.compnodes:            
+            if node.name == "any":
+                return ""
+            else:
+                paramLine = paramLine + " " + node.name
+        return paramLine
 
     def getCellSize(self):
         return len(self.equations[0].system)
