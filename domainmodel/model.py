@@ -29,6 +29,7 @@ from DelayHandler import DelayHandler
 from customOfficer import Reviewer
 from funcGenerator import FuncGenerator
 from someFuncs import getRangesInClosedInterval
+from domainmodel import compnode
 #from libGenerateC import generateCfromDict
 
 
@@ -564,6 +565,18 @@ class Model(object):
         #if toIdx == zc: toIdx = zc-1
         return fromIdx, toIdx
     
+    def getDeviceStateSize(self, nodeIdx, deviceType, deviceIdx):
+        '''
+        counts state sizes for every block that is scheduled to a given node and a given device
+        '''
+        devStateSize = 0
+        for (blockIdx, block) in enumerate(self.blocks):
+            mapping = self.mapping[blockIdx]
+            if (nodeIdx == mapping["NodeIdx"]) and (deviceType == mapping["DeviceType"]) and (deviceIdx == mapping["DeviceIdx"]):
+                cellCount = block.getCellCount(self.gridStepX, self.gridStepY, self.gridStepZ)                
+                devStateSize += cellCount[0]*cellCount[1]*cellCount[2]*self.getCellSize()
+        return devStateSize
+    
     def getMaxStatesCount(self):
         '''
         returns maximum number of states that can be 
@@ -571,4 +584,32 @@ class Model(object):
         result = min_{for every computing device D} 
                      (D.memory/sum_{for every block B inside D} (B.total) )
         '''
-        return 100000; #like 100*100*100 000 elements = 8GB < 64GB
+        minCapacity = 0
+        for nodeIdx, node in enumerate(self.compnodes):
+            for cpuIdx in range(node.cpuCount):
+                memorySize = node.cpuMemory[cpuIdx]
+                devStateSize = self.getDeviceStateSize(nodeIdx, "cpu", cpuIdx)
+                if devStateSize > 0:
+                    capacity = int(memorySize * 1024 * 1024 * 1024/(8 *  devStateSize) )    
+                    if (minCapacity == 0) or (capacity<minCapacity):
+                        minCapacity = capacity
+                else:
+                    capacity = "infinity"
+                print("For node {} {}{} memory is {}GB, total state size is {} elems, capacity={}.".format(node.name, "cpu", cpuIdx, memorySize, devStateSize, capacity))                 
+            for gpuIdx in range(node.gpuCount):
+                memorySize = node.gpuMemory[gpuIdx]
+                devStateSize = self.getDeviceStateSize(nodeIdx, "gpu", gpuIdx)
+                if devStateSize > 0:
+                    capacity = int(memorySize * 1024 * 1024 * 1024/(8 * devStateSize ) )    
+                    if (minCapacity == 0) or (capacity<minCapacity):
+                        minCapacity = capacity
+                else: 
+                    capacity = "infinity"
+                print("For node {} {}{} memory is {}GB, total state size is {} elems, capacity={}.".format(node.name, "gpu", gpuIdx, memorySize, devStateSize, capacity))              
+                    
+        return minCapacity #like 100*100*100 000 elements = 8GB < 64GB
+            
+    
+    
+    
+    
