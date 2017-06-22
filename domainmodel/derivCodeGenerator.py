@@ -62,7 +62,7 @@ class PureDerivGenerator:
             elif (self.side - 1) % 2 == 0 and self.indepVarIndexList[0] == (self.side - 1) / 2:
                 return self.specialPureDerivativeAlternative(increment, specialIncrement, stride, 0)
             else:
-                return self.commonPureDerivativeAlternative(increment, stride)   
+                return self.commonPureDerivativeAlternative(increment, stride)
 
     def commonPureDerivativeAlternative(self, increment, stride):
         if self.derivOrder == 1:
@@ -84,13 +84,19 @@ class PureDerivGenerator:
             return '(' + increment + ' * ' + '(' + finiteDifference + ')' + ')'
 
     def specialPureDerivativeAlternative(self, increment, specialIncrement, stride, leftOrRightBoundary):
-        #leftOrRightBoundary --- это число либо 0 (если краевое условие наложено на левую границу) либо 1 (если краевое условие наложено на правую границу)
+        '''
+        INPUT:
+        leftOrRightBoundary --- это число либо 0 (если краевое условие наложено на левую границу)
+                                либо 1 (если краевое условие наложено на правую границу)
+        '''
+        print("specialPureDerivativeAlternative used")
         fullIndepVarValueList = list([])
         for indepVar in self.userIndepVariables:
             fullIndepVarValueList.extend(['(idx' + indepVar.upper() + ' + Block' + str(self.blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ')'])
         fullIndepVarValueList.extend(['t'])
 
-        boundaryValue = generateCodeForMathFunction(self.parsedMathFunction, self.userIndepVariables, fullIndepVarValueList)
+        boundaryValue = generateCodeForMathFunction(self.parsedMathFunction, self.userIndepVariables,
+                                                    fullIndepVarValueList)
         if self.derivOrder == 1:
             return boundaryValue
         elif self.derivOrder == 2:
@@ -153,8 +159,13 @@ class MixDerivGenerator:
             raise SyntaxError("Order of some mixed partial derivative greater than 2. I don't know how to work with it!")
     
     def specialMixedDerivativeAlternative(self, increment, indepVarIndex):
-#         indepVarIndex --- это индекс независимой переменной в массиве всех таких переменных; это индекс той переменной, производная по которой
-#         входит в смешанную производную второго порядка, но не той переменной, для которой написано краевое условие Неймана.
+        '''
+        INPUT:
+        indepVarIndex --- это индекс независимой переменной в массиве всех таких переменных;
+                          это индекс той переменной, производная по которой
+                          входит в смешанную производную второго порядка,
+                          но не той переменной, для которой написано краевое условие Неймана.
+        '''
         if self.derivOrder == 2:
             fullIndepVarValueListR = list([])
             fullIndepVarValueListL = list([])
@@ -185,11 +196,14 @@ class MixDerivGenerator:
     def mixDerivative(self):
         increment = '(1 / pow(2,' + str(self.derivOrder) + '))'
         for i,indepVar in enumerate(self.indepVarList):
-            increment = increment + ' * D' + indepVar.upper() + 'M' + self.derivativeOrderList[i]   
-#         indepVar_Order_Stride = list([])
-#         for i,indepVar in enumerate(self.indepVarList):
-#             tup = tuple((indepVar, self.derivativeOrderList[i], 'Block' + str(self.blockNumber) + 'Stride' + indepVar.upper()))
-#             indepVar_Order_Stride.extend([tup])
+            increment = increment + ' * D' + indepVar.upper() + 'M' + self.derivativeOrderList[i]
+   
+        # indepVar_Order_Stride = list([])
+        # for i,indepVar in enumerate(self.indepVarList):
+        # tup = tuple((indepVar, self.derivativeOrderList[i],
+        #              'Block' + str(self.blockNumber) + 'Stride' + indepVar.upper()))
+        # indepVar_Order_Stride.extend([tup])
+
         strideList = []
         for indepVar in self.indepVarList:
             strideList.append('Block' + str(self.blockNumber) + 'Stride' + indepVar.upper())
@@ -197,17 +211,28 @@ class MixDerivGenerator:
         bCond1 = self.side == 0 or self.side == 1
         bCond2 = self.side == 2 or self.side == 3
         bCond3 = self.side == 4 or self.side == 5
-        indepVarCond1 = (self.indepVarList[0] == self.userIndepVariables[0] and self.indepVarList[1] == self.userIndepVariables[1]) or (self.indepVarList[1] == self.userIndepVariables[0] and self.indepVarList[0] == self.userIndepVariables[1])
+        indepVarCond1 = ((self.indepVarList[0] == self.userIndepVariables[0]
+                          and self.indepVarList[1] == self.userIndepVariables[1])
+                         or (self.indepVarList[1] == self.userIndepVariables[0]
+                             and self.indepVarList[0] == self.userIndepVariables[1]))
         blockDimension = len(self.userIndepVariables)
         if blockDimension > 2:
-            indepVarCond2 = (self.indepVarList[0] == self.userIndepVariables[0] and self.indepVarList[1] == self.userIndepVariables[2]) or (self.indepVarList[1] == self.userIndepVariables[0] and self.indepVarList[0] == self.userIndepVariables[2])
-            indepVarCond3 = (self.indepVarList[0] == self.userIndepVariables[1] and self.indepVarList[1] == self.userIndepVariables[2]) or (self.indepVarList[1] == self.userIndepVariables[1] and self.indepVarList[0] == self.userIndepVariables[2])
+            indepVarCond2 = ((self.indepVarList[0] == self.userIndepVariables[0]
+                              and self.indepVarList[1] == self.userIndepVariables[2])
+                             or (self.indepVarList[1] == self.userIndepVariables[0]
+                                 and self.indepVarList[0] == self.userIndepVariables[2]))
+            indepVarCond3 = ((self.indepVarList[0] == self.userIndepVariables[1]
+                              and self.indepVarList[1] == self.userIndepVariables[2])
+                             or (self.indepVarList[1] == self.userIndepVariables[1]
+                                 and self.indepVarList[0] == self.userIndepVariables[2]))
         
-        if (bCond1 and indepVarCond1) or (blockDimension > 2 and bCond3 and indepVarCond3):
+        if ((bCond1 and indepVarCond1)
+            or (blockDimension > 2 and bCond3 and indepVarCond3)):
             ind = self.indepVarList.index(self.userIndepVariables[1])
             specialIncrement = 'D' + self.indepVarList[ind].upper() + 'M' + self.derivativeOrderList[ind]
             return self.specialMixedDerivativeAlternative(specialIncrement, 1)
-        elif (blockDimension > 2 and bCond1 and indepVarCond2) or (blockDimension > 2 and bCond2 and indepVarCond3):
+        elif ((blockDimension > 2 and bCond1 and indepVarCond2)
+              or (blockDimension > 2 and bCond2 and indepVarCond3)):
             ind = self.indepVarList.index(self.userIndepVariables[2])
             specialIncrement = 'D' + self.indepVarList[ind].upper() + 'M' + self.derivativeOrderList[ind]
             return self.specialMixedDerivativeAlternative(specialIncrement, 2)
@@ -216,5 +241,4 @@ class MixDerivGenerator:
             specialIncrement = 'D' + self.indepVarList[ind].upper() + 'M' + self.derivativeOrderList[ind]
             return self.specialMixedDerivativeAlternative(specialIncrement, 0)
         else:
-            return self.commonMixedDerivativeAlternative(increment, strideList)  
-        
+            return self.commonMixedDerivativeAlternative(increment, strideList)

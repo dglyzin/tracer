@@ -140,6 +140,14 @@ class ParsePatternCreater:
         return Suppress(variable + "'" + '=') + rhs_expr
         
     def __createParsePatternForMathFunction(self, parameterList, independentVariableList):
+        '''
+        DESCRIPTION:
+        For parsing string like:
+        'sin((x+3*a))'
+            where a in parameterList
+                  x in indepVariableList
+        '''
+        
         real = Word(nums + '.')
         
         countOfParams = len(parameterList)
@@ -185,10 +193,10 @@ class ParsePatternCreater:
         elif length == 2:
             return self.__createParsePatternForMathFunction(args[0], args[1])
         elif length == 3:
-            print("diffEq used")
+            # print("ppc.createParsePattern: diffEq used")
             return self.__createParsePatternForDiffEquation(args[0], args[1], args[2])
         elif length == 4:
-            print("diffEq delay used")
+            print("ppc.createParsePattern: diffEq delay used")
             return self.__createParsePatternForDiffEquation(args[0], args[1], args[2], delays=args[3])
         else:
             raise AttributeError("Method createParsePattern() didn't take four or more arguments!")
@@ -220,12 +228,22 @@ class MathExpressionParser:
             parsePattern = ppc.createParsePattern(*args)
         else:
             parsePattern = ppc.createParsePattern(*args)
+
+        # print("parsePattern=")
+        # print(parsePattern)
+        
+        # print("mathExpressionForParsing=")
+        # print(mathExpressionForParsing)
+
         parsedExpression = parsePattern.parseString(mathExpressionForParsing).asList()
         controller.controlPowers(parsedExpression)
         self.__concatPower(parsedExpression)
         if length != 4:
             controller.controlDerivatives(parsedExpression, args[-1])
-        
+       
+        # print("parsedExpression=")
+        # print(parsedExpression)
+
         return parsedExpression
 
     def getVariableList(self,equationStringList):

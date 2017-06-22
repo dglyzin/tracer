@@ -3,8 +3,13 @@ import numpy as np
 from derivCodeGenerator import PureDerivGenerator, MixDerivGenerator
 
 class RHSCodeGenerator:
-# Генерирует код правой части уравнения в случае центральной функции, Неймановского кр. усл-я, соединения.    
-    def generateCodeForPower(self, preventElementInParsedExpression, creatingOutputList, expressionWithPower, params):
+    '''
+    DESCRIPTION:
+    Генерирует код правой части уравнения в случае центральной функции,
+    Неймановского кр. усл-я, соединения.    
+    '''
+    def generateCodeForPower(self, preventElementInParsedExpression,
+                             creatingOutputList, expressionWithPower, params):
         #power = int(expressionWithPower[1])
         #if power > 0:
             #if preventElementInParsedExpression != ')':
@@ -119,6 +124,11 @@ class RHSCodeGenerator:
                     else:
                         delay = "0"
                         varIndex = vrbls.index(expressionList[1])
+
+                    print("expressionList = ")
+                    print(expressionList)
+                    print("vrbls=")
+                    print(vrbls)
                     self.callDerivGenerator(outputList, blockNumber,
                                             expressionList, varIndex,
                                             userIndepVariables, pbcl, delay)
@@ -277,6 +287,8 @@ class RHSCodeGenerator:
 
              Если длина словаря pbcl равна трем, то надо
                   сделать условие на угол параллелепипеда
+
+        
         '''
         boundaryConditionCount = len(pbcl)
         
@@ -413,12 +425,18 @@ class RHSCodeGenerator:
         if ((len(indepVarList) == 1)
             or (
                 indepVarList[0] == indepVarList[1])):
+            print("PureDerivGenerator used")
+            print("indepVarList=")
+            print(indepVarList)
             pdg = PureDerivGenerator(blockNumber, varIndex, indepVarList,
                                      indepVarIndexList, derivativeOrderList,
                                      userIndepVariables, parsedMathFunction,
                                      side, firstIndex, secondIndexSTR, delay)
             return pdg.pureDerivative()
         elif len(indepVarList) == 2:
+            print("MixDerivGenerator used")
+            print("indepVarList=")
+            print(indepVarList)
             mdg = MixDerivGenerator(blockNumber, varIndex, indepVarList,
                                     indepVarIndexList, derivativeOrderList,
                                     userIndepVariables, parsedMathFunction,

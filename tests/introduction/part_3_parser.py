@@ -55,6 +55,90 @@ from pyparsing import Literal, Word, nums, alphas, Group
 from pyparsing import Forward, Optional, OneOrMore, Suppress
 from pyparsing import restOfLine, ZeroOrMore
 from domainmodel.equationParser import CorrectnessController, ParsePatternCreater
+from tests.introduction.part_2_generators import get_gen2D_for_test
+from tests.introduction.part_2_2_gen_bouns import BlockInfo
+
+
+def test_generateBoundsAndIcs(modelFile="tests/short_restest_full.json"):
+    '''
+    DESCRIPTION:
+    Generator2D.generateBoundsAndIcs
+    '''
+    gen = get_gen2D_for_test(modelFile).generator
+    gen.generateAllDefinitions()
+    
+    blockInfo = BlockInfo(gen.blocks[0])
+    blockInfo.getBlockInfo(gen, 0)
+    
+    cf, arrWithFunctionNames = gen.generateCentralFunctionCode(gen.blocks[0], 0,
+                                                               blockInfo.systemsForCentralFuncs,
+                                                               blockInfo.numsForSystems)
+
+    bf = gen.generateBoundsAndIcs(gen.blocks[0], 0,
+                                  arrWithFunctionNames,
+                                  blockInfo.blockFuncMap,
+                                  blockInfo.totalBCondLst,
+                                  blockInfo.totalInterconnectLst)
+    return(bf)
+
+
+def test_generate_vertex(modelFile="tests/short_restest_full.json"):
+
+    gen = get_gen2D_for_test(modelFile).generator
+    gen.generateAllDefinitions()
+    
+    blockInfo = BlockInfo(gen.blocks[0])
+    blockInfo.getBlockInfo(gen, 0)
+    
+    cf, arrWithFunctionNames = gen.generateCentralFunctionCode(gen.blocks[0], 0,
+                                                               blockInfo.systemsForCentralFuncs,
+                                                               blockInfo.numsForSystems)
+    
+    parser = MathExpressionParser()
+    gen.parseBoundaryConditions(blockInfo.totalBCondLst, parser)
+    parsedVertexCondList = gen.createVertexCondLst(blockInfo.totalBCondLst)
+    
+    print("parsedVertexCondList =")
+    print(parsedVertexCondList)
+    vertexFunctions = gen.generateVertexFunctions(0,
+                                                  arrWithFunctionNames,
+                                                  parsedVertexCondList)
+    return(vertexFunctions)
+
+
+def get_parse_pattern(eqStr=u"U'=a*(D[U(t-1),{x,2}] + D[U(t-9.2),{y,2}])"):
+    '''
+    DESCRIPTION:
+    What is parser (MathExpressionParser)
+    and what it do.
+    
+    INPUT:
+    Equation string with only single params:
+       a
+    and independent vars:
+       x, y.
+    '''
+    eqSys = [eqStr]
+    # eqStr = eqSys[0]
+    print("eq = ")
+    print(eqSys[0])
+
+    parser = MathExpressionParser()
+
+    # vars like U
+    vars = parser.getVariableList(eqSys)
+    print("vars = ")
+    print(vars)
+        
+    # some errors checking
+    controller = CorrectnessController()
+    controller.emptyControl(eqStr)
+    controller.controlOperators(eqStr)
+    controller.controlBrackets(eqStr)
+
+    # load patterns
+    ppc = ParsePatternCreater()
+    return(ppc)
 
 
 def test_parser_cpp(eqStr=u"U'=a*(D[U(t-1),{y,2}])"):
@@ -130,34 +214,14 @@ def test_parser_eq(eqStr=u"U'=a*(D[U(t-1),{x,2}] + D[U(t-9.2),{y,2}])"):
     What is parser (MathExpressionParser)
     and what it do.
     '''
-    eqSys = [eqStr]
-    # eqStr = eqSys[0]
-    print("eq = ")
-    print(eqSys[0])
-
-    parser = MathExpressionParser()
-
-    # vars like U
-    vars = parser.getVariableList(eqSys)
-    print("vars = ")
-    print(vars)
-    
-    # independent variables
-    userIndepVars = [u'x', u'y']
-    params = [u'a']
-    
-    # some errors checking
-    controller = CorrectnessController()
-    controller.emptyControl(eqStr)
-    controller.controlOperators(eqStr)
-    controller.controlBrackets(eqStr)
-
-    # load patterns
-    ppc = ParsePatternCreater()
-    # parsePatternDelays = ppc.parserPreprocForDelays(vars, userIndepVars)
+    ppc = get_parse_pattern(eqStr)
 
     # return(parsePatternDelays.parseString(eqStr))
     delays = []
+
+    # independent variables
+    userIndepVars = [u'x', u'y']
+    params = [u'a']
     parsePattern = ppc.createParsePattern(vars, params, userIndepVars, delays)
 
 

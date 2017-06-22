@@ -71,14 +71,20 @@ def NewtonBinomCoefficient(n, k):
     return factorial(n) / (factorial(k) * factorial(n-k))
     
 def generateCodeForMathFunction(parsedMathFunction, userIndepVariables, independentVariableValueList):
-# Генерирует сишный код для какой-то математической функции. userIndepVariables - те переменные, которые ввел юзер,
-# independentVariableValueList - те выражения, которые должны быть подставлены вместо них;
-# parsedMathFunction - распарсенная с помощью equationParser математическая функция
+    '''
+    DESCRIPTION:
+    Генерирует сишный код для какой-то математической функции.
+    
+    INPUT:
+    userIndepVariables - те переменные, которые ввел юзер,
+    independentVariableValueList - те выражения, которые должны быть подставлены вместо них;
+    parsedMathFunction - распарсенная с помощью equationParser математическая функция
+    '''
     outputList = list([])
     operatorList = ['+','-','*','/']
     
     from rhsCodeGenerator import RHSCodeGenerator
-    powerGenerator = RHSCodeGenerator()      
+    powerGenerator = RHSCodeGenerator()
     for j,expressionList in enumerate(parsedMathFunction):
         if expressionList[0] == '^':
             powerGenerator.generateCodeForPower(parsedMathFunction[j-1], outputList, expressionList)
