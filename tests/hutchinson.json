@@ -3,15 +3,15 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 1.0, 
-        "TimeStep": 1e-5, 
+        "FinishTime": 100.0, 
+        "TimeStep": 1e-05, 
         "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
         "Dimension": 1, 
-        "dx": 1e-2, 
+        "dx": 0.01, 
         "dy": 1, 
         "dz": 1
     }, 
@@ -53,13 +53,13 @@
     ], 
     "EquationParams": {
         "Params": [
-            "r",
+            "r", 
             "a"
         ], 
         "ParamValues": [
             {
-                "r" : 3,
-                "a" : 1
+                "a": 1, 
+                "r": 3
             }
         ], 
         "DefaultParamsIndex": 0
@@ -75,9 +75,17 @@
     ], 
     "Hardware": [
         {
-            "Name": "cnode1", 
+            "Name": "cnode9", 
             "CpuCount": 1, 
-            "GpuCount": 3
+            "CpuMemory": [
+                6
+            ], 
+            "GpuCount": 3, 
+            "GpuMemory": [
+                5, 
+                5, 
+                5
+            ]
         }
     ], 
     "Mapping": {
@@ -92,10 +100,8 @@
     }, 
     "Plots": [
         {
-
-            "Title": "u(t)",
-            "Period": 0.1         
-
+            "Title": "u(t)", 
+            "Period": 1
         }
     ]
 }

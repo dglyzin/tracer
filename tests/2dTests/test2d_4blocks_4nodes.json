@@ -146,7 +146,15 @@
         {
             "Name": "cnode1", 
             "CpuCount": 1, 
-            "GpuCount": 3
+            "CpuMemory": [
+                56
+            ], 
+            "GpuCount": 3, 
+            "GpuMemory": [
+                5, 
+                5, 
+                5
+            ]
         }
     ], 
     "Mapping": {

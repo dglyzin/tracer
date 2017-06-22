@@ -19,6 +19,7 @@
 ###  if problem type == 1
 ##!  1*int number of delays N_D
 ##!  N_D*float64 delay values
+##!  uint64 S_N number of states that can be stored in memory 
 ###  endif
 
 

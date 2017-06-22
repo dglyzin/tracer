@@ -45,6 +45,7 @@ def readDomFile(fileName):
         delayCount, = struct.unpack('i', dom.read(4))
         for i in range(0, delayCount) :
             struct.unpack('d', dom.read(8))
+        struct.unpack('Q', dom.read(8))
     
     blockCount, = struct.unpack('i', dom.read(4))
     

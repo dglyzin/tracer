@@ -9,7 +9,8 @@ import filecmp
 
 def constest(filename):
     model = Model()
-    model.loadFromFileOld(filename)
+    #model.loadFromFileOld(filename)
+    model.loadFromFile(filename)
     model.saveToFile(filename)    
   
         
