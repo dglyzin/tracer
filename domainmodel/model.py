@@ -506,7 +506,7 @@ class Model(object):
             if node.name == "any":
                 return ""
             else:
-                paramLine = paramLine + " " + node.name
+                paramLine = paramLine + "," + node.name
         return paramLine
 
     def getCellSize(self):
