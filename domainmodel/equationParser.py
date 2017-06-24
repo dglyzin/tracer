@@ -95,6 +95,8 @@ class ParsePatternCreater:
             DESCRIPTION:
             If delay U(t-k) found, add k to delays
             where delays is global.
+            Cannot work with system with vars U,V,...
+            where more then one var has delays.
             '''
             delay = float(toks.asList()[0][4])
             delays.append(delay)

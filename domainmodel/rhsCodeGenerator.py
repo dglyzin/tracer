@@ -75,10 +75,13 @@ class RHSCodeGenerator:
                     used for mapping delays
                     for example:
                     U(t-3) -> source[delay_lst.index(3)+1]
+
+        USED IN:
+        abstractGenerator.generateNeumannOrInterconnect
         '''
         
-        print("vrbls =")
-        print(vrbls)
+        # print("vrbls =")
+        # print(vrbls)
         
         varIndex = vrbls.index(leftHandSide)
         result = '\t result[idx + ' + str(varIndex) + '] = '
@@ -87,7 +90,6 @@ class RHSCodeGenerator:
                          'tan', 'tanh', 'sqrt', 'log']
         operatorList = ['+', '-', '*', '/']
         
-
         def convert_delay(val):
             '''
             DESCRIPTION:
@@ -111,41 +113,39 @@ class RHSCodeGenerator:
                 # like: ['D[', u'U', ',', '{', u'x', ',', u'2', '}', ']']
                 if expressionList[0] == 'D[':
                     if type(expressionList[1]) == list:
-                        print(expressionList[1][4])
+                        # print(expressionList[1][4])
                         delay_float = float(expressionList[1][4])
                         
                         # delay for source
                         delay = convert_delay(delay_float)
                         # int(float(expressionList[1][4]))
                         varIndex = vrbls.index(expressionList[1][0])
-                        print("delay used")
-                        print(delay)
+                        # print("delay used")
+                        # print(delay)
                         # delay_lst.append([delay, expressionList[1][4]])
                     else:
                         delay = "0"
                         varIndex = vrbls.index(expressionList[1])
 
-                    print("expressionList = ")
-                    print(expressionList)
-                    print("vrbls=")
-                    print(vrbls)
+                    # print("expressionList = ")
+                    # print(expressionList)
+                    # print("vrbls=")
+                    # print(vrbls)
                     self.callDerivGenerator(outputList, blockNumber,
                                             expressionList, varIndex,
                                             userIndepVariables, pbcl, delay)
 
                 # like: [u'U', '(', 't', '-', u'1', ')']
                 elif expressionList[0] in vrbls:
-                    # print(expressionList[4])
+                    # print("expressionList in vrbls = ")
+                    # print(expressionList)
                     
                     delay_float = float(expressionList[4])
                     
                     # delay for source
                     delay = convert_delay(delay_float)
-                        
-                    # delay = int(float(expressionList[4]))
-                    # delay_lst.append([delay, expressionList[4]])
-                    # sourceIndex = delay_lst.index(delay)+1
                     sourceIndex = delay
+
                     varIndex = vrbls.index(expressionList[0])
                     outputList.extend(['source['
                                        + str(sourceIndex)
@@ -276,7 +276,7 @@ class RHSCodeGenerator:
              Если длина словаря pbcl равна одному, то надо
                 сделать условие на границу отрезка или на
                 сторону прямоугольника или параллелепипеда
-
+             (In that case it parsedDrivativeExpressio will be ignore)
              Если длина словаря pbcl равна двум и длина
                 массива indepVrbls равна двум, то надо
                 сделать условие на угол прямоугольника
@@ -426,8 +426,8 @@ class RHSCodeGenerator:
             or (
                 indepVarList[0] == indepVarList[1])):
             print("PureDerivGenerator used")
-            print("indepVarList=")
-            print(indepVarList)
+            print("parsedMathFunction=")
+            print(parsedMathFunction)
             pdg = PureDerivGenerator(blockNumber, varIndex, indepVarList,
                                      indepVarIndexList, derivativeOrderList,
                                      userIndepVariables, parsedMathFunction,

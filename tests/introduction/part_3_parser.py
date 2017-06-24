@@ -214,7 +214,7 @@ def test_parser_eq(eqStr=u"U'=a*(D[U(t-1),{x,2}] + D[U(t-9.2),{y,2}])"):
     What is parser (MathExpressionParser)
     and what it do.
     '''
-    ppc = get_parse_pattern(eqStr)
+    
 
     # return(parsePatternDelays.parseString(eqStr))
     delays = []
@@ -222,8 +222,17 @@ def test_parser_eq(eqStr=u"U'=a*(D[U(t-1),{x,2}] + D[U(t-9.2),{y,2}])"):
     # independent variables
     userIndepVars = [u'x', u'y']
     params = [u'a']
-    parsePattern = ppc.createParsePattern(vars, params, userIndepVars, delays)
+    parser = MathExpressionParser()
 
+    # vars like U
+    vars = parser.getVariableList([eqStr])
+    print("vars = ")
+    print(vars)
+        
+    # load patterns
+    ppc = ParsePatternCreater()
+    
+    parsePattern = ppc.createParsePattern(vars, params, userIndepVars, delays)
 
     print("parsePattern = ")
     print(parsePattern)
@@ -234,9 +243,5 @@ def test_parser_eq(eqStr=u"U'=a*(D[U(t-1),{x,2}] + D[U(t-9.2),{y,2}])"):
     print("parsedExpression = ")
     print(parsedExpression)
     return(delays)
-    # postprocessing
-    controller.controlPowers(parsedExpression)
-    # parser.__concatPower(parsedExpression)
-    controller.controlDerivatives(parsedExpression, userIndepVars)  # args[-1]
     
-    return parsePattern
+    # return parsePattern

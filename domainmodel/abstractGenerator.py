@@ -8,6 +8,8 @@ from equationParser import MathExpressionParser
 from someFuncs import generateCodeForMathFunction
 from rhsCodeGenerator import RHSCodeGenerator
 from someFuncs import getCellCountInClosedInterval
+from criminal.parser import Parser
+
 
 class BoundCondition:
     '''
@@ -42,7 +44,7 @@ class BoundCondition:
     def createSpecialProperties(self, mathParser, params, indepVars):
         '''
         DESCRIPTION:
-        parse functions (like 'sin((x+3*a))') from 
+        parse functions (like 'sin((x+3*a))') from
         self.values to self.parsedValues
         and
         parse equations from self.equation.system
@@ -57,10 +59,21 @@ class BoundCondition:
         Generator1D.generateInterconnect
         '''
         self.parsedValues = list()
+        
         for value in self.values:
             # parse pattern for MathFunction. (see createParsePattern)
-            # like 'sin((x+3*a))'
-            self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))
+            # like value = 'sin((x+3*a))'
+
+            try:
+                # parse string like "U(t-1.3,{x, 0.7})"
+                parser = Parser()
+                parser.parseMathExpression(value)
+                # cpp
+                self.parsedValues.append(parser.out)
+            except:
+                print("criminal fail in BoundCondition.createSpecialProperties")
+
+                self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))
         
         self.unknownVars = mathParser.getVariableList(self.equation.system)
         self.parsedEquation = list()
@@ -572,6 +585,10 @@ class AbstractGenerator(object):
         
         USED IN:
         generateBoundsAndIcs
+
+        USED FUNCTIONS:
+        generateFunctionSignature
+        generateRightHandSideCodeDelay
         '''
         strideList = list([])
 

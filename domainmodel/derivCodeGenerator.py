@@ -94,6 +94,9 @@ class PureDerivGenerator:
         for indepVar in self.userIndepVariables:
             fullIndepVarValueList.extend(['(idx' + indepVar.upper() + ' + Block' + str(self.blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ')'])
         fullIndepVarValueList.extend(['t'])
+        
+        print("parsedMathFunction from special=")
+        print(self.parsedMathFunction)
 
         boundaryValue = generateCodeForMathFunction(self.parsedMathFunction, self.userIndepVariables,
                                                     fullIndepVarValueList)
