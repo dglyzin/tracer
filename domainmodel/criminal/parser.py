@@ -1,3 +1,8 @@
+'''
+DESCRIPTION:
+For undirect changes in original scheme.
+
+'''
 from pyparsing import Literal, Word, nums, alphas
 from pyparsing import Group, Forward, Optional
 from pyparsing import Suppress, restOfLine
@@ -5,16 +10,59 @@ from pyparsing import OneOrMore, ZeroOrMore
 
 
 class Parser():
-    def __init__(self):
+    '''
+    DESCRIPTION:
+    Use one general pattern for all parsing.
+    This pattern composed from local patterns,
+    each of which can be replaced by .cpp string
+    by actions. That .cpp strings can contain argi
+    elements for replacing it by founded values (like
+    var names, value ...) (see action_add_args).
+    In that case arg1 means first added args by some
+    local pattern, arg2 -second ...
+
+    FOR EXAMPLE:
+    if pattern looks like:
+    Group(locPatt1.setParseAction(action_add_args)
+          + locPatt2.setParseAction(action_add_args))
+    and
+    outForTerm looks like 'source[arg1][arg2]'
+    then
+    arg1 will be arg, corresponded to locPatt1
+    arg2 will be arg, corresponded to locPatt2
+
+    TODO:
+    Can load .cpp paterns form .json config file
+    (like outForTerm.. ).
+    Can load terms and actions from extern files.
+    '''
+    def __init__(self, blockNumber=None, dim='1D'):
         '''
         TODO:
         self.real.copy()
         '''
-        self.outForTermVarsPoint = 'source[arg1][arg3*Darg2M1*CELLSIZE]'
+        # parameters fill
+        if blockNumber is not None:
+            self.blockNumber = blockNumber
+        else:
+            self.blockNumber = 0
+        self.dim = dim
 
+        # cpp paterns load
+        self.outForTermVarsPoint1D = 'source[arg1][arg3*D'+'arg2'+'M1*CELLSIZE]'
+        
+        self.outForTermVarsPoint2D = ('source[arg1][(arg3*D'+'arg2'+'M1'
+                                      + '+'
+                                      + 'arg5'+'*D'
+                                      + 'arg4'+'M1*Block'
+                                      + str(self.blockNumber)
+                                      + 'StrideY)*CELLSIZE]')
+
+        # data for actions arg's (in outFor.. string)
         self.delays = []
         self.dataTermVarsPoint = []
 
+        # base elements
         self.vars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.args = 'xyzt'
         self.params = self.vars.lower()
@@ -26,7 +74,7 @@ class Parser():
         self.unary = ['-']
         self.binary = ['+', '-', '*', '/', '^']
  
-        # terms
+        # terms (!replace in different file)
         self.integer = Word(nums)
         self.real = Word(nums + '.')
         self.termParam = reduce(lambda x, y: Literal(y) ^ x,
@@ -99,12 +147,20 @@ class Parser():
                        + self.baseExpr)  # self.rhsExpr
 
     def parseMathExpression(self, expr):
+        self.clear_data()
         try:
             parsedExpression = self.eqExpr.parseString(expr)
         except:
             print("expr is not a equation")
             parsedExpression = self.baseExpr.parseString(expr)
         return(parsedExpression)
+
+    def clear_data(self):
+        '''
+        DESCRIPTION:
+        Clear terms data for reusing.
+        '''
+        self.dataTermVarsPoint = []
 
     def action_add_delay(self, str, loc, toks):
         '''
@@ -147,14 +203,22 @@ class Parser():
         data = toks[0].split('.')[0]
         termData.append(data)
     
-    def action_generate_out_for_termVarsPoint(self, *args):  # str, loc, toks
-        self.out = self.outForTermVarsPoint
+    def action_generate_out_for_termVarsPoint(self, *args):
+        '''
+        DESCRIPTION:
+        Add founded by paterns termVarsPoint
+        arg's (like argi) to out string.
+        '''
+        if self.dim == '1D':
+            self.out = self.outForTermVarsPoint1D
+        elif self.dim == '2D':
+            self.out = self.outForTermVarsPoint2D
+
         print("dataTermVarsPoint =")
         print(self.dataTermVarsPoint)
         for i in range(len(self.dataTermVarsPoint)):
             self.out = self.out.replace("arg%d" % i,
                                         self.dataTermVarsPoint[i])
-
 
     def test(self):
         eqStrList = [u"U'=D[U(t-1.1),{y,1}]+D[U(t-5.9),{y,2}]+U(t-1)",

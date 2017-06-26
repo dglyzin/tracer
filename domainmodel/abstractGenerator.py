@@ -18,9 +18,14 @@ class BoundCondition:
     different equation (from default).
     
     '''
-    def __init__(self, values, btype, side, ranges, boundNumber, equationNumber, equation, funcName):
+    def __init__(self, values, btype, side, ranges, boundNumber,
+                 equationNumber, equation, funcName,
+                 blockNumber=None, dim='1D'):
         self.name = "BoundCondition"
         self.values = values
+
+        if blockNumber is not None:
+            self.blockNumber = blockNumber
 
         # type of condition (Neuman - 1 or Dirichlet - 0)
         self.btype = btype
@@ -66,7 +71,7 @@ class BoundCondition:
 
             try:
                 # parse string like "U(t-1.3,{x, 0.7})"
-                parser = Parser()
+                parser = Parser(self.blockNumber, self.dim)
                 parser.parseMathExpression(value)
                 # cpp
                 self.parsedValues.append(parser.out)
