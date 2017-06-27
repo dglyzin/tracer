@@ -7,6 +7,8 @@ from pyparsing import Literal, Word, nums, alphas
 from pyparsing import Group, Forward, Optional
 from pyparsing import Suppress, restOfLine
 from pyparsing import OneOrMore, ZeroOrMore
+from domainmodel.criminal.params import Params
+from domainmodel.criminal.cppOutsForTerms import CppOutsForTerms
 
 
 class Parser():
@@ -42,21 +44,18 @@ class Parser():
         self.real.copy()
         '''
         # parameters fill
+        self.params = Params()
+        self.params.dim = dim
         if blockNumber is not None:
             self.blockNumber = blockNumber
+            self.params.blockNumber = blockNumber
         else:
             self.blockNumber = 0
+            self.params.blockNumber = 0
         self.dim = dim
 
-        # cpp paterns load
-        self.outForTermVarsPoint1D = 'source[arg1][arg3*D'+'arg2'+'M1*CELLSIZE]'
-        
-        self.outForTermVarsPoint2D = ('source[arg1][(arg3*D'+'arg2'+'M1'
-                                      + '+'
-                                      + 'arg5'+'*D'
-                                      + 'arg4'+'M1*Block'
-                                      + str(self.blockNumber)
-                                      + 'StrideY)*CELLSIZE]')
+        # cpp outs
+        self.cppOut = CppOutsForTerms(self.params)
 
         # data for actions arg's (in outFor.. string)
         self.delays = []
@@ -107,17 +106,27 @@ class Parser():
                                                              str, loc, toks)
         action_spec = lambda str, loc, toks: self.action_add_args_spec(self.dataTermVarsPoint,
                                                                        str, loc, toks)
-        action1 = lambda *args: self.action_generate_out_for_termVarsPoint(*args)
+        action1 = lambda *args: self.action_generate_out('termVarsPointDelay', *args)
+        self.termVarsPointDelay = Group(self.termVarsSimple
+                                        + "("
+                                        + self.termArgs.setParseAction(action)
+                                        + "-" + self.real.setParseAction(action_spec) + ','
+                                        + OneOrMore(Group("{"
+                                                          + self.termArgs.setParseAction(action) + ','
+                                                          + self.real.copy().setParseAction(action) + '}'))
+                                        + ")").setParseAction(action1)
+        action2 = lambda *args: self.action_generate_out('termVarsPoint', *args)
         self.termVarsPoint = Group(self.termVarsSimple
                                    + "("
                                    + self.termArgs.setParseAction(action)
-                                   + "-" + self.real.setParseAction(action_spec) + ','
+                                   + ','
                                    + OneOrMore(Group("{"
                                                      + self.termArgs.setParseAction(action) + ','
                                                      + self.real.copy().setParseAction(action) + '}'))
-                                   + ")").setParseAction(action1)
+                                   + ")").setParseAction(action2)
 
-        self.termVars = self.termVarsPoint ^ self.termVarsDelay ^ self.termVarsSimple
+        self.termVars = (self.termVarsPoint ^ self.termVarsPointDelay
+                         ^ self.termVarsDelay ^ self.termVarsSimple)
         
         self.termOrder = '{' + self.termArgs + ',' + self.integer + '}'
         self.termDiff = ('D[' + self.termVars + ','
@@ -203,6 +212,21 @@ class Parser():
         data = toks[0].split('.')[0]
         termData.append(data)
     
+    def action_generate_out(self, termName, *args):
+        '''
+        DESCRIPTION:
+        Add founded by paterns with termName
+        arg's (like argi) to out string.
+        Use out from cppOutsForTerms
+        (so it should be here)
+        '''
+        self.out = self.cppOut.get_out_for_term(termName)
+        print("dataTermVarsPoint =")
+        print(self.dataTermVarsPoint)
+        for i in range(len(self.dataTermVarsPoint)):
+            self.out = self.out.replace("arg%d" % i,
+                                        self.dataTermVarsPoint[i])
+
     def action_generate_out_for_termVarsPoint(self, *args):
         '''
         DESCRIPTION:

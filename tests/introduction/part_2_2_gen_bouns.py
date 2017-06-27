@@ -114,7 +114,7 @@ Example of blocks configuration:
         }
     ], 
 '''
-from part_2_generators import Equation, get_gen2D_for_test
+from part_2_generators import Equation, get_gen_for_test
 from part_2_generators import AbstractGenerator, Generator2D
 import os
 from domainmodel.objectsTemplate import Object
@@ -144,7 +144,7 @@ class BlockInfo(Object):
 
 
 def test_getBlockInfo(modelFile="tests/short_restest_full.json"):
-    gen = get_gen2D_for_test(modelFile).generator
+    gen = get_gen_for_test(modelFile).generator
 
     gen.generateAllDefinitions()
     
@@ -160,8 +160,12 @@ def test_bound(modelFile="tests/short_restest_full.json"):
     '''
     DESCRIPTION:
     What bounds is.
+
+    EXAMPLE:
+    1d:
+    "tests/brusselator1d_bound_U.json"
     '''
-    gen = get_gen2D_for_test(modelFile).generator
+    gen = get_gen_for_test(modelFile).generator
 
     gen.generateAllDefinitions()
     

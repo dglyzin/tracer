@@ -5,8 +5,7 @@ class Params():
         
         # for name of central functions
         self.namesCf = dict()
-        pass
-    
+        
     def set_hat_for_all_cf(self, blockNumber):
         self.cf_hat_common = ('\n//========================='
                               + 'CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER '

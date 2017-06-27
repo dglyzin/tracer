@@ -71,6 +71,8 @@ class BoundCondition:
             # like value = 'sin((x+3*a))'
 
             try:
+                print("dim = ")
+                print(self.dim)
                 # parse string like "U(t-1.3,{x, 0.7})"
                 parser = Parser(self.blockNumber, self.dim)
                 parser.parseMathExpression(value)

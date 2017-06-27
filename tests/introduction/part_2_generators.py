@@ -28,11 +28,14 @@ from domainmodel.generator2D import Generator2D
 from domainmodel.abstractGenerator import AbstractGenerator
 
 
-def get_gen2D_for_test(modelFile="tests/short_restest_full.json"):
+def get_gen_for_test(modelFile="tests/short_restest_full.json"):
     '''
     DESCRIPTION:
     What is generator.
     Create generator for all tests.
+
+    EXAMPLE:
+    "tests/brusselator1d_bound_U.json"
     '''
     # load model
     model = get_model_for_tests(modelFile)
@@ -89,7 +92,7 @@ def test_func_gen():
     '''
 
     # load gen
-    gen = get_gen2D_for_test()
+    gen = get_gen_for_test()
 
     outputStr, functionMaps = gen.generateAllFunctions()
 

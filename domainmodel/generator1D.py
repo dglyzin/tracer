@@ -86,7 +86,9 @@ class Generator1D(AbstractGenerator):
                 break
         else:
             values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equation, equationNum)
-        return BoundCondition(values, btype, side, [], boundNumber, equationNum, equation, funcName)
+        return BoundCondition(values, btype, side, [], boundNumber,
+                              equationNum, equation, funcName,
+                              blockNumber = blockNumber)
     
     def createListOfInterconnects(self, block, blockNumber):
         icsForBlock = []
