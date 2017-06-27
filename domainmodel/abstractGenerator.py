@@ -26,6 +26,7 @@ class BoundCondition:
 
         if blockNumber is not None:
             self.blockNumber = blockNumber
+        self.dim = dim
 
         # type of condition (Neuman - 1 or Dirichlet - 0)
         self.btype = btype
@@ -77,7 +78,8 @@ class BoundCondition:
                 self.parsedValues.append(parser.out)
             except:
                 print("criminal fail in BoundCondition.createSpecialProperties")
-
+                print("value=")
+                print(value)
                 self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))
         
         self.unknownVars = mathParser.getVariableList(self.equation.system)
@@ -485,6 +487,8 @@ class AbstractGenerator(object):
         
         return ''.join(function), arrWithFuncNames
 
+    def generateCentralFunctionCodeCrime(self, block, blockNumber, equationsList, numsForEquats):
+        return ''.join(function), arrWithFuncName
 
     def generateFunctionSignature(self, blockNumber, name, strideList):
 
