@@ -3,165 +3,127 @@ DESCRIPTION:
 For undirect changes in original scheme.
 
 '''
-from pyparsing import Literal, Word, nums, alphas
-from pyparsing import Group, Forward, Optional
-from pyparsing import Suppress, restOfLine
-from pyparsing import OneOrMore, ZeroOrMore
 from domainmodel.criminal.params import Params
 from domainmodel.criminal.cppOutsForTerms import CppOutsForTerms
+from domainmodel.criminal.patterns import Patterns
+from domainmodel.criminal.actions import Actions
 
 
 class Parser():
     '''
     DESCRIPTION:
+    If You want only parse string, use
+    parseMathExpression method.
+    Out will be in parser.out
+
     Use one general pattern for all parsing.
     This pattern composed from local patterns,
     each of which can be replaced by .cpp string
-    by actions. That .cpp strings can contain argi
-    elements for replacing it by founded values (like
-    var names, value ...) (see action_add_args).
-    In that case arg1 means first added args by some
-    local pattern, arg2 -second ...
+    (from CppOutsForTerms) by actions (from Actions).
 
+    So for each new pattern
+    You need to create:
+       pattern in Patterns
+              (for example: termArgBeter)
+       outs in cppOutsForTerms
+              (for example get_out_for_termArgBeter)
+       actions in Actions
+              (for example: actions_for_termArgBeter)
+       params (only if they used in three previus)
+              (for example: param_for_termArgBeter)
+    ! name is important
+    Then parser.__init__ will loads all needed params,
+    find all outs and actions and replace patterns by
+    outs.
+
+    Some .cpp strings can contain
+    elements (argi) for replacing it by founded values (like
+    variables names, they values and so on)
+    (see Action.action_add_args).
+    In that case arg1 means first added args by some
+    local pattern, arg2 -second and so on.
     FOR EXAMPLE:
-    if pattern looks like:
-    Group(locPatt1.setParseAction(action_add_args)
-          + locPatt2.setParseAction(action_add_args))
-    and
-    outForTerm looks like 'source[arg1][arg2]'
-    then
-    arg1 will be arg, corresponded to locPatt1
-    arg2 will be arg, corresponded to locPatt2
+    IF pattern looks like:
+    termDemo = Group(termLocPatt1.setParseAction()
+                     + termLocPatt2.setParseAction(action_add_args))
+    AND actions looks like:
+    action_for_termDemo = action_generate_out('termDemo', *args)
+    actions_for_termLocPatt1 = action_add_args(cppOut.dataTermDemo, *args)
+    actions_for_termLocPatt2 = action_add_args(cppOut.dataTermDemo, *args)
+    AND
+    outForTerm in cppOut looks like
+       def get_out_for_termDemo():
+           return('source[arg1][arg2]')
+    THEN
+    arg1 will be arg, corresponded to termLocPatt1
+    arg2 will be arg, corresponded to termLocPatt2
 
     TODO:
     Can load .cpp paterns form .json config file
     (like outForTerm.. ).
     Can load terms and actions from extern files.
     '''
-    def __init__(self, blockNumber=None, dim='1D'):
+    def __init__(self):
+        # blockNumber=None, dim='1D'
         '''
         TODO:
         self.real.copy()
         '''
-        # parameters fill
-        self.params = Params()
-        self.params.dim = dim
-        if blockNumber is not None:
-            self.blockNumber = blockNumber
-            self.params.blockNumber = blockNumber
-        else:
-            self.blockNumber = 0
-            self.params.blockNumber = 0
-        self.dim = dim
 
-        # cpp outs
+        # INIT PARAMS
+        self.params = Params()
+        # self.params.init_params_general(blockNumber, dim)
+
+        # params for termVarsDelay
+        self.params.delays = []
+        # END PARAMS
+
+        # LOAD CPP OUT
         self.cppOut = CppOutsForTerms(self.params)
 
-        # data for actions arg's (in outFor.. string)
-        self.delays = []
-        self.dataTermVarsPoint = []
+        # LOAD PATTERNS
+        self.patterns = Patterns()
 
-        # base elements
-        self.vars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        self.args = 'xyzt'
-        self.params = self.vars.lower()
-        for a in self.args:
-            self.params.replace(a, "")
-        self.func = ['exp', 'sqrt', 'log',
-                     'sin', 'cos', 'tan',
-                     'sinh', 'tanh']
-        self.unary = ['-']
-        self.binary = ['+', '-', '*', '/', '^']
- 
-        # terms (!replace in different file)
-        self.integer = Word(nums)
-        self.real = Word(nums + '.')
-        self.termParam = reduce(lambda x, y: Literal(y) ^ x,
-                                self.params,
-                                Literal(self.params[0]))
-        self.termArgs = reduce(lambda x, y: Literal(y) ^ x,
-                               self.args,
-                               Literal(self.args[0]))
-        self.termFunc = reduce(lambda x, y: Literal(y) ^ x,
-                               self.func,
-                               Literal(self.func[0]))
-        self.termUnary = reduce(lambda x, y: Literal(y) ^ x,
-                                self.unary,
-                                Literal(self.unary[0]))
-        self.termBinary = reduce(lambda x, y: Literal(y) ^ x,
-                                 self.binary,
-                                 Literal(self.binary[0]))
-        # self.termOperand = real ^ indepVariable ^ parameter
-        self.termVarsSimple = reduce(lambda x, y: Literal(y) ^ x,
-                                     self.vars,
-                                     Literal(self.vars[0]))
+        # LOAD ACTIONS
+        self.actions = Actions(self.params, self.cppOut)
 
-        action = lambda str, loc, toks: self.action_add_delay(str, loc, toks)
-        self.termVarsDelay = Group(self.termVarsSimple
-                                   + "("
-                                   + self.termArgs+"-"+self.real
-                                   + ")").setParseAction(action)
+        self.set_action_for_all_terms()
 
-        action = lambda str, loc, toks: self.action_add_args(self.dataTermVarsPoint,
-                                                             str, loc, toks)
-        action_spec = lambda str, loc, toks: self.action_add_args_spec(self.dataTermVarsPoint,
-                                                                       str, loc, toks)
-        action1 = lambda *args: self.action_generate_out('termVarsPointDelay', *args)
-        self.termVarsPointDelay = Group(self.termVarsSimple
-                                        + "("
-                                        + self.termArgs.setParseAction(action)
-                                        + "-" + self.real.setParseAction(action_spec) + ','
-                                        + OneOrMore(Group("{"
-                                                          + self.termArgs.setParseAction(action) + ','
-                                                          + self.real.copy().setParseAction(action) + '}'))
-                                        + ")").setParseAction(action1)
-        action2 = lambda *args: self.action_generate_out('termVarsPoint', *args)
-        self.termVarsPoint = Group(self.termVarsSimple
-                                   + "("
-                                   + self.termArgs.setParseAction(action)
-                                   + ','
-                                   + OneOrMore(Group("{"
-                                                     + self.termArgs.setParseAction(action) + ','
-                                                     + self.real.copy().setParseAction(action) + '}'))
-                                   + ")").setParseAction(action2)
+    def set_action_for_all_terms(self):
+        '''
+        DESCRIPTION:
+        For each term in patterns (i.e name
+        begin with "term")
+        find action in actions (whose name end
+        with term name).
+        And then use term.setParseAction.
 
-        self.termVars = (self.termVarsPoint ^ self.termVarsPointDelay
-                         ^ self.termVarsDelay ^ self.termVarsSimple)
+        EXAMPLE:
+        For term:
+           patterns.termArgs
+        actions must be:
+           actions.action_for_termArgs
         
-        self.termOrder = '{' + self.termArgs + ',' + self.integer + '}'
-        self.termDiff = ('D[' + self.termVars + ','
-                         + self.termOrder + ZeroOrMore(',' + self.termOrder)
-                         + ']')
-
-        self.termOperand = (self.termVars ^ self.termParam ^ Group(self.termDiff)
-                            ^ self.real ^ self.termArgs ^ self.termParam)
-
-        self.recUnary = Forward()
-        self.recUnary << ((Literal('(') ^ self.termUnary)
-                          + Optional(self.recUnary))
-
-        self.baseExpr = Forward()
-        self.baseExpr << (Optional(self.recUnary) + self.termOperand
-                          + Optional(OneOrMore(')'))
-                          + Optional(self.termBinary)
-                          + Optional(self.baseExpr))
-
-        # self.rhsExpr = Forward()
-        # self.rhsExpr << (self.baseExpr
-        #                  + Optional(OneOrMore(')'))
-        #                  + Optional(self.termBinary)
-        #                  + Optional(self.rhsExpr))
-
-        self.eqExpr = (Suppress(self.termVarsSimple + "'" + '=')
-                       + self.baseExpr)  # self.rhsExpr
+        '''
+        patterns = self.patterns.__dict__
+        termsNames = [o for o in patterns.keys()
+                      if "term" in o]
+        self.mapTermsToActions = dict()
+        for term in termsNames:
+            action = self.actions.get_action_for_term(term)
+            if action is not None:
+                patterns[term].setParseAction(action)
+                self.mapTermsToActions[term] = action
 
     def parseMathExpression(self, expr):
         self.clear_data()
         try:
-            parsedExpression = self.eqExpr.parseString(expr)
+            parsedExpression = self.patterns.eqExpr.parseString(expr)
         except:
             print("expr is not a equation")
-            parsedExpression = self.baseExpr.parseString(expr)
+            parsedExpression = self.patterns.baseExpr.parseString(expr)
+        self.out = self.actions.out
+        
         return(parsedExpression)
 
     def clear_data(self):
@@ -169,80 +131,8 @@ class Parser():
         DESCRIPTION:
         Clear terms data for reusing.
         '''
-        self.dataTermVarsPoint = []
-
-    def action_add_delay(self, str, loc, toks):
-        '''
-        DESCRIPTION:
-        If delay U(t-k) found, add k to delays
-        where delays is global.
-        Cannot work with system with vars U,V,...
-        where more then one var has delays.
-        '''
-        # print("toks=")
-        # print(toks)
-        delay = float(toks.asList()[0][4])
-        self.delays.append(delay)
-
-    def action_add_args(self, termData, str, loc, toks):
-        '''
-        DESCRIPTION:
-        Place all found args in termData
-        in occurrance order.
-                        
-        '''
-        # print("toks = ")
-        # print(toks)
-        if toks[0] in "xyz":
-            data = toks[0].upper()
-        else:
-            data = toks[0]
-        termData.append(data)
-    
-    def action_add_args_spec(self, termData, str, loc, toks):
-        '''
-        DESCRIPTION:
-        Place all found args in termData
-        in occurrance order.
-        Spec for delays.
-                        
-        '''
-        print("toks = ")
-        print(toks)
-        data = toks[0].split('.')[0]
-        termData.append(data)
-    
-    def action_generate_out(self, termName, *args):
-        '''
-        DESCRIPTION:
-        Add founded by paterns with termName
-        arg's (like argi) to out string.
-        Use out from cppOutsForTerms
-        (so it should be here)
-        '''
-        self.out = self.cppOut.get_out_for_term(termName)
-        print("dataTermVarsPoint =")
-        print(self.dataTermVarsPoint)
-        for i in range(len(self.dataTermVarsPoint)):
-            self.out = self.out.replace("arg%d" % i,
-                                        self.dataTermVarsPoint[i])
-
-    def action_generate_out_for_termVarsPoint(self, *args):
-        '''
-        DESCRIPTION:
-        Add founded by paterns termVarsPoint
-        arg's (like argi) to out string.
-        '''
-        if self.dim == '1D':
-            self.out = self.outForTermVarsPoint1D
-        elif self.dim == '2D':
-            self.out = self.outForTermVarsPoint2D
-
-        print("dataTermVarsPoint =")
-        print(self.dataTermVarsPoint)
-        for i in range(len(self.dataTermVarsPoint)):
-            self.out = self.out.replace("arg%d" % i,
-                                        self.dataTermVarsPoint[i])
+        self.cppOut.dataTermVarsPoint = []
+        self.cppOut.dataTermVarsPointDelay = []
 
     def test(self):
         eqStrList = [u"U'=D[U(t-1.1),{y,1}]+D[U(t-5.9),{y,2}]+U(t-1)",

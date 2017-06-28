@@ -1,11 +1,29 @@
 class Params():
+    '''
+    DESCRIPTION:
+    If string for cpp out (from cppOutsForTerms.py)
+    contain some params or
+    If actions in Actions.py contain some params
+    that params must be there initiated.
+    Or they must be added in parser.__init__ method in
+    according section.
+    '''
     def __init__(self):
         # for comment before each central function
         self.hatCf = dict()
         
         # for name of central functions
         self.namesCf = dict()
-        
+
+    def init_params_general(self, blockNumber, dim):
+        # parameters fill
+        self.dim = dim
+        if blockNumber is not None:
+            self.blockNumber = blockNumber
+        else:
+            self.blockNumber = 0
+        self.dim = dim
+            
     def set_hat_for_all_cf(self, blockNumber):
         self.cf_hat_common = ('\n//========================='
                               + 'CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER '

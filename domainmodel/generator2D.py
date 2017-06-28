@@ -348,7 +348,7 @@ class Generator2D(AbstractGenerator):
                 condList.append(BoundCondition(values, btype, side, bCondRanges,
                                                boundNumber, equationNum,
                                                equation, funcName,
-                                               blockNumber, '2D'))
+                                               block, blockNumber, '2D'))
             return condList
         #Здесь случай, когда уравнение задано в подблоке
         while var_min < max(varRanges):
@@ -371,7 +371,7 @@ class Generator2D(AbstractGenerator):
                 condList.append(BoundCondition(values, btype, side, bCondRanges,
                                                boundNumber,
                                                equationNum, equation, funcName,
-                                               blockNumber, '2D'))
+                                               block, blockNumber, '2D'))
             else:
                 varMaxReg = min(varMaxLst, key = lambda reg: stepFrom(reg))
                 conds = self.SomeConditions(varMaxReg, stepFrom, stepTo, var_min, max(varRanges))
@@ -386,7 +386,7 @@ class Generator2D(AbstractGenerator):
                     condList.append(BoundCondition(values, btype, side, bCondRanges,
                                                    boundNumber,
                                                    equationNum, equation, funcName,
-                                                   blockNumber, "2D"))
+                                                   block, blockNumber, "2D"))
                 elif var_max == var_min or var_max > var_min and conds[1] or conds[2]:
                     if side == 2 or side == 3:
                         bCondRanges = [[var_min, min([stepTo(varMaxReg), max(varRanges)])], secRanges]
@@ -399,7 +399,7 @@ class Generator2D(AbstractGenerator):
                         condList.append(BoundCondition(values, btype, side, bCondRanges,
                                                        boundNumber,
                                                        equationNum, equation, funcName,
-                                                       blockNumber, '2D'))
+                                                       block, blockNumber, '2D'))
                     #Если там стоит соединение
                     else:
                         startCellIndex = determineCellIndexOfStartOfConnection2D(varMaxReg)

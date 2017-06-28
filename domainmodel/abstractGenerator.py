@@ -20,10 +20,11 @@ class BoundCondition:
     '''
     def __init__(self, values, btype, side, ranges, boundNumber,
                  equationNumber, equation, funcName,
-                 blockNumber=None, dim='1D'):
+                 block, blockNumber=None, dim='1D'):
         self.name = "BoundCondition"
         self.values = values
 
+        self.block = block
         if blockNumber is not None:
             self.blockNumber = blockNumber
         self.dim = dim
@@ -74,7 +75,13 @@ class BoundCondition:
                 print("dim = ")
                 print(self.dim)
                 # parse string like "U(t-1.3,{x, 0.7})"
-                parser = Parser(self.blockNumber, self.dim)
+                # parser = Parser(self.blockNumber, self.dim)
+                parser = self.block.parser
+                parser.params.blockNumber = self.blockNumber
+
+                print("shape")
+                print(parser.params.shape)
+                
                 parser.parseMathExpression(value)
                 # cpp
                 self.parsedValues.append(parser.out)
