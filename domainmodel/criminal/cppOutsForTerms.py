@@ -12,11 +12,17 @@ class CppOutsForTerms():
     and initiated in params before.
     (all that happened in Parser.py)
     '''
+    # use varIndexs for all 
+    # CppOutsForTerms objects
+    dataTermVarSimple = {'varIndexs': []}
+
     def __init__(self, params):
         self.params = params
         
         self.dataTermVarsPoint = []
         self.dataTermVarsPointDelay = []
+        self.dataTermVarSimpleLocal = {'delays': [],
+                                       'varIndexs': []}
 
     def get_out_for_term(self, termName):
         '''
@@ -81,7 +87,8 @@ class CppOutsForTerms():
     def get_out_for_termVarsPoint1DDelay(self):
         blockNumber = self.params.blockNumber
         return('source[arg_T_var][arg_X_var'+'*'
-               + 'Block'+str(blockNumber)+'CELLSIZE]')
+               + 'Block'+str(blockNumber)+'CELLSIZE'
+               + '+'+'arg_varIndex'+']')
         
     def get_out_for_termVarsPoint2DDelay(self):
         blockNumber = self.params.blockNumber
@@ -90,17 +97,22 @@ class CppOutsForTerms():
                 + 'arg_Y_var'+'*Block'
                 + str(blockNumber)
                 + 'StrideY)*'
-                + 'Block'+str(blockNumber)+'CELLSIZE]'))
+                + 'Block'+str(blockNumber)+'CELLSIZE'
+                + '+'+'arg_varIndex' + ']'))
 
     def get_out_for_termVarSimple(self):
         '''
         DESCRIPTION:
+        varIndex usage:
+        source[][idx+0] - x
+        source[][idx+1] - y
+        source[][idx+2] - z
         
         '''
         return('source['
                + 'arg1'  # delay
                + '][idx + '
-               + 'arg2'  # str(varIndex)
+               + 'arg_varIndex'  # str(varIndex)
                + ']')
 
     def get_out_for_termParam(self):

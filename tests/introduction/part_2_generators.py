@@ -67,7 +67,7 @@ def get_model_for_tests(modelFile="tests/short_restest_full.json"):
     return(model)
 
 
-def test_model_create_cpp():
+def test_model_create_cpp(modelFile="tests/brusselator1d_bound_U.json"):
     '''
     DESCRIPTION:
     How .json become .cpp.
@@ -77,7 +77,7 @@ def test_model_create_cpp():
     '''
     
     # load model
-    model = get_model_for_tests()
+    model = get_model_for_tests(modelFile)
     model.createCPPandGetFunctionMaps(
         "tests/introduction/src/from_model_createCPP.cpp",
         "prepr_folder_path")

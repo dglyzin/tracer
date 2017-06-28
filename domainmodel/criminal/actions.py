@@ -2,6 +2,7 @@ class Actions():
     def __init__(self, params, cppOut):
         self.cppOut = cppOut
         self.params = params
+        self.outList = []
 
     def get_action_for_term(self, termName):
         actions = self.__class__.__dict__
@@ -10,6 +11,28 @@ class Actions():
             if actionTermName == termName:
                 return(actions[actionName](self))
         return(None)
+
+    # ACTIONS FOR termVarsSimple
+    def action_for_termVarsSimple(self):
+        def action(termData, termDataLocal, termName, _str, loc, toks):
+            out = self.cppOut.get_out_for_term(termName)
+            print("toks")
+            print(toks)
+            if toks[0] not in termData['varIndexs']:
+                termData['varIndexs'].append(toks[0])
+            if toks[0] not in termDataLocal['varIndexs']:
+                termDataLocal['varIndexs'].append(toks[0])
+            print('termDataLocal')
+            print(termDataLocal)
+            
+            out = out.replace("arg_varIndex",
+                              str(termData['varIndexs'].index(toks[0])))
+            self.outList.append(out)
+        return(lambda str, loc, toks: action(self.cppOut.dataTermVarSimple,
+                                             self.cppOut.dataTermVarSimpleLocal,
+                                             'termVarSimple',
+                                             str, loc, toks))
+    # END ACTIONS
 
     # ACTIONS FOR termVarPoint
     def action_for_termVarsPoint(self):
@@ -95,6 +118,17 @@ class Actions():
         for var in varsVal.keys():
             self.out = self.out.replace(var, varsVal[var])
 
+        varIndexs = self.cppOut.dataTermVarSimple['varIndexs']
+        print("varIndexs")
+        print(varIndexs)
+        varIndex = varIndexs.index(self.cppOut.dataTermVarSimpleLocal['varIndexs'][0])
+        
+        self.out = self.out.replace('arg_varIndex', str(varIndex))
+        
+        # for multiply using in tests
+        self.cppOut.dataTermVarsPointDelay = []
+        self.cppOut.dataTermVarSimpleLocal['varIndexs'] = [] 
+
     def action_add_args_map(self, termData, _str, loc, toks):
         '''
         DESCRIPTION:
@@ -115,9 +149,9 @@ class Actions():
             else:
                 # value for space
                 if termData[-1][0] == 'arg_'+'X'+'_var':
-                    data = str(float(toks[0])*self.params.shape[0])
+                    data = str(int(float(toks[0])*self.params.shape[0]))
                 elif(termData[-1][0] == 'arg_'+'Y'+'_var'):
-                    data = str(float(toks[0])*self.params.shape[1])
+                    data = str(int(float(toks[0])*self.params.shape[1]))
             termData[-1].append(data)
     
     def action_add_args(self, termData, str, loc, toks):

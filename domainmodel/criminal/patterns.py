@@ -34,6 +34,10 @@ class Patterns():
         
         # term for U(t-1.3,{x,0.3}{y,0.7}) or
         # for U(t-1.3,{x,0.3})
+        self.termVarsSimpleCopy = reduce(lambda x, y: Literal(y) ^ x,
+                                         self.vars,
+                                         Literal(self.vars[0]))
+
         self.termVarsPointDelay = Group(self.termVarsSimple
                                         + "("
                                         + (self.termArgForVarDelayT
@@ -47,7 +51,7 @@ class Patterns():
         # END OF TERM
 
         self.termVars = (self.termVarsPointDelay
-                         ^ self.termVarsDelay ^ self.termVarsSimple)  # self.termVarsPoint ^ 
+                         ^ self.termVarsDelay )  # self.termVarsPoint ^ self.termVarsSimple 
         
         self.termOrder = '{' + self.termArgs + ',' + self.integer + '}'
         self.termDiff = ('D[' + self.termVars + ','

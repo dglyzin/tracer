@@ -55,7 +55,7 @@ from pyparsing import Literal, Word, nums, alphas, Group
 from pyparsing import Forward, Optional, OneOrMore, Suppress
 from pyparsing import restOfLine, ZeroOrMore
 from domainmodel.equationParser import CorrectnessController, ParsePatternCreater
-from tests.introduction.part_2_generators import get_gen2D_for_test
+from tests.introduction.part_2_generators import get_gen_for_test
 from tests.introduction.part_2_2_gen_bouns import BlockInfo
 
 
@@ -64,7 +64,7 @@ def test_generateBoundsAndIcs(modelFile="tests/short_restest_full.json"):
     DESCRIPTION:
     Generator2D.generateBoundsAndIcs
     '''
-    gen = get_gen2D_for_test(modelFile).generator
+    gen = get_gen_for_test(modelFile).generator
     gen.generateAllDefinitions()
     
     blockInfo = BlockInfo(gen.blocks[0])
@@ -84,7 +84,7 @@ def test_generateBoundsAndIcs(modelFile="tests/short_restest_full.json"):
 
 def test_generate_vertex(modelFile="tests/short_restest_full.json"):
 
-    gen = get_gen2D_for_test(modelFile).generator
+    gen = get_gen_for_test(modelFile).generator
     gen.generateAllDefinitions()
     
     blockInfo = BlockInfo(gen.blocks[0])
