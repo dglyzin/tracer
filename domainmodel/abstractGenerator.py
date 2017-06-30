@@ -87,6 +87,9 @@ class BoundCondition:
                 self.parsedValues.append(parser.out)
             except:
                 print("criminal fail in BoundCondition.createSpecialProperties")
+                
+                # for clear when fail
+                parser.actions.outList = []
                 print("value=")
                 print(value)
                 self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))

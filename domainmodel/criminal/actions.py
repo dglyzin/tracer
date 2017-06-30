@@ -16,6 +16,8 @@ class Actions():
     # ACTIONS FOR termBrackets
     def action_for_termBrackets(self):
         def action(_str, loc, toks):
+            # print("toks")
+            # print(toks)
             self.outList.append(toks[0])
         return(lambda _str, loc, toks: action(_str, loc, toks))
     # END ACTIONS
@@ -23,15 +25,25 @@ class Actions():
     # ACTIONS FOR termRealForUnary
     def action_for_termRealForUnary(self):
         def action(_str, loc, toks):
+            # print("toks")
+            # print(toks)
             self.outList.append(toks[0])
         return(lambda _str, loc, toks: action(_str, loc, toks))
     # END ACTIONS
 
     # ACTIONS FOR termArgsForUnary
     def action_for_termArgsForUnary(self):
-        def action(_str, loc, toks):
-            self.outList.append(toks[0])
-        return(lambda _str, loc, toks: action(_str, loc, toks))
+        def action(termName, _str, loc, toks):
+            print("toks")
+            print(toks)
+
+            out = self.cppOut.get_out_for_term(termName)
+            out = out.replace("Arg",
+                              str(toks[0]).upper())
+            self.outList.append(out)
+
+        return(lambda _str, loc, toks: action('termArgsForUnary',
+                                              _str, loc, toks))
     # END ACTIONS
 
     # ACTIONS FOR termFunc
@@ -44,6 +56,8 @@ class Actions():
     # ACTIONS FOR termUnary
     def action_for_termUnary(self):
         def action(_str, loc, toks):
+            # print("toks")
+            # print(toks)
             self.outList.append(toks[0])
         return(lambda _str, loc, toks: action(_str, loc, toks))
     # END ACTIONS
@@ -51,6 +65,8 @@ class Actions():
     # ACTIONS FOR termBinary
     def action_for_termBinary(self):
         def action(_str, loc, toks):
+            # print("toks")
+            # print(toks)
             self.outList.append(toks[0])
         return(lambda _str, loc, toks: action(_str, loc, toks))
     # END ACTIONS

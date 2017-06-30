@@ -48,7 +48,15 @@ class CppOutsForTerms():
             methodTermName = methodName.split('_')[-1]
             if methodTermName == termName:
                 return(methods[methodName](self))
-        
+    
+    def get_out_for_termArgsForUnary(self):
+        '''
+        DESCRIPTION:
+        If Arg should by X:
+        return idxX
+        '''
+        return('idxArg')
+
     def get_out_for_termDiff(self):
         diffGen = PureDerivGenerator(self.params)
         diffGen.make_general_data()

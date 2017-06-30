@@ -1,23 +1,23 @@
 {
-    "ProjectName": "Like in Hairer and Wanner", 
+    "ProjectName": "Reaction-diffusion with nonlocal bound", 
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 0.05, 
+        "FinishTime": 1.0, 
         "TimeStep": 1e-07, 
-        "SaveInterval": 0.005, 
+        "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
         "Dimension": 1, 
-        "dx": 0.025, 
+        "dx": 0.001, 
         "dy": 1, 
         "dz": 1
     }, 
     "Blocks": [
         {
-            "Name": "MainBlock", 
+            "Name": "Block 0", 
             "Offset": {
                 "x": 0.0
             }, 
@@ -26,14 +26,12 @@
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [
+            "BoundRegions": [                
                 {
                     "BoundNumber": 0, 
-                    "Side": 0
-                }, 
-                {
-                    "BoundNumber": 0, 
-                    "Side": 1
+                    "Side": 1, 
+                    "xfrom": 1.0, 
+                    "xto": 1.0
                 }
             ], 
             "InitialRegions": [], 
@@ -43,42 +41,34 @@
     "Interconnects": [], 
     "Equations": [
         {
-            "Name": "Flat Brusselator", 
+            "Name": "rd", 
             "Vars": [
                 "x"
             ], 
             "System": [
-                "U'=a+U+U*U*V-(b+1)*U+c*D[U,{x,2}]", 
-                "V'=b*U-U*U*V+c*D[V,{x,2}]"
+                "U'=a*D[U,{x,2}] + d*U"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
-            "a", 
-            "b", 
-            "c"
+            "a",
+            "d"
         ], 
         "ParamValues": [
             {
-                "a": 1.0, 
-                "c": 0.02, 
-                "b": 3
+                "a": 1.0,
+                "d": 1.0
             }
         ], 
         "DefaultParamsIndex": 0
     }, 
     "Bounds": [
         {
-            "Name": "Left point", 
+            "Name": "nonlocal", 
             "Type": 1, 
             "Values": [
-                "-U(t,{x,0.7})", 
-                "V(t-1.1,{x,0.3})"
-            ], 
-            "Derivative": [
-                "0", 
-                "0"
+                "U(t,{x,0.7})"
             ]
         }
     ], 
@@ -86,17 +76,16 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "1+sin(6.28*x)", 
-                "3"
+                "x+1.1"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "cnode1", 
+            "Name": "cnode9", 
             "CpuCount": 1, 
             "CpuMemory": [
-                56
+                5
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
@@ -116,5 +105,10 @@
             }
         ]
     }, 
-    "Plots": []
+    "Plots": [
+        {
+            "Title": "u(t)", 
+            "Period": 0.1
+        }
+    ]
 }
