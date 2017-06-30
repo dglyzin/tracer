@@ -94,7 +94,10 @@ Example of blocks configuration:
         {
             "Name": "N 1", 
             "Type": 1, 
-            "Values": [
+            "Values": [ # for each (U, V, M, N)
+                "50.0",
+                "50.0",
+                "50.0",
                 "50.0"
             ]
         }

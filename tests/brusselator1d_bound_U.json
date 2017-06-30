@@ -48,7 +48,7 @@
                 "x"
             ], 
             "System": [
-                "U'=a+U*U*V-(b+1)*U+c*D[U,{x,2}]", 
+                "U'=a+U+U*U*V-(b+1)*U+c*D[U,{x,2}]", 
                 "V'=b*U-U*U*V+c*D[V,{x,2}]"
             ]
         }
@@ -73,7 +73,7 @@
             "Name": "Left point", 
             "Type": 1, 
             "Values": [
-                "U(t,{x,0.3})", 
+                "-U(t,{x,0.3})", 
                 "V(t-1.1,{x,0.3})"
             ], 
             "Derivative": [

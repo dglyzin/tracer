@@ -15,6 +15,11 @@ class FuncGenerator:
         self.preprocessorFolder = preprocessorFolder
     
     def generateAllFunctions(self):
+        '''
+        DESCRIPTION:
+        Generate outputStr for .cpp
+        and functionMaps for saveDomain
+        '''
         #gridStep --- список [gridStepX, gridStepY, gridStepZ]
         outputStr = '#include <math.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include "' +self.preprocessorFolder +  '/doc/userfuncs.h"\n\n'
         outputStr += self.generator.generateAllDefinitions()

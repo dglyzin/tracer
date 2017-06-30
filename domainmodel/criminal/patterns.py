@@ -17,6 +17,8 @@ class Patterns():
                                      self.vars,
                                      Literal(self.vars[0]))
 
+        self.termVarsSimpleIndep = self.termVarsSimple.copy()
+ 
         # TERM FOR U(t-1.9)
         self.termVarsDelay = Group(self.termVarsSimple
                                    + "("
@@ -34,10 +36,7 @@ class Patterns():
         
         # term for U(t-1.3,{x,0.3}{y,0.7}) or
         # for U(t-1.3,{x,0.3})
-        self.termVarsSimpleCopy = reduce(lambda x, y: Literal(y) ^ x,
-                                         self.vars,
-                                         Literal(self.vars[0]))
-
+        
         self.termVarsPointDelay = Group(self.termVarsSimple
                                         + "("
                                         + (self.termArgForVarDelayT
@@ -51,7 +50,7 @@ class Patterns():
         # END OF TERM
 
         self.termVars = (self.termVarsPointDelay
-                         ^ self.termVarsDelay )  # self.termVarsPoint ^ self.termVarsSimple 
+                         ^ self.termVarsDelay ^ self.termVarsSimpleIndep)
         
         self.termOrder = '{' + self.termArgs + ',' + self.integer + '}'
         self.termDiff = ('D[' + self.termVars + ','
@@ -60,17 +59,56 @@ class Patterns():
 
         self.termOperand = (self.termVars ^ self.termParam ^ Group(self.termDiff)
                             ^ self.real ^ self.termArgs ^ self.termParam)
+        
+        self.termBrackets = Literal('(') ^ Literal(')')
+        self.termRealForUnary = self.real.copy()
+        self.termArgsForUnary = self.termArgs.copy()
+        self.termFuncArg = Group(self.termFunc
+                                 + self.termBrackets
+                                 + self.termArgsForUnary
+                                 + self.termBrackets)
+        self.termUnaryFunc = (Group(ZeroOrMore(self.termUnary)
+                                    + self.termRealForUnary)
+                              ^ Group(self.termBrackets
+                                      + OneOrMore(self.termUnary)
+                                      + self.termRealForUnary
+                                      + self.termBrackets)
+                              ^ Group(ZeroOrMore(self.termUnary)
+                                      + self.termFuncArg)
+                              ^ Group(self.termBrackets
+                                      + OneOrMore(self.termUnary)
+                                      + self.termFuncArg
+                                      + self.termBrackets))
 
         self.recUnary = Forward()
+
+        self.recUnary << (Optional(self.termBrackets)
+                          + self.termUnaryFunc
+                          + Optional(self.termBinary)
+                          + Optional(self.recUnary)
+                          )  #?
+        '''
         self.recUnary << ((Literal('(') ^ self.termUnary)
                           + Optional(self.recUnary))
-
+        '''
         self.baseExpr = Forward()
+        
+        self.baseExpr << (Optional(self.termBrackets)
+                          + Optional(self.termUnary)
+                          + Optional(self.termBrackets)
+                          + Optional(self.recUnary)
+                          + Optional(self.termBrackets)
+                          + Optional(self.termBinary)
+                          + self.termOperand
+                          + Optional(self.termBinary)
+                          + Optional(self.baseExpr)
+                          )
+        '''
         self.baseExpr << (Optional(self.recUnary) + self.termOperand
                           + Optional(OneOrMore(')'))
                           + Optional(self.termBinary)
                           + Optional(self.baseExpr))
-
+        '''
         self.eqExpr = (Suppress(self.termVarsSimple + "'" + '=')
                        + self.baseExpr)  # self.rhsExpr
 

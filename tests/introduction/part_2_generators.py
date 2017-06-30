@@ -3,6 +3,11 @@ DESCRIPTION:
 Some functions for understanding how
 generators of .cpp code work.
 
+For generate and test cpp:
+import tests.introduction.part_2_generators as p2
+p2.test_model_create_cpp(testFile)
+p2.test_cpp()
+
 From most general to particlular.
 
 SHEME OF ABSTRACTIONs:
@@ -26,6 +31,7 @@ from domainmodel.model import Model
 from domainmodel.funcGenerator import FuncGenerator
 from domainmodel.generator2D import Generator2D
 from domainmodel.abstractGenerator import AbstractGenerator
+import os
 
 
 def get_gen_for_test(modelFile="tests/short_restest_full.json"):
@@ -83,6 +89,38 @@ def test_model_create_cpp(modelFile="tests/brusselator1d_bound_U.json"):
         "prepr_folder_path")
     return(model)
 
+
+def test_cpp(fileName='from_model_createCPP.cpp'):
+    '''
+    DESCRIPTION:
+    Test generated file by gcc.
+    File should be in "/hybriddomain/tests/indtroduction/src"
+    folder and libuserfuncs.so, userfuncs.h also
+
+    
+    '''
+    path = os.path.join('tests',
+                        'introduction',
+                        'src')
+    cpp = os.path.join(path, fileName)
+    lib = os.path.join(path, 'libuserfuncs.so')
+
+    # change bad path
+    f = open(cpp)
+    data = f.read()
+    f.close()
+    data = data.replace("prepr_folder_path/doc/userfuncs.h", "userfuncs.h")
+    f = open(cpp, 'w')
+    f.write(data)
+    f.close()
+
+    # call gcc
+    cmd = ('gcc ' + cpp + ' -shared -O3 -o '
+           + lib + ' -fPIC')
+    print("cmd = ")
+    print(cmd)
+    p = os.system(cmd)
+    return(p)
 
 def test_func_gen():
     '''

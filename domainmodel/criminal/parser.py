@@ -122,8 +122,8 @@ class Parser():
         except:
             print("expr is not a equation")
             parsedExpression = self.patterns.baseExpr.parseString(expr)
-        self.out = self.actions.out
-        
+        self.out = reduce(lambda x, y: x+y, self.actions.outList)
+        self.actions.outList = []
         return(parsedExpression)
 
     def clear_data(self):

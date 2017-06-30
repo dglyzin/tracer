@@ -3,6 +3,7 @@ class Actions():
         self.cppOut = cppOut
         self.params = params
         self.outList = []
+        self.out = None
 
     def get_action_for_term(self, termName):
         actions = self.__class__.__dict__
@@ -12,8 +13,135 @@ class Actions():
                 return(actions[actionName](self))
         return(None)
 
-    # ACTIONS FOR termVarsSimple
-    def action_for_termVarsSimple(self):
+    # ACTIONS FOR termBrackets
+    def action_for_termBrackets(self):
+        def action(_str, loc, toks):
+            self.outList.append(toks[0])
+        return(lambda _str, loc, toks: action(_str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termRealForUnary
+    def action_for_termRealForUnary(self):
+        def action(_str, loc, toks):
+            self.outList.append(toks[0])
+        return(lambda _str, loc, toks: action(_str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termArgsForUnary
+    def action_for_termArgsForUnary(self):
+        def action(_str, loc, toks):
+            self.outList.append(toks[0])
+        return(lambda _str, loc, toks: action(_str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termFunc
+    def action_for_termFunc(self):
+        def action(_str, loc, toks):
+            self.outList.append(toks[0])
+        return(lambda _str, loc, toks: action(_str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termUnary
+    def action_for_termUnary(self):
+        def action(_str, loc, toks):
+            self.outList.append(toks[0])
+        return(lambda _str, loc, toks: action(_str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termBinary
+    def action_for_termBinary(self):
+        def action(_str, loc, toks):
+            self.outList.append(toks[0])
+        return(lambda _str, loc, toks: action(_str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termDiff
+    def action_for_termDiff(self):
+        def action(termData, termName, _str, loc, toks):
+            # FOR unknownVarIndex
+            # take indexes from global
+            varIndexs = self.cppOut.dataTermVarsSimpleGlobal['varIndexs']
+            print("varIndexs")
+            print(varIndexs)
+            # find index of local var for shift
+            # like (U,V)-> (source[+0], source[+1])
+            varIndex = varIndexs.index(self.cppOut.dataTermVarSimpleLocal['varIndexs'][0])
+            self.cppOut.params.unknownVarIndex = varIndex
+            # END FOR
+
+            # FOR userIndepVariables
+            self.cppOut.params.userIndepVariables = ['x', 'y']
+            # END FOR
+
+            print("termData")
+            print(termData)
+            # FOR indepVarList
+            # vars like ['x'] for which diff make's
+            indepVar = termData['indepVar']
+            self.cppOut.params.indepVarList = indepVar
+            # END FOR
+
+            # FOR indepVarIndexList
+            # for choicing diff type from parameters
+            if indepVar[0] == 'x':
+                self.cppOut.params.indepVarIndexList = [0]
+            else:
+                # y
+                self.cppOut.params.indepVarIndexList = [1]
+            # END FOR
+
+            # FOR derivOrder
+            # vars like ['x'] for which diff make's
+            derivOrder = termData['order'][0]
+            self.cppOut.params.derivOrder = int(derivOrder)
+            # END FOR
+
+            termData['indepVar'] = []
+            termData['order'] = []
+            out = self.cppOut.get_out_for_term(termName)
+            self.outList.append(out)
+            
+            '''
+            print("toks")
+            print(toks)
+            if toks[0] not in termData['varIndexs']:
+                termData['varIndexs'].append(toks[0])
+            if toks[0] not in termDataLocal['varIndexs']:
+                termDataLocal['varIndexs'].append(toks[0])
+            print('termDataLocal')
+            print(termDataLocal)
+            
+            out = out.replace("arg_varIndex",
+                              str(termData['varIndexs'].index(toks[0])))
+            if len(self.outList) == 0:
+                self.outList.append(out)
+            else:
+                self.outList.append('+'+out)
+            '''
+        return(lambda str, loc, toks: action(self.cppOut.dataTermOrder,
+                                             'termDiff',
+                                             str, loc, toks))
+    # END ACTIONS
+    
+    # ACTIONS FOR termOrder
+    def action_for_termOrder(self):
+        def action(termData, _str, loc, toks):
+            # out = self.cppOut.get_out_for_term(termName)
+            print("toks")
+            print(toks)
+            if toks[1] not in termData['indepVar']:
+                termData['indepVar'].append(toks[1])
+                termData['order'].append(toks[3])
+            
+            # out = out.replace("arg_varIndex",
+            #                   str(termData['varIndexs'].index(toks[0])))
+            # self.outList.append(out)
+        return(lambda str, loc, toks: action(self.cppOut.dataTermOrder,
+                                             str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termVarsSimpleIndep
+    def action_for_termVarsSimpleIndep(self):
         def action(termData, termDataLocal, termName, _str, loc, toks):
             out = self.cppOut.get_out_for_term(termName)
             print("toks")
@@ -27,10 +155,33 @@ class Actions():
             
             out = out.replace("arg_varIndex",
                               str(termData['varIndexs'].index(toks[0])))
+            
             self.outList.append(out)
-        return(lambda str, loc, toks: action(self.cppOut.dataTermVarSimple,
+        return(lambda str, loc, toks: action(self.cppOut.dataTermVarsSimpleGlobal,
+                                             self.cppOut.dataTermVarsSimpleIndep,
+                                             'termVarsSimpleIndep',
+                                             str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termVarsSimple
+    def action_for_termVarsSimple(self):
+        def action(termData, termDataLocal, termName, _str, loc, toks):
+            # out = self.cppOut.get_out_for_term(termName)
+            print("toks")
+            print(toks)
+            if toks[0] not in termData['varIndexs']:
+                termData['varIndexs'].append(toks[0])
+            if toks[0] not in termDataLocal['varIndexs']:
+                termDataLocal['varIndexs'].append(toks[0])
+            print('termDataLocal')
+            print(termDataLocal)
+            
+            # out = out.replace("arg_varIndex",
+            #                   str(termData['varIndexs'].index(toks[0])))
+            # self.outList.append(out)
+        return(lambda str, loc, toks: action(self.cppOut.dataTermVarsSimpleGlobal,
                                              self.cppOut.dataTermVarSimpleLocal,
-                                             'termVarSimple',
+                                             'termVarsSimple',
                                              str, loc, toks))
     # END ACTIONS
 
@@ -118,13 +269,16 @@ class Actions():
         for var in varsVal.keys():
             self.out = self.out.replace(var, varsVal[var])
 
-        varIndexs = self.cppOut.dataTermVarSimple['varIndexs']
+        # take indexes from global
+        varIndexs = self.cppOut.dataTermVarsSimpleGlobal['varIndexs']
         print("varIndexs")
         print(varIndexs)
+        # find index of local var
         varIndex = varIndexs.index(self.cppOut.dataTermVarSimpleLocal['varIndexs'][0])
         
         self.out = self.out.replace('arg_varIndex', str(varIndex))
-        
+        self.outList.append(self.out)
+
         # for multiply using in tests
         self.cppOut.dataTermVarsPointDelay = []
         self.cppOut.dataTermVarSimpleLocal['varIndexs'] = [] 

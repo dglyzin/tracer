@@ -433,7 +433,9 @@ class Generator2D(AbstractGenerator):
                         objects, containing values property with
                         function string for bounds equation.
                         (from generator2D.getBlockInfo)
-        
+    
+        blockFunctionMap -- used for saveDomain
+
         USED FUNCTIONS:
         parseBoundaryConditions
         createVertexCondLst
@@ -478,6 +480,7 @@ class Generator2D(AbstractGenerator):
                     continue
                 if not isinstance(condition, Connection):
                     if (condition.boundNumber, condition.equationNumber) in boundAndEquatNumbersList:
+                        # sideLst for saveDomain
                         ranges = getRangesInClosedInterval([condition.ranges[0][0], condition.ranges[0][1],
                                                             self.gridStep[0], block.sizeX],
                                                            [condition.ranges[1][0], condition.ranges[1][1],
@@ -510,6 +513,7 @@ class Generator2D(AbstractGenerator):
                                                    [condition.ranges[1][0],
                                                     condition.ranges[1][1], self.gridStep[1]])
                 sideLst.append([arrWithFunctionNames.index(condition.funcName)] + ranges)
+            # for saveDomain
             blockFunctionMap.update({sideName:sideLst}) 
         return ''.join(outputStr)
     

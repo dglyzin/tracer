@@ -1,3 +1,6 @@
+from domainmodel.criminal.derivCodeGenerator import PureDerivGenerator
+
+
 class CppOutsForTerms():
     '''
     DESCRIPTION:
@@ -14,7 +17,7 @@ class CppOutsForTerms():
     '''
     # use varIndexs for all 
     # CppOutsForTerms objects
-    dataTermVarSimple = {'varIndexs': []}
+    dataTermVarsSimpleGlobal = {'varIndexs': []}
 
     def __init__(self, params):
         self.params = params
@@ -23,6 +26,12 @@ class CppOutsForTerms():
         self.dataTermVarsPointDelay = []
         self.dataTermVarSimpleLocal = {'delays': [],
                                        'varIndexs': []}
+        self.dataTermVarsSimpleIndep = {'delays': [],
+                                        'varIndexs': []}
+
+        #!!!self.diffGen = PureDerivGenerator(params)
+        self.dataTermOrder = {'indepVar': [],
+                              'order': []}
 
     def get_out_for_term(self, termName):
         '''
@@ -39,6 +48,25 @@ class CppOutsForTerms():
             methodTermName = methodName.split('_')[-1]
             if methodTermName == termName:
                 return(methods[methodName](self))
+        
+    def get_out_for_termDiff(self):
+        diffGen = PureDerivGenerator(self.params)
+        diffGen.make_general_data()
+        increment = diffGen.increment
+        specialIncrement = diffGen.specialIncrement
+        stride = diffGen.stride
+        
+        if self.params.diffMethod == 'common':
+            out = diffGen.commonPureDerivativeAlternative(increment, stride)
+        elif(self.params.diffMethod == 'special'):
+            out = diffGen.specialPureDerivativeAlternative(increment,specialIncrement,
+                                                           stride, 1)
+        elif(self.params.diffMethod == 'interconnect'):
+            out = diffGen.interconnectPureDerivAlternative(increment, stride)
+        else:
+            # define method from properties
+            out = diffGen.pureDerivative()
+        return(out)
 
     def get_out_for_termVarsPoint(self):
         '''
@@ -100,7 +128,7 @@ class CppOutsForTerms():
                 + 'Block'+str(blockNumber)+'CELLSIZE'
                 + '+'+'arg_varIndex' + ']'))
 
-    def get_out_for_termVarSimple(self):
+    def get_out_for_termVarsSimpleIndep(self):
         '''
         DESCRIPTION:
         varIndex usage:
@@ -110,7 +138,7 @@ class CppOutsForTerms():
         
         '''
         return('source['
-               + 'arg1'  # delay
+               + 'arg_delay'  # delay
                + '][idx + '
                + 'arg_varIndex'  # str(varIndex)
                + ']')
