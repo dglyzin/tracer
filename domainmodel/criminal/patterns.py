@@ -20,7 +20,8 @@ class Patterns():
         self.termVarsSimpleIndep = self.termVarsSimple.copy()
  
         # TERM FOR U(t-1.9)
-        self.termVarsDelay = Group(self.termVarsSimple
+        # self.termVarsForDelay = self.termVarsSimple.copy()
+        self.termVarsDelay = Group(self.termVarsSimpleIndep
                                    + "("
                                    + self.termArgs+"-"+self.real
                                    + ")")  # .setParseAction(action)
@@ -60,6 +61,7 @@ class Patterns():
         self.termOperand = (self.termVars ^ self.termParam ^ Group(self.termDiff)
                             ^ self.real ^ self.termArgs ^ self.termParam)
         
+        # FOR TERM like -(-sin(x)+cos(x))*U
         self.termBrackets = Literal('(') ^ Literal(')')
         self.termRealForUnary = self.real.copy()
         self.termArgsForUnary = self.termArgs.copy()
@@ -86,22 +88,24 @@ class Patterns():
                           + self.termUnaryFunc
                           + Optional(self.termBinary)
                           + Optional(self.recUnary)
-                          )  #?
+                          )
+        # END OF TERM
+
         '''
         self.recUnary << ((Literal('(') ^ self.termUnary)
                           + Optional(self.recUnary))
         '''
-        self.baseExpr = Forward()
+        self.termBaseExpr = Forward()
         
-        self.baseExpr << (Optional(self.termBrackets)
-                          + Optional(self.termUnary)
-                          + Optional(self.termBrackets)
-                          + Optional(self.recUnary)
-                          + Optional(self.termBrackets)
-                          + Optional(self.termBinary)
-                          + self.termOperand
-                          + Optional(self.termBinary)
-                          + Optional(self.baseExpr)
+        self.termBaseExpr << (Optional(self.termBrackets)
+                              + Optional(self.termUnary)
+                              + Optional(self.termBrackets)
+                              + Optional(self.recUnary)
+                              + Optional(self.termBrackets)
+                              + Optional(self.termBinary)
+                              + self.termOperand
+                              + Optional(self.termBinary)
+                              + Optional(self.termBaseExpr)
                           )
         '''
         self.baseExpr << (Optional(self.recUnary) + self.termOperand
@@ -110,7 +114,7 @@ class Patterns():
                           + Optional(self.baseExpr))
         '''
         self.eqExpr = (Suppress(self.termVarsSimple + "'" + '=')
-                       + self.baseExpr)  # self.rhsExpr
+                       + self.termBaseExpr)  # self.rhsExpr
 
     def load_base_patterns(self):
         # terms (!replace in different file)

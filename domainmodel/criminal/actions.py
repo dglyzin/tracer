@@ -13,6 +13,58 @@ class Actions():
                 return(actions[actionName](self))
         return(None)
 
+    # ACTIONS FOR termBaseExpr
+    def action_for_termBaseExpr(self):
+        def convert_delay(val, delays):
+            '''
+            DESCRIPTION:
+            Find index of floating delay val.
+            independently of order.
+            Value is only important for order:
+            For ex:
+            [5.1, 1.5, 2.7]->
+            [3, 1, 2]
+            '''
+            delays.sort()
+            print("delay_list")
+            print(delays)
+            return(delays.index(val)+1)
+
+        def action(termData,
+                   _str, loc, toks):
+            '''
+            DESCRIPTION:
+            If delay U(t-k) found, add k to delays
+            where delays is global.
+            Cannot work with system with vars U,V,...
+            where more then one var has delays.
+
+            termDataInner only for read.
+            '''
+            # print("toks from termBaseExpr =")
+            # print(toks)
+            
+            out = reduce(lambda x, y: x+y, self.outList)
+
+            # change all founded delay marker to
+            # delay
+            for var in termData.keys():
+                for delay in termData[var]:
+                    # convert delays like:
+                    # 1.1 -> 1 (see convert_delay)
+                    delayConv = convert_delay(delay, termData[var])
+                    out = out.replace("arg_delay_"+var+'_'+str(delay),
+                                      str(delayConv))
+
+            self.outList = [out]
+
+            termData.clear()
+            # self.actions.outList = []
+        
+        return(lambda str, loc, toks: action(self.cppOut.dataTermVarsForDelay,
+                                             str, loc, toks))
+    # END ACTIONS
+
     # ACTIONS FOR termBrackets
     def action_for_termBrackets(self):
         def action(_str, loc, toks):
@@ -73,12 +125,16 @@ class Actions():
 
     # ACTIONS FOR termDiff
     def action_for_termDiff(self):
+        termData = {}
+        termData.update(self.cppOut.dataTermOrder)
+        termData.update()
         def action(termData, termName, _str, loc, toks):
             # FOR unknownVarIndex
             # take indexes from global
             varIndexs = self.cppOut.dataTermVarsSimpleGlobal['varIndexs']
             print("varIndexs")
             print(varIndexs)
+
             # find index of local var for shift
             # like (U,V)-> (source[+0], source[+1])
             varIndex = varIndexs.index(self.cppOut.dataTermVarSimpleLocal['varIndexs'][0])
@@ -91,6 +147,7 @@ class Actions():
 
             print("termData")
             print(termData)
+
             # FOR indepVarList
             # vars like ['x'] for which diff make's
             indepVar = termData['indepVar']
@@ -107,13 +164,14 @@ class Actions():
             # END FOR
 
             # FOR derivOrder
-            # vars like ['x'] for which diff make's
             derivOrder = termData['order'][0]
             self.cppOut.params.derivOrder = int(derivOrder)
             # END FOR
 
             termData['indepVar'] = []
             termData['order'] = []
+
+
             out = self.cppOut.get_out_for_term(termName)
             self.outList.append(out)
             
@@ -134,6 +192,8 @@ class Actions():
             else:
                 self.outList.append('+'+out)
             '''
+
+        
         return(lambda str, loc, toks: action(self.cppOut.dataTermOrder,
                                              'termDiff',
                                              str, loc, toks))
@@ -158,6 +218,20 @@ class Actions():
 
     # ACTIONS FOR termVarsSimpleIndep
     def action_for_termVarsSimpleIndep(self):
+        '''
+        DESCRIPTION:
+        Add simple out for U.
+        Add varInexes global and local
+
+        Local will used for finding its index
+        in global in action_generate_out_map
+
+        varIndex usage:
+        source[][idx+0] - x
+        source[][idx+1] - y
+        source[][idx+2] - z
+        
+        '''
         def action(termData, termDataLocal, termName, _str, loc, toks):
             out = self.cppOut.get_out_for_term(termName)
             print("toks")
@@ -201,6 +275,52 @@ class Actions():
                                              str, loc, toks))
     # END ACTIONS
 
+    # ACTIONS FOR termVarsDelay
+    def action_for_termVarsDelay(self):
+        def action_add_delay(termName, termDataInner, termData,
+                             _str, loc, toks):
+            '''
+            DESCRIPTION:
+            If delay U(t-k) found, add k to delays
+            where delays is global.
+            Cannot work with system with vars U,V,...
+            where more then one var has delays.
+
+            termDataInner only for read.
+            '''
+            out = self.cppOut.get_out_for_term(termName)
+            
+            print("toks from termVarsDelay =")
+            print(toks)
+            var = toks.asList()[0][0]
+            delay = float(toks.asList()[0][4])
+            
+            if var not in termData.keys():
+                termData[var] = [delay]
+            else:
+                termData[var].append(delay)
+
+            out = out.replace("arg_varIndex",
+                              str(termDataInner['varIndexs'].index(toks[0][0])))
+            # change arg_delay to something
+            # like arg_delay_U_1.1
+            out = out.replace("arg_delay",
+                              "arg_delay_"+str(toks[0][0])+'_'+str(delay))
+
+            # remove last element out
+            # i.e. inner termVarsSimpleIndep
+            # for ex: for "U(t-1.1)" remove
+            # out for U.
+            self.outList.pop()
+
+            self.outList.append(out)
+       
+        return(lambda str, loc, toks: action_add_delay('termVarsDelay',
+                                                       self.cppOut.dataTermVarsSimpleGlobal,
+                                                       self.cppOut.dataTermVarsForDelay,
+                                                       str, loc, toks))
+    # END ACTIONS
+
     # ACTIONS FOR termVarPoint
     def action_for_termVarsPoint(self):
         
@@ -241,31 +361,19 @@ class Actions():
                                                                str, loc, toks))
     # END ACTIONS
 
-    # ACTIONS FOR termVarsDelay
-    def action_for_termVarsDealy(self):
-        return(lambda str, loc, toks: self.action_add_delay(str, loc, toks))
-    # END ACTIONS
-
-    def action_add_delay(self, str, loc, toks):
-        '''
-        DESCRIPTION:
-        If delay U(t-k) found, add k to delays
-        where delays is global.
-        Cannot work with system with vars U,V,...
-        where more then one var has delays.
-        '''
-        # print("toks=")
-        # print(toks)
-        delay = float(toks.asList()[0][4])
-        self.delays.append(delay)
-
     def action_generate_out_map(self, termName, *args):
         '''
         DESCRIPTION:
-        Add founded by paterns with termName
+        Add founded by patterns with termName
         arg's (like argi) to out string.
         Use out from cppOutsForTerms
         (so it should be here)
+
+        dataTermVarSimpleLocal used for find var,
+        founded by termArgForVarDelay.
+
+        dataTermVarsSimpleGlobal used for find
+        var index (i.e. shift).
         '''
         self.out = self.cppOut.get_out_for_term(termName)
         print("dataTermVarsPoint =")
@@ -289,8 +397,10 @@ class Actions():
         varIndexs = self.cppOut.dataTermVarsSimpleGlobal['varIndexs']
         print("varIndexs")
         print(varIndexs)
+
         # find index of local var
-        varIndex = varIndexs.index(self.cppOut.dataTermVarSimpleLocal['varIndexs'][0])
+        var = self.cppOut.dataTermVarSimpleLocal['varIndexs'][0]
+        varIndex = varIndexs.index(var)
         
         self.out = self.out.replace('arg_varIndex', str(varIndex))
         self.outList.append(self.out)

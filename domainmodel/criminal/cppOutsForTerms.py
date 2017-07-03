@@ -15,7 +15,7 @@ class CppOutsForTerms():
     and initiated in params before.
     (all that happened in Parser.py)
     '''
-    # use varIndexs for all 
+    # use varIndexs for all
     # CppOutsForTerms objects
     dataTermVarsSimpleGlobal = {'varIndexs': []}
 
@@ -32,6 +32,8 @@ class CppOutsForTerms():
         #!!!self.diffGen = PureDerivGenerator(params)
         self.dataTermOrder = {'indepVar': [],
                               'order': []}
+        
+        self.dataTermVarsForDelay = {}
 
     def get_out_for_term(self, termName):
         '''
@@ -58,6 +60,10 @@ class CppOutsForTerms():
         return('idxArg')
 
     def get_out_for_termDiff(self):
+        '''
+        DESCRIPTION:
+        self.params should be initiated first.
+        '''
         diffGen = PureDerivGenerator(self.params)
         diffGen.make_general_data()
         increment = diffGen.increment
@@ -67,7 +73,7 @@ class CppOutsForTerms():
         if self.params.diffMethod == 'common':
             out = diffGen.commonPureDerivativeAlternative(increment, stride)
         elif(self.params.diffMethod == 'special'):
-            out = diffGen.specialPureDerivativeAlternative(increment,specialIncrement,
+            out = diffGen.specialPureDerivativeAlternative(increment, specialIncrement,
                                                            stride, 1)
         elif(self.params.diffMethod == 'interconnect'):
             out = diffGen.interconnectPureDerivAlternative(increment, stride)
@@ -136,6 +142,13 @@ class CppOutsForTerms():
                 + 'Block'+str(blockNumber)+'CELLSIZE'
                 + '+'+'arg_varIndex' + ']'))
 
+    def get_out_for_termVarsDelay(self):
+        return('source['
+               + 'arg_delay'  # delay
+               + '][idx + '
+               + 'arg_varIndex'  # str(varIndex)
+               + ']')
+
     def get_out_for_termVarsSimpleIndep(self):
         '''
         DESCRIPTION:
@@ -146,7 +159,7 @@ class CppOutsForTerms():
         
         '''
         return('source['
-               + 'arg_delay'  # delay
+               + '0'  # delay
                + '][idx + '
                + 'arg_varIndex'  # str(varIndex)
                + ']')

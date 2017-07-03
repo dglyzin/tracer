@@ -154,17 +154,17 @@ class PureDerivGenerator:
         for derivOrder = 1
         du/dx = (u_{i+1}-u_{i-1})/(2 dx)
         
-        for dericOrder = 2
+        for derivOrder = 2
         ddu/ddx = (u_{i+1}-2*u_{i}+u_{i-1})/(dx^2)
 
         source[idx  # point in that derive will find
-        +  stride  * Block0CELLSIZE  # +1 to some of {x,y,z} direction 
-                                     # (defined by stride) 
+        +  stride  * Block0CELLSIZE  # +1 to some of {x,y,z} direction
+                                     # (defined by stride)
                                      # ('x': +1,
                                      #  'y': + Block0StrideY*Block0CELLSIZE,
                                      #  'z': + Block0StrideZ*Block0CELLSIZE
                                      #         = Block0SizeY*Block0CountY*Block0CELLSIZE)
-        +  $ unknownVarIndex[0] $ ] # +1 for each variable ('U': +0, 'V': +1)
+        +  $ unknownVarIndex[0] $ ]  # shift, differ for each variable ('U': +0, 'V': +1)
         
         USED FUNCTIONS:
         str self.blockNumber
