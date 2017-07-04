@@ -36,7 +36,11 @@ class Actions():
             DESCRIPTION:
             If delay U(t-k) found, add k to delays
             where delays is global.
-            Cannot work with system with vars U,V,...
+            Replace each occurrance of delay in 
+            out stack to it value according 
+            convert_delay function.
+            Use dataTermVarsForDelay.
+            Can work with system with vars U,V,...
             where more then one var has delays.
 
             termDataInner only for read.
@@ -128,7 +132,16 @@ class Actions():
         termData = {}
         termData.update(self.cppOut.dataTermOrder)
         termData.update()
+
         def action(termData, termName, _str, loc, toks):
+            '''
+            DESCRIPTION:
+            Fill parameters from inner founded term
+            and use it for diff out.
+
+            TODO:
+            Replace varIndex from string
+            '''
             # FOR unknownVarIndex
             # take indexes from global
             varIndexs = self.cppOut.dataTermVarsSimpleGlobal['varIndexs']
@@ -171,8 +184,32 @@ class Actions():
             termData['indepVar'] = []
             termData['order'] = []
 
+            # take source[delay] from inner term
+            # like termVarsDelay
+            # and
+            # remove last element out from stack
+            # i.e. inner termVarsSimpleIndep
+            # for ex: for "D[U,{x,2}]" remove
+            # out for U.
+            innerTermOut = self.outList.pop()
+
+            # cut delay
+            _from = innerTermOut.index('[')+1
+            _to = innerTermOut.index(']')
+            innerTermOutDelay = innerTermOut[_from:_to]
+
+            print("innerTermOut")
+            print(innerTermOut)
+            print("innerTermOutDelay")
+            print(innerTermOutDelay)
 
             out = self.cppOut.get_out_for_term(termName)
+            
+            # change arg_delay to something
+            # like arg_delay_U_1.1
+            out = out.replace("arg_delay",
+                              innerTermOutDelay)
+
             self.outList.append(out)
             
             '''
@@ -192,8 +229,6 @@ class Actions():
             else:
                 self.outList.append('+'+out)
             '''
-
-        
         return(lambda str, loc, toks: action(self.cppOut.dataTermOrder,
                                              'termDiff',
                                              str, loc, toks))
@@ -256,6 +291,10 @@ class Actions():
     # ACTIONS FOR termVarsSimple
     def action_for_termVarsSimple(self):
         def action(termData, termDataLocal, termName, _str, loc, toks):
+            '''
+            DESCRIPTION:
+            Collect variables indexes.
+            '''
             # out = self.cppOut.get_out_for_term(termName)
             print("toks")
             print(toks)
@@ -283,7 +322,7 @@ class Actions():
             DESCRIPTION:
             If delay U(t-k) found, add k to delays
             where delays is global.
-            Cannot work with system with vars U,V,...
+            Can work with system with vars U,V,...
             where more then one var has delays.
 
             termDataInner only for read.
@@ -302,6 +341,7 @@ class Actions():
 
             out = out.replace("arg_varIndex",
                               str(termDataInner['varIndexs'].index(toks[0][0])))
+
             # change arg_delay to something
             # like arg_delay_U_1.1
             out = out.replace("arg_delay",

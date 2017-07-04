@@ -176,11 +176,11 @@ class PureDerivGenerator:
         
         '''
         if self.derivOrder == 1:
-            toLeft = ('source['+self.delay+'][idx - '
+            toLeft = ('source['+'arg_delay'+'][idx - '
                       + stride + ' * ' + 'Block'
                       + str(self.blockNumber) + 'CELLSIZE + '
                       + str(self.unknownVarIndex) + ']')
-            toRight = ('source['+self.delay+'][idx + '
+            toRight = ('source['+'arg_delay'+'][idx + '
                        + stride + ' * ' + 'Block'
                        + str(self.blockNumber) + 'CELLSIZE + '
                        + str(self.unknownVarIndex) + ']')
@@ -199,7 +199,7 @@ class PureDerivGenerator:
                                + m1 * ' - ' + m2 * m3 * ' + '
                                + m4 * (str(coefficientList[i])
                                        + ' * '))
-                restOfLine = ('source['+self.delay+'][idx' + str(index)
+                restOfLine = ('source['+'arg_delay'+'][idx' + str(index)
                               + ' * ' + stride + ' * ' + 'Block'
                               + str(self.blockNumber) + 'CELLSIZE + '
                               + str(self.unknownVarIndex) + ']')
@@ -248,11 +248,11 @@ class PureDerivGenerator:
         if self.derivOrder == 1:
             return boundaryValue
         elif self.derivOrder == 2:
-            second = ('source['+self.delay+'][idx + '
+            second = ('source['+'arg_delay'+'][idx + '
                       + str(self.unknownVarIndex) + ']')
             m1 = leftOrRightBoundary % 2
             m2 = (leftOrRightBoundary - 1) % 2
-            first = ('source['+self.delay+'][idx' + m1 * ' + '
+            first = ('source['+'arg_delay'+'][idx' + m1 * ' + '
                      + m2 * ' - ' + stride + ' * ' + 'Block'
                      + str(self.blockNumber) + 'CELLSIZE + '
                      + str(self.unknownVarIndex) + ']')
@@ -292,7 +292,7 @@ class PureDerivGenerator:
         self.derivOrder
         '''
         if self.side % 2 == 0:
-            first = ('source['+self.delay+'][idx + '
+            first = ('source['+'arg_delay'+'][idx + '
                      + stride + ' * ' + 'Block'
                      + str(self.blockNumber) + 'CELLSIZE + '
                      + str(self.unknownVarIndex) + ']')
@@ -303,7 +303,7 @@ class PureDerivGenerator:
             first = ('ic['+str(self.firstIndex)+']['
                      + self.secondIndexSTR + ' + '
                      + str(self.unknownVarIndex) + ']')
-            second = ('source['+self.delay+'][idx - '
+            second = ('source['+'arg_delay'+'][idx - '
                       + stride + ' * ' + 'Block'
                       + str(self.blockNumber) + 'CELLSIZE + '
                       + str(self.unknownVarIndex) + ']')
@@ -311,7 +311,7 @@ class PureDerivGenerator:
             return('0.5 * ' + increment + ' * '
                    + '(' + first + ' - ' + second + ')')
         elif self.derivOrder == 2:
-            third = ('2.0 * source['+self.delay+'][idx + '
+            third = ('2.0 * source['+'arg_delay'+'][idx + '
                      + str(self.unknownVarIndex) + ']')
             return('(' + increment + ' * '
                    + ('(' + first + ' - ' + third + ' + '
@@ -347,10 +347,10 @@ class MixDerivGenerator:
 # Способ генерирования кода для смешанной производной для CentralFunction и иногда для граничных функций
         length = len(strideList)
         if length == 2:
-            first = 'source['+self.delay+'][idx + (' + strideList[0] + ' + ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
-            second = ' - source['+self.delay+'][idx - (' + strideList[0] + ' - ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
-            third = ' - source['+self.delay+'][idx + (' + strideList[0] + ' - ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
-            fourth = ' + source['+self.delay+'][idx - (' + strideList[0] + ' + ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            first = 'source['+'arg_delay'+'][idx + (' + strideList[0] + ' + ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            second = ' - source['+'arg_delay'+'][idx - (' + strideList[0] + ' - ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            third = ' - source['+'arg_delay'+'][idx + (' + strideList[0] + ' - ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            fourth = ' + source['+'arg_delay'+'][idx - (' + strideList[0] + ' + ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
             finiteDifference = first + second + third + fourth
             return '(' + increment + ' * ' + '(' + finiteDifference + ')' + ')'
         else:

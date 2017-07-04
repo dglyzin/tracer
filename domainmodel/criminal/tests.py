@@ -2,7 +2,7 @@ from domainmodel.criminal.parser import Parser
 from domainmodel.criminal.derivCodeGenerator import PureDerivGenerator
 
 
-def test_diff():
+def test_diff(eq="D[U(t-1.1),{x,2}]+D[U(t-5.1),{y,2}]+D[V(t-1.1),{x,1}]"):
     parser = Parser()
     parser.params.blockNumber = 0
     parser.params.dim = '1D'
@@ -22,9 +22,36 @@ def test_diff():
     # for delays:
     parser.params.delay = str(" $ delay $ ")
 
+    # pdg = PureDerivGenerator(parser.params)
+
+    print('########')
+    print('for method common ')
     parser.params.diffMethod = 'None'
-    pdg = PureDerivGenerator(parser.params)
-    parser.parseMathExpression("D[U,{x,2}]")
+    parser.parseMathExpression(eq)
+    print("out")
+    print(parser.out)
+
+    print('########')
+    print('for method common ')
+    parser.params.diffMethod = 'common'
+    parser.parseMathExpression(eq)
+    print("out")
+    print(parser.out)
+
+    print('########')
+    print('for method special ')
+    parser.params.diffMethod = 'special'
+    parser.parseMathExpression(eq)
+    print("out")
+    print(parser.out)
+
+    print('########')
+    print('for method interconnect ')
+    parser.params.diffMethod = 'interconnect'
+    parser.parseMathExpression(eq)
+    print("out")
+    print(parser.out)
+
     return(parser)
 
 
