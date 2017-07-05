@@ -138,6 +138,11 @@ class PureDerivGenerator:
                 return self.commonPureDerivativeAlternative(increment, stride)
 
     def make_general_data(self):
+        '''
+        DESCRIPTION:
+        DXM1 - means dx
+        DXM2 - means dx^2
+        '''
         self.increment = ('D' + self.indepVarList[0].upper()
                           + 'M' + str(self.derivOrder))
         self.specialIncrement = 'D' + self.indepVarList[0].upper()
@@ -206,7 +211,8 @@ class PureDerivGenerator:
                 finiteDifference = startOfLine + restOfLine
             return '(' + increment + ' * ' + '(' + finiteDifference + ')' + ')'
 
-    def specialPureDerivativeAlternative(self, increment, specialIncrement, stride, leftOrRightBoundary):
+    def specialPureDerivativeAlternative(self, increment, specialIncrement,
+                                         stride, leftOrRightBoundary):
         '''
         DESCRIPTION:
         Generate derivative for border variable.
@@ -215,7 +221,7 @@ class PureDerivGenerator:
         du/dx = phi(t,y)
 
         for derivOrder = 2:
-        ddy/ddx = 2*(u_{1}-u_{0}-dy*phi(t,y))/(dx^2)
+        ddu/ddx = 2*(u_{1}-u_{0}-dy*phi(t,y))/(dx^2)
         
         INPUT:
         leftOrRightBoundary --- это число либо 0 (если краевое условие наложено на левую границу)
@@ -275,7 +281,7 @@ class PureDerivGenerator:
         du/dx = (u_{1}-ic[firstIndex][secondIndexSTR])/(2dx)
 
         for derivOrder = 2:
-        ddy/ddx = 2*(u_{1}-2*u_{0}+ic[firstIndex][secondIndexSTR])/(dx^2)
+        ddu/ddx = 2*(u_{1}-2*u_{0}+ic[firstIndex][secondIndexSTR])/(dx^2)
         
         
         
@@ -321,40 +327,111 @@ class PureDerivGenerator:
             raise AttributeError("Pure derivative in some equation"
                                  + " has order greater than 2!")
     
+
 class MixDerivGenerator:
-    def __init__(self, blockNumber, unknownVarIndex, indepVarList, indepVarIndexList, derivativeOrderList, userIndepVariables, parsedMathFunction, side, firstIndex, secondIndexSTR, delay):
-        self.blockNumber = blockNumber
-        self.unknownVarIndex = unknownVarIndex
-        self.indepVarList = indepVarList
-        self.indepVarIndexList = indepVarIndexList
-        self.derivativeOrderList = derivativeOrderList
+    '''
+    INPUT:
+    params.indepVarList 
+    '''
+    def __init__(self, params):
         
-        self.derivOrder = 0
-        for order in self.derivativeOrderList:
-            self.derivOrder += int(order)
+        self.blockNumber = params.blockNumber
+
+        # shift index for variable like
+        # like (U,V)-> (source[+0], source[+1])
+        self.unknownVarIndex = params.unknownVarIndex
+
+        # like ['x', 'y'] i.e. for which diff maked
+        # first for 'x', then for 'y' (i.e. diff order)
+        # see in begining of callDerivGenerator
+        self.indepVarList = params.indepVarList
+        self.indepVarIndexList = params.indepVarIndexList
         
-        self.userIndepVariables = userIndepVariables
-        self.parsedMathFunction = parsedMathFunction
-        self.side = side
-        self.firstIndex=  firstIndex
-        self.secondIndexSTR = secondIndexSTR
-        
+        self.derivOrder = params.derivOrder
+
+        # like ['x', 'y', 'z']
+        self.userIndepVariables = params.userIndepVariables
+
+        self.parsedMathFunction = params.parsedMathFunction
+        self.side = params.side
+
+        # for ic[firstIndex][ $ secondIndexSTR $ +
+        # in interconnectPureDerivAlternative
+        self.firstIndex = params.firstIndex
+        self.secondIndexSTR = params.secondIndexSTR
+
         # for delays:
-        self.delay = str(delay)
+        self.delay = str(params.delay)
     
-    
+    def make_general_data(self):
+        '''
+        DESCRIPTION:
+        DXM1 - means dx
+        DXM2 - means dx^2
+
+        strideList - [stride of ds_{1}, stride of ds_{2}]
+                      where s_{i} \in {x, y, z}
+
+        USED FUNCTIONS:
+        self.derivOrder
+        self.indepVarList
+        '''
+        
+        increment = '(1 / pow(2,' + str(self.derivOrder) + '))'
+        for i, indepVar in enumerate(self.indepVarList):
+            increment = (increment + ' * D' + indepVar.upper()
+                         + 'M' + str(self.derivOrder))  # + self.derivativeOrderList[i]
+        self.increment = increment
+
+        strideList = []
+        for indepVar in self.indepVarList:
+            strideList.append('Block' + str(self.blockNumber)
+                              + 'Stride' + indepVar.upper())
+
+        self.strideList = strideList
+
     def commonMixedDerivativeAlternative(self, increment, strideList):
-# Способ генерирования кода для смешанной производной для CentralFunction и иногда для граничных функций
+        '''
+        DESCRIPTION:
+        Способ генерирования кода для смешанной производной для
+        CentralFunction и иногда для граничных функций.
+
+        for derivOrder = 2:
+        ddu/dxdy = (u(x+1, y+1)-u(x-1, y+1)-u(x+1, y-1)+u(x-1, y-1))/(4*dx^2)
+
+        INPUT:
+        strideList - [stride of ds_{1}, stride of ds_{2}]
+                     where s_{i} \in {x, y, z}
+
+        USED FUNCTIONS:
+        strideList
+        self.blockNumber
+        self.unknownVarIndex
+        '''
         length = len(strideList)
         if length == 2:
-            first = 'source['+'arg_delay'+'][idx + (' + strideList[0] + ' + ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
-            second = ' - source['+'arg_delay'+'][idx - (' + strideList[0] + ' - ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
-            third = ' - source['+'arg_delay'+'][idx + (' + strideList[0] + ' - ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
-            fourth = ' + source['+'arg_delay'+'][idx - (' + strideList[0] + ' + ' + strideList[1] + ') * ' + 'Block' + str(self.blockNumber) + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']'
+            first = ('source['+'arg_delay'+'][idx+ ('
+                     + strideList[0] + ' + ' + strideList[1]
+                     + ') * ' + 'Block' + str(self.blockNumber)
+                     + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']')
+            second = (' - source['+'arg_delay'+'][idx - ('
+                      + strideList[0] + ' - ' + strideList[1]
+                      + ') * ' + 'Block' + str(self.blockNumber)
+                      + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']')
+            third = (' - source['+'arg_delay'+'][idx + ('
+                     + strideList[0] + ' - ' + strideList[1]
+                     + ') * ' + 'Block' + str(self.blockNumber)
+                     + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']')
+            fourth = (' + source['+'arg_delay'+'][idx - ('
+                      + strideList[0] + ' + ' + strideList[1]
+                      + ') * ' + 'Block' + str(self.blockNumber)
+                      + 'CELLSIZE + ' + str(self.unknownVarIndex) + ']')
             finiteDifference = first + second + third + fourth
             return '(' + increment + ' * ' + '(' + finiteDifference + ')' + ')'
         else:
-            raise SyntaxError("Order of some mixed partial derivative greater than 2. I don't know how to work with it!")
+            raise SyntaxError("Order of some mixed partial derivative"
+                              + " greater than 2. I don't know how"
+                              + " to work with it!")
     
     def specialMixedDerivativeAlternative(self, increment, indepVarIndex):
         '''
@@ -363,62 +440,115 @@ class MixDerivGenerator:
                           это индекс той переменной, производная по которой
                           входит в смешанную производную второго порядка,
                           но не той переменной, для которой написано краевое условие Неймана.
+                          0 - for dydx or dzdx
+                          1 - for dxdy or dzdy
+                          2 - for dxdz or dydz
+        for derivOrder = 2:
+        ddu/dxdy = (phi(y+1)-phi(y-1))/(2dy)
+           for phi(x,y)=du/dx
+
+        USED FUNCTIONS:
+        self.userIndepVariables
+        self.blockNumber
+        self.parsedMathFunction
         '''
         if self.derivOrder == 2:
             fullIndepVarValueListR = list([])
             fullIndepVarValueListL = list([])
             
-            for k,indepVar in enumerate(self.userIndepVariables):
+            for k, indepVar in enumerate(self.userIndepVariables):
                 if k == indepVarIndex:
-                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper() + ' + Block' + str(self.blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ' + 1)'])
+                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper()
+                                                   + ' + Block' + str(self.blockNumber)
+                                                   + 'Offset' + indepVar.upper()
+                                                   + ' * D' + indepVar.upper()
+                                                   + 'M1' + ' + 1)'])
                 else:
-                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper() + ' + Block' + str(self.blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ')'])
+                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper()
+                                                   + ' + Block' + str(self.blockNumber)
+                                                   + 'Offset' + indepVar.upper()
+                                                   + ' * D' + indepVar.upper()
+                                                   + 'M1' + ')'])
             fullIndepVarValueListR.extend(['t'])
             
-            for k,indepVar in enumerate(self.userIndepVariables):
+            for k, indepVar in enumerate(self.userIndepVariables):
                 if k == indepVarIndex:
-                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper() + ' + Block' + str(self.blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ' - 1)'])
+                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper()
+                                                   + ' + Block' + str(self.blockNumber)
+                                                   + 'Offset' + indepVar.upper()
+                                                   + ' * D' + indepVar.upper()
+                                                   + 'M1' + ' - 1)'])
                 else:
-                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper() + ' + Block' + str(self.blockNumber) + 'Offset' + indepVar.upper() + ' * D' + indepVar.upper() + 'M1' + ')'])
+                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper()
+                                                   + ' + Block' + str(self.blockNumber)
+                                                   + 'Offset' + indepVar.upper()
+                                                   + ' * D' + indepVar.upper()
+                                                   + 'M1' + ')'])
             fullIndepVarValueListL.extend(['t'])
             
-            right = generateCodeForMathFunction(self.parsedMathFunction, self.userIndepVariables, fullIndepVarValueListR)
-            left = generateCodeForMathFunction(self.parsedMathFunction, self.userIndepVariables, fullIndepVarValueListL)
+            #dataTerm
+            print("fullIndepVarValueListL")
+            print(fullIndepVarValueListL)
+            print("fullIndepVarValueListR")
+            print(fullIndepVarValueListR)
+            right = generateCodeForMathFunction(self.parsedMathFunction,
+                                                self.userIndepVariables,
+                                                fullIndepVarValueListR)
+            
+            left = generateCodeForMathFunction(self.parsedMathFunction,
+                                               self.userIndepVariables,
+                                               fullIndepVarValueListL)
             if right == left:
                 return '0.0'
             else:
-                return '(0.5 * ' + increment + ' * ' + '(' + '(' + right + ')' + ' - ' + '(' + left + ')' + ')' + ')'
+                #get_out_for_term
+                return('(0.5 * ' + increment + ' * '
+                       + '(' + '(' + right + ')' + ' - '
+                       + '(' + left + ')' + ')' + ')')
         else:
-            raise SyntaxError("The highest derivative order of the system greater than 2! I don't know how to generate boundary function in this case!")
+            raise SyntaxError("The highest derivative order of"
+                              + " the system greater than 2!"
+                              + " I don't know how to generate"
+                              + " boundary function in this case!")
     
     def mixDerivative(self):
-        increment = '(1 / pow(2,' + str(self.derivOrder) + '))'
-        for i,indepVar in enumerate(self.indepVarList):
-            increment = increment + ' * D' + indepVar.upper() + 'M' + self.derivativeOrderList[i]
-   
-        # indepVar_Order_Stride = list([])
-        # for i,indepVar in enumerate(self.indepVarList):
-        # tup = tuple((indepVar, self.derivativeOrderList[i],
-        #              'Block' + str(self.blockNumber) + 'Stride' + indepVar.upper()))
-        # indepVar_Order_Stride.extend([tup])
+        '''
+        DESCRIPTION:
+        For 2d work fine
+        For 3d not work.
 
-        strideList = []
-        for indepVar in self.indepVarList:
-            strideList.append('Block' + str(self.blockNumber) + 'Stride' + indepVar.upper())
-            
+        USED FUNCTIONS:
+        self.indepVarList - for order of diff
+                            (i.e. dxdy or dydx)
+        self.userIndepVariables
+        self.side
+        
+        '''
+        self.make_general_data()
+        increment = self.increment
+        strideList = self.strideList
+        
+        # (0, y, 0) or (x_max, y, 0)
         bCond1 = self.side == 0 or self.side == 1
+        # (x, 0, 0) or (x, y_max, 0)
         bCond2 = self.side == 2 or self.side == 3
+        # (0, 0, z) or (x_max, 0, z)
         bCond3 = self.side == 4 or self.side == 5
+
+        # check if diff vars either dxdy or dydx
         indepVarCond1 = ((self.indepVarList[0] == self.userIndepVariables[0]
                           and self.indepVarList[1] == self.userIndepVariables[1])
                          or (self.indepVarList[1] == self.userIndepVariables[0]
                              and self.indepVarList[0] == self.userIndepVariables[1]))
+        # self.blockDimension
         blockDimension = len(self.userIndepVariables)
         if blockDimension > 2:
+            # check if diff vars either dxdz or dzdx
             indepVarCond2 = ((self.indepVarList[0] == self.userIndepVariables[0]
                               and self.indepVarList[1] == self.userIndepVariables[2])
                              or (self.indepVarList[1] == self.userIndepVariables[0]
                                  and self.indepVarList[0] == self.userIndepVariables[2]))
+            # check if diff vars either dydz or dzdy
             indepVarCond3 = ((self.indepVarList[0] == self.userIndepVariables[1]
                               and self.indepVarList[1] == self.userIndepVariables[2])
                              or (self.indepVarList[1] == self.userIndepVariables[1]
@@ -426,17 +556,58 @@ class MixDerivGenerator:
         
         if ((bCond1 and indepVarCond1)
             or (blockDimension > 2 and bCond3 and indepVarCond3)):
+            '''
+            either
+             dim = 2 and ((0, y) or (x_max, y)) and (dxdy or dydx)
+             and phi = du/dx
+            or
+             dim = 3 and ((0, 0, z) or (x_max, 0, z)) and (dydz or dzdy)
+             and phi = du/dy (or du/dx)
+            '''
             ind = self.indepVarList.index(self.userIndepVariables[1])
-            specialIncrement = 'D' + self.indepVarList[ind].upper() + 'M' + self.derivativeOrderList[ind]
+            specialIncrement = ('D' + self.indepVarList[ind].upper()
+                                + 'M' + self.derivativeOrderList[ind])
+            # for dxdy
+            # ddu/dxdy=(u(x,y+1)-u(x,y-1))/dy
+            # or dzdy
+            # ddu/dydz=(u(x,y,z+1)-u(x,y,z-1))/dz
             return self.specialMixedDerivativeAlternative(specialIncrement, 1)
         elif ((blockDimension > 2 and bCond1 and indepVarCond2)
               or (blockDimension > 2 and bCond2 and indepVarCond3)):
+            '''
+            either
+             dim = 3 and ((0, y, 0) or (x_max, y, 0)) and (dxdz or dzdx)
+             and phi = du/dx
+            or
+             dim = 3 and ((x, 0, 0) or (x, y_max, 0)) and (dydz or dzdy)
+             and phi = du/dy (should be dydx)
+            '''
             ind = self.indepVarList.index(self.userIndepVariables[2])
-            specialIncrement = 'D' + self.indepVarList[ind].upper() + 'M' + self.derivativeOrderList[ind]
+            specialIncrement = ('D' + self.indepVarList[ind].upper()
+                                + 'M' + self.derivativeOrderList[ind])
+            # for dxdz or dydz
+            # ddu/dxdz = (u(x,y,z+1)-u(x,y,z-1))/dz
+            # ddu/dydz=(u(x,y,z+1)-u(x,y,z-1))/dz
             return self.specialMixedDerivativeAlternative(specialIncrement, 2)
-        elif (bCond2 and indepVarCond1) or (blockDimension > 2 and bCond3 and indepVarCond2):
+        elif ((bCond2 and indepVarCond1)
+              or (blockDimension > 2 and bCond3 and indepVarCond2)):
+            '''
+            either
+             dim = 2 and ((x, 0) or (x, y_max)) and (dxdy or dydx)
+             and phi = du/dy
+            or ???
+             dim = 3 and ((0, 0, z) or (x_max, 0, z)) and (dxdz or dzdx)
+             and must phi = du/dx (or du/dy) but have phi = du/dz
+            '''
+
             ind = self.indepVarList.index(self.userIndepVariables[0])
-            specialIncrement = 'D' + self.indepVarList[ind].upper() + 'M' + self.derivativeOrderList[ind]
+            specialIncrement = ('D' + self.indepVarList[ind].upper()
+                                + 'M' + self.derivativeOrderList[ind])
+            # for dydx
+            # ddu/dydx=(u(x+1,y)-u(x-1,y))/dx
+            # or dzdx ???
+            # ddu/dydx=(u(x+1,y,z)-u(x-1,y,z))/dx
+            
             return self.specialMixedDerivativeAlternative(specialIncrement, 0)
         else:
             return self.commonMixedDerivativeAlternative(increment, strideList)

@@ -270,6 +270,7 @@ class RHSCodeGenerator:
         Эта функция должна правильно определить параметры для
         передачи их в функцию callSpecialDerivGenerator():
 
+        INPUT:
              Если pbcl пуст, то надо сделать производную для
                 центральной функции
 
@@ -288,7 +289,7 @@ class RHSCodeGenerator:
              Если длина словаря pbcl равна трем, то надо
                   сделать условие на угол параллелепипеда
 
-        
+        varIndex - shift like (U, V) -> (source[+0], source[+1])
         '''
         boundaryConditionCount = len(pbcl)
         

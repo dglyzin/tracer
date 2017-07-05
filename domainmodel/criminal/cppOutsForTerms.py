@@ -64,22 +64,37 @@ class CppOutsForTerms():
         DESCRIPTION:
         self.params should be initiated first.
         '''
-        diffGen = PureDerivGenerator(self.params)
-        diffGen.make_general_data()
-        increment = diffGen.increment
-        specialIncrement = diffGen.specialIncrement
-        stride = diffGen.stride
-        
-        if self.params.diffMethod == 'common':
-            out = diffGen.commonPureDerivativeAlternative(increment, stride)
-        elif(self.params.diffMethod == 'special'):
-            out = diffGen.specialPureDerivativeAlternative(increment, specialIncrement,
-                                                           stride, 1)
-        elif(self.params.diffMethod == 'interconnect'):
-            out = diffGen.interconnectPureDerivAlternative(increment, stride)
-        else:
-            # define method from properties
-            out = diffGen.pureDerivative()
+        if self.params.diffType == 'pure':
+            diffGen = PureDerivGenerator(self.params)
+            diffGen.make_general_data()
+            increment = diffGen.increment
+            specialIncrement = diffGen.specialIncrement
+            stride = diffGen.stride
+
+            if self.params.diffMethod == 'common':
+                out = diffGen.commonPureDerivativeAlternative(increment, stride)
+            elif(self.params.diffMethod == 'special'):
+                out = diffGen.specialPureDerivativeAlternative(increment, specialIncrement,
+                                                               stride, 1)
+            elif(self.params.diffMethod == 'interconnect'):
+                out = diffGen.interconnectPureDerivAlternative(increment, stride)
+            else:
+                # define method from properties
+                out = diffGen.pureDerivative()
+        elif(self.params.diffType == 'mix'):
+            #TODO parse mathFunction
+
+            diffGen = MixDerivGenerator(self.params)
+            diffGen.make_general_data()
+            increment = diffGen.increment
+            specialIncrement = diffGen.specialIncrement
+            stride = diffGen.stride
+
+            if self.params.diffMethod == 'common':
+                out = diffGen.commonPureDerivativeAlternative(increment, stride)
+            elif(self.params.diffMethod == 'special'):
+                out = diffGen.specialPureDerivativeAlternative(increment, specialIncrement)
+            
         return(out)
 
     def get_out_for_termVarsPoint(self):

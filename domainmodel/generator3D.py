@@ -182,7 +182,9 @@ class Generator3D(AbstractGenerator):
                         condition.setSecondaryBlockIdx(region.secondaryBlockNumber)
                     else:
                         values, btype, boundNumber, funcName = self.setDirichletOrNeumann(region, blockNumber, side, equationNum)
-                        condition = BoundCondition(values, btype, side, ranges, boundNumber, equationNum, equation, funcName)
+                        condition = BoundCondition(values, btype, side, ranges, boundNumber,
+                                                   equationNum, equation, funcName,
+                                                   block, blockNumber, '2D')
                     #У него создаем поля с именами и координатами ребер и углов, которых касается прямоугольник
                     condition.setEdgesAndVertexesIn3D(edges, vertexes)
                     bCondList.append(condition)
@@ -211,7 +213,9 @@ class Generator3D(AbstractGenerator):
                 for domain in newDomainAfterSpliting:
                     edges, vertexes = self.createVertexAndEdgeLsts(domain, boundary, edgesNames, vertexesNames)
                     ranges = self.determine3DCoordinatesForBCond(block, side, domain)
-                    defCondition = BoundCondition(values, btype, side, ranges, boundNumber, equationNum, equation, funcName)
+                    defCondition = BoundCondition(values, btype, side, ranges, boundNumber,
+                                                  equationNum, equation, funcName,
+                                                  block, blockNumber, '2D')
                     defCondition.setEdgesAndVertexesIn3D(edges, vertexes)
                     bCondList.append(defCondition)
         #На выходе каждый экземпляр граничного условия содержит инфу об углах и ребрах; этим надо пользоваться при генерировании условий на них
