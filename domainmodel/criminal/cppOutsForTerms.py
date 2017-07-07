@@ -1,4 +1,5 @@
 from domainmodel.criminal.derivCodeGenerator import PureDerivGenerator
+from domainmodel.criminal.derivCodeGenerator import MixDerivGenerator
 
 
 class CppOutsForTerms():
@@ -34,11 +35,17 @@ class CppOutsForTerms():
                               'order': []}
         
         self.dataTermVarsForDelay = {}
+        
+        self.dataTermMathFuncForDiffSpec = "empty_func"
+
+        # for debugging:
+        self.dbg = True
+        self.dbgInx = 4
 
     def get_out_for_term(self, termName):
         '''
         DESCRIPTION:
-        Find out for term (termDemo) with termName 
+        Find out for term (termDemo) with termName
         (from Patterns.py). For that method with name
         get_out_for_termDemo must exists.
 
@@ -64,37 +71,44 @@ class CppOutsForTerms():
         DESCRIPTION:
         self.params should be initiated first.
         '''
+        # for debug
+        self.print_dbg("FROM get_out_for_termDiff:")
         if self.params.diffType == 'pure':
-            diffGen = PureDerivGenerator(self.params)
-            diffGen.make_general_data()
-            increment = diffGen.increment
-            specialIncrement = diffGen.specialIncrement
-            stride = diffGen.stride
+            # for debug
+            self.print_dbg("diffType: pure")
 
-            if self.params.diffMethod == 'common':
-                out = diffGen.commonPureDerivativeAlternative(increment, stride)
-            elif(self.params.diffMethod == 'special'):
-                out = diffGen.specialPureDerivativeAlternative(increment, specialIncrement,
-                                                               stride, 1)
-            elif(self.params.diffMethod == 'interconnect'):
-                out = diffGen.interconnectPureDerivAlternative(increment, stride)
-            else:
-                # define method from properties
-                out = diffGen.pureDerivative()
+            diffGen = PureDerivGenerator(self.params)
         elif(self.params.diffType == 'mix'):
-            #TODO parse mathFunction
+            # for debug
+            self.print_dbg("diffType: mix")
 
             diffGen = MixDerivGenerator(self.params)
-            diffGen.make_general_data()
-            increment = diffGen.increment
-            specialIncrement = diffGen.specialIncrement
-            stride = diffGen.stride
 
-            if self.params.diffMethod == 'common':
-                out = diffGen.commonPureDerivativeAlternative(increment, stride)
-            elif(self.params.diffMethod == 'special'):
-                out = diffGen.specialPureDerivativeAlternative(increment, specialIncrement)
-            
+        # diffGen.make_general_data()
+
+        if self.params.diffMethod == 'common':
+            # for debug
+            self.print_dbg("diffMethod: common")
+
+            out = diffGen.common_diff()
+        elif(self.params.diffMethod == 'special'):
+            # for debug
+            self.print_dbg("diffMethod: special")
+
+            func = self.dataTermMathFuncForDiffSpec
+            out = diffGen.special_diff(func)
+        elif(self.params.diffMethod == 'interconnect'):
+            # for debug
+            self.print_dbg("diffMethod: interconnect")
+
+            out = diffGen.interconnect_diff()
+        else:
+            # for debug
+            self.print_dbg("diffMethod: None")
+
+            func = self.dataTermMathFuncForDiffSpec
+            out = diffGen.diff(func)
+        
         return(out)
 
     def get_out_for_termVarsPoint(self):
@@ -191,4 +205,10 @@ class CppOutsForTerms():
 
     def get_out_for_termFunc(self):
         return('arg1')  # expressionList
+
+    def print_dbg(self, *args):
+        if self.dbg:
+            for arg in args:
+                print(self.dbgInx*' '+str(arg))
+            print('')
 
