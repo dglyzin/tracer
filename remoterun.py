@@ -178,8 +178,11 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
 
         #stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName, get_pty=True)
         stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName + " 2>&1")
-        for line in iter(lambda: stdout.readline(2048), ""): print(line, end='' )
-        
+        for line in iter(lambda: stdout.readline(2048), ""): 
+            try:
+                print(line, end='' )
+            except:
+                print("Wrong symbol")
         print (stdout.read())
         print (stderr.read())
         
