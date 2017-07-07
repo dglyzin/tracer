@@ -24,4 +24,17 @@ python2 remoterun.py config/examples/connection.json.example test/short_restest.
 
 jsontobin.py will be runing at server side 
 '''
-pass
+
+
+from domainmodel.block import Block
+
+
+def test_block():
+    '''
+    DESCRIPTION:
+    What is block.
+    '''
+    block = Block("test", 2)
+    print(block.getCellCount(0.1, 0.1, 0.1))
+    return(block.getPropertiesDict())
+

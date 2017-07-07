@@ -352,6 +352,12 @@ class BinaryModel(object):
         print "Cell size:", self.paramsArr[0], "Halo size: ", self.paramsArr[1]
 
     def fillBinaryBlocks(self):
+        '''
+        DESCRIPTION:
+        Fill block params.
+        Fill block functions from functionMap.
+        
+        '''
         print "Welcome to Blocks Data filler"
         print "following is the function mapping"
         print self.functionMaps

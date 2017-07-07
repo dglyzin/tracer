@@ -22,6 +22,7 @@ from equation import Equation
 from bound import Bound
 from initial import Initial
 from compnode import Compnode
+from criminal.parser import Parser
 
 from DerivHandler import DerivativeHandler
 from DelayHandler import DelayHandler
@@ -261,6 +262,19 @@ class Model(object):
         self.projectFileAssigned = True
         self.projectFile = fileName
         self.workDirectory = os.path.dirname(str(fileName))
+
+        parser = Parser()
+        if self.dimension == 1:
+            parser.params.dim = '1D'
+        else:
+            parser.params.dim = '2D'
+        cellSize = 1
+        parser.params.shape = [cellSize/float(self.gridStepX),
+                               cellSize/float(self.gridStepY),
+                               cellSize/float(self.gridStepZ)]
+        for block in self.blocks:
+            block.parser = parser
+
 
     ## PRINT
     def __repr__(self):
@@ -535,6 +549,7 @@ class Model(object):
         haloSize = self.getHaloSize()
         mDO = self.getMaxDerivOrder()
         delay_lst = []  # self.determineDelay()
+        
         gen = FuncGenerator(delay_lst, mDO, haloSize, self.equations,
                             self.blocks, self.initials, self.bounds,
                             self.interconnects, gridStep, self.params,

@@ -8,28 +8,98 @@ from equationParser import MathExpressionParser
 from someFuncs import generateCodeForMathFunction
 from rhsCodeGenerator import RHSCodeGenerator
 from someFuncs import getCellCountInClosedInterval
+from criminal.parser import Parser
+
 
 class BoundCondition:
-    def __init__(self, values, btype, side, ranges, boundNumber, equationNumber, equation, funcName):
+    '''
+    DESCRIPTION:
+    Represent part of block with
+    different equation (from default).
+    
+    '''
+    def __init__(self, values, btype, side, ranges, boundNumber,
+                 equationNumber, equation, funcName,
+                 block, blockNumber=None, dim='1D'):
         self.name = "BoundCondition"
         self.values = values
+
+        self.block = block
+        if blockNumber is not None:
+            self.blockNumber = blockNumber
+        self.dim = dim
+
+        # type of condition (Neuman - 1 or Dirichlet - 0)
         self.btype = btype
+        
+        # side of block
         self.side = side
+
+        # responsibility area
         self.ranges = ranges
+
+        # numbers in .json lists
         self.boundNumber = boundNumber
         self.equationNumber = equationNumber
+
+        # equation for this part of block
         self.equation = equation
+        
+        # equation function name in cpp
         self.funcName = funcName
          
     def createSpecialProperties(self, mathParser, params, indepVars):
+        '''
+        DESCRIPTION:
+        parse functions (like 'sin((x+3*a))') from
+        self.values to self.parsedValues
+        and
+        parse equations from self.equation.system
+        to self.parsedEquation.
+
+        parsedValues and parsedEquation will be lists like
+        ['sin', '(', '(', 'x', '+', '3', '*', 'a', ')', ')']
+
+        USED IN:
+        AbstractGenerator.parseBoundaryConditions
+        Generator1D.generateBound
+        Generator1D.generateInterconnect
+        '''
         self.parsedValues = list()
-        for value in self.values:
-            self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))
         
-        self.unknownVars = mathParser.getVariableList(self.equation.system)    
+        for value in self.values:
+            # parse pattern for MathFunction. (see createParsePattern)
+            # like value = 'sin((x+3*a))'
+
+            try:
+                print("dim = ")
+                print(self.dim)
+                # parse string like "U(t-1.3,{x, 0.7})"
+                # parser = Parser(self.blockNumber, self.dim)
+                parser = self.block.parser
+                parser.params.blockNumber = self.blockNumber
+
+                print("shape")
+                print(parser.params.shape)
+                
+                parser.parseMathExpression(value)
+                # cpp
+                self.parsedValues.append(parser.out)
+            except:
+                print("criminal fail in BoundCondition.createSpecialProperties")
+                
+                # for clear when fail
+                parser.actions.outList = []
+                print("value=")
+                print(value)
+                self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))
+        
+        self.unknownVars = mathParser.getVariableList(self.equation.system)
         self.parsedEquation = list()
         for equat in self.equation.system:
-            self.parsedEquation.extend([mathParser.parseMathExpression(equat, self.unknownVars, params, self.equation.vars)])
+            # parse pattern for diff equation. see createParsePattern
+            self.parsedEquation.extend([mathParser.parseMathExpression(equat, self.unknownVars,
+                                                                       params, self.equation.vars)])
             
     def setEdgesAndVertexesIn3D(self, edges, vertexes):
         self.edges = edges
@@ -47,6 +117,11 @@ class Connection:
         self.funcName = funcName
     
     def createSpecialProperties(self, mathParser, params):
+        '''
+        DESCRIPTION:
+        See description for 
+        BoundCondition.createSpecialProperties 
+        '''
         self.unknownVars = mathParser.getVariableList(self.equation.system)    
         self.parsedEquation = list()
         for equat in self.equation.system:
@@ -174,6 +249,14 @@ class AbstractGenerator(object):
         return ''.join(definitions)
     
     def generateInitials(self):
+        '''
+        DESCRIPTION:
+        Pure function. Return valus only.
+        No self state changed.
+        
+        RETURN:
+        some string.
+        '''
 #         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
         output = list(["//===================PARAMETERS==========================//\n\n"])
         output.append(self.generateParamFunction())
@@ -416,6 +499,8 @@ class AbstractGenerator(object):
         
         return ''.join(function), arrWithFuncNames
 
+    def generateCentralFunctionCodeCrime(self, block, blockNumber, equationsList, numsForEquats):
+        return ''.join(function), arrWithFuncName
 
     def generateFunctionSignature(self, blockNumber, name, strideList):
 
@@ -440,16 +525,35 @@ class AbstractGenerator(object):
         return list([signature, idx])
     
     def parseBoundaryConditions(self, totalBCondLst, parser):
-        #Парсит краевые условия и создает список условий на углы (vertexCondList) 
-        for bCondListForSide in totalBCondLst:  
+        '''
+        DESCRIPTION:
+        Парсит краевые условия и 
+        ? (not found) создает список условий на углы (vertexCondList)
+        
+        INPUT:
+        totalBCondLst - list of Connection or BoundCondition
+                        objects, containing values property with
+                        function strings for bounds.
+
+        USED IN:
+        Generator2D{3D}.generateBoundsAndIcs
+        '''
+        for bCondListForSide in totalBCondLst:
             for bCond in bCondListForSide:
+
+                # if side_0 or side_1 then remove x
+                # else remove y
                 indepVarsForBoundaryFunction = list(self.userIndepVars)
                 indepVarsForBoundaryFunction.remove(self.userIndepVars[bCond.side // 2])
                 indepVarsForBoundaryFunction.extend(['t'])
                 
                 if not isinstance(bCond, Connection):
+
+                    # for Connection
                     bCond.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
                 else:
+                    
+                    # for BoundCondition
                     bCond.createSpecialProperties(parser, self.params)
     
     def setDefault(self, blockNumber, side, equation, equationNum):
@@ -494,19 +598,32 @@ class AbstractGenerator(object):
         function.append('}\n')
         return ''.join(function)
         
-    def generateNeumannOrInterconnect(self, blockNumber, name, parsedEquationsList, unknownVars, pBCL): 
-#         parsedBoundaryConditionList --- это список, содержащий от 1 до 3 элементов
-#         parsedEquationsList --- список, элементы которого --- распарсенные правые части всех уравнений
+    def generateNeumannOrInterconnect(self, blockNumber, name, parsedEquationsList, unknownVars, pBCL):
+        '''
+        INPUT:
+        parsedBoundaryConditionList --- это список, содержащий от 1 до 3 элементов
+        parsedEquationsList --- список, элементы которого --- распарсенные правые части всех уравнений
+        
+        USED IN:
+        generateBoundsAndIcs
+
+        USED FUNCTIONS:
+        generateFunctionSignature
+        generateRightHandSideCodeDelay
+        '''
         strideList = list([])
-#         Здесь используем defaultIndepVariables, т.к. сигнатуры у всех генерируемых функций должны быть одинаковы.
+
+        # Здесь используем defaultIndepVariables, т.к.
+        # сигнатуры у всех генерируемых функций должны быть одинаковы.
         for indepVar in self.defaultIndepVars:
             strideList.extend(['Block' + str(blockNumber) + 'Stride' + indepVar.upper()])
         
         function = self.generateFunctionSignature(blockNumber, name, strideList)
-#         А здесь используем userIndepVariables.
+
+        # А здесь используем userIndepVariables.
         b = RHSCodeGenerator()
         for i, equation in enumerate(parsedEquationsList):
-#             Для трехмерного случая все должно усложниться в следующей команде
+            # Для трехмерного случая все должно усложниться в следующей команде
             function.extend([b.generateRightHandSideCodeDelay(blockNumber, unknownVars[i],
                                                               equation, self.userIndepVars,
                                                               unknownVars, self.params, pBCL,
