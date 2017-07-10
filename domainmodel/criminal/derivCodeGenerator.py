@@ -1,18 +1,72 @@
 # -*- coding: utf-8 -*-
+'''
+See DESCRIPTION for cppOutsForTerms.get_out_for_termDiff
+method first from which one should understand how
+params used for choice diff method.
+
+PureDerivGenerator:
+INPUT:
+general (for all):
+
+blockNumber
+derivOrder
+indepVarList - var for PureDerivGenerator (like ['x'])
+               vars for MixDerivGenerator (like ['x', 'y'])
+
+for params common:
+only general
+
+for params special
+general +
+side
+func
+
+for params interconnect (only for PureDerivGenerator)
+firstIndex
+secondIndexSTR
+
+'''
 from someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
 
-class PureDerivGenerator:
+
+class DerivGenerator():
     '''
     DESCRIPTION:
-    side 
-    and 
-    firstIndex 
-    and
-    indepVarIndexList[0]
-    define choising diff methond.
+    For debugging.
+    '''
+    def __init__(self):
+        # for debugging:
+        self.dbg = True
+        self.dbgInx = 5
 
+    def print_dbg(self, *args):
+        if self.dbg:
+            for arg in args:
+                print(self.dbgInx*' '+str(arg))
+            print('')
+
+
+class PureDerivGenerator(DerivGenerator):
+    '''
+    DESCRIPTION:
+    Find d^{n}(u)/d(x)^{n}
+     where n is
+      n > 1 for central functions
+            (used method common_diff)
+      n = 1 or 2 for bound conditions
+                 or for interconnect
+            (used mehtods special_diff
+             or interconnect_diff)
+
+    INPUT:
+    See __init__ method.
+    
     '''
     def __init__(self, params):
+        # for debug
+        DerivGenerator.__init__(self)
+
+        # PARAMS FOR ALL
         self.blockNumber = params.blockNumber
 
         # shift index for variable like
@@ -22,24 +76,46 @@ class PureDerivGenerator:
         # like ['x'] i.e. for which diff maked
         # see in begining of callDerivGenerator
         self.indepVarList = params.indepVarList
-        self.indepVarIndexList = params.indepVarIndexList
-        
+
         self.derivOrder = params.derivOrder
 
         # like ['x', 'y', 'z']
-        self.userIndepVariables = params.userIndepVariables
+        self.userIndepVariables = ['x', 'y', 'z']
+        
+        # for method choicing for special
+        var = self.indepVarList[0]
+        self.indepVarIndexList = [self.userIndepVariables.index(var)]
 
-        self.parsedMathFunction = params.parsedMathFunction
+        # for all
+        self.make_general_data()
+        # END FOR ALL
+
+        # PARAMS FOR SPECIAL
+        # self.parsedMathFunction = params.parsedMathFunction
         self.side = params.side
 
+        if ((params.diffMethod == 'special')
+            and (params.diffType == 'pure')):
+            try:
+                # self.leftOrRightBoundary = params.leftOrRightBoundary
+                if ((self.side % 2 == 0)
+                    and (self.indepVarIndexList[0] == self.side / 2)):
+                    self.leftOrRightBoundary = 1
+                elif ((self.side - 1) % 2 == 0
+                      and self.indepVarIndexList[0] == (self.side - 1) / 2):
+                    self.leftOrRightBoundary = 0
+            except:
+                raise(SyntaxError("cannot define leftOrRightBoundary"
+                                  + " for special_diff"))
+        # END FOR SPECIAL
+
+        # PARAMS FOR INTERCONNECT
         # for ic[firstIndex][ $ secondIndexSTR $ +
         # in interconnectPureDerivAlternative
-        self.firstIndex =  params.firstIndex
+        self.firstIndex = params.firstIndex
         self.secondIndexSTR = params.secondIndexSTR
+        # END FOR INTERCONNECT
 
-        # for delays:
-        self.delay = str(params.delay)
-    
     def createIndicesList(self):
         '''
         DESCRIPTION:
@@ -91,14 +167,17 @@ class PureDerivGenerator:
             stringList.extend([str(number)])
         return stringList
     
-    def pureDerivative(self):
+    def diff(self, func=None):
         '''
         DESCRIPTION:
-        side 
-        and 
-        firstIndex 
-        and
-        indepVarIndexList[0]
+        This fucntion try to find
+        method (common, special or interconnect)
+        from params. Deprecated.
+
+        parameters
+        side,
+        firstIndex (for interconnect),
+        indepVarIndex[0]
         define choising diff methond.
 
         USED FUNCTIONS:
@@ -107,35 +186,48 @@ class PureDerivGenerator:
         self.firstIndex
         self.side
         
-        self.interconnectPureDerivAlternative
-        self.commonPureDerivativeAlternative
-        self.specialPureDerivativeAlternative
+        self.interconnect_diff
+        self.common_diff
+        self.special_diff
         '''
-        increment = self.increment
-        specialIncrement = self.specialIncrement
-        stride = self.stride
-        
+        # for debug
+        self.print_dbg("FROM PureDerivGenerator.diff:")
+
         # Случай соединения блоков
         if self.firstIndex >= 0:
             if self.side / 2 == self.indepVarIndexList[0]:
-                print("interconnect used")
-                return self.interconnectPureDerivAlternative(increment, stride)
+                # for debug
+                self.print_dbg("interconnect used")
+
+                return self.interconnect_diff()
             else:
-                print('common used')
-                return self.commonPureDerivativeAlternative(increment, stride)
+                # for debug
+                self.print_dbg("common used")
+
+                return self.common_diff()
 
         # Случай отдельного блока
         else:
             if ((self.side % 2 == 0)
                 and (self.indepVarIndexList[0] == self.side / 2)):
-                return self.specialPureDerivativeAlternative(increment, specialIncrement,
-                                                             stride, 1)
+                # for debug
+                self.print_dbg("special used")
+
+                self.leftOrRightBoundary = 1
+                return self.special_diff(func)
             elif ((self.side - 1) % 2 == 0
                   and self.indepVarIndexList[0] == (self.side - 1) / 2):
-                return self.specialPureDerivativeAlternative(increment, specialIncrement,
-                                                             stride, 0)
+                # for debug
+                self.print_dbg("special used")
+
+                self.leftOrRightBoundary = 0
+                return self.special_diff(func)
             else:
-                return self.commonPureDerivativeAlternative(increment, stride)
+                # self.side == -1
+                # for debug
+                self.print_dbg("common used")
+
+                return self.common_diff()
 
     def make_general_data(self):
         '''
@@ -149,7 +241,7 @@ class PureDerivGenerator:
         self.stride = ('Block' + str(self.blockNumber)
                        + 'Stride' + self.indepVarList[0].upper())
 
-    def commonPureDerivativeAlternative(self, increment, stride):
+    def common_diff(self):
         '''
         DESCRIPTION:
         generate cpp derivative for central function
@@ -162,6 +254,7 @@ class PureDerivGenerator:
         for derivOrder = 2
         ddu/ddx = (u_{i+1}-2*u_{i}+u_{i-1})/(dx^2)
 
+        INPUT
         source[idx  # point in that derive will find
         +  stride  * Block0CELLSIZE  # +1 to some of {x,y,z} direction
                                      # (defined by stride)
@@ -180,6 +273,13 @@ class PureDerivGenerator:
         self.createCoefficientList
         
         '''
+        try:
+            increment = self.increment
+            stride = self.stride
+        except:
+            raise(SyntaxError("increment or stride are not defined"
+                              + "\n use make_general_data first"))
+
         if self.derivOrder == 1:
             toLeft = ('source['+'arg_delay'+'][idx - '
                       + stride + ' * ' + 'Block'
@@ -211,8 +311,7 @@ class PureDerivGenerator:
                 finiteDifference = startOfLine + restOfLine
             return '(' + increment + ' * ' + '(' + finiteDifference + ')' + ')'
 
-    def specialPureDerivativeAlternative(self, increment, specialIncrement,
-                                         stride, leftOrRightBoundary):
+    def special_diff(self, func='None'):
         '''
         DESCRIPTION:
         Generate derivative for border variable.
@@ -221,8 +320,11 @@ class PureDerivGenerator:
         du/dx = phi(t,y)
 
         for derivOrder = 2:
+        left border
         ddu/ddx = 2*(u_{1}-u_{0}-dy*phi(t,y))/(dx^2)
-        
+        right border
+        ddu/ddx = 2*(u_{n-1}-u_{n}-dy*phi(t,y))/(dx^2)
+
         INPUT:
         leftOrRightBoundary --- это число либо 0 (если краевое условие наложено на левую границу)
                                 либо 1 (если краевое условие наложено на правую границу)
@@ -237,7 +339,24 @@ class PureDerivGenerator:
         
         generateCodeForMathFunction
         '''
-        print("specialPureDerivativeAlternative used")
+        # for debug
+        self.print_dbg("FROM PureDerivGenerator.special_diff:")
+
+        try:
+            increment = self.increment
+            specialIncrement = self.specialIncrement
+            stride = self.stride
+            
+        except:
+            raise(SyntaxError("use make_general_data first"))
+        try:
+            leftOrRightBoundary = self.leftOrRightBoundary
+        except:
+            raise(SyntaxError("for special_diff self.leftOrRightBoundary"
+                              + "should be initiated first"))
+        # for debug
+        self.print_dbg("special used")
+
         fullIndepVarValueList = list([])
         for indepVar in self.userIndepVariables:
             fullIndepVarValueList.extend(['(idx' + indepVar.upper() + ' + Block'
@@ -245,11 +364,11 @@ class PureDerivGenerator:
                                           + indepVar.upper() + ' * D'
                                           + indepVar.upper() + 'M1' + ')'])
         fullIndepVarValueList.extend(['t'])
-        
-        print("parsedMathFunction from special=")
-        print(self.parsedMathFunction)
 
-        boundaryValue = 'generateCodeForMathFunction'
+        # for debug
+        self.print_dbg("func:", func)
+
+        boundaryValue = func
 
         if self.derivOrder == 1:
             return boundaryValue
@@ -272,7 +391,7 @@ class PureDerivGenerator:
                               + " I don't know how to generate"
                               + " boundary function in this case!")
     
-    def interconnectPureDerivAlternative(self, increment, stride):
+    def interconnect_diff(self):
         '''
         DESCRIPTION:
         For connections.
@@ -282,9 +401,7 @@ class PureDerivGenerator:
 
         for derivOrder = 2:
         ddu/ddx = 2*(u_{1}-2*u_{0}+ic[firstIndex][secondIndexSTR])/(dx^2)
-        
-        
-        
+                
         USED FUNCTIONS:
 
         ic[firstIndex][ $ secondIndexSTR $  +  $ unknownVarIndex[0] $ ]
@@ -297,6 +414,14 @@ class PureDerivGenerator:
         str self.unknownVarIndex
         self.derivOrder
         '''
+
+        try:
+            increment = self.increment
+            stride = self.stride
+        except:
+            raise(SyntaxError("increment or stride are not defined"
+                              + "\n use make_general_data first"))
+
         if self.side % 2 == 0:
             first = ('source['+'arg_delay'+'][idx + '
                      + stride + ' * ' + 'Block'
@@ -328,44 +453,80 @@ class PureDerivGenerator:
                                  + " has order greater than 2!")
     
 
-class MixDerivGenerator:
+class MixDerivGenerator(DerivGenerator):
     '''
+    DESCRIPTION:
+    Find dd(u)/d(a)d(b)
+     where {a, b |a!=b and a,b \in {x, y}}
+      common_diff for central functions
+      special_diff for bound.
+
     INPUT:
-    params.indepVarList 
+    params.indepVarList - important parameter, define
+                          diff order (i.e ['x','y']
+                          means dxdy).
+    See __init__ method.
+
+
     '''
     def __init__(self, params):
-        
+        # for debug
+        DerivGenerator.__init__(self)
+
+        # PARAMS FOR ALL
         self.blockNumber = params.blockNumber
 
         # shift index for variable like
         # like (U,V)-> (source[+0], source[+1])
         self.unknownVarIndex = params.unknownVarIndex
 
+        # only mix for ddu currently suplied
+        self.derivOrder = 2  # params.derivOrder
+
+        # like ['x', 'y', 'z']
+        self.userIndepVariables = ['x', 'y', 'z']
+
         # like ['x', 'y'] i.e. for which diff maked
         # first for 'x', then for 'y' (i.e. diff order)
         # see in begining of callDerivGenerator
         self.indepVarList = params.indepVarList
-        self.indepVarIndexList = params.indepVarIndexList
+        self.indepVarIndexList = range(len(self.indepVarList))
         
-        self.derivOrder = params.derivOrder
+        # for all
+        self.make_general_data()
+        # END FOR ALL
 
-        # like ['x', 'y', 'z']
-        self.userIndepVariables = params.userIndepVariables
-
-        self.parsedMathFunction = params.parsedMathFunction
+        # FOR SPECIAL
+        # self.parsedMathFunction = 'arg_mathFunction'
         self.side = params.side
 
-        # for ic[firstIndex][ $ secondIndexSTR $ +
-        # in interconnectPureDerivAlternative
-        self.firstIndex = params.firstIndex
-        self.secondIndexSTR = params.secondIndexSTR
+        if ((params.diffMethod == 'special')
+            and (params.diffType == 'mix')):
+            try:
+                # self.indepVarIndex = params.indepVarIndex
+                self.indepVarIndex = self.indepVarList[1]
+            except:
+                raise(SyntaxError("for special_diff params.indepVarIndex"
+                                  + " should be initiated first"))
+        # END FOR SPECIAL
 
-        # for delays:
-        self.delay = str(params.delay)
-    
+    def make_increment_for_varIndex(self, varIndex):
+        '''
+        DESCRIPTION:
+        for varIndex = 'x' or 0 return DXM1
+        for varIndex = 'y' or 1 return DYM1
+        '''
+        if type(varIndex) == int:
+            ind = self.indepVarList.index(self.userIndepVariables[varIndex])
+        elif(type(varIndex) == str):
+            ind = self.indepVarList.index(varIndex)
+        self.specialIncrement = ('D' + self.indepVarList[ind].upper()
+                                 + 'M' + "1")
+        
     def make_general_data(self):
         '''
         DESCRIPTION:
+        Make self.increment and self.strideList.
         DXM1 - means dx
         DXM2 - means dx^2
 
@@ -390,7 +551,7 @@ class MixDerivGenerator:
 
         self.strideList = strideList
 
-    def commonMixedDerivativeAlternative(self, increment, strideList):
+    def common_diff(self):
         '''
         DESCRIPTION:
         Способ генерирования кода для смешанной производной для
@@ -408,6 +569,13 @@ class MixDerivGenerator:
         self.blockNumber
         self.unknownVarIndex
         '''
+        try:
+            increment = self.increment
+            strideList = self.strideList
+        except:
+            raise(SyntaxError("increment or strideList are not defined"
+                              + "\n use make_general_data first"))
+
         length = len(strideList)
         if length == 2:
             first = ('source['+'arg_delay'+'][idx+ ('
@@ -433,75 +601,104 @@ class MixDerivGenerator:
                               + " greater than 2. I don't know how"
                               + " to work with it!")
     
-    def specialMixedDerivativeAlternative(self, increment, indepVarIndex):
+    def special_diff(self, func='None'):
         '''
+        DESCRIPTION:
+        When used directly (without diff), it things that
+        
+        ddu/d(a)d(b) = (func(b+1)-func(b-1))/(2d(b))
+           where func = du/d(a)
+                 a = self.indepVarList[0],
+                 b = self.indepVarList[1].
+        so indepVarIndex unused.
+
         INPUT:
-        indepVarIndex --- это индекс независимой переменной в массиве всех таких переменных;
-                          это индекс той переменной, производная по которой
-                          входит в смешанную производную второго порядка,
-                          но не той переменной, для которой написано краевое условие Неймана.
-                          0 - for dydx or dzdx
-                          1 - for dxdy or dzdy
-                          2 - for dxdz or dydz
-        for derivOrder = 2:
+        self.indepVarIndex --- это индекс независимой переменной в массиве всех таких переменных;
+                               это индекс той переменной, производная по которой
+                               входит в смешанную производную второго порядка,
+                               но не той переменной, для которой написано краевое условие Неймана.
+                               0 - for dydx or dzdx
+                               1 - for dxdy or dzdy
+                               2 - for dxdz or dydz
+        
+        FOR EXAMPLE:
+        for derivOrder = 2 
+        and self.indepVarList=['x','y']:
         ddu/dxdy = (phi(y+1)-phi(y-1))/(2dy)
            for phi(x,y)=du/dx
 
         USED FUNCTIONS:
         self.userIndepVariables
         self.blockNumber
-        self.parsedMathFunction
+        self.func
         '''
+        # for debug
+        self.print_dbg("FROM MixDerivGenerator.special_diff:")
+
+        try:
+            indepVarIndex = self.indepVarIndex
+        except:
+            raise(SyntaxError("for special_diff self.indepVarIndex"
+                              + "should be initiated first"))
+        if type(indepVarIndex) == str:
+            indepVarIndex = self.userIndepVariables.index(indepVarIndex)
+
+        # find increment
+        self.make_increment_for_varIndex(indepVarIndex)
+        increment = self.specialIncrement
+    
         if self.derivOrder == 2:
-            fullIndepVarValueListR = list([])
-            fullIndepVarValueListL = list([])
-            
+            right = func
+            left = func
             for k, indepVar in enumerate(self.userIndepVariables):
-                if k == indepVarIndex:
-                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper()
-                                                   + ' + Block' + str(self.blockNumber)
-                                                   + 'Offset' + indepVar.upper()
-                                                   + ' * D' + indepVar.upper()
-                                                   + 'M1' + ' + 1)'])
-                else:
-                    fullIndepVarValueListR.extend(['(idx' + indepVar.upper()
-                                                   + ' + Block' + str(self.blockNumber)
-                                                   + 'Offset' + indepVar.upper()
-                                                   + ' * D' + indepVar.upper()
-                                                   + 'M1' + ')'])
-            fullIndepVarValueListR.extend(['t'])
-            
-            for k, indepVar in enumerate(self.userIndepVariables):
-                if k == indepVarIndex:
-                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper()
-                                                   + ' + Block' + str(self.blockNumber)
-                                                   + 'Offset' + indepVar.upper()
-                                                   + ' * D' + indepVar.upper()
-                                                   + 'M1' + ' - 1)'])
-                else:
-                    fullIndepVarValueListL.extend(['(idx' + indepVar.upper()
-                                                   + ' + Block' + str(self.blockNumber)
-                                                   + 'Offset' + indepVar.upper()
-                                                   + ' * D' + indepVar.upper()
-                                                   + 'M1' + ')'])
-            fullIndepVarValueListL.extend(['t'])
-            
-            #dataTerm
-            print("fullIndepVarValueListL")
-            print(fullIndepVarValueListL)
-            print("fullIndepVarValueListR")
-            print(fullIndepVarValueListR)
-            right = generateCodeForMathFunction(self.parsedMathFunction,
-                                                self.userIndepVariables,
-                                                fullIndepVarValueListR)
-            
-            left = generateCodeForMathFunction(self.parsedMathFunction,
-                                               self.userIndepVariables,
-                                               fullIndepVarValueListL)
+                # phase args into func
+                if ('arg_'+indepVar.upper()) in func:
+                    if k == indepVarIndex:
+                        argNewR = ('(idx' + indepVar.upper()
+                                   + ' + Block' + str(self.blockNumber)
+                                   + 'Offset' + indepVar.upper()
+                                   + ' * D' + indepVar.upper()
+                                   + 'M1' + ' + 1)')
+                        argNewL = ('(idx' + indepVar.upper()
+                                   + ' + Block' + str(self.blockNumber)
+                                   + 'Offset' + indepVar.upper()
+                                   + ' * D' + indepVar.upper()
+                                   + 'M1' + ' - 1)')
+                        right = right.replace('arg_'+indepVar.upper(),
+                                              argNewR)
+                        left = left.replace('arg_'+indepVar.upper(),
+                                            argNewL)
+                    else:
+                        argNewR = ('(idx' + indepVar.upper()
+                                   + ' + Block' + str(self.blockNumber)
+                                   + 'Offset' + indepVar.upper()
+                                   + ' * D' + indepVar.upper()
+                                   + 'M1' + ')')
+                        argNewL = ('(idx' + indepVar.upper()
+                                   + ' + Block' + str(self.blockNumber)
+                                   + 'Offset' + indepVar.upper()
+                                   + ' * D' + indepVar.upper()
+                                   + 'M1' + ')')
+
+                        right = right.replace('arg_'+indepVar.upper(),
+                                              argNewR)
+                        left = left.replace('arg_'+indepVar.upper(),
+                                            argNewL)
+            if 'arg_T' in func:
+                right = right.replace('arg_T',
+                                      't')
+                left = left.replace('arg_T',
+                                    't')
+
+            # for debug
+            self.print_dbg("left:", left)
+            self.print_dbg("right:", right)
+            self.print_dbg("indepVarIndex:",
+                           indepVarIndex)
+
             if right == left:
                 return '0.0'
             else:
-                #get_out_for_term
                 return('(0.5 * ' + increment + ' * '
                        + '(' + '(' + right + ')' + ' - '
                        + '(' + left + ')' + ')' + ')')
@@ -511,9 +708,13 @@ class MixDerivGenerator:
                               + " I don't know how to generate"
                               + " boundary function in this case!")
     
-    def mixDerivative(self):
+    def diff(self, func=None):
         '''
         DESCRIPTION:
+        This fucntion try to find
+        method (common, special)
+        from params. Deprecated.
+
         For 2d work fine
         For 3d not work.
 
@@ -524,10 +725,6 @@ class MixDerivGenerator:
         self.side
         
         '''
-        self.make_general_data()
-        increment = self.increment
-        strideList = self.strideList
-        
         # (0, y, 0) or (x_max, y, 0)
         bCond1 = self.side == 0 or self.side == 1
         # (x, 0, 0) or (x, y_max, 0)
@@ -564,14 +761,12 @@ class MixDerivGenerator:
              dim = 3 and ((0, 0, z) or (x_max, 0, z)) and (dydz or dzdy)
              and phi = du/dy (or du/dx)
             '''
-            ind = self.indepVarList.index(self.userIndepVariables[1])
-            specialIncrement = ('D' + self.indepVarList[ind].upper()
-                                + 'M' + self.derivativeOrderList[ind])
             # for dxdy
             # ddu/dxdy=(u(x,y+1)-u(x,y-1))/dy
             # or dzdy
             # ddu/dydz=(u(x,y,z+1)-u(x,y,z-1))/dz
-            return self.specialMixedDerivativeAlternative(specialIncrement, 1)
+            self.indepVarIndex = 'y'
+            return self.special_diff(func)
         elif ((blockDimension > 2 and bCond1 and indepVarCond2)
               or (blockDimension > 2 and bCond2 and indepVarCond3)):
             '''
@@ -582,13 +777,11 @@ class MixDerivGenerator:
              dim = 3 and ((x, 0, 0) or (x, y_max, 0)) and (dydz or dzdy)
              and phi = du/dy (should be dydx)
             '''
-            ind = self.indepVarList.index(self.userIndepVariables[2])
-            specialIncrement = ('D' + self.indepVarList[ind].upper()
-                                + 'M' + self.derivativeOrderList[ind])
             # for dxdz or dydz
             # ddu/dxdz = (u(x,y,z+1)-u(x,y,z-1))/dz
             # ddu/dydz=(u(x,y,z+1)-u(x,y,z-1))/dz
-            return self.specialMixedDerivativeAlternative(specialIncrement, 2)
+            self.indepVarIndex = 'z'
+            return self.special_diff(func)
         elif ((bCond2 and indepVarCond1)
               or (blockDimension > 2 and bCond3 and indepVarCond2)):
             '''
@@ -599,15 +792,11 @@ class MixDerivGenerator:
              dim = 3 and ((0, 0, z) or (x_max, 0, z)) and (dxdz or dzdx)
              and must phi = du/dx (or du/dy) but have phi = du/dz
             '''
-
-            ind = self.indepVarList.index(self.userIndepVariables[0])
-            specialIncrement = ('D' + self.indepVarList[ind].upper()
-                                + 'M' + self.derivativeOrderList[ind])
             # for dydx
             # ddu/dydx=(u(x+1,y)-u(x-1,y))/dx
             # or dzdx ???
             # ddu/dydx=(u(x+1,y,z)-u(x-1,y,z))/dx
-            
-            return self.specialMixedDerivativeAlternative(specialIncrement, 0)
+            self.indepVarIndex = 'x'
+            return self.special_diff(func)
         else:
-            return self.commonMixedDerivativeAlternative(increment, strideList)
+            return self.common_diff()

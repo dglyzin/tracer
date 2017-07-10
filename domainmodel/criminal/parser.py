@@ -89,6 +89,10 @@ class Parser():
 
         self.set_action_for_all_terms()
 
+        # for debugging:
+        self.dbg = True
+        self.dbgInx = 2
+
     def set_action_for_all_terms(self):
         '''
         DESCRIPTION:
@@ -116,12 +120,15 @@ class Parser():
                 self.mapTermsToActions[term] = action
 
     def parseMathExpression(self, expr):
+        # for debug
+        self.print_dbg("FROM parseMathExpression:")
+
         self.clear_data()
         try:
             parsedExpression = self.patterns.eqExpr.parseString(expr)
         except:
-            print("expr is not a equation")
-            parsedExpression = self.patterns.termBaseExpr.parseString(expr)
+            self.print_dbg("expr is not a equation")
+            parsedExpression = self.patterns.termBaseExpr.parseString(expr, parseAll=True)
         
         #TODO replace next two lines to action_for_termBaseExpr
         self.out = reduce(lambda x, y: x+y, self.actions.outList)
@@ -144,3 +151,9 @@ class Parser():
         for eq in eqStrList:
             print("eq = %s" % eq)
             print(self.parseMathExpression(eq))
+    
+    def print_dbg(self, *args):
+        if self.dbg:
+            for arg in args:
+                print(self.dbgInx*' '+str(arg))
+            print('')

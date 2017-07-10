@@ -73,8 +73,8 @@
             "Name": "Left point", 
             "Type": 1, 
             "Values": [
-                "-U(t,{x,0.7})", 
-                "V(t-1.1,{x,0.3})"
+                "-b*U(t,{x,0.7})", 
+                "c*V(t-1.1,{x,0.3})+U(t,{x,0.1})"
             ], 
             "Derivative": [
                 "0", 
