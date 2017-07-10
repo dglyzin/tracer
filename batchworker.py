@@ -72,31 +72,22 @@ USAGE
     try:
         # Setup argument parser
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
+        parser.add_argument('connFileName', type = str, help = "local json file with connection info")    
+        parser.add_argument('projectFileName', type = str, help = "local json batch file")
         parser.add_argument("-v", "--verbose", dest="verbose", action="count", help="set verbosity level [default: %(default)s]")
         parser.add_argument('-V', '--version', action='version', version=program_version_message)
         
         # Process arguments
         args = parser.parse_args()
 
-        paths = args.paths
         verbose = args.verbose
-        recurse = args.recurse
-        inpat = args.include
-        expat = args.exclude
-
+        
         if verbose > 0:
             print("Verbose mode on")
-            if recurse:
-                print("Recursive mode on")
-            else:
-                print("Recursive mode off")
+        
+        print("hello")
+        ### do something with inpath ###
 
-        if inpat and expat and inpat == expat:
-            raise CLIError("include and exclude pattern are equal! Nothing will be processed.")
-
-        for inpath in paths:
-            ### do something with inpath ###
-            print(inpath)
         return 0
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###

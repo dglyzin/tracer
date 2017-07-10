@@ -60,7 +60,7 @@
             {
                 "a": 1.0,
                 "d": 1.0,
-                "b": 1.36
+                "b": 1.1
             }
         ], 
         "DefaultParamsIndex": 0
@@ -70,7 +70,7 @@
             "Name": "nonlocal", 
             "Type": 1, 
             "Values": [
-                "- b * U(t,{x,0.9})"
+                "- b * U(t,{x,0.7})"
             ]
         }
     ], 
