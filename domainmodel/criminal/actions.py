@@ -78,6 +78,55 @@ class Actions():
                                              str, loc, toks))
     # END ACTIONS
 
+    # ACTIONS FOR termPower
+    def action_for_termPower(self):
+        def action(termData, _str, loc, toks):
+            # for debug
+            self.print_dbg("FROM action_for_termPower")
+
+            # for debug
+            self.print_dbg("toks:", toks)
+            self.print_dbg("_str:", _str)
+            self.print_dbg("loc:", loc)
+
+            # cut out from inner term X: X^power
+            # from outList.
+            innerTermOut = self.outList.pop()
+            power = termData['real'][0]
+
+            out = self.cppOut.get_out_for_termPower()
+            out = out.replace("arg_val", innerTermOut)
+            out = out.replace("arg_power", power)
+
+            # clear subterm
+            termData['real'] = []
+
+            self.outList.append(out)
+
+            '''
+            self.print_dbg("toks.keys:", toks.keys())
+            self.print_dbg("toks.values:", toks.values())
+            self.print_dbg("toks.pop:", toks[0].pop(0))
+            self.print_dbg("toks:", toks)
+            '''
+
+        return(lambda _str, loc, toks: action(self.cppOut.dataTermRealForPower,
+                                              _str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termRealForPower
+    def action_for_termRealForPower(self):
+        def action(termData, _str, loc, toks):
+            # for debug
+            # self.print_dbg("FROM action_for_termRealForPower")
+
+            # for debug
+            # self.print_dbg("toks:", toks)
+            termData['real'].append(toks[0])
+        return(lambda _str, loc, toks: action(self.cppOut.dataTermRealForPower,
+                                              _str, loc, toks))
+    # END ACTIONS
+
     # ACTIONS FOR termBrackets
     def action_for_termBrackets(self):
         def action(_str, loc, toks):
@@ -129,6 +178,34 @@ class Actions():
         return(lambda _str, loc, toks: action(_str, loc, toks))
     # END ACTIONS
 
+    # ACTIONS FOR termParam
+    def action_for_termParam(self):
+        def action(_str, loc, toks):
+            # for debug
+            self.print_dbg("FROM action_for_termParam:")
+
+            # for debug
+            self.print_dbg("parameters",
+                           self.cppOut.params.parameters)
+            # for debug
+            self.print_dbg("toks",
+                           toks)
+            
+
+            # get index of param
+            parameter = toks[0]
+            parameterInx = self.cppOut.params.parameters.index(parameter)
+
+            # for debug
+            self.print_dbg("parameterInx", parameterInx)
+
+            # OUTPUT
+            out = self.cppOut.get_out_for_termParam()
+            out = out.replace("arg_param", str(parameterInx))
+            self.outList.append(out)
+        return(lambda _str, loc, toks: action(_str, loc, toks))
+    # END ACTIONS
+    
     # ACTIONS FOR termUnary
     def action_for_termUnary(self):
         def action(_str, loc, toks):
@@ -320,7 +397,7 @@ class Actions():
 
             out = out.replace("arg_varIndex",
                               str(termData['varIndexs'].index(toks[0])))
-            
+ 
             self.outList.append(out)
         return(lambda str, loc, toks: action(self.cppOut.dataTermVarsSimpleGlobal,
                                              self.cppOut.dataTermVarsSimpleIndep,

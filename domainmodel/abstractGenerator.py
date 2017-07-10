@@ -44,7 +44,7 @@ class BoundCondition:
 
         # equation for this part of block
         self.equation = equation
-        
+
         # equation function name in cpp
         self.funcName = funcName
          
@@ -82,6 +82,8 @@ class BoundCondition:
                 print("shape")
                 print(parser.params.shape)
                 
+                parser.params.parameters = params
+
                 parser.parseMathExpression(value)
                 # cpp
                 self.parsedValues.append(parser.out)

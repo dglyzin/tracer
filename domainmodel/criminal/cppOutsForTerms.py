@@ -38,6 +38,8 @@ class CppOutsForTerms():
         
         self.dataTermMathFuncForDiffSpec = "empty_func"
 
+        self.dataTermRealForPower = {'real': []}
+
         # for debugging:
         self.dbg = True
         self.dbgInx = 4
@@ -57,7 +59,10 @@ class CppOutsForTerms():
             methodTermName = methodName.split('_')[-1]
             if methodTermName == termName:
                 return(methods[methodName](self))
-    
+
+    def get_out_for_termPower(self):
+        return("pow(arg_val, arg_power)")
+
     def get_out_for_termArgsForUnary(self):
         '''
         DESCRIPTION:
@@ -195,7 +200,7 @@ class CppOutsForTerms():
 
     def get_out_for_termParam(self):
         return('params['
-               + 'arg1'  # str(parIndex)
+               + 'arg_param'  # str(parIndex)
                + ']')
 
     def get_out_for_termBinary(self):

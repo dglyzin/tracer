@@ -128,7 +128,7 @@ class Parser():
             parsedExpression = self.patterns.eqExpr.parseString(expr)
         except:
             self.print_dbg("expr is not a equation")
-            parsedExpression = self.patterns.termBaseExpr.parseString(expr)
+            parsedExpression = self.patterns.termBaseExpr.parseString(expr, parseAll=True)
         
         #TODO replace next two lines to action_for_termBaseExpr
         self.out = reduce(lambda x, y: x+y, self.actions.outList)

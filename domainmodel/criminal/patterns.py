@@ -2,6 +2,7 @@ from pyparsing import Literal, Word, nums, alphas
 from pyparsing import Group, Forward, Optional
 from pyparsing import Suppress, restOfLine
 from pyparsing import OneOrMore, ZeroOrMore
+from pyparsing import Combine
 
 
 class Patterns():
@@ -58,11 +59,12 @@ class Patterns():
                          + self.termOrder + ZeroOrMore(',' + self.termOrder)
                          + ']')
 
+        self.termBrackets = Literal('(') ^ Literal(')')
+
         self.termOperand = (self.termVars ^ self.termParam ^ Group(self.termDiff)
                             ^ self.real ^ self.termArgs ^ self.termParam)
-        
+
         # FOR TERM like -(-sin(x)+cos(x))*U
-        self.termBrackets = Literal('(') ^ Literal(')')
         self.termRealForUnary = self.real.copy()
         self.termArgsForUnary = self.termArgs.copy()
         self.termFuncArg = Group(self.termFunc
@@ -80,12 +82,18 @@ class Patterns():
                               ^ Group(self.termBrackets
                                       + OneOrMore(self.termUnary)
                                       + self.termFuncArg
-                                      + self.termBrackets))
+                                      + self.termBrackets)
+                              ^ self.termOperand)
 
         self.recUnary = Forward()
 
-        self.recUnary << (Optional(self.termBrackets)
+        self.recUnary << (Optional(self.termUnary)
+                          + Optional(self.termBrackets)
+                          + Optional(self.termUnary)  # for -(-())
+                          + Optional(self.termBrackets)  # for -(-())
                           + self.termUnaryFunc
+                          + Optional(self.termBrackets)
+                          + Optional(self.termBrackets)  # for -(-())
                           + Optional(self.termBinary)
                           + Optional(self.recUnary)
                           )
@@ -95,8 +103,24 @@ class Patterns():
         self.recUnary << ((Literal('(') ^ self.termUnary)
                           + Optional(self.recUnary))
         '''
+
+
+        # FOR TERM ^
+        self.termRealForPower = self.real.copy()
+        self.termPower = Group((ZeroOrMore(self.termBrackets)
+                                + self.termOperand
+                                + ZeroOrMore(self.termBrackets))
+                               + Literal('^')
+                               + (ZeroOrMore(self.termBrackets)
+                                  + self.termRealForPower
+                                  + ZeroOrMore(self.termBrackets)))
+        # END OF TERM
+
+        self.termOperand = self.termPower ^ self.termOperand
+
         self.termBaseExpr = Forward()
-        
+        self.termBaseExpr << self.recUnary
+        '''
         self.termBaseExpr << (Optional(self.termBrackets)
                               + Optional(self.termUnary)
                               + Optional(self.termBrackets)
@@ -107,6 +131,9 @@ class Patterns():
                               + Optional(self.termBinary)
                               + Optional(self.termBaseExpr)
                           )
+        '''
+        '''
+        '''
         '''
         self.baseExpr << (Optional(self.recUnary) + self.termOperand
                           + Optional(OneOrMore(')'))
@@ -148,5 +175,5 @@ class Patterns():
                      'sin', 'cos', 'tan',
                      'sinh', 'tanh']
         self.unary = ['-']
-        self.binary = ['+', '-', '*', '/', '^']
+        self.binary = ['+', '-', '*', '/']
  

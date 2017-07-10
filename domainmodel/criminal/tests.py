@@ -3,6 +3,12 @@ from domainmodel.criminal.derivCodeGenerator import MixDerivGenerator
 from domainmodel.criminal.cppOutsForTerms import CppOutsForTerms
 
 
+def test_power(eq='U(t-1)^3'):
+    parser = Parser()
+    parser.parseMathExpression(eq)
+    return(parser)
+
+
 def test_diff():
     # for pure
     print("pure, common")
@@ -135,6 +141,7 @@ def fill_params_for_diff(parser):
     parser.params.secondIndexSTR = " $ secondIndexSTR $ "
     # END FOR INTERCONNECT
     return(parser)
+
 
 def test_bounds():
     parser1d = test_bounds_1d()
