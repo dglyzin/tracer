@@ -53,12 +53,14 @@
     "EquationParams": {
         "Params": [
             "a",
-            "d"
+            "d", 
+            "b"
         ], 
         "ParamValues": [
             {
                 "a": 1.0,
-                "d": 1.0
+                "d": 1.0,
+                "b": 1.36
             }
         ], 
         "DefaultParamsIndex": 0
@@ -68,7 +70,7 @@
             "Name": "nonlocal", 
             "Type": 1, 
             "Values": [
-                "-1.36* U(t,{x,0.9})"
+                "- b * U(t,{x,0.9})"
             ]
         }
     ], 
@@ -109,6 +111,19 @@
         {
             "Title": "u(t)", 
             "Period": 0.1
+        }
+    ],
+    "Plots": [
+        {
+            "Title": "u(t)", 
+            "Period": 0.1
+        }
+    ]    ,
+    "Results": [
+        {
+            "Name": "u_norm", 
+            "Period": 0.1,
+            "Value": "MaxNorm(U)"
         }
     ]
 }

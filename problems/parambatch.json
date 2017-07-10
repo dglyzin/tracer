@@ -1,0 +1,25 @@
+{ 
+    "comment":"",
+    "ProblemFile":"rea-dif-wnl-bnd.json",
+    "ParamRanges": [ 
+        {
+            "Param": "b",
+            "Start" : 1.3,
+            "End" : 1.4,
+            "Step" : 0.01
+        },
+        {
+            "Param": "d",
+            "Start" : 0.9,
+            "End" : 1.1,
+            "Step" : 0.1
+        }
+    
+    ],
+    "Output": [ 
+        {
+            "name" : "growth",
+            "expression":"u_norm[-1] > u_norm[-2]"
+        }
+    ]
+}
