@@ -96,17 +96,17 @@ class PureDerivGenerator(DerivGenerator):
 
         if ((params.diffMethod == 'special')
             and (params.diffType == 'pure')):
-            try:
-                # self.leftOrRightBoundary = params.leftOrRightBoundary
-                if ((self.side % 2 == 0)
-                    and (self.indepVarIndexList[0] == self.side / 2)):
-                    self.leftOrRightBoundary = 1
-                elif ((self.side - 1) % 2 == 0
-                      and self.indepVarIndexList[0] == (self.side - 1) / 2):
-                    self.leftOrRightBoundary = 0
-            except:
+            if ((self.side % 2 == 0)
+                and (self.indepVarIndexList[0] == self.side / 2)):
+                self.leftOrRightBoundary = 1
+            elif ((self.side - 1) % 2 == 0
+                  and self.indepVarIndexList[0] == (self.side - 1) / 2):
+                self.leftOrRightBoundary = 0
+            else:
                 raise(SyntaxError("cannot define leftOrRightBoundary"
-                                  + " for special_diff"))
+                                  + " for special_diff: "
+                                  + "side = "+str(self.side)
+                                  + " VarIndex[0]="+str(self.indepVarIndexList[0])))
         # END FOR SPECIAL
 
         # PARAMS FOR INTERCONNECT
@@ -349,11 +349,11 @@ class PureDerivGenerator(DerivGenerator):
             
         except:
             raise(SyntaxError("use make_general_data first"))
-        try:
-            leftOrRightBoundary = self.leftOrRightBoundary
-        except:
-            raise(SyntaxError("for special_diff self.leftOrRightBoundary"
-                              + "should be initiated first"))
+        # try:
+        leftOrRightBoundary = self.leftOrRightBoundary
+        #except:
+        #    raise(SyntaxError("for special_diff self.leftOrRightBoundary"
+        #                      + "should be initiated first"))
         # for debug
         self.print_dbg("special used")
 

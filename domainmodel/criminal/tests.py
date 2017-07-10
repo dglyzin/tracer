@@ -3,6 +3,35 @@ from domainmodel.criminal.derivCodeGenerator import MixDerivGenerator
 from domainmodel.criminal.cppOutsForTerms import CppOutsForTerms
 
 
+def test_powers():
+    parser = Parser()
+    parser = fill_params_for_diff(parser)
+    
+    print('########')
+    eq = "U^3"
+    print('for eq =')
+    print(eq)
+    parser.parseMathExpression(eq)
+    print("out")
+    print(parser.out)
+
+    print('########')
+    eq = "V(t-1.1,{x, 0.7})^3"
+    print('for eq =')
+    print(eq)
+    parser.parseMathExpression(eq)
+    print("out")
+    print(parser.out)
+
+    print('########')
+    eq = "D[V(t-1.1),{x, 2}]^3"
+    print('for eq =')
+    print(eq)
+    parser.parseMathExpression(eq)
+    print("out")
+    print(parser.out)
+
+
 def test_power(eq='U(t-1)^3'):
     parser = Parser()
     parser.parseMathExpression(eq)
@@ -10,6 +39,11 @@ def test_power(eq='U(t-1)^3'):
 
 
 def test_diff():
+    '''
+    DESCRIPTION:
+    Tests get_out_for_termDiff for
+    different parameters.
+    '''
     # for pure
     print("pure, common")
     out = test_diff_out('pure', 'common', ['x'])
@@ -75,6 +109,16 @@ def test_diff_out(diffType, diffMethod, vars, deriveOrder=2,
 def test_diff_parser(eq=("D[U(t-1.1),{x,2}]+D[U(t-5.1),{y,2}]"
                          + "+D[V(t-1.1),{x,1}]"),
                      func="sin(arg_X, arg_Y)*arg_T"):
+    '''
+    DESCRIPTION:
+    Test parser for different parameters.
+
+    ! D[U,{x,2}] can themself detect diff argument
+    (i.e. x) if indepVarList =['x']
+
+    TODO:
+    TermDiff must themself detect args.
+    '''
     parser = Parser()
     parser = fill_params_for_diff(parser)
     
@@ -119,7 +163,7 @@ def fill_params_for_diff(parser):
     # PARAMS FOR ALL
     parser.params.blockNumber = 0
     parser.params.unknownVarIndex = ' $ unknownVarIndex[0] $ '
-    parser.params.indepVarList = [' $ indepVarList[0] $ ']
+    parser.params.indepVarList = ['x']
     parser.params.derivOrder = 2
     parser.params.diffType = 'pure'
     parser.params.diffMethod = 'common'

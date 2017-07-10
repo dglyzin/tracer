@@ -84,14 +84,28 @@ class Patterns():
                                       + self.termFuncArg
                                       + self.termBrackets)
                               ^ self.termOperand)
+        
+        # FOR TERM ^
+        self.termRealForPower = self.real.copy()
+        self.termPower = Group((ZeroOrMore(self.termBrackets)
+                                + self.termUnaryFunc
+                                + ZeroOrMore(self.termBrackets))
+                               + Literal('^')
+                               + (ZeroOrMore(self.termBrackets)
+                                  + self.termRealForPower
+                                  + ZeroOrMore(self.termBrackets)))
+        # END OF TERM
 
+        # self.termOperand = self.termPower ^ self.termOperand
+
+        # self.termUnaryFunc = ()
         self.recUnary = Forward()
 
         self.recUnary << (Optional(self.termUnary)
                           + Optional(self.termBrackets)
                           + Optional(self.termUnary)  # for -(-())
                           + Optional(self.termBrackets)  # for -(-())
-                          + self.termUnaryFunc
+                          + (self.termPower ^ self.termUnaryFunc)
                           + Optional(self.termBrackets)
                           + Optional(self.termBrackets)  # for -(-())
                           + Optional(self.termBinary)
@@ -103,20 +117,6 @@ class Patterns():
         self.recUnary << ((Literal('(') ^ self.termUnary)
                           + Optional(self.recUnary))
         '''
-
-
-        # FOR TERM ^
-        self.termRealForPower = self.real.copy()
-        self.termPower = Group((ZeroOrMore(self.termBrackets)
-                                + self.termOperand
-                                + ZeroOrMore(self.termBrackets))
-                               + Literal('^')
-                               + (ZeroOrMore(self.termBrackets)
-                                  + self.termRealForPower
-                                  + ZeroOrMore(self.termBrackets)))
-        # END OF TERM
-
-        self.termOperand = self.termPower ^ self.termOperand
 
         self.termBaseExpr = Forward()
         self.termBaseExpr << self.recUnary
