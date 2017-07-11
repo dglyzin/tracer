@@ -22,6 +22,8 @@ import os
 
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
+from remoterun import Connection
+
 
 __all__ = []
 __version__ = 0.1
@@ -86,6 +88,8 @@ USAGE
             print("Verbose mode on")
         
         print("hello")
+        
+        
         ### do something with inpath ###
 
         return 0

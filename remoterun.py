@@ -67,8 +67,9 @@ class Connection(object):
         self.password = connDict["Password"]
         self.workspace = connDict["Workspace"]
         self.tracerFolder = connDict["TracerFolder"]
-        
-
+    
+    def loadFromFile(self, fileNamePath):
+        pass
         
 def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug, nortpng, projectFolder):
     '''
