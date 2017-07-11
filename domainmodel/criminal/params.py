@@ -25,21 +25,38 @@ class Params():
         self.dim = dim
             
     def set_hat_for_all_cf(self, blockNumber):
+        '''
+        USED FUNCTIONS:
+        blockNumber
+        '''
         self.cf_hat_common = ('\n//========================='
                               + 'CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER '
                               + str(blockNumber)
                               + '========================//\n\n')
     
     def set_stride_map(self, blockNumber):
+        '''
+        USED FUNCTIONS:
+        blockNumber
+        self.dim
+        '''
         self.strideMap = dict()
-        for var in 'xyz':
+        vars = 'xyz'
+        for i in range(int(self.dim[0])):
+            var = vars[i]
             self.strideMap[var] = ('Block' + str(blockNumber)
                                    + 'Stride' + var.upper())
         
-    def get_hat_for_cf(self, blockNumber, eqNumber, dim):
+    def get_hat_for_cf(self, blockNumber, eqNumber):
+        '''
+        USED FUNCTIONS
+        blockNumber
+        equationNumber
+        self.dim
+        '''
         text = ('//'+str(eqNumber)
                 + ' central function for '
-                + str(dim)
+                + str(self.dim)
                 + 'd model for block with number '
                 + str(blockNumber)
                 + '\n')
@@ -54,18 +71,27 @@ class Params():
         self.namesCf[(blockNumber, eqNumber)] = text
         return(text)
 
-    def get_cf_signature(self, blockNumber, name, strideList):
-
+    def get_cf_signature(self, blockNumber, name):
+        '''
+        USED FUNCTIONS:
+        self.dim
+        blockNumber
+        name - function name
+        '''
         signatureStart = 'void ' + name + '(double* result, double** source, double t,'
         signatureMiddle = ''
-        for var in 'xyz':
+        vars = 'xyz'
+        for i in range(int(self.dim[0])):
+            var = vars[i]
             signatureMiddle = signatureMiddle + ' int idx' + var.upper() + ','
         signatureEnd = ' double* params, double** ic){\n'
 
         signature = signatureStart + signatureMiddle + signatureEnd
           
         idx = '\t int idx = ('
-        for var in 'xyz':
+        vars = 'xyz'
+        for i in range(int(self.dim[0])):
+            var = vars[i]
             idx = idx + ' + idx' + var.upper() + ' * ' + self.strideMap[var]
         idx = idx + ') * Block' + str(blockNumber) + 'CELLSIZE;\n'
         

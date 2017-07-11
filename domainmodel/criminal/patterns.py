@@ -34,8 +34,14 @@ class Patterns():
         self.termArgForVarDelayT = self.termArgs.copy()
         self.termRealForVarDelayT = self.real.copy()
         self.termArgForVarDelayX = self.termArgs.copy()
-        self.termRealForVarDelayX = self.real.copy()
         
+        # for {x, 0.7}
+        self.termRealForVarDelayX = self.real.copy()
+        # for {x, a}
+        self.termParamForVarDelayX = self.termParam.copy()
+
+        self.termValForVarDelayX = (self.termRealForVarDelayX
+                                    ^ self.termParamForVarDelayX)
         # term for U(t-1.3,{x,0.3}{y,0.7}) or
         # for U(t-1.3,{x,0.3})
         
@@ -47,7 +53,7 @@ class Patterns():
                                         + ','
                                         + OneOrMore(Group("{"
                                                           + self.termArgForVarDelayX + ','
-                                                          + self.termRealForVarDelayX + '}'))
+                                                          + self.termValForVarDelayX + '}'))
                                         + ")")
         # END OF TERM
 
@@ -170,7 +176,8 @@ class Patterns():
         self.args = 'xyzt'
         self.params = self.vars.lower()
         for a in self.args:
-            self.params.replace(a, "")
+            self.params = self.params.replace(a, "")
+
         self.func = ['exp', 'sqrt', 'log',
                      'sin', 'cos', 'tan',
                      'sinh', 'tanh']

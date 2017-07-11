@@ -30,6 +30,7 @@ def test_powers():
     parser.parseMathExpression(eq)
     print("out")
     print(parser.out)
+    return(parser)
 
 
 def test_power(eq='U(t-1)^3'):
@@ -160,13 +161,19 @@ def test_diff_parser(eq=("D[U(t-1.1),{x,2}]+D[U(t-5.1),{y,2}]"
 
 
 def fill_params_for_diff(parser):
+    '''
+    DESCRIPTION:
+    '''
     # PARAMS FOR ALL
     parser.params.blockNumber = 0
-    parser.params.unknownVarIndex = ' $ unknownVarIndex[0] $ '
+
+    # should detect
     parser.params.indepVarList = ['x']
     parser.params.derivOrder = 2
+
     parser.params.diffType = 'pure'
     parser.params.diffMethod = 'common'
+    parser.params.parameters = ['a', 'b']
     # END FOR ALL
     
     # PARAMS FOR BOUND
@@ -199,6 +206,16 @@ def test_bounds_1d():
     parser.params.blockNumber = 0
     parser.params.dim = '1D'
     parser.params.shape = [100]
+    parser.params.parameters = ['a']
+    parser.params.parametersVal = {'a': 0.5}
+
+    print('for eq = ')
+    eq = "-(U(t,{x, a}))"
+    print(eq)
+    parser.parseMathExpression(eq)
+    print("out = ")
+    print(parser.out)
+    print('##############')
 
     print('for eq = ')
     eq = "-(U(t,{x, 0.7}))"
@@ -209,8 +226,10 @@ def test_bounds_1d():
     print('##############')
 
     print('for eq = ')
-    eq = "-(V(t-1.1,{x, 0.7}))"
+    eq = "-(V(t-1.1,{x, a}))"
     print(eq)
+    parser.params.parameters = ['a']
+    parser.params.parametersVal = {'a': 0.5}
     parser.parseMathExpression(eq)
     print("out = ")
     print(parser.out)
@@ -233,6 +252,8 @@ def test_bounds_2d():
     parser.params.blockNumber = 0
     parser.params.dim = '2D'
     parser.params.shape = [100, 1000]
+    parser.params.parameters = []
+    parser.params.parametersVal = {}
 
     print('for eq = ')
     eq = "-(W(t,{x, 0.7}{y, 0.3}))"
