@@ -1,4 +1,10 @@
 class Actions():
+    '''
+    TODO:
+    Use toks instead outList for eq like
+    (sin(x)+cos(x)+...)^n (i.e. for composed
+    patterns).
+    '''
     def __init__(self, params, cppOut):
         self.cppOut = cppOut
         self.params = params
@@ -55,8 +61,8 @@ class Actions():
             self.print_dbg("FROM action_for_termBaseExpr:")
 
             # for debug
-            # self.print_dbg("toks:", toks)
-            
+            self.print_dbg("toks:", toks)
+            self.print_dbg("outList", self.outList)
             out = reduce(lambda x, y: x+y, self.outList)
 
             # change all founded delay marker to
@@ -513,6 +519,10 @@ class Actions():
         return(lambda str, loc, toks: self.action_add_args_map(self.cppOut.dataTermVarsPointDelay,
                                                                str, loc, toks))
 
+    def action_for_termParamForVarDelayX(self):
+        return(lambda str, loc, toks: self.action_add_args_map(self.cppOut.dataTermVarsPointDelay,
+                                                               str, loc, toks))
+
     def action_for_termRealForVarDelayX(self):
         return(lambda str, loc, toks: self.action_add_args_map(self.cppOut.dataTermVarsPointDelay,
                                                                str, loc, toks))
@@ -589,7 +599,12 @@ class Actions():
         add [['T', 1],['X', 0.3]]
         to termData.
         '''
-        
+        # for debug
+        self.print_dbg("FROM action_add_args_map:")
+     
+        # for debug
+        self.print_dbg("toks:", toks)
+
         # print(termData)
         if toks[0] in "txyz":
             data = toks[0].upper()
@@ -601,12 +616,29 @@ class Actions():
                 data = toks[0].split('.')[0]
             else:
                 # value for space
+                # for debug
+                self.print_dbg("parametersVal:",
+                               self.cppOut.params.parametersVal)
+
+                if toks[0] in self.cppOut.params.parametersVal.keys():
+                    # if var like a
+                    parametersVal = self.cppOut.params.parametersVal
+                    val = parametersVal[toks[0]]
+                else:
+                    # if var like 0.3
+                    val = toks[0]
+
+                # for debug
+                self.print_dbg("val:", val)
+
                 if termData[-1][0] == 'arg_'+'X'+'_var':
-                    data = str(int(float(toks[0])*self.params.shape[0]))
+                    data = str(int(float(val)*self.params.shape[0]))
                 elif(termData[-1][0] == 'arg_'+'Y'+'_var'):
-                    data = str(int(float(toks[0])*self.params.shape[1]))
+                    data = str(int(float(val)*self.params.shape[1]))
             termData[-1].append(data)
-    
+        # for debug
+        self.print_dbg("termData:", termData)
+
     def action_add_args(self, termData, str, loc, toks):
         '''
         DESCRIPTION:

@@ -190,11 +190,11 @@ def test_bound(modelFile="tests/short_restest_full.json"):
     # return(totalBCondLst)
 
 
-def to_file(out):
+def to_file(out, name='some_functions.cpp'):
 
     f = open(os.path.join(os.getcwd(), 'tests',
                           'introduction',
-                          'src', 'some_functions.cpp'),
+                          'src', name),
              'w')
     f.write(out)
     f.close()

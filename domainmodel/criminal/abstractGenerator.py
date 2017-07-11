@@ -4,11 +4,11 @@ Created on 11 авг. 2015 г.
 
 @author: golubenets
 '''
-from equationParser import MathExpressionParser
+from ..equationParser import MathExpressionParser
 from someFuncs import generateCodeForMathFunction
-from rhsCodeGenerator import RHSCodeGenerator
+from ..rhsCodeGenerator import RHSCodeGenerator
 from someFuncs import getCellCountInClosedInterval
-from criminal.parser import Parser
+from parser import Parser
 
 
 class BoundCondition:
@@ -48,8 +48,7 @@ class BoundCondition:
         # equation function name in cpp
         self.funcName = funcName
          
-    def createSpecialProperties(self, mathParser, params, paramValues,
-                                indepVars):
+    def createSpecialProperties(self, mathParser, params, indepVars):
         '''
         DESCRIPTION:
         parse functions (like 'sin((x+3*a))') from
@@ -84,10 +83,7 @@ class BoundCondition:
                 print(parser.params.shape)
                 
                 parser.params.parameters = params
-                if type(paramValues) == list:
-                    parser.params.parametersVal = paramValues[0]
-                else:
-                    parser.params.parametersVal = paramValues
+
                 parser.parseMathExpression(value)
                 # cpp
                 self.parsedValues.append(parser.out)
@@ -169,25 +165,28 @@ class InterconnectRegion3D:
     
 
 class AbstractGenerator(object):
-# Генерирует выходную строку для записи в файл
-    def __init__(self, delay_lst, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamsIndex):
-        self.delay_lst = delay_lst
-        self.maxDerivOrder = maxDerivOrder
-        self.haloSize = haloSize
-        self.equations = equations
-        self.blocks = blocks
-        self.initials = initials
-        self.bounds = bounds
-        self.interconnects = interconnects
-        self.gridStep = gridStep
+    '''
+    DESCRIPTION:
+    Генерирует выходную строку для записи в файл
+    '''
+    def __init__(self, model):
+        self.delay_lst = model.determineDelay()
+        self.maxDerivOrder = model.getMaxDerivOrder()
+        self.haloSize = model.getHaloSize()
+        self.equations = model.equations
+        self.blocks = model.blocks
+        self.initials = model.initials
+        self.bounds = model.bounds
+        self.interconnects = model.interconnects
+        self.gridStep = [model.gridStepX, model.gridStepY, model.gridStepZ]
         
-        self.userIndepVars = equations[0].vars
-        self.defaultIndepVars = ['x','y','z']
+        self.userIndepVars = self.equations[0].vars
+        self.defaultIndepVars = ['x', 'y', 'z']
         
-        self.params = params
-        self.paramValues = paramValues
-        self.defaultParamsIndex = defaultParamsIndex
-
+        self.params = model.params
+        self.paramValues = model.paramValues
+        self.defaultParamsIndex = model.defaultParamsIndex
+        
         # for saveDomain
         self.delays = []
 
@@ -262,6 +261,11 @@ class AbstractGenerator(object):
         
         RETURN:
         some string.
+
+        USED FUNCTIONS:
+        self.generateAllPointInitials
+        self.generateFillInitValFuncsForAllBlocks
+        self.generateGetInitFuncArray
         '''
 #         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
         output = list(["//===================PARAMETERS==========================//\n\n"])
@@ -270,7 +274,10 @@ class AbstractGenerator(object):
 
         pointInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames = self.generateAllPointInitials()
         output.append(pointInitials)
-        output.append(self.generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames, listWithDirichletFunctionNames))
+
+        # generateFillInitValFuncsForAllBlocks from Generator1D
+        output.append(self.generateFillInitValFuncsForAllBlocks(listWithInitialFunctionNames,
+                                                                listWithDirichletFunctionNames))
         output.append(self.generateGetInitFuncArray())
         
         return ''.join(output)
@@ -295,48 +302,67 @@ class AbstractGenerator(object):
         return ''.join(output)
     
     def generateAllPointInitials(self):
-#         Генерирует все точечные начальные функции и возвращает строку из них; возвращает массив, содержащий имена начальных функций и
-#         массив, содержащий имена граничных функций Дирихле.
-#         Индекс в этом массиве имени каждой сгенерированной начальной функции совпадает с индексом соответствующего начального условия
-#         в массиве файла .json
-#         Все для начальных условий
-#         countOfEquations = len(self.system)
+        '''
+        DESCRIPTION:
+        Генерирует все точечные начальные функции и возвращает строку из них;
+        возвращает массив, содержащий имена начальных функций и
+        массив, содержащий имена граничных функций Дирихле.
+        Индекс в этом массиве имени каждой сгенерированной начальной
+        функции совпадает с индексом соответствующего начального условия
+        в массиве файла .json.
+        countOfEquations = len(self.system)
+
+        USED FUNCTIONS:
+        # for parser
+        parser
+        self.params
+        self.userIndepVars
+
+        self.initials
+        
+        self.bounds
+        
+        '''
         parser = MathExpressionParser()
         allFunctions = list()
         listWithInitialFunctionNames = list()
         for initialNumber, initial in enumerate(self.initials):
             pointFunction = list()
             valueList = initial.values
-#             if len(valueList) != countOfEquations:
-#                 raise AttributeError("Component's count of some initial condition is not corresponds to component's count of unknown vector-function!")      
+
             name = "Initial"+str(initialNumber)
             listWithInitialFunctionNames.append(name)
             pointFunction.append("void " + name + "(double* cellstart, double x, double y, double z){\n")
             
             indepVarsForInitialFunction = self.userIndepVars + ['t']
             for k,value in enumerate(valueList):
+                '''
                 parsedInitial = parser.parseMathExpression(value, self.params, indepVarsForInitialFunction)
                 newValue = generateCodeForMathFunction(parsedInitial, self.userIndepVars, indepVarsForInitialFunction)
+                '''
+                newValue = ' $ value from gen.initials $ '
                 pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
             pointFunction.append("}\n\n")
             allFunctions.append(''.join(pointFunction))
 #         Все для условий Дирихле
-        listWithDirichletFunctionNames = list()    
+        listWithDirichletFunctionNames = list()
         for boundNumber, bound in enumerate(self.bounds):
             if bound.btype == 0:
                 pointFunction = list()
                 valueList = bound.values
-#                 if len(valueList) != countOfEquations:
-#                     raise AttributeError("Component's count of some boundary condition is not corresponds to component's count of unknown vector-function!")      
+
                 name = "DirichletInitial" + str(boundNumber)
                 listWithDirichletFunctionNames.append(name)
                 pointFunction.append("void " + name + "(double* cellstart, double x, double y, double z){\n")
                 
                 indepVarsForInitialFunction = self.userIndepVars + ['t']
                 for k,value in enumerate(valueList):
+                    '''
                     parsedInitial = parser.parseMathExpression(value, self.params, indepVarsForInitialFunction)
                     parsedInitialAfterReplacing = self.replaceTimeToZeroInInitialCondition(parsedInitial)
                     newValue = generateCodeForMathFunction(parsedInitialAfterReplacing, self.userIndepVars, indepVarsForInitialFunction)
+                    '''
+                    newValue = ' $ value from bound.values $ '
                     pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
                 pointFunction.append("}\n\n")
                 allFunctions.append(''.join(pointFunction))
@@ -378,42 +404,77 @@ class AbstractGenerator(object):
         
         return DirichletConditionForParsing
     
-    def genCommonPartForFillInitValFunc(self, block, blockNumber, totalCountOfInitials, listWithInitialFunctionNames, listWithDirichletFunctionNames):
-# Функция генерирует часть функции-заполнителя, общую для блоков каждой размерности
-# Для данного блока определяется список индексов начальных функций в массиве listWithInitialFunctionNames
+    def genCommonPartForFillInitValFunc(self, block, blockNumber,
+                                        totalCountOfInitials,
+                                        listWithInitialFunctionNames, listWithDirichletFunctionNames):
+        '''
+        DESCRIPTION:
+        Функция генерирует часть функции-заполнителя,
+        общую для блоков каждой размерности.
+        Для данного блока определяется список индексов
+        начальных функций в массиве listWithInitialFunctionNames.
+
+        OUTPUT:
+        void Block0FillInitialValues(double* result, unsigned short int* initType){
+               initfunc_ptr_t initFuncArray[2];\n\tinitFuncArray[0] = f1;
+               initFuncArray[1] = f2;
+
+        USED FUNCTIONS:
+        block.defaultInitial
+        block.initialRegions
+        block.boundRegions
+        self.bounds
+        '''
         defaultInitialIndex = block.defaultInitial
         listOfInitialIndices = list([defaultInitialIndex])
         for initialRegion in block.initialRegions:
             if initialRegion.initialNumber >= totalCountOfInitials:
-                raise AttributeError("Number of initial condition in some initial region of some block shouldn't be greater or equal to count of initials!")
+                raise AttributeError("Number of initial condition in some"
+                                     + " initial region of some block shouldn't"
+                                     + " be greater or equal to count of initials!")
             if initialRegion.initialNumber != defaultInitialIndex:
                 listOfInitialIndices.append(initialRegion.initialNumber)
         countOfInitialsForBlock = len(listOfInitialIndices)
-# Для данного блока определяется список индексов функций Дирихле в массиве listWithDirichletFunctionNames            
+
+        # Для данного блока определяется список индексов
+        # функций Дирихле в массиве listWithDirichletFunctionNames
         setOfDirichletIndices = set([])
         countOfBoundaries = len(self.bounds)
         for boundRegion in block.boundRegions:
             boundNumber = boundRegion.boundNumber
             if boundNumber >= countOfBoundaries:
-                raise AttributeError("In some of bound regions the value of bound number greater or equal to count of boundaries!")
+                raise AttributeError("In some of bound regions the value"
+                                     + " of bound number greater or equal"
+                                     + " to count of boundaries!")
             if self.bounds[boundNumber].btype == 0 and boundNumber not in setOfDirichletIndices:
                 setOfDirichletIndices.add(boundNumber)
         countOfDirichletForBlock = len(setOfDirichletIndices)
-# Генерируется начало самой функции-заполнителя.
+
+        # Генерируется начало самой функции-заполнителя.
         partOfFillFunction = list()
         strBlockNum = str(blockNumber)
-        signature = "void Block" + strBlockNum + "FillInitialValues(double* result, unsigned short int* initType){\n"
+        signature = ("void Block" + strBlockNum
+                     + "FillInitialValues(double* result, unsigned short int* initType){\n")
         partOfFillFunction.append(signature)
         
-        partOfFillFunction.append("\tinitfunc_ptr_t initFuncArray[" + str(countOfInitialsForBlock + countOfDirichletForBlock) + "];\n")
-#             Создаем заполнение начальными функциями
+        partOfFillFunction.append("\tinitfunc_ptr_t initFuncArray["
+                                  + str(countOfInitialsForBlock
+                                        + countOfDirichletForBlock)
+                                  + "];\n")
+
+        # Создаем заполнение начальными функциями
         for num, idx in enumerate(listOfInitialIndices):
             number = str(num)
-            partOfFillFunction.append("\tinitFuncArray[" + number + "] = " + listWithInitialFunctionNames[idx] + ";\n")
-#             Создаем заполнение функциями Дирихле
+            partOfFillFunction.append("\tinitFuncArray[" + number
+                                      + "] = " + listWithInitialFunctionNames[idx]
+                                      + ";\n")
+
+        # Создаем заполнение функциями Дирихле
         for num1, idx1 in enumerate(setOfDirichletIndices):
             number1 = str(countOfInitialsForBlock + num1)
-            partOfFillFunction.append("\tinitFuncArray[" + number1 + "] = " + listWithDirichletFunctionNames[idx1] + ";\n")
+            partOfFillFunction.append("\tinitFuncArray[" + number1
+                                      + "] = " + listWithDirichletFunctionNames[idx1]
+                                      + ";\n")
         return ''.join(partOfFillFunction)
     
     def generateGetInitFuncArray(self):
@@ -555,12 +616,11 @@ class AbstractGenerator(object):
                 
                 if not isinstance(bCond, Connection):
 
-                    # for BoundCondition
-                    bCond.createSpecialProperties(parser, self.params, self.paramValues,
-                                                  indepVarsForBoundaryFunction)
+                    # for Connection
+                    bCond.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
                 else:
                     
-                    # for Connection
+                    # for BoundCondition
                     bCond.createSpecialProperties(parser, self.params)
     
     def setDefault(self, blockNumber, side, equation, equationNum):
@@ -639,6 +699,10 @@ class AbstractGenerator(object):
         return ''.join(function)
         
     def generateGetBoundFuncArray(self, totalArrWithFunctionNames):
+        '''
+        DESCRIPTION:
+        Last part of .cpp file.
+        '''
         intro = "\n//===================================FILL FUNCTIONS===========================//\n\n"
         output = list(intro)
         countOfBlocks = len(self.blocks)

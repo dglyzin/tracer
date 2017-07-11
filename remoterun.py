@@ -209,7 +209,7 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         return u'Ошибка в протоколе SSH'
 
 
-def getGonnection(connFileName):
+def getConnection(connFileName):
     connFile = open(connFileName,"r")    
     connDict = json.loads(connFile.read())
     connFile.close()
@@ -252,7 +252,7 @@ if __name__=='__main__':
     args = parser.parse_args()
     
     connFileName = args.connFileName    
-    connection = getGonnection(connFileName)
+    connection = getConnection(connFileName)
 
     inputFileName = args.projectFileName
    

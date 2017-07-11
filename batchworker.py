@@ -22,8 +22,8 @@ import os
 
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
-from remoterun import Connection
-
+from remoterun import getConnection
+import json
 
 __all__ = []
 __version__ = 0.1
@@ -33,6 +33,13 @@ __updated__ = '2017-07-10'
 DEBUG = 0
 TESTRUN = 0
 PROFILE = 0
+
+class BatchWork(object):
+    def __init__(self, fileName):
+        with open(fileName,"r") as batchFile:    
+            self.batchDict = json.loads(batchFile.read())
+    
+    
 
 class CLIError(Exception):
     '''Generic exception to raise and log different fatal errors.'''
@@ -87,8 +94,10 @@ USAGE
         if verbose > 0:
             print("Verbose mode on")
         
-        print("hello")
-        
+        conn = getConnection(args.connFileName)
+        print("connecting to: "+ conn.host)
+        batch = BatchWork(args.projectFileName)
+        print("base file for batch work is " +batch.batchDict["ProblemFile"] )
         
         ### do something with inpath ###
 

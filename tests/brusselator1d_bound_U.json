@@ -57,13 +57,17 @@
         "Params": [
             "a", 
             "b", 
-            "c"
+            "c",
+	    "e",
+	    "k"
         ], 
         "ParamValues": [
             {
                 "a": 1.0, 
                 "c": 0.02, 
-                "b": 3
+                "b": 3,
+		"e": 0.3,
+	        "k": 0.7
             }
         ], 
         "DefaultParamsIndex": 0
@@ -73,8 +77,8 @@
             "Name": "Left point", 
             "Type": 1, 
             "Values": [
-                "-b*U(t,{x,0.7})", 
-                "c*V(t-1.1,{x,0.3})+U(t,{x,0.1})"
+                "-b*U(t,{x,k})", 
+                "c*V(t-1.1,{x,e})+U(t,{x,0.3})"
             ], 
             "Derivative": [
                 "0", 
