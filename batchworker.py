@@ -21,12 +21,14 @@ import sys
 import os
 import errno
 from glob import glob
+import multiprocessing as mp
+
+
 
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 from remoterun import getConnection, remoteProjectRun
 import json
-from numpy.numarray.alter_code1 import makenewfile
 from numpy import arange
 from domainmodel.model import Model
 
@@ -77,6 +79,21 @@ def pathifyParams(paramSet):
     for param in paramSet:
         res = res + "-"+ param["Name"] + "=" + str(param["Value"])
     return res
+
+
+
+def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath) ):
+    print paramSet
+    #1. generate file            
+    newProjectFileNamePath = baseProblemNamePath + pathifyParams(paramSet)  + ".json"
+    model = Model()
+    model.loadFromFile(problemFileNamePath)
+    model.applyParams(paramSet)
+    model.saveToFile(newProjectFileNamePath) 
+    #2. run it
+    remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None)
+    
+    
 
 def main(argv=None): # IGNORE:C0111
     '''Command line options.'''
@@ -146,18 +163,16 @@ USAGE
                 os.remove(fn)         
         
         paramQueue = paramGenerator([], batch.batchDict["ParamRanges"]) 
-        for paramSet in paramQueue:
-            print paramSet
-            #1. generate file            
-            newProjectFileNamePath = baseProblemNamePath + pathifyParams(paramSet)  + ".json"
-            model = Model()
-            model.loadFromFile(problemFileNamePath)
-            model.applyParams(paramSet)
-            model.saveToFile(newProjectFileNamePath) 
-            
-            remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None)
-            #2. launch job        
-            #3. wait for job to complete and combine results
+        #for paramSet in paramQueue:
+        #    launchJob( paramSet, conn, problemFileNamePath, baseProblemNamePath)
+        
+           
+        pool = mp.Pool(processes=8)
+        log = pool.map(launchJob, [( paramSet, conn, problemFileNamePath, baseProblemNamePath) for paramSet in paramQueue ] )
+        
+        for element in log:
+            print element
+        
         
         return 0
     except KeyboardInterrupt:
