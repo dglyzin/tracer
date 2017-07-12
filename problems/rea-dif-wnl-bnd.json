@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 1.0, 
+        "FinishTime": 20.0, 
         "TimeStep": 1e-05, 
         "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
@@ -86,7 +86,7 @@
     ], 
     "Hardware": [
         {
-            "Name": "cnode6", 
+            "Name": "any", 
             "CpuCount": 1, 
             "CpuMemory": [
                 5

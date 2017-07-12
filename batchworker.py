@@ -32,12 +32,14 @@ import json
 from numpy import arange
 from domainmodel.model import Model
 
+from domainmodel.logger import Logger, LL_USER, LL_DEVEL, LL_API 
+
 __all__ = []
 __version__ = 0.1
 __date__ = '2017-07-10'
 __updated__ = '2017-07-10'
 
-DEBUG = 0
+DEBUG = 1
 TESTRUN = 0
 PROFILE = 0
 
@@ -82,17 +84,21 @@ def pathifyParams(paramSet):
 
 
 
-def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath) ):
-    print paramSet
-    #1. generate file            
+def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) ):
+    #+ str(paramSet)
+    mainLogger.log("Job {} of {} started".format(jobIdx+1, jobCount), LL_USER)
+    #1. generate file
     newProjectFileNamePath = baseProblemNamePath + pathifyParams(paramSet)  + ".json"
     model = Model()
     model.loadFromFile(problemFileNamePath)
     model.applyParams(paramSet)
     model.saveToFile(newProjectFileNamePath) 
     #2. run it
-    remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None)
-    
+    logFileName = baseProblemNamePath + pathifyParams(paramSet)  + ".log" 
+    jobLogger = Logger(LL_DEVEL, logAPI = False, logFileName = logFileName)
+    remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None, jobLogger)
+    jobLogger.clean()
+    mainLogger.log("Job {} of {} finished".format(jobIdx+1, jobCount), LL_USER)
     
 
 def main(argv=None): # IGNORE:C0111
@@ -127,16 +133,13 @@ USAGE
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
         parser.add_argument('connFileNamePath', type = str, help = "local json file with connection info")    
         parser.add_argument('batchFileNamePath', type = str, help = "local json batch file")
-        parser.add_argument("-v", "--verbose", dest="verbose", action="count", help="set verbosity level [default: %(default)s]")
+        parser.add_argument("-v", "--verbose", dest="verbose", action="count", default=1, help="set verbosity level [default: %(default)s]")
         parser.add_argument('-V', '--version', action='version', version=program_version_message)
         
         # Process arguments
         args = parser.parse_args()
-
-        verbose = args.verbose
-        
-        if verbose > 0:
-            print("Verbose mode on")
+        #main logger for all batch   
+        mainLogger = Logger(args.verbose, logAPI = False, logFileName = None)
         
         conn = getConnection(args.connFileNamePath)
         print("connecting to: "+ conn.host)
@@ -164,15 +167,19 @@ USAGE
         
         paramQueue = paramGenerator([], batch.batchDict["ParamRanges"]) 
         #for paramSet in paramQueue:
-        #    launchJob( paramSet, conn, problemFileNamePath, baseProblemNamePath)
+        #    launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath) )
         
-           
+        jobCount = len(list(paramQueue)) 
+        paramQueue = paramGenerator([], batch.batchDict["ParamRanges"])
+        
         pool = mp.Pool(processes=8)
-        log = pool.map(launchJob, [( paramSet, conn, problemFileNamePath, baseProblemNamePath) for paramSet in paramQueue ] )
+        log = pool.map(launchJob, [( paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) for jobIdx, paramSet in enumerate(paramQueue) ] )
         
-        for element in log:
-            print element
+        #for element in log:
+        #    print element
         
+        
+        mainLogger.clean()
         
         return 0
     except KeyboardInterrupt:
@@ -185,12 +192,11 @@ USAGE
         sys.stderr.write(program_name + ": " + repr(e) + "\n")
         sys.stderr.write(indent + "  for help use --help\n")
         return 2
-
+    
 if __name__ == "__main__":
     if DEBUG:
-        sys.argv.append("-h")
-        sys.argv.append("-v")
-        sys.argv.append("-r")
+        #sys.argv.append("-h")
+        sys.argv.append("-vvvv")        
     if TESTRUN:
         import doctest
         doctest.testmod()

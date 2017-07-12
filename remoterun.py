@@ -37,7 +37,7 @@ import paramiko
 import argparse
 from collections import OrderedDict
 
-
+from domainmodel.logger import Logger, LL_USER, LL_DEVEL, LL_API 
 
 
 class Connection(object):
@@ -71,7 +71,7 @@ class Connection(object):
     def loadFromFile(self, fileNamePath):
         pass
         
-def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug, nortpng, projectFolder):
+def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug, nortpng, projectFolder, logger):
     '''
       connection: file with connection settings
       inputFile:  project file
@@ -102,7 +102,7 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
     
     
     #get project file name without extension
-    print (inputFile)
+    logger.log(inputFile, LL_USER)
     if projectFolder is None:
         projectPathName, _ = os.path.splitext(inputFile)  
         localProjectPath, _ = os.path.split(projectPathName) 
@@ -121,74 +121,74 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
     try:
         client.connect(hostname=connection.host, username=connection.username, password=connection.password, port=connection.port )
 
-        print ("Checking if folder "+connection.workspace+" exists...")
+        logger.log("Checking if folder "+connection.workspace+" exists...", LL_USER)
         stdin, stdout, stderr = client.exec_command('test -d '+connection.workspace)
         if stdout.channel.recv_exit_status():
-            print ("Please create workspace folder and put hybriddomain preprocessor into it")
+            logger.log("Please create workspace folder and put hybriddomain preprocessor into it", LL_USER)
             return
         else:
-            print ("Workspace OK.")
+            logger.log("Workspace OK.", LL_USER)
 
         projFolder = connection.workspace+"/"+projectFolder
-        print ("Creating/cleaning project folder: ")
+        logger.log("Creating/cleaning project folder: ", LL_USER)
         stdin, stdout, stderr = client.exec_command('test -d  '+projFolder)
         if stdout.channel.recv_exit_status():
             stdin, stdout, stderr = client.exec_command('mkdir  '+projFolder)
-            print ("Folder created.")
+            logger.log("Folder created.", LL_USER)
         else:
             if not continueEnabled:  
                 stdin, stdout, stderr = client.exec_command('rm -rf '+projFolder+'/*')
                 stdout.read()
-                print ("Folder cleaned.")                
+                logger.log("Folder cleaned.", LL_USER)                
             else:
-                print ("Folder exists, no cleaning needed.")
+                logger.log("Folder exists, no cleaning needed.", LL_USER)
                 #now check if file to continue from exists
                 if continueFnameProvided:
-                    print ("Checking if file to continue from  ("+continueFileName+") exists...")
+                    logger.log("Checking if file to continue from  ("+continueFileName+") exists...", LL_USER)
                     stdin, stdout, stderr = client.exec_command('test -f '+continueFileName)
                     if stdout.channel.recv_exit_status():
-                        print("File not found, please specify existing file to continue")
+                        logger.log("File not found, please specify existing file to continue", LL_USER)
                         return
                     else:
-                        print("File OK.")
+                        logger.log("File OK.", LL_USER)
                                       
         cftp=client.open_sftp()
         cftp.put(inputFile, projFolder+"/"+remoteProjectFileName)
         cftp.close()
         
         #3 Run jsontobin on json
-        print ('\nRunning preprocessor:')
+        logger.log('\nRunning preprocessor:', LL_USER)
         command = 'python '+connection.tracerFolder+'/hybriddomain/jsontobin.py '+ projFolder+'/'+remoteProjectFileName + " " + connection.tracerFolder
         
-        print (command, optionalArgs)
+        logger.log(command + optionalArgs, LL_DEVEL)
         stdin, stdout, stderr = client.exec_command(command+optionalArgs)
         
-        print("finally")
-        print( stdout.read())
-        print ("jsontobin stderr:")
-        print (stderr.read())
-        print ("stderr END")
+        logger.log("finally", LL_DEVEL)
+        logger.log( stdout.read(), LL_DEVEL)
+        logger.log("jsontobin stderr:", LL_DEVEL)
+        logger.log(stderr.read(), LL_DEVEL)
+        logger.log("stderr END", LL_DEVEL)
         #4 Run Solver binary on created files
-        print ("Checking if solver executable at "+connection.tracerFolder+"/hybridsolver/bin/HS exists...")
+        logger.log("Checking if solver executable at "+connection.tracerFolder+"/hybridsolver/bin/HS exists...", LL_USER)
         stdin, stdout, stderr = client.exec_command('test -f '+connection.tracerFolder + "/hybridsolver/bin/HS")
         if stdout.channel.recv_exit_status():
-            print ("Please provide correct path to the solver executable.")
+            logger.log("Please provide correct path to the solver executable.", LL_USER)
             return
         else:
-            print( "Solver executable found.")
+            logger.log( "Solver executable found.", LL_USER)
 
         #stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName, get_pty=True)
         stdin, stdout, stderr = client.exec_command('sh '+projFolder+'/'+remoteRunScriptName + " 2>&1")
         for line in iter(lambda: stdout.readline(2048), ""): 
             try:
-                print(line, end='' )
+                logger.log(line, LL_USER, end='' )
             except:
-                print("Wrong symbol")
-        print (stdout.read())
-        print (stderr.read())
+                logger.log("Wrong symbol", LL_USER)
+        logger.log(stdout.read(), LL_USER)
+        logger.log(stderr.read(),LL_USER)
         
         #get resulting files
-        print("Downloading results...")
+        logger.log("Downloading results...", LL_USER)
         cftp=client.open_sftp()
         cftp.chdir(projFolder)
         for filename in sorted(cftp.listdir()):
@@ -197,7 +197,7 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
             
                 #cftp.get(projFolder+"/"+remoteMp4Name, projectPathName+"-plot"+str(plotIdx)+".mp4")            
         cftp.close()
-        print("Done!")
+        logger.log("Done!", LL_USER)
         client.close()
 
     #Обрабатываю исключения
@@ -230,9 +230,11 @@ def finalParseAndRun(connection, inputFileName, args, projectFolder=None):
     continueFileName = args.cont  
     continueEnabled = not (continueFileName is None)
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
+    
+    logger = Logger(args.verbose, logAPI = False, logFileName = None)
        
-    remoteProjectRun(connection, inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug, args.nortpng, projectFolder)
-
+    remoteProjectRun(connection, inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug, args.nortpng, projectFolder, logger)
+    logger.clean()
 
 if __name__=='__main__':    
     parser = argparse.ArgumentParser(description='Processing json file on a remote cluster.', epilog = "Have fun!")
@@ -248,6 +250,8 @@ if __name__=='__main__':
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
     parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
     parser.add_argument('-nortpng', help="add this flag to not create png in real time", action="store_true")
+    parser.add_argument("-v", "--verbose", dest="verbose", action="count", default=1, help="set verbosity level [default: %(default)s]")
+    
     
     args = parser.parse_args()
     
