@@ -5,8 +5,8 @@
         {
             "Param": "b",
             "Start" : 1.3,
-            "End" : 1.4,
-            "Step" : 0.01
+            "End" : 1.6,
+            "Step" : 0.1
         },
         {
             "Param": "d",

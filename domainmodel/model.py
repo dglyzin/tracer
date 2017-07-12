@@ -640,6 +640,8 @@ class Model(object):
         return minCapacity #like 100*100*100 000 elements = 8GB < 64GB
             
     
-    
+    def applyParams(self,paramSet):
+        for param in paramSet:
+            self.paramValues[0][param["Name"]] = param["Value"]
     
     

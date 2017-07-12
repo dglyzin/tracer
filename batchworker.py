@@ -19,11 +19,16 @@ It defines classes_and_methods
 
 import sys
 import os
+import errno
+from glob import glob
 
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
-from remoterun import getConnection
+from remoterun import getConnection, remoteProjectRun
 import json
+from numpy.numarray.alter_code1 import makenewfile
+from numpy import arange
+from domainmodel.model import Model
 
 __all__ = []
 __version__ = 0.1
@@ -50,6 +55,28 @@ class CLIError(Exception):
         return self.msg
     def __unicode__(self):
         return self.msg
+
+def paramGenerator(fixedParams, paramRanges):
+    '''
+    input: list of parameter ranges
+    result: linearized parameters
+    '''
+    if paramRanges == []:
+        yield fixedParams
+    else:
+        curRangeDict = paramRanges[0]
+        curRange = arange(curRangeDict["Start"], curRangeDict["End"], curRangeDict["Step"])
+        for value in curRange:
+            newFixedParam = [{"Name":curRangeDict["Param"], "Value": value}]
+            nextLevelGenerator = paramGenerator(fixedParams + newFixedParam, paramRanges[1:])            
+            for item in nextLevelGenerator:
+                yield item 
+
+def pathifyParams(paramSet):
+    res = ''
+    for param in paramSet:
+        res = res + "-"+ param["Name"] + "=" + str(param["Value"])
+    return res
 
 def main(argv=None): # IGNORE:C0111
     '''Command line options.'''
@@ -81,8 +108,8 @@ USAGE
     try:
         # Setup argument parser
         parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument('connFileName', type = str, help = "local json file with connection info")    
-        parser.add_argument('projectFileName', type = str, help = "local json batch file")
+        parser.add_argument('connFileNamePath', type = str, help = "local json file with connection info")    
+        parser.add_argument('batchFileNamePath', type = str, help = "local json batch file")
         parser.add_argument("-v", "--verbose", dest="verbose", action="count", help="set verbosity level [default: %(default)s]")
         parser.add_argument('-V', '--version', action='version', version=program_version_message)
         
@@ -94,13 +121,44 @@ USAGE
         if verbose > 0:
             print("Verbose mode on")
         
-        conn = getConnection(args.connFileName)
+        conn = getConnection(args.connFileNamePath)
         print("connecting to: "+ conn.host)
-        batch = BatchWork(args.projectFileName)
-        print("base file for batch work is " +batch.batchDict["ProblemFile"] )
+        batch = BatchWork(args.batchFileNamePath)
         
-        ### do something with inpath ###
-
+        problemFileName = batch.batchDict["ProblemFile"]
+        
+        print("base file for batch work is " + problemFileName)
+        
+        batchFolder = os.path.splitext(args.batchFileNamePath)[0]        
+        print("batch folder is " + batchFolder)
+        
+        problemFileNamePath = os.path.join(os.path.split(args.batchFileNamePath)[0], problemFileName) 
+        baseProblemNamePath = os.path.join(batchFolder, os.path.splitext(problemFileName)[0] )
+        
+        try:
+            os.makedirs(batchFolder)
+            print("created batch folder")
+        except OSError as exception:
+            if exception.errno != errno.EEXIST:
+                raise   
+            print("batch folder exists, cleaning")
+            for fn in glob(os.path.join(batchFolder,'*')):
+                os.remove(fn)         
+        
+        paramQueue = paramGenerator([], batch.batchDict["ParamRanges"]) 
+        for paramSet in paramQueue:
+            print paramSet
+            #1. generate file            
+            newProjectFileNamePath = baseProblemNamePath + pathifyParams(paramSet)  + ".json"
+            model = Model()
+            model.loadFromFile(problemFileNamePath)
+            model.applyParams(paramSet)
+            model.saveToFile(newProjectFileNamePath) 
+            
+            remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None)
+            #2. launch job        
+            #3. wait for job to complete and combine results
+        
         return 0
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
@@ -110,7 +168,7 @@ USAGE
             raise(e)
         indent = len(program_name) * " "
         sys.stderr.write(program_name + ": " + repr(e) + "\n")
-        sys.stderr.write(indent + "  for help use --help")
+        sys.stderr.write(indent + "  for help use --help\n")
         return 2
 
 if __name__ == "__main__":
