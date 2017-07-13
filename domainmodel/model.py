@@ -58,6 +58,8 @@ class Model(object):
         self.bounds = []
         self.initials = []
         self.compnodes = []
+        self.plots = []
+        self.results = []
 
     #the following function is useful for json format updating
     
@@ -211,6 +213,18 @@ class Model(object):
                  for plot in projectDict["Plots"] ]
         except:        
             self.plots = [ ]
+
+        try:
+            self.results = [ OrderedDict([("Name", result["Name"]),
+                                    ("Period", result["Period"]),
+                                    ("Value", result["Value"])
+                                    ]
+                                   )
+                 for result in projectDict["Results"] ]
+        except:        
+            self.results = [ ]
+        
+
         
         self.initSessionSettings()
         self.projectFileAssigned = True
@@ -258,6 +272,12 @@ class Model(object):
                                    )
              for plot in projectDict["Plots"] ]
         
+        self.results = [ OrderedDict([("Name", result["Name"]),
+                                    ("Period", result["Period"]),
+                                    ("Value", result["Value"])
+                                    ]
+                                   )
+             for result in projectDict["Results"] ]
         self.initSessionSettings()
         self.projectFileAssigned = True
         self.projectFile = fileName
@@ -339,7 +359,8 @@ class Model(object):
             ("Mapping", OrderedDict ([("IsMapped", self.isMapped),
                                       ("BlockMapping", self.mapping) 
                                     ]) ),
-            ("Plots", self.plots)
+            ("Plots", self.plots),
+            ("Results", self.results),
         ])
         return modelDict
 

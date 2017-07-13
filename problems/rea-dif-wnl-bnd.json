@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 20.0, 
+        "FinishTime": 1.0, 
         "TimeStep": 1e-05, 
         "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
@@ -115,17 +115,17 @@
             "Period": 0.1
         }
     ],
-    "Plots": [
-        {
-            "Title": "u(t)", 
-            "Period": 0.1
-        }
-    ]    ,
     "Results": [
         {
-            "Name": "u_norm", 
+            "Name": "u_max", 
             "Period": 0.1,
-            "Value": "MaxNorm(U)"
+            "Value": "Max(U)"
+        },
+        {
+            "Name": "u_min", 
+            "Period": 0.1,
+            "Value": "Min(U)"
         }
+
     ]
 }

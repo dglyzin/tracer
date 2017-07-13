@@ -85,6 +85,10 @@ def pathifyParams(paramSet):
 
 
 def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) ):
+    '''
+        returns  base path and filename:  
+    '''
+    
     #+ str(paramSet)
     mainLogger.log("Job {} of {} started".format(jobIdx+1, jobCount), LL_USER)
     #1. generate file
@@ -99,7 +103,7 @@ def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLo
     remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None, jobLogger)
     jobLogger.clean()
     mainLogger.log("Job {} of {} finished".format(jobIdx+1, jobCount), LL_USER)
-    
+    return paramSet, baseProblemNamePath + pathifyParams(paramSet)
 
 def main(argv=None): # IGNORE:C0111
     '''Command line options.'''
@@ -173,10 +177,23 @@ USAGE
         paramQueue = paramGenerator([], batch.batchDict["ParamRanges"])
         
         pool = mp.Pool(processes=8)
-        log = pool.map(launchJob, [( paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) for jobIdx, paramSet in enumerate(paramQueue) ] )
+        paramResultFiles = pool.map(launchJob, [( paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) for jobIdx, paramSet in enumerate(paramQueue) ] )
         
-        #for element in log:
-        #    print element
+        
+        #now we have all out files in folder and can combine them into parametric picture or text file
+        
+        #open base model and find requested results there
+        model = Model()
+        model.loadFromFile(problemFileNamePath)
+        
+        for idx, reqResult in enumerate(model.results):
+            postfix = "-res"+str(idx)+".out"
+            print (baseProblemNamePath+"-batch"+postfix + " will consist of:")
+            for time, pathBase in paramResultFiles:                
+                print pathBase+postfix
+        
+        
+        
         
         
         mainLogger.clean()

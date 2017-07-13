@@ -192,13 +192,54 @@ def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, coun
     #print 'save #', idx, binFile, "->", filename
     #plt.clf()
     
-    t = binFile.split("-")[1]
-    t = t.split(drawExtension)[0]
-    
+    t = binFile.split("-")[-2]
+    #t = t.split(drawExtension)[0]
     savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
     #print("produced png: "+ filename)
     return "produced png: "+ filename
 
+
+def getResults1D( (projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, postfix, resIdx) ):
+    '''
+        returns time and requested value from state file binfile  
+    '''
+    #for idx, binFile in enumerate(binFileList):
+    data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
+    #xs = np.arange(0, countX)*dx
+    res = [0]*cellSize
+    for idx in range(cellSize): 
+        res[idx] = np.max(data[0,0,:,idx])
+    #filename = os.path.join(projectDir,projectName+"-res"+str(resIdx) + postfix + ".txt")        
+    
+    t = binFile.split("-")[-2]
+        
+    #t = t.split(drawExtension)[0]
+    #with open(filename, "w") as f:
+    #    f.write(t)
+    
+    
+    #savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
+    #print("produced png: "+ filename)
+    return t, res#"produced text result: "+ filename
+
+def createResultFile(projectDir, projectName, resIdx, resLog):
+    print "Creating out file:"
+    
+    outfileNamePath = projectDir+projectName+"-res"+str(resIdx)+".out"
+    
+    with open(outfileNamePath, "w") as f:
+        for time, item in resLog:
+            f.write(str(time)+": "+ str(item)+"\n")
+    
+    
+    
+    #infileNamePath  = projectDir+projectName+"-plot"+str(resIdx)+"-final-%d.png"
+    
+    #PIPE = subprocess.PIPE
+    #proc = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
+    #proc.wait()
+    #subprocess.call(command, shell=True)
+    print "Done" 
 
 
   
@@ -224,9 +265,9 @@ def saveResults2D( (projectDir, projectName, binFile, info, countZ, countY, coun
     t = t.split(drawExtension)[0]
     
     savePng2D(filename, X, Y, data, maxValue, minValue, t, cellSize)
-    if saveText:
-        filenameTxt = projectDir+projectName+"-txtFile-" + str(idx) + ".txt"        
-        saveTxt2D(filenameTxt, X, Y, data, maxValue, minValue, t, cellSize)
+    #if saveText:
+    #    filenameTxt = projectDir+projectName+"-txtFile-" + str(idx) + ".txt"        
+    #    saveTxt2D(filenameTxt, X, Y, data, maxValue, minValue, t, cellSize)
 
     #print("produced png: "+ filename)
     return "produced png: "+ filename
@@ -266,7 +307,7 @@ def createMovie(projectDir, projectName):
     
     countZ, countY, countX, offsetZ, offsetY, offsetX = getDomainProperties(info)
     
-    command = "rm " + projectDir + projectName + "-final-*.png " + projectDir + projectName + "-plot*.mp4"
+    command = "rm " + projectDir + projectName + "-final-*.png " + projectDir + projectName + "-plot*.mp4" + projectDir + projectName + "-res*.txt" + projectDir + projectName + "-res*.out"
     print command
     subprocess.call(command, shell=True)
     
@@ -276,8 +317,9 @@ def createMovie(projectDir, projectName):
     
     model = Model()
     model.loadFromFile(os.path.join(projectDir, projectName + '.json'))
-    plotCount = len(model.plots)    
-    plotFileLists=getBinFilesByPlot(binFileList, plotValList, plotCount)
+    plotCount = len(model.plots)
+    resCount = len(model.results)
+    plotFileLists=getBinFilesByPlot(binFileList, plotValList, plotCount+resCount)
     #print plotFileLists
 
     for plotIdx in range(plotCount):    
@@ -300,6 +342,11 @@ def createMovie(projectDir, projectName):
     
         createVideoFile(projectDir, projectName,plotIdx)
   
+    for resIdx in range(resCount):
+        pool = mp.Pool(processes=16)
+        saveResultFunc = getResults1D
+        resLog = pool.map(saveResultFunc, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx), resIdx) for idx, binFile in enumerate(plotFileLists[plotCount + resIdx]) ] )
+        createResultFile(projectDir, projectName,resIdx, resLog)
   
   
 if __name__ == "__main__":

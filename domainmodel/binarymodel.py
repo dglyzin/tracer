@@ -656,12 +656,15 @@ class BinaryModel(object):
                 self.interconnect2dFill(icIdx)
 
     def fillBinaryPlots(self):
-        self.plotCount = len(self.dmodel.plots)
-        self.plotCountArr = np.zeros(1, dtype=np.int32)
-        self.plotCountArr[0] = self.plotCount
-        self.plotPeriodsArr = np.zeros(self.plotCount, dtype=np.float64)
-        for plotIdx in range(self.plotCount):
-            self.plotPeriodsArr[plotIdx] = self.dmodel.plots[plotIdx]["Period"]
+        plotCount = len(self.dmodel.plots)
+        resCount = len(self.dmodel.results)          
+        self.plotAndResCountArr = np.zeros(1, dtype=np.int32)
+        self.plotAndResCountArr[0] = plotCount + resCount
+        self.plotAndResPeriodsArr = np.zeros(plotCount + resCount, dtype=np.float64)
+        for plotIdx in range(plotCount):
+            self.plotAndResPeriodsArr[plotIdx] = self.dmodel.plots[plotIdx]["Period"]
+        for resIdx in range(resCount):
+            self.plotAndResPeriodsArr[plotCount + resIdx] = self.dmodel.results[resIdx]["Period"]
         
         
     #this will only work if saveFuncs was called and self.functionMaps are filled
@@ -715,9 +718,9 @@ class BinaryModel(object):
             icArr.tofile(domfile)
         
         self.fillBinaryPlots()
-        self.plotCountArr.tofile(domfile)
-        self.plotPeriodsArr.tofile(domfile)
-        #print "plot periods:", self.plotCountArr, self.plotPeriodsArr          
+        self.plotAndResCountArr.tofile(domfile)
+        self.plotAndResPeriodsArr.tofile(domfile)
+        print "plot periods:", self.plotAndResCountArr, self.plotAndResPeriodsArr          
         domfile.close()
     
     
