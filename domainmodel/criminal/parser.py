@@ -42,6 +42,7 @@ class Parser():
     (see Action.action_add_args).
     In that case arg1 means first added args by some
     local pattern, arg2 -second and so on.
+
     FOR EXAMPLE:
     IF pattern looks like:
     termDemo = Group(termLocPatt1.setParseAction()

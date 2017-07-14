@@ -1,0 +1,82 @@
+{# COMMENT
+   TEMPLATE FOR INITIAL FUNCTION 1D
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+	blocks
+	initials with parsed values
+	bounds with parsed values
+	
+	
+END COMMENT #}
+
+//===================INITIAL CONDITIONS==========================//
+
+{% for initialNumber, initial in enumerate(initials) %}
+
+void Initial{{ initialNumber }}(double* cellstart, double x, double y, double z){
+     {% for valueNumber, value in enumerate(initial.values) %}
+	cellstart[{{ valueNumber }}] = {{ value }};
+     {% endfor %}
+}
+
+{% endfor %}
+
+{% for boundNumber, bound in enumerate(bounds) %}
+
+void DirichletInitial{{ boundNumber }}(double* cellstart, double x, double y, double z){
+     {% for valueNumber, value in enumerate(bound.values) %}
+	cellstart[{{ valueNumber }}] = {{ value }};
+     {% endfor %}
+}
+
+{% endfor %}
+
+{% for blockNumber, block in enumerate(blocks) %}
+{% set bn = blockNumber %}
+
+{% set initialCount = len(block.initialIndexes) %}
+{% set fDirichletCount = len(block.fDirichletIndexes) %}
+
+void Block{{ bn }}FillInitialValues(double* result, unsigned short int* initType){
+	initfunc_ptr_t initFuncArray[{{ initialCount + fDirichletCount }}];
+	
+    {% for initialNumber in block.initialIndexes %}
+	initFuncArray[{{ initialNumber }}] = Initial{{ initialNumber }};
+    {% endfor %}
+
+    {% for fDirichletNumber in block.fDirichletIndexes %}				
+	initFuncArray[{{ fDirichletNuber }}] = DirichletInitial{{ fDirichletNumber }};
+    {% endfor %}	
+
+	
+	for(int idxX = 0; idxX<Block{{ bn }}CountX; idxX++){
+	   	int idx = idxX;
+		int type = initType[idx];
+		initFuncArray[type](result+idx*Block{{ bn }}CELLSIZE, Block{{ bn }}OffsetX + idxX*DX, 0, 0);
+	}
+}
+
+{% endfor %}
+
+void getInitFuncArray(initfunc_fill_ptr_t** ppInitFuncs){
+	initfunc_fill_ptr_t* pInitFuncs;
+	pInitFuncs = (initfunc_fill_ptr_t*) malloc( {{ countOfBlocks }} * sizeof(initfunc_fill_ptr_t) );
+	*ppInitFuncs = pInitFuncs;
+	
+    {% for blockNumber, block in enumerate(blocks) %}
+	pInitFuncs[{{ blockNumber}}] = Block{{ blockNumber }}FillInitialValues;
+    {% endfor %}
+}
+
+void releaseInitFuncArray(initfunc_fill_ptr_t* InitFuncs){
+	free(InitFuncs);
+}

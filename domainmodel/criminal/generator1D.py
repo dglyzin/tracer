@@ -237,6 +237,10 @@ class BlockInfo():
         self.totalBCondLst = None
         self.totalInterconnectLst = None
         self.blockFuncMap = None
+
+        # for debugging:
+        self.dbg = True
+        self.dbgInx = 3
     
     def getBlockInfo(self, gen, block, blockNumber):
         '''
@@ -274,6 +278,8 @@ class BlockInfo():
         FuncGenerator.generateAllFunctions
         
         '''
+        # for debug
+        self.print_dbg("FROM getBlockInfo:")
 
         systemsForCentralFuncs = []
         numsForSystems = []
@@ -319,5 +325,23 @@ class BlockInfo():
         self.totalInterconnectLst = totalInterconnectLst
         self.blockFuncMap = blockFuncMap
 
+        # for debug
+        self.print_dbg("systemsForCentralFuncs:",
+                       self.systemsForCentralFuncs)
+        self.print_dbg("numsForSystems",
+                       self.numsForSystems)
+        self.print_dbg("totalBCondLst",
+                       self.totalBCondLst)
+        self.print_dbg("totalInterconnectLst:",
+                       self.totalInterconnectLst)
+        self.print_dbg("blockFuncMap:",
+                       self.blockFuncMap)
+
     def getPropertiesDict(self):
         return(self.__dict__)
+    
+    def print_dbg(self, *args):
+        if self.dbg:
+            for arg in args:
+                print(self.dbgInx*' '+str(arg))
+            print('')

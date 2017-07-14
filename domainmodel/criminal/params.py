@@ -15,6 +15,37 @@ class Params():
         # for name of central functions
         self.namesCf = dict()
 
+    def set_params_for_initials(self, model):
+        '''
+        DESCRIPTION:
+        Fill parameters for .cpp initial and Dirichlet functions.
+        for cppOutsForGenerators.get_out_for_initials
+
+        USED PARAMETERS:
+        model.blocks
+        model.initials
+        model.bounds
+        '''
+        # FOR FILL model.blocks
+        for block in model.blocks:
+
+            # for Dirichlet
+            # set() used for removing duplicates
+            fDirichletIndexes = list(
+                set(
+                    [bR.boundNumber for bR in block.boundRegions
+                     if (model.bounds[bR.boundNumber] == 0)]))
+            block.fDirichletIndexes = fDirichletIndexes
+
+            # for initials
+            block.initialIndexes = [iR.initialNumber for iR in block.initialRegions
+                                    if iR.initialNumber != block.defaultInitial]
+        self.blocks = model.blocks
+        # END FOR FILL
+
+        self.initials = model.initials
+        self.bounds = model.bounds
+
     def init_params_general(self, blockNumber, dim):
         # parameters fill
         self.dim = dim

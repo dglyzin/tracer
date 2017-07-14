@@ -11,6 +11,17 @@ def getCellIndex(lengthInCoords, step):
     return int(round(count))
 
 def getCellCountInClosedInterval(lengthInCoords, step):
+    '''
+    DESCRIPTION:
+    Return count of cells in lengthInCoords
+    with size step.
+
+    FOR EXAMPLE:
+    for
+    lengthInCoords = 10
+    step = 0.01
+    return 1000 points.
+    '''
     count = lengthInCoords/step
     return int(round(count)) + 1
 
