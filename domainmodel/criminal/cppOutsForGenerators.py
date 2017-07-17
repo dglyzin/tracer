@@ -12,7 +12,22 @@ class CppOutsForGenerators():
         self.env = Environment(loader=FileSystemLoader(pathToTemplates))
         # self.env.filters['len'] = len
         # self.env.filters['enumerate'] = enumerate
-       
+
+    def get_out_for_parameters(self, params):
+        template = self.env.get_template('params.template')
+
+        args = {
+            'params': params.parameters,
+            'paramValues': params.parametersVal,
+            'enumerate': enumerate,
+            'len': len
+        }
+
+        # args like in dict()
+        out = template.render(args)
+        return(out)
+
+
     def get_out_for_initials(self, params):
         template = self.env.get_template('initial_conditions.template')
 
@@ -21,11 +36,9 @@ class CppOutsForGenerators():
             'initials': params.initials,
             'bounds': params.bounds,
             'enumerate': enumerate,
-            'len' : len
+            'len': len
         }
 
         # args like in dict()
         out = template.render(args)
         return(out)
-
-        

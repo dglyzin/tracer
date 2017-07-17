@@ -10,7 +10,28 @@ from cppOutsForGenerators import CppOutsForGenerators as CppOutGen
 from params import Params
 
 
-def test_template(modelFile="tests/short_restest_full.json"):
+def test_template_params(modelFile="tests/short_restest_full.json"):
+    '''
+    DESCRIPTION:
+    Generate cpp for params from
+    template.
+
+    template in :
+       'criminal/templates/params.template'
+
+    out will be in:
+       'tests/introduction/src/from_test_template_params.cpp'
+    '''
+    params = Params()
+    cppGen = CppOutGen()
+
+    model = get_model_for_tests(modelFile)
+    params.set_params_for_parameters(model)
+    out = cppGen.get_out_for_parameters(params)
+    to_file(out, 'from_test_template_params.cpp')
+
+
+def test_template_initial(modelFile="tests/short_restest_full.json"):
     '''
     DESCRIPTION:
     Generate cpp for initial and Dirichlet from
@@ -20,7 +41,7 @@ def test_template(modelFile="tests/short_restest_full.json"):
        'criminal/templates/initial_conditions.template'
 
     out will be in:
-       'tests/introduction/src/from_test_template.cpp'
+       'tests/introduction/src/from_test_template_initial.cpp'
     '''
     params = Params()
     cppGen = CppOutGen()
@@ -28,7 +49,7 @@ def test_template(modelFile="tests/short_restest_full.json"):
     model = get_model_for_tests(modelFile)
     params.set_params_for_initials(model)
     out = cppGen.get_out_for_initials(params)
-    to_file(out, 'from_test_template.cpp')
+    to_file(out, 'from_test_template_initial.cpp')
 
 
 def test_gen_1D(modelFile="tests/short_restest_full.json"):

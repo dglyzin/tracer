@@ -15,6 +15,19 @@ class Params():
         # for name of central functions
         self.namesCf = dict()
 
+    def set_params_for_parameters(self, model):
+        '''
+        DESCRIPTION:
+        Fill parameters for .cpp.
+        for cppOutsForGenerators.get_out_for_parameters
+
+        USED PARAMETERS:
+        model.params
+        model.paramValues
+        '''
+        self.parameters = model.params
+        self.parametersVal = model.paramValues[model.defaultParamsIndex]
+
     def set_params_for_initials(self, model):
         '''
         DESCRIPTION:
