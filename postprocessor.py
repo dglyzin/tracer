@@ -206,9 +206,11 @@ def getResults1D( (projectDir, projectName, binFile, info, countZ, countY, count
     #for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     #xs = np.arange(0, countX)*dx
-    res = [0]*cellSize
-    for idx in range(cellSize): 
-        res[idx] = np.max(data[0,0,:,idx])
+    #res = [0]*cellSize
+    #for idx in range(cellSize): 
+    #    res[idx] = np.max(data[0,0,:,idx])
+    idx = 0
+    res = np.max(data[0,0,:,idx])
     #filename = os.path.join(projectDir,projectName+"-res"+str(resIdx) + postfix + ".txt")        
     
     t = binFile.split("-")[-2]

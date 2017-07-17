@@ -18,8 +18,8 @@
     ],
     "Output": [ 
         {
-            "name" : "growth",
-            "expression":"u_norm[-1] > u_norm[-2]"
+            "Name" : "growth",
+            "Expression":"u_max[-1] > 2*u_min[-1]"
         }
     ]
 }

@@ -172,8 +172,8 @@ USAGE
         paramQueue = paramGenerator([], batch.batchDict["ParamRanges"]) 
         #for paramSet in paramQueue:
         #    launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath) )
-        
-        jobCount = len(list(paramQueue)) 
+        paramQueueList = list(paramQueue) 
+        jobCount = len(paramQueueList) 
         paramQueue = paramGenerator([], batch.batchDict["ParamRanges"])
         
         pool = mp.Pool(processes=8)
@@ -185,22 +185,52 @@ USAGE
         #open base model and find requested results there
         model = Model()
         model.loadFromFile(problemFileNamePath)
+        
+        argNamesList = []
         for result in model.results:
-            mainLogger.log(str(result), LL_USER)
+            #mainLogger.log(str(result), LL_USER)
+            argNamesList.append(result["Name"])
+        #for every parameter combination
+        
+        paramNames = " ".join([rng["Param"] for rng in batch.batchDict["ParamRanges"]])
+        
+        batchOuts = {op["Name"]:["#" + paramNames+ " "+ op["Name"] + "\n"] for op in batch.batchDict["Output"] }
+        
+        for params, pathBase in paramResultFiles:
+            #mainLogger.log("Params: "+str(params), LL_USER)                            
+            #load every result into corresponding variables
+            varDict = {}
+            for idx, reqResult in enumerate(model.results):
+                resName = reqResult["Name"]
+                postfix = "-res"+str(idx)+".out"
+                fileName = pathBase+postfix
+                resVal = []
+                with open(fileName,'r') as f:
+                    for line in f:
+                        resVal.append(float(line.split(": ")[1].split("\n")[0]   ) )                
+                varDict.update({resName:resVal})
+                #mainLogger.log(resName+ "=" + str(resVal) , LL_USER)                
+            #2. create batch results
+            paramsLine = " ".join([str(param["Value"]) for param in params])
+            
+            for output in batch.batchDict["Output"]:
+                funcLine = "lambda "+ ",".join(argNamesList) + " : " + output["Expression"]                
+                evaledfunc = eval(funcLine)
+                #mainLogger.log("Computing "+funcLine, LL_USER)
+                #mainLogger.log( str(evaledfunc(**varDict)), LL_USER)
+                
+                resultLine = paramsLine +" " + str(evaledfunc(**varDict)) + "\n"
+                
+                batchOuts[output["Name"]].append(resultLine)
+        #save all results to files    
+        for opName in batchOuts:
+            fileName = batchFolder + "-" + opName+".out"
+            with open(fileName, 'w') as f:
+                for line in batchOuts[opName]:
+                    f.write(line) 
         
         
-        #for idx, reqResult in enumerate(model.results):
-        #    postfix = "-res"+str(idx)+".out"
-        #    mainLogger.log(baseProblemNamePath+"-batch"+postfix + " will consist of:", LL_USER)
-        #    for time, pathBase in paramResultFiles:                
-        #        mainLogger.log(pathBase+postfix, LL_USER)
         
-        
-        #1. load all results into namespace
-        
-        #2. create batch results
-        for output in batch.batchDict["Output"]:
-            mainLogger.log(str(output), LL_USER)
         
         
         
