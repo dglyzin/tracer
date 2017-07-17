@@ -111,8 +111,9 @@
     }, 
     "Plots": [
         {
-            "Title": "u(t)", 
-            "Period": 0.1
+            "Title": "u(t,x)", 
+            "Period": 0.1,
+            "Value": "U"
         }
     ],
     "Results": [

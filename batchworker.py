@@ -146,26 +146,26 @@ USAGE
         mainLogger = Logger(args.verbose, logAPI = False, logFileName = None)
         
         conn = getConnection(args.connFileNamePath)
-        print("connecting to: "+ conn.host)
+        mainLogger.log("connecting to: "+ conn.host, LL_USER)
         batch = BatchWork(args.batchFileNamePath)
         
         problemFileName = batch.batchDict["ProblemFile"]
         
-        print("base file for batch work is " + problemFileName)
+        mainLogger.log("base file for batch work is " + problemFileName, LL_USER)
         
         batchFolder = os.path.splitext(args.batchFileNamePath)[0]        
-        print("batch folder is " + batchFolder)
+        mainLogger.log("batch folder is " + batchFolder, LL_USER)
         
         problemFileNamePath = os.path.join(os.path.split(args.batchFileNamePath)[0], problemFileName) 
         baseProblemNamePath = os.path.join(batchFolder, os.path.splitext(problemFileName)[0] )
         
         try:
             os.makedirs(batchFolder)
-            print("created batch folder")
+            mainLogger.log("created batch folder", LL_USER)
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise   
-            print("batch folder exists, cleaning")
+            mainLogger.log("batch folder exists, cleaning", LL_USER)
             for fn in glob(os.path.join(batchFolder,'*')):
                 os.remove(fn)         
         
@@ -185,13 +185,22 @@ USAGE
         #open base model and find requested results there
         model = Model()
         model.loadFromFile(problemFileNamePath)
+        for result in model.results:
+            mainLogger.log(str(result), LL_USER)
         
-        for idx, reqResult in enumerate(model.results):
-            postfix = "-res"+str(idx)+".out"
-            print (baseProblemNamePath+"-batch"+postfix + " will consist of:")
-            for time, pathBase in paramResultFiles:                
-                print pathBase+postfix
         
+        #for idx, reqResult in enumerate(model.results):
+        #    postfix = "-res"+str(idx)+".out"
+        #    mainLogger.log(baseProblemNamePath+"-batch"+postfix + " will consist of:", LL_USER)
+        #    for time, pathBase in paramResultFiles:                
+        #        mainLogger.log(pathBase+postfix, LL_USER)
+        
+        
+        #1. load all results into namespace
+        
+        #2. create batch results
+        for output in batch.batchDict["Output"]:
+            mainLogger.log(str(output), LL_USER)
         
         
         
