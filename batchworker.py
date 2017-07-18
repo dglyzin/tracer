@@ -83,6 +83,27 @@ def pathifyParams(paramSet):
     return res
 
 
+def checkOutfilesExists(projectFileNamePath):
+    '''
+    input: json file name     
+    output: true if complete set of results present else otherwise    
+    '''
+    model = Model()
+    model.loadFromFile(projectFileNamePath)
+    #print(projectFileNamePath)
+    #print(os.path.splitext(projectFileNamePath))
+    baseFileNamePath, _ = os.path.splitext(projectFileNamePath)
+    for plotIdx in range(len(model.plots)):
+        fileName = baseFileNamePath+"-plot" + str(plotIdx) + ".mp4"
+        if not (os.path.isfile(fileName)):
+            return False 
+
+    for resIdx in range(len(model.results)):
+        fileName = baseFileNamePath+"-res" + str(resIdx) + ".out"
+        if not (os.path.isfile(fileName)):
+            return False
+
+    return True
 
 def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) ):
     '''
@@ -99,9 +120,12 @@ def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLo
     model.saveToFile(newProjectFileNamePath) 
     #2. run it
     logFileName = baseProblemNamePath + pathifyParams(paramSet)  + ".log" 
-    jobLogger = Logger(LL_DEVEL, logAPI = False, logFileName = logFileName)
-    remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None, jobLogger)
-    jobLogger.clean()
+    #we have to check somehow if there is a file with results or we have to compute it
+    if not checkOutfilesExists(newProjectFileNamePath):
+        jobLogger = Logger(LL_DEVEL, logAPI = False, logFileName = logFileName)
+        remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None, jobLogger)
+        jobLogger.clean()
+        
     mainLogger.log("Job {} of {} finished".format(jobIdx+1, jobCount), LL_USER)
     return paramSet, baseProblemNamePath + pathifyParams(paramSet)
 
@@ -139,6 +163,7 @@ USAGE
         parser.add_argument('batchFileNamePath', type = str, help = "local json batch file")
         parser.add_argument("-v", "--verbose", dest="verbose", action="count", default=1, help="set verbosity level [default: %(default)s]")
         parser.add_argument('-V', '--version', action='version', version=program_version_message)
+        parser.add_argument('-retry', help="continue failed run", action="store_true")
         
         # Process arguments
         args = parser.parse_args()
@@ -165,9 +190,12 @@ USAGE
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise   
-            mainLogger.log("batch folder exists, cleaning", LL_USER)
-            for fn in glob(os.path.join(batchFolder,'*')):
-                os.remove(fn)         
+            if args.retry:
+                mainLogger.log("Continuing computation using existing files", LL_USER)
+            else:
+                mainLogger.log("batch folder exists, cleaning", LL_USER)
+                for fn in glob(os.path.join(batchFolder,'*')):
+                    os.remove(fn)         
         
         paramQueue = paramGenerator([], batch.batchDict["ParamRanges"]) 
         #for paramSet in paramQueue:

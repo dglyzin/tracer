@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 1.0, 
+        "FinishTime": 5.0, 
         "TimeStep": 1e-05, 
         "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
@@ -46,22 +46,22 @@
                 "x"
             ], 
             "System": [
-                "U'=a*D[U,{x,2}] + d*U"
+                "U'=d*D[U,{x,2}] + a*U"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
-            "a",
-            "d", 
-            "b",
+            "d",
+            "a", 
+            "g",
             "h"
         ], 
         "ParamValues": [
             {
-                "a": 1.0,
                 "d": 1.0,
-                "b": 1.1,
+                "a": 1.0,
+                "g": 1.1,
                 "h": 0.7
             }
         ], 
@@ -72,7 +72,7 @@
             "Name": "nonlocal", 
             "Type": 1, 
             "Values": [
-                "- b * U(t,{x,h})"
+                "- g * U(t,{x,h})"
             ]
         }
     ], 
