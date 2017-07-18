@@ -10,6 +10,61 @@ from cppOutsForGenerators import CppOutsForGenerators as CppOutGen
 from params import Params
 
 
+def test_template_interconnects(modelFile="tests/1dTests/test1d_three_blocks0.json"):
+    '''
+    DESCRIPTION:
+    Generate cpp for interconnects from
+    template.
+
+    template in :
+       'criminal/templates/interconnects.template'
+
+    out will be in:
+       'tests/introduction/src/from_test_template_interconnects.cpp'
+
+    '''
+    model = get_model_for_tests(modelFile)
+    
+    params = Params()
+    cppGen = CppOutGen()
+
+    # parameters for bound
+    params.set_params_for_interconnects(model)
+    out = cppGen.get_out_for_interconnects(params)
+    
+    to_file(out, 'from_test_template_interconnects.cpp')
+
+
+def test_template_bounds(modelFile="tests/brusselator1d_bound_U.json"):
+    '''
+    DESCRIPTION:
+    Generate cpp for bounds from
+    template.
+
+    template in :
+       'criminal/templates/bound_conditions.template'
+
+    out will be in:
+       'tests/introduction/src/from_test_template_bounds.cpp'
+    '''
+    model = get_model_for_tests(modelFile)
+    g = Generator1D(model)
+    bi = BlockInfo()
+    block = g.blocks[0]
+    bi.getBlockInfo(g, block, 0)
+    
+    params = Params()
+    cppGen = CppOutGen()
+
+    # parameters for bound
+    params.set_params_for_bounds(model)
+    out = cppGen.get_out_for_bounds(params)
+    
+    to_file(out, 'from_test_template_bounds.cpp')
+
+    return(bi)
+
+
 def test_template_params(modelFile="tests/short_restest_full.json"):
     '''
     DESCRIPTION:
@@ -52,7 +107,7 @@ def test_template_initial(modelFile="tests/short_restest_full.json"):
     to_file(out, 'from_test_template_initial.cpp')
 
 
-def test_gen_1D(modelFile="tests/short_restest_full.json"):
+def test_gen_1D(modelFile="tests/brusselator1d_bound_U.json"):
     model = get_model_for_tests(modelFile)
     g = Generator1D(model)
     bi = BlockInfo()
@@ -74,10 +129,8 @@ def test_gen_1D(modelFile="tests/short_restest_full.json"):
                               ...]
     gen.cellsizeList = [Block0CELLSIZE, Block1CELLSIZE, ...]
     '''
-    outList.append(g.generateAllDefinitions())
-
-
-    outList.append(g.generateInitials())
+    # outList.append(g.generateAllDefinitions())
+    # outList.append(g.generateInitials())
 
     ### central and bound func code here ###
     '''
@@ -93,13 +146,12 @@ def test_gen_1D(modelFile="tests/short_restest_full.json"):
 
     # arrWithFunctionNames from central and bound
     # outList.append(g.generateGetBoundFuncArray(arrWithFunctionNames))
-    out = reduce(lambda x, y: x+y, outList)
-    
+    # out = reduce(lambda x, y: x+y, outList)
     # to_file(out, 'from_test_gen_1D.cpp')
     return(g)
 
 
-def get_model_for_tests(modelFile="tests/short_restest_full.json"):
+def get_model_for_tests(modelFile="tests/brusselator1d_bound_U.json"):
     '''
     DESCRIPTION:
     What is model.

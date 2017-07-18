@@ -1,3 +1,7 @@
+from abstractGenerator import BoundCondition, Connection
+from someFuncs import determineNameOfBoundary
+
+
 class Params():
     '''
     DESCRIPTION:
@@ -14,6 +18,184 @@ class Params():
         
         # for name of central functions
         self.namesCf = dict()
+
+    def set_params_for_interconnects(self, model):
+        '''
+        DESCRIPTION:
+        Fill params for interconnects 1d template.
+        
+        TODO:
+        Fill parsedValues from parser.
+        '''
+        # FOR FILL params.ics
+        ics = []
+
+        def choice_equation_num(test, block):
+            '''
+            DESCRIPTION:
+            Choice equation number from equationRegions
+            if any satisfy the test, else choice default.
+            '''
+            for eqRegion in block.equationRegions:
+                if test(eqRegion):
+                    equationNum = eqRegion.equationNumber
+                    break
+            else:
+                equationNum = block.defaultEquation
+            return(equationNum)
+
+        for blockNumber, block in enumerate(model.blocks):
+            for iconn in model.interconnects:
+                # for closed block
+                if iconn.block1 == blockNumber and iconn.block2 == blockNumber:
+
+                    # choice left or right side of block
+                    # i.e. 0.0 or block.sizeX
+                    Range1 = (iconn.block1Side == 1) * block.sizeX
+                    Range2 = (iconn.block2Side == 1) * block.sizeX
+
+                    # return either xfrom or xto for block
+                    coord1 = lambda region: ((iconn.block1Side == 0) * region.xfrom
+                                             + (iconn.block1Side == 1) * region.xto)
+                    coord2 = lambda region: ((iconn.block2Side == 0) * region.xfrom
+                                             + (iconn.block2Side == 1) * region.xto)
+
+                    # find equation
+                    # for first block (one side of closed block)
+                    side_test = lambda eqRegion: coord1(eqRegion) == Range1
+                    equationNum1 = choice_equation_num(side_test, block)
+
+                    # find equation
+                    # for second block (other side of closed block)
+                    side_test = lambda eqRegion: coord2(eqRegion) == Range2
+                    equationNum2 = choice_equation_num(side_test, block)
+
+                    equation1 = model.equations[equationNum1]
+                    equation2 = model.equations[equationNum2]
+
+                    funcName1 = ("Block" + str(blockNumber) + "Interconnect__Side"
+                                 + str(iconn.block1Side) + "_Eqn" + str(equationNum1))
+                    funcName2 = ("Block" + str(blockNumber) + "Interconnect__Side"
+                                 + str(iconn.block2Side) + "_Eqn" + str(equationNum2))
+
+                    ic1 = Connection(0, '0', iconn.block2Side, [],
+                                     equationNum2, equation2, funcName2)
+                    ic1.boundName = determineNameOfBoundary(iconn.block2Side)
+                    ic1.blockNumber = blockNumber
+
+                    ic2 = Connection(1, '0', iconn.block1Side, [],
+                                     equationNum1, equation1, funcName1)
+                    ic2.boundName = determineNameOfBoundary(iconn.block1Side)
+                    ic2.blockNumber = blockNumber
+
+                    ics.append(ic1)
+                    ics.append(ic2)
+                    continue
+
+                # for differ blocks
+                elif blockNumber in [iconn.block1, iconn.block2]:
+                    if iconn.block1 == blockNumber and iconn.block2 != blockNumber:
+                        # case differ 1
+                        side = iconn.block1Side
+                    elif iconn.block2 == blockNumber and iconn.block1 != blockNumber:
+                        # case differ 2
+                        side = iconn.block2Side
+
+                    firstIndex = len(ics)
+                    Range = (side == 1) * block.sizeX
+                    coord = lambda region: (side == 0) * region.xfrom + (side == 1) * region.xto
+
+                    # find equation for block
+                    side_test = lambda eqRegion: coord(eqRegion) == Range
+                    equationNum = choice_equation_num(side_test, block)
+
+                    equation = model.equations[equationNum]
+
+                    funcName = ("Block" + str(blockNumber) + "Interconnect__Side"
+                                + str(side) + "_Eqn" + str(equationNum))
+                    ic = Connection(firstIndex, '0', side, [],
+                                    equationNum, equation, funcName)
+                    ic.boundName = determineNameOfBoundary(side)
+                    ic.blockNumber = blockNumber
+                    ics.append(ic)
+                else:
+                    continue
+
+        self.ics = ics
+        # END FOR FILL
+
+    def set_params_for_bounds(self, model):
+        '''
+        DESCRIPTION:
+        Fill params for bound 1d template.
+        
+        TODO:
+        Fill parsedValues from parser.
+        '''
+
+        # FOR FILL params.bounds
+        self.bounds = []
+
+        def test(region):
+            '''
+            DESCRIPTION:
+            Test if region exist for this side.
+            '''
+            if side == 0:
+                # test for left side
+                return(region.xfrom == 0.0)
+            else:
+                # test for right side
+                return(region.xto == block.sizeX)
+
+        for blockNumber, block in enumerate(model.blocks):
+
+            sides = [0, 1]
+            for side in sides:
+                # find equation number for side or use default
+                regsEqNums = [eqReg.equationNumber for eqReg in block.equationRegions
+                              if test(eqRegion)]
+                equationNum = regsEqNums[0] if len(regsEqNums) > 0 else block.defaultEquation
+                equation = model.equations[equationNum]
+
+                # find bound region for side or use default
+                regionsForSide = [bRegion for bRegion in block.boundRegions
+                                  if bRegion.side == side]
+                if len(regionsForSide) > 0:
+                    # if exist special region for that side
+                    region = regionsForSide[0]
+                    boundNumber = region.boundNumber
+                    btype = model.bounds[boundNumber].btype
+                    if btype == 0:
+                        # for Dirichlet bound
+                        funcName = ("Block" + str(blockNumber) + "Dirichlet__Bound"
+                                    + str(side) + "_" + str(boundNumber) + "__Eqn" + str(equationNum))
+                        outputValues = list(model.bounds[boundNumber].derivative)
+                    elif btype == 1:
+                        # for Neumann bound
+                        funcName = ("Block" + str(blockNumber) + "Neumann__Bound"
+                                    + str(side) + "_" + str(boundNumber) + "__Eqn" + str(equationNum))
+                        outputValues = list(model.bounds[boundNumber].values)
+                        
+                        # special for Neumann bound
+                        if side == 0 or side == 2:
+                            for idx, value in enumerate(outputValues):
+                                outputValues.pop(idx)
+                                outputValues.insert(idx, '-(' + value + ')')
+                    values = list(outputValues)
+                else:
+                    # if not, use default
+                    funcName = ("Block" + str(blockNumber) + "DefaultNeumann__Bound"
+                                + str(side) + "__Eqn" + str(equationNum))
+                    values = len(equation.system) * ['0.0']
+                    btype = 1
+                    boundNumber = -1
+                bound = BoundCondition(values, btype, side, [], boundNumber,
+                                       equationNum, equation, funcName,
+                                       block, blockNumber = blockNumber)
+                bound.boundName = determineNameOfBoundary(side)
+                self.bounds.append(bound)
+        # END FOR FILL
 
     def set_params_for_parameters(self, model):
         '''

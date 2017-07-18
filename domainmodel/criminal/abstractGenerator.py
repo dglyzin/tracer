@@ -8,7 +8,7 @@ from ..equationParser import MathExpressionParser
 from someFuncs import generateCodeForMathFunction
 from ..rhsCodeGenerator import RHSCodeGenerator
 from someFuncs import getCellCountInClosedInterval
-from parser import Parser
+# from parser import Parser
 
 
 class BoundCondition:

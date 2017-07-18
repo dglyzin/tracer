@@ -82,13 +82,14 @@ class Generator1D(AbstractGenerator):
         USED IN:
         getBlockInfo
         '''
+        # for equation regions
         if side == 0:
             Range = 0.0
             coord = lambda region: region.xfrom
         else:
             Range = block.sizeX
             coord = lambda region: region.xto 
-            
+
         for eqRegion in block.equationRegions:
             if coord(eqRegion) == Range:
                 equationNum = eqRegion.equationNumber
@@ -97,13 +98,18 @@ class Generator1D(AbstractGenerator):
             equationNum = block.defaultEquation
         
         equation = self.equations[equationNum]
+
+        # for bound regions
         for bRegion in block.boundRegions:
             if bRegion.side == side:
+                # if exist special region for that side
                 values, btype, boundNumber, funcName = self.setDirichletOrNeumann(bRegion, blockNumber,
                                                                                   side, equationNum)
                 break
         else:
+            # if not, use default
             values, btype, boundNumber, funcName = self.setDefault(blockNumber, side, equation, equationNum)
+
         return BoundCondition(values, btype, side, [], boundNumber,
                               equationNum, equation, funcName,
                               block, blockNumber = blockNumber)
@@ -126,26 +132,42 @@ class Generator1D(AbstractGenerator):
         for iconn in self.interconnects:
             #Если блок зациклен.
             if iconn.block1 == blockNumber and iconn.block2 == blockNumber:
+
+                # choice left or right side of block
+                # i.e. 0.0 or block.sizeX
                 Range1 = (iconn.block1Side == 1) * block.sizeX
                 Range2 = (iconn.block2Side == 1) * block.sizeX
-                coord1 = lambda region: (iconn.block1Side == 0) * region.xfrom + (iconn.block1Side == 1) * region.xto
-                coord2 = lambda region: (iconn.block2Side == 0) * region.xfrom + (iconn.block2Side == 1) * region.xto
+
+                # return either xfrom or xto for block
+                coord1 = lambda region: ((iconn.block1Side == 0) * region.xfrom
+                                         + (iconn.block1Side == 1) * region.xto)
+                coord2 = lambda region: ((iconn.block2Side == 0) * region.xfrom
+                                         + (iconn.block2Side == 1) * region.xto)
+
+                # for first block
                 for eqRegion in block.equationRegions:
+                    # for ex:
+                    # region.xfrom == 0.0
+                    # or region.xto == block.sizeX
                     if coord1(eqRegion) == Range1:
                         equationNum1 = eqRegion.equationNumber
                         break
                 else:
                     equationNum1 = block.defaultEquation
+
                 for eqRegion in block.equationRegions:
                     if coord2(eqRegion) == Range2:
                         equationNum2 = eqRegion.equationNumber
                         break
                 else:
                     equationNum2 = block.defaultEquation
+
                 equation1 = self.equations[equationNum1]
                 equation2 = self.equations[equationNum2]
-                funcName1 = "Block" + str(blockNumber) + "Interconnect__Side" + str(iconn.block1Side) + "_Eqn" + str(equationNum1)
-                funcName2 = "Block" + str(blockNumber) + "Interconnect__Side" + str(iconn.block2Side) + "_Eqn" + str(equationNum2)
+                funcName1 = ("Block" + str(blockNumber) + "Interconnect__Side"
+                             + str(iconn.block1Side) + "_Eqn" + str(equationNum1))
+                funcName2 = ("Block" + str(blockNumber) + "Interconnect__Side"
+                             + str(iconn.block2Side) + "_Eqn" + str(equationNum2))
                 icsForBlock.append(Connection(0, '0', iconn.block2Side, [], equationNum2, equation2, funcName2))
                 icsForBlock.append(Connection(1, '0', iconn.block1Side, [], equationNum1, equation1, funcName1))
                 continue
@@ -156,6 +178,8 @@ class Generator1D(AbstractGenerator):
                 side = iconn.block2Side
             else:
                 continue
+
+            # for default
             firstIndex = len(icsForBlock)
             Range = (side == 1) * block.sizeX
             coord = lambda region: (side == 0) * region.xfrom + (side == 1) * region.xto
@@ -167,7 +191,9 @@ class Generator1D(AbstractGenerator):
             else:
                 equationNum = block.defaultEquation
             equation = self.equations[equationNum]
-            funcName = "Block" + str(blockNumber) + "Interconnect__Side" + str(side) + "_Eqn" + str(equationNum)
+
+            funcName = ("Block" + str(blockNumber) + "Interconnect__Side"
+                        + str(side) + "_Eqn" + str(equationNum))
             icsForBlock.append(Connection(firstIndex, '0', side, [], equationNum, equation, funcName))
         return icsForBlock
                 
@@ -186,8 +212,10 @@ class Generator1D(AbstractGenerator):
         parser = MathExpressionParser()
         intro = '\n//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER ' + str(blockNumber) + '======================//\n\n'
         outputStr = [intro]      
-        
+    
         for condition in bCondLst:
+            # for check if condition is interconnect
+            # i.e. contained in icsList
             for iconn in icsList:
                 if iconn.side == condition.side:
                     outputStr.append(self.generateInterconnect(iconn, parser, blockNumber, arrWithFunctionNames, blockFunctionMap))
@@ -203,15 +231,22 @@ class Generator1D(AbstractGenerator):
         
         condition.createSpecialProperties(parser, self.params, indepVarsForBoundaryFunction)
         boundaryName = determineNameOfBoundary(condition.side)
+ 
+        # for blockFunctionMap
         sideName = "side"+str(condition.side)
+
         outputStr = '//Boundary condition for boundary ' + boundaryName + '\n'
         if condition.btype == 0:
             outputStr += self.generateDirichlet(blockNumber, condition.funcName, condition)
         else:
             pBCL = [condition]
             outputStr += self.generateNeumannOrInterconnect(blockNumber, condition.funcName, condition.parsedEquation, condition.unknownVars, pBCL)
+
+        # for setDomain
         idx = len(arrWithFunctionNames)
         blockFunctionMap.update({sideName: idx})
+
+        # for init
         arrWithFunctionNames.append(condition.funcName)
         return outputStr
     
