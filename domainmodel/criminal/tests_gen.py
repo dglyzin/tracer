@@ -10,6 +10,31 @@ from cppOutsForGenerators import CppOutsForGenerators as CppOutGen
 from params import Params
 
 
+def test_template_centrals(modelFile="tests/brusselator1d_bound_U.json"):
+    '''
+    DESCRIPTION:
+    Generate cpp for centrals from
+    template.
+
+    template in :
+       'criminal/templates/central_functions.template'
+
+    out will be in:
+       'tests/introduction/src/from_test_template_centrals.cpp'
+
+    '''
+    model = get_model_for_tests(modelFile)
+    
+    params = Params()
+    cppGen = CppOutGen()
+
+    # parameters for bound
+    params.set_params_for_centrals(model)
+    out = cppGen.get_out_for_centrals(params)
+    
+    to_file(out, 'from_test_template_centrals.cpp')
+
+
 def test_template_interconnects(modelFile="tests/1dTests/test1d_three_blocks0.json"):
     '''
     DESCRIPTION:
@@ -164,11 +189,11 @@ def get_model_for_tests(modelFile="tests/brusselator1d_bound_U.json"):
 
 def to_file(out, name='some_functions.cpp'):
     
-    print("getcwd")
-    print(os.getcwd())
-    f = open(os.path.join(os.getcwd(), 'tests',
-                          'introduction',
-                          'src', name),
-             'w')
+    path = os.path.join(os.getcwd(), 'tests',
+                        'introduction',
+                        'src', name)
+    print("path =")
+    print(path)
+    f = open(path, 'w')
     f.write(out)
     f.close()

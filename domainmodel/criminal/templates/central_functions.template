@@ -1,0 +1,28 @@
+{# COMMENT
+   TEMPLATE FOR INITIAL FUNCTION 1D
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+	equations list	
+END COMMENT #}
+
+{% for eq in equations %}
+{% set bn = eq.blockNumber %}
+{% set num = eq.number %}
+/=========================CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER {{bn}}========================//
+
+//{{num}} central function for 1d model for block with number {{bn}}
+void Block{{bn}}CentralFunction{{num}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;	      {% for systemNumber, system in enumerate(eq.system) %}
+	result[idx + {{systemNumber}}] = {{system}};
+     {% endfor %}
+}
+{% endfor %}

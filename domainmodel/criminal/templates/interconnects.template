@@ -11,9 +11,7 @@
     for code blocks
 
 INPUTS:
-	blockNumber,
-	boundName,
-	bound	
+	ics interconnects list
 END COMMENT #}
 
 {% for ic in ics %}

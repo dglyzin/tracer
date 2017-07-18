@@ -12,6 +12,19 @@ class CppOutsForGenerators():
         self.env = Environment(loader=FileSystemLoader(pathToTemplates))
         # self.env.filters['len'] = len
         # self.env.filters['enumerate'] = enumerate
+    
+    def get_out_for_centrals(self, params):
+        template = self.env.get_template('central_functions.template')
+
+        args = {
+            'equations': params.equations,
+            'enumerate': enumerate,
+            'len': len
+        }
+
+        # args like in dict()
+        out = template.render(args)
+        return(out)
 
     def get_out_for_interconnects(self, params):
         template = self.env.get_template('interconnects.template')
@@ -52,7 +65,6 @@ class CppOutsForGenerators():
         # args like in dict()
         out = template.render(args)
         return(out)
-
 
     def get_out_for_initials(self, params):
         template = self.env.get_template('initial_conditions.template')

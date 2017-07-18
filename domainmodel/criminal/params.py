@@ -18,6 +18,46 @@ class Params():
         
         # for name of central functions
         self.namesCf = dict()
+    
+    def set_params_for_centrals(self, model):
+        '''
+        DESCRIPTION:
+        Fill params for centrals 1d template.
+        
+        TODO:
+        Fill parsedValues from parser.
+        '''
+        # FOR FILL params.equations
+        equations = []
+
+        for blockNumber, block in enumerate(model.blocks):
+            reservedSpace = 0
+
+            # collect all equations for block
+            # equationRegions should be sorted
+            for eqRegion in block.equationRegions:
+                reservedSpace += eqRegion.xto - eqRegion.xfrom
+
+                # for removing trivial cases
+                cond = (eqRegion.xfrom == eqRegion.xto
+                        and
+                        (eqRegion.xto == 0.0 or eqRegion.xto == block.sizeX))
+
+                numsForSystems = [eq.number for eq in equations]
+                if eqRegion.equationNumber not in numsForSystems and not cond:
+                    equation = model.equations[eqRegion.equationNumber]
+                    equation.number = eqRegion.equationNumber
+                    equation.blockNumber = blockNumber
+                    equations.append(equation)
+
+            # add default equation at remaining regions.
+            if block.sizeX > reservedSpace:
+                equation = model.equations[block.defaultEquation]
+                equation.number = block.defaultEquation
+                equation.blockNumber = blockNumber
+                equations.append(equation)
+        self.equations = equations
+        # END FOR FILL
 
     def set_params_for_interconnects(self, model):
         '''
