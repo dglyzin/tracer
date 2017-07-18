@@ -108,26 +108,29 @@ def checkOutfilesExists(projectFileNamePath):
 def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) ):
     '''
         returns  base path and filename:  
-    '''
-    
-    #+ str(paramSet)
-    mainLogger.log("Job {} of {} started".format(jobIdx+1, jobCount), LL_USER)
-    #1. generate file
-    newProjectFileNamePath = baseProblemNamePath + pathifyParams(paramSet)  + ".json"
-    model = Model()
-    model.loadFromFile(problemFileNamePath)
-    model.applyParams(paramSet)
-    model.saveToFile(newProjectFileNamePath) 
-    #2. run it
-    logFileName = baseProblemNamePath + pathifyParams(paramSet)  + ".log" 
-    #we have to check somehow if there is a file with results or we have to compute it
-    if not checkOutfilesExists(newProjectFileNamePath):
-        jobLogger = Logger(LL_DEVEL, logAPI = False, logFileName = logFileName)
-        remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None, jobLogger)
-        jobLogger.clean()
-        
-    mainLogger.log("Job {} of {} finished".format(jobIdx+1, jobCount), LL_USER)
-    return paramSet, baseProblemNamePath + pathifyParams(paramSet)
+    ''' 
+    #1. generate file  
+    try:
+        newProjectFileNamePath = baseProblemNamePath + pathifyParams(paramSet)  + ".json"
+        model = Model()
+        model.loadFromFile(problemFileNamePath)
+        model.applyParams(paramSet)
+        model.saveToFile(newProjectFileNamePath) 
+        #we have to check if there is a file with results or we are to compute it
+        if not checkOutfilesExists(newProjectFileNamePath):
+            #2. run it            
+            mainLogger.log("Job {} of {} started".format(jobIdx+1, jobCount), LL_USER)
+            logFileName = baseProblemNamePath + pathifyParams(paramSet)  + ".log"
+            jobLogger = Logger(LL_DEVEL, logAPI = False, logFileName = logFileName)
+            remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None, jobLogger)
+            jobLogger.clean()       
+            mainLogger.log("Job {} of {} finished".format(jobIdx+1, jobCount), LL_USER)
+        else:
+            mainLogger.log("Job {} of {} skipped".format(jobIdx+1, jobCount), LL_USER)
+            
+        return paramSet, baseProblemNamePath + pathifyParams(paramSet)        
+    except:
+        return paramSet, "FAIL"
 
 def main(argv=None): # IGNORE:C0111
     '''Command line options.'''
@@ -156,117 +159,111 @@ def main(argv=None): # IGNORE:C0111
 USAGE
 ''' % (program_shortdesc, str(__date__))
 
+    #try:
+    # Setup argument parser
+    parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
+    parser.add_argument('connFileNamePath', type = str, help = "local json file with connection info")    
+    parser.add_argument('batchFileNamePath', type = str, help = "local json batch file")
+    parser.add_argument("-v", "--verbose", dest="verbose", action="count", default=1, help="set verbosity level [default: %(default)s]")
+    parser.add_argument('-V', '--version', action='version', version=program_version_message)
+    parser.add_argument('-retry', help="continue failed run", action="store_true")
+    
+    # Process arguments
+    args = parser.parse_args()
+    #main logger for all batch   
+    mainLogger = Logger(args.verbose, logAPI = False, logFileName = None)
+    
+    conn = getConnection(args.connFileNamePath)
+    mainLogger.log("connecting to: "+ conn.host, LL_USER)
+    batch = BatchWork(args.batchFileNamePath)
+    
+    problemFileName = batch.batchDict["ProblemFile"]
+    
+    mainLogger.log("base file for batch work is " + problemFileName, LL_USER)
+    
+    batchFolder = os.path.splitext(args.batchFileNamePath)[0]        
+    mainLogger.log("batch folder is " + batchFolder, LL_USER)
+    
+    problemFileNamePath = os.path.join(os.path.split(args.batchFileNamePath)[0], problemFileName) 
+    baseProblemNamePath = os.path.join(batchFolder, os.path.splitext(problemFileName)[0] )
+    
     try:
-        # Setup argument parser
-        parser = ArgumentParser(description=program_license, formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument('connFileNamePath', type = str, help = "local json file with connection info")    
-        parser.add_argument('batchFileNamePath', type = str, help = "local json batch file")
-        parser.add_argument("-v", "--verbose", dest="verbose", action="count", default=1, help="set verbosity level [default: %(default)s]")
-        parser.add_argument('-V', '--version', action='version', version=program_version_message)
-        parser.add_argument('-retry', help="continue failed run", action="store_true")
+        os.makedirs(batchFolder)
+        mainLogger.log("created batch folder", LL_USER)
+    except OSError as exception:
+        if exception.errno != errno.EEXIST:
+            raise   
+        if args.retry:
+            mainLogger.log("Continuing computation using existing files", LL_USER)
+        else:
+            mainLogger.log("batch folder exists, cleaning", LL_USER)
+            for fn in glob(os.path.join(batchFolder,'*')):
+                os.remove(fn)         
+    
+    paramQueue = paramGenerator([], batch.batchDict["ParamRanges"]) 
+    
+    paramQueueList = list(paramQueue) 
+    jobCount = len(paramQueueList) 
+    paramQueue = paramGenerator([], batch.batchDict["ParamRanges"])
+    
+    pool = mp.Pool(processes=8)
+    paramResultFiles = pool.map(launchJob, [( paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) for jobIdx, paramSet in enumerate(paramQueue) ] )
+    #for jobIdx, paramSet in enumerate(paramQueue):
+    #    launchJob( ( paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount )  )
+    
+    #now we have all out files in folder and can combine them into parametric picture or text file
+    
+    #open base model and find requested results there
+    model = Model()
+    model.loadFromFile(problemFileNamePath)
+    
+    argNamesList = []
+    for result in model.results:
+        #mainLogger.log(str(result), LL_USER)
+        argNamesList.append(result["Name"])
+    #for every parameter combination
+    
+    paramNames = " ".join([rng["Param"] for rng in batch.batchDict["ParamRanges"]])
+    
+    batchOuts = {op["Name"]:["#" + paramNames+ " "+ op["Name"] + "\n"] for op in batch.batchDict["Output"] }
+    
+    for params, pathBase in paramResultFiles:
+        #mainLogger.log("Params: "+str(params), LL_USER)                            
+        #load every result into corresponding variables
+        varDict = {}
+        for idx, reqResult in enumerate(model.results):
+            resName = reqResult["Name"]
+            postfix = "-res"+str(idx)+".out"
+            fileName = pathBase+postfix
+            resVal = []
+            with open(fileName,'r') as f:
+                for line in f:
+                    resVal.append(float(line.split(": ")[1].split("\n")[0]   ) )                
+            varDict.update({resName:resVal})
+            #mainLogger.log(resName+ "=" + str(resVal) , LL_USER)                
+        #2. create batch results
+        paramsLine = " ".join([str(param["Value"]) for param in params])
         
-        # Process arguments
-        args = parser.parse_args()
-        #main logger for all batch   
-        mainLogger = Logger(args.verbose, logAPI = False, logFileName = None)
-        
-        conn = getConnection(args.connFileNamePath)
-        mainLogger.log("connecting to: "+ conn.host, LL_USER)
-        batch = BatchWork(args.batchFileNamePath)
-        
-        problemFileName = batch.batchDict["ProblemFile"]
-        
-        mainLogger.log("base file for batch work is " + problemFileName, LL_USER)
-        
-        batchFolder = os.path.splitext(args.batchFileNamePath)[0]        
-        mainLogger.log("batch folder is " + batchFolder, LL_USER)
-        
-        problemFileNamePath = os.path.join(os.path.split(args.batchFileNamePath)[0], problemFileName) 
-        baseProblemNamePath = os.path.join(batchFolder, os.path.splitext(problemFileName)[0] )
-        
-        try:
-            os.makedirs(batchFolder)
-            mainLogger.log("created batch folder", LL_USER)
-        except OSError as exception:
-            if exception.errno != errno.EEXIST:
-                raise   
-            if args.retry:
-                mainLogger.log("Continuing computation using existing files", LL_USER)
-            else:
-                mainLogger.log("batch folder exists, cleaning", LL_USER)
-                for fn in glob(os.path.join(batchFolder,'*')):
-                    os.remove(fn)         
-        
-        paramQueue = paramGenerator([], batch.batchDict["ParamRanges"]) 
-        #for paramSet in paramQueue:
-        #    launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath) )
-        paramQueueList = list(paramQueue) 
-        jobCount = len(paramQueueList) 
-        paramQueue = paramGenerator([], batch.batchDict["ParamRanges"])
-        
-        pool = mp.Pool(processes=8)
-        paramResultFiles = pool.map(launchJob, [( paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) for jobIdx, paramSet in enumerate(paramQueue) ] )
-        
-        
-        #now we have all out files in folder and can combine them into parametric picture or text file
-        
-        #open base model and find requested results there
-        model = Model()
-        model.loadFromFile(problemFileNamePath)
-        
-        argNamesList = []
-        for result in model.results:
-            #mainLogger.log(str(result), LL_USER)
-            argNamesList.append(result["Name"])
-        #for every parameter combination
-        
-        paramNames = " ".join([rng["Param"] for rng in batch.batchDict["ParamRanges"]])
-        
-        batchOuts = {op["Name"]:["#" + paramNames+ " "+ op["Name"] + "\n"] for op in batch.batchDict["Output"] }
-        
-        for params, pathBase in paramResultFiles:
-            #mainLogger.log("Params: "+str(params), LL_USER)                            
-            #load every result into corresponding variables
-            varDict = {}
-            for idx, reqResult in enumerate(model.results):
-                resName = reqResult["Name"]
-                postfix = "-res"+str(idx)+".out"
-                fileName = pathBase+postfix
-                resVal = []
-                with open(fileName,'r') as f:
-                    for line in f:
-                        resVal.append(float(line.split(": ")[1].split("\n")[0]   ) )                
-                varDict.update({resName:resVal})
-                #mainLogger.log(resName+ "=" + str(resVal) , LL_USER)                
-            #2. create batch results
-            paramsLine = " ".join([str(param["Value"]) for param in params])
+        for output in batch.batchDict["Output"]:
+            funcLine = "lambda "+ ",".join(argNamesList) + " : " + output["Expression"]                
+            evaledfunc = eval(funcLine)
+            #mainLogger.log("Computing "+funcLine, LL_USER)
+            #mainLogger.log( str(evaledfunc(**varDict)), LL_USER)
             
-            for output in batch.batchDict["Output"]:
-                funcLine = "lambda "+ ",".join(argNamesList) + " : " + output["Expression"]                
-                evaledfunc = eval(funcLine)
-                #mainLogger.log("Computing "+funcLine, LL_USER)
-                #mainLogger.log( str(evaledfunc(**varDict)), LL_USER)
-                
-                resultLine = paramsLine +" " + str(evaledfunc(**varDict)) + "\n"
-                
-                batchOuts[output["Name"]].append(resultLine)
-        #save all results to files    
-        for opName in batchOuts:
-            fileName = batchFolder + "-" + opName+".out"
-            with open(fileName, 'w') as f:
-                for line in batchOuts[opName]:
-                    f.write(line) 
-        
-        
-        
-        
-        
-        
-        
-        mainLogger.clean()
-        
-        return 0
-    except KeyboardInterrupt:
+            resultLine = paramsLine +" " + str(evaledfunc(**varDict)) + "\n"
+            
+            batchOuts[output["Name"]].append(resultLine)
+    #save all results to files    
+    for opName in batchOuts:
+        fileName = batchFolder + "-" + opName+".out"
+        with open(fileName, 'w') as f:
+            for line in batchOuts[opName]:
+                f.write(line) 
+   
+    mainLogger.clean()
+    
+    return 0
+    '''except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 0
     except Exception, e:
@@ -276,6 +273,7 @@ USAGE
         sys.stderr.write(program_name + ": " + repr(e) + "\n")
         sys.stderr.write(indent + "  for help use --help\n")
         return 2
+    '''
     
 if __name__ == "__main__":
     if DEBUG:
