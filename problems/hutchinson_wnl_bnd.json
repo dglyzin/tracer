@@ -1,0 +1,132 @@
+{
+    "ProjectName": "Hutchinson-diffusion with nonlocal bound", 
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 50.0, 
+        "TimeStep": 1e-05, 
+        "SaveInterval": 0, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "Dimension": 1, 
+        "dx": 0.01, 
+        "dy": 1, 
+        "dz": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "Block 0", 
+            "Offset": {
+                "x": 0.0
+            }, 
+            "Size": {
+                "x": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [                
+                {
+                    "BoundNumber": 0, 
+                    "Side": 1, 
+                    "xfrom": 1.0, 
+                    "xto": 1.0
+                }
+            ], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }
+    ], 
+    "Interconnects": [], 
+    "Equations": [
+        {
+            "Name": "rd", 
+            "Vars": [
+                "x"
+            ], 
+            "System": [
+                "U'=d*D[U,{x,2}] + a*U * ( 1-U(t-1) )"
+            ]
+        }
+    ], 
+    "EquationParams": {
+        "Params": [
+            "d",
+            "a", 
+            "g",
+            "h"
+        ], 
+        "ParamValues": [
+            {
+                "d": 1.0,
+                "a": 2.0,
+                "g": 0.7,
+                "h": 0.7
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
+    "Bounds": [
+        {
+            "Name": "nonlocal", 
+            "Type": 1, 
+            "Values": [
+                "- g * U(t,{x,h})"
+            ]
+        }
+    ], 
+    "Initials": [
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "x+1"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "any", 
+            "CpuCount": 1, 
+            "CpuMemory": [
+                5
+            ], 
+            "GpuCount": 3, 
+            "GpuMemory": [
+                5, 
+                5, 
+                5
+            ]
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
+        ]
+    }, 
+    "Plots": [
+        {
+            "Title": "u(t,x)", 
+            "Period": 0.1,
+            "Value": "U"
+        }
+    ],
+    "Results": [
+        {
+            "Name": "u_max", 
+            "Period": 0.1,
+            "Value": "Max(U)"
+        },
+        {
+            "Name": "u_min", 
+            "Period": 0.1,
+            "Value": "Min(U)"
+        }
+
+    ]
+}
