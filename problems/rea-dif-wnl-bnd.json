@@ -120,7 +120,7 @@
         {
             "Name": "u_max", 
             "Period": 0.1,
-            "Value": "Max(U)"
+            "Value": "U"
         },
         {
             "Name": "u_min", 
