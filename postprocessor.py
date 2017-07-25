@@ -203,7 +203,7 @@ def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, coun
     return "produced png: "+ filename
 
 
-def getResults1D( (projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, isfink, minValue, dx, dy, postfix, resIdx) ):
+def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, isfink, minValue, dx, dy, postfix, resIdx)):
     '''
         returns time and requested value from state file binfile  
     '''
@@ -249,7 +249,7 @@ def createResultFile(projectDir, projectName, resIdx, resLog):
 
 
   
-def saveResults2D( (projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, postfix, plotIdx, saveText) ):
+def saveResults2D(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, postfix, plotIdx, saveText):
     #for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     
@@ -325,7 +325,7 @@ def createMovie(projectDir, projectName):
     model.loadFromFile(os.path.join(projectDir, projectName + '.json'))
     plotCount = len(model.plots)
     global resultnames
-    resultnames = model.results[0]
+    resultnames = model.results[-1]
     resCount = len(model.results)
     plotFileLists=getBinFilesByPlot(binFileList, plotValList, plotCount+resCount)
     #print plotFileLists
@@ -361,13 +361,17 @@ def createMovie(projectDir, projectName):
         createResultFile(projectDir, projectName,resIdx, resLog)
 
     #U and V
+    #TODO get result all list U or V
     dictfunc = {u'U':1, u'V':2}
     if resultnames['Value'] in dictfunc:
         resuls = pool.map(getResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
                                             offsetY, offsetX, dictfunc[resultnames['Value']], 'UV', minValue, dx, dy, "-final-" + str(idx),
                                             resIdx) for idx, binFile in enumerate(plotFileLists[plotCount + resIdx])])
-        print(resuls, projectDir)
-        createResultFile(projectDir, resultnames['Value'], resIdx, resuls)
+        reslist = []
+        for line in resuls:
+            reslist.append([line[0],line[1][0]])
+        #print('sss',reslist, projectDir, resultnames)
+        createResultFile(projectDir, projectName, resIdx, reslist)
 
   
 if __name__ == "__main__":
