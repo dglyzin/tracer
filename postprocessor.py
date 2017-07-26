@@ -34,9 +34,6 @@ from domainmodel.binaryFileReader import readBinFile, readDomFile, getDomainProp
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
-resultnames = []
-count_filenameU = 0
-count_filenameV = 0
 
 def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
     figure = Figure()
@@ -324,8 +321,7 @@ def createMovie(projectDir, projectName):
     model = Model()
     model.loadFromFile(os.path.join(projectDir, projectName + '.json'))
     plotCount = len(model.plots)
-    global resultnames
-    resultnames = model.results[-1]
+    resultlistname = model.results
     resCount = len(model.results)
     plotFileLists=getBinFilesByPlot(binFileList, plotValList, plotCount+resCount)
     #print plotFileLists
@@ -363,15 +359,18 @@ def createMovie(projectDir, projectName):
     #U and V
     #TODO get result all list U or V
     dictfunc = {u'U':1, u'V':2}
-    if resultnames['Value'] in dictfunc:
-        resuls = pool.map(getResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
-                                            offsetY, offsetX, dictfunc[resultnames['Value']], 'UV', minValue, dx, dy, "-final-" + str(idx),
-                                            resIdx) for idx, binFile in enumerate(plotFileLists[plotCount + resIdx])])
-        reslist = []
-        for line in resuls:
-            reslist.append([line[0],line[1][0]])
-        #print('sss',reslist, projectDir, resultnames)
-        createResultFile(projectDir, projectName, resIdx, reslist)
+    resIdx = 0
+    for resultnames in resultlistname:
+        if resultnames['Value'] in dictfunc:
+            resuls = pool.map(getResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
+                                                offsetY, offsetX, dictfunc[resultnames['Value']], 'UV', minValue, dx, dy, "-final-" + str(idx),
+                                                resIdx) for idx, binFile in enumerate(plotFileLists[plotCount + resIdx])])
+            reslist = []
+            for line in resuls:
+                reslist.append([line[0],line[1][0]])
+            print('sss',reslist, projectDir, resultnames)
+            createResultFile(projectDir, projectName, resIdx, reslist)
+        resIdx += 1
 
   
 if __name__ == "__main__":
