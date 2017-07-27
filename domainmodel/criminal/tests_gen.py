@@ -9,6 +9,93 @@ import os
 from cppOutsForGenerators import CppOutsForGenerators as CppOutGen
 from params import Params
 
+from domainmodel.criminal.parser import Parser
+
+
+def test_templates_1d(modelFile="tests/brusselator1d_bound_U.json"):
+    '''
+    DESCRIPTION:
+    Generate cpp for 1d.
+
+    out will be in:
+       'tests/introduction/src/from_test_template_1d.cpp'
+
+    '''
+
+    out = test_template_definitions(modelFile)
+    out += test_template_initials(modelFile)
+    out += test_template_params(modelFile)
+    out += test_template_centrals(modelFile)
+    out += test_template_bounds(modelFile)
+    out += test_template_interconnects(modelFile)
+    out += test_template_array(modelFile)
+
+    print(out)
+
+    to_file(out, 'from_test_template_1d.cpp')
+
+
+def test_template_definitions(modelFile="tests/brusselator1d_bound_U.json"):
+    '''
+    DESCRIPTION:
+    Generate cpp for centrals from
+    template.
+
+    template in :
+       'criminal/templates/definitions.template'
+
+    out will be in:
+       'tests/introduction/src/from_test_template_definitions.cpp'
+
+    '''
+    model = get_model_for_tests(modelFile)
+
+    params = Params()
+    cppGen = CppOutGen()
+
+    # parameters for definitions
+    params.set_params_for_definitions(model)
+    
+    out = cppGen.get_out_for_definitions(params)
+
+    to_file(out, 'from_test_template_definitions.cpp')
+
+    return(out)
+
+
+def test_template_array(modelFile="tests/brusselator1d_bound_U.json"):
+    '''
+    DESCRIPTION:
+    Generate cpp for centrals from
+    template.
+
+    template in :
+       'criminal/templates/array.template'
+
+    out will be in:
+       'tests/introduction/src/from_test_template_array.cpp'
+
+    '''
+    model = get_model_for_tests(modelFile)
+
+    params = Params()
+    cppGen = CppOutGen()
+
+    # parameters for central
+    params.set_params_for_centrals(model)
+
+    # parameters for bound
+    params.set_params_for_bounds(model)
+
+    # parameters for interconnect
+    params.set_params_for_interconnects(model)
+
+    out = cppGen.get_out_for_array(params)
+
+    to_file(out, 'from_test_template_array.cpp')
+
+    return(out)
+
 
 def test_template_centrals(modelFile="tests/brusselator1d_bound_U.json"):
     '''
@@ -27,12 +114,25 @@ def test_template_centrals(modelFile="tests/brusselator1d_bound_U.json"):
     
     params = Params()
     cppGen = CppOutGen()
-
-    # parameters for bound
+    parser = Parser()
+    
+    # parameters for central
     params.set_params_for_centrals(model)
+    
+    parser.params.diffType = 'pure'
+    parser.params.diffMethod = 'common'
+    parser.params.parameters = model.params
+    parser.params.parametersVal = model.paramValues[0]
+    
+    for eq in params.equations:
+        parser.params.blockNumber = eq.blockNumber
+        eq.parsedValues = [parser.parseMathExpression(value)
+                           for value in eq.values]
     out = cppGen.get_out_for_centrals(params)
     
     to_file(out, 'from_test_template_centrals.cpp')
+
+    return(out)
 
 
 def test_template_interconnects(modelFile="tests/1dTests/test1d_three_blocks0.json"):
@@ -52,12 +152,34 @@ def test_template_interconnects(modelFile="tests/1dTests/test1d_three_blocks0.js
     
     params = Params()
     cppGen = CppOutGen()
+    parser = Parser()
 
-    # parameters for bound
+    # parameters for interconnect
     params.set_params_for_interconnects(model)
+
+    parser.params.diffType = 'pure'
+    # TODO for diffMethod
+    # in 2d We should use diff instead diff_interconnect
+    # or choice between special and common in action_for_termDiff
+    # or in derivCodeGenerator.__init__
+    parser.params.diffMethod = 'interconnect'
+    parser.params.parameters = model.params
+    parser.params.parametersVal = model.paramValues[0]
+    
+    for ic in params.ics:
+        parser.params.blockNumber = ic.blockNumber
+        parser.params.side = ic.side
+        parser.params.firstIndex = ic.firstIndex
+        parser.params.secondIndexSTR = ic.secondIndex
+        print(ic.equation)
+        
+        ic.parsedValues = [parser.parseMathExpression(eq)
+                           for eq in ic.equation.system]
     out = cppGen.get_out_for_interconnects(params)
     
     to_file(out, 'from_test_template_interconnects.cpp')
+
+    return(out)
 
 
 def test_template_bounds(modelFile="tests/brusselator1d_bound_U.json"):
@@ -73,21 +195,61 @@ def test_template_bounds(modelFile="tests/brusselator1d_bound_U.json"):
        'tests/introduction/src/from_test_template_bounds.cpp'
     '''
     model = get_model_for_tests(modelFile)
-    g = Generator1D(model)
-    bi = BlockInfo()
-    block = g.blocks[0]
-    bi.getBlockInfo(g, block, 0)
-    
+
     params = Params()
     cppGen = CppOutGen()
+    parser = Parser()
 
     # parameters for bound
     params.set_params_for_bounds(model)
+    
+    for bound in params.bounds:
+        if bound.btype == 0:
+            # Dirichlet
+            bound.parsedValues = bound.values
+        else:
+            # Neuman
+            parser.params.diffType = 'pure'
+            # TODO for diffMethod
+            # in 2d We should use diff instead diff_special
+            # or choice between special and common in action_for_termDiff
+            # or in derivCodeGenerator.__init__
+            parser.params.diffMethod = 'special'
+            parser.params.parameters = model.params
+            parser.params.parametersVal = model.paramValues[0]
+
+            parser.params.blockNumber = bound.blockNumber
+            parser.params.side = bound.side
+
+            # bound can be U(t-1, {x, 0.3})
+            # so dim and shape needed
+            # TODO: for dim
+            parser.params.dim = '1D'
+            cellSize = 1
+            parser.params.shape = [cellSize/float(model.gridStepX),
+                                   cellSize/float(model.gridStepY),
+                                   cellSize/float(model.gridStepZ)]
+            bound.parsedValues = []
+
+            # for derivOrder = 1:
+            # du/dx = bound.value[i]
+            # for derivOrder = 2:
+            # left border
+            # ddu/ddx = 2*(u_{1}-u_{0}-dy*bound.value[i])/(dx^2)
+            # right border
+            # ddu/ddx = 2*(u_{n-1}-u_{n}-dy*bound.value[i])/(dx^2)
+            for i, eq in enumerate(bound.equation.system):
+                # parse phi
+                value = parser.parseMathExpression(bound.values[i])
+                parser.cppOut.dataTermMathFuncForDiffSpec = value
+                # parse eq(phi)
+                bound.parsedValues.append(parser.parseMathExpression(eq))
+
     out = cppGen.get_out_for_bounds(params)
     
     to_file(out, 'from_test_template_bounds.cpp')
 
-    return(bi)
+    return(out)
 
 
 def test_template_params(modelFile="tests/short_restest_full.json"):
@@ -110,8 +272,10 @@ def test_template_params(modelFile="tests/short_restest_full.json"):
     out = cppGen.get_out_for_parameters(params)
     to_file(out, 'from_test_template_params.cpp')
 
+    return(out)
 
-def test_template_initial(modelFile="tests/short_restest_full.json"):
+
+def test_template_initials(modelFile="tests/short_restest_full.json"):
     '''
     DESCRIPTION:
     Generate cpp for initial and Dirichlet from
@@ -125,11 +289,40 @@ def test_template_initial(modelFile="tests/short_restest_full.json"):
     '''
     params = Params()
     cppGen = CppOutGen()
+    parser = Parser()
 
     model = get_model_for_tests(modelFile)
     params.set_params_for_initials(model)
+
+    # FOR PARSER
+    parser.params.parameters = model.params
+    parser.params.parametersVal = model.paramValues[0]
+    
+    # TODO: sin(x)->sin(idxX + Block0OffsetX * DXM1)
+    for blockNumber, block in enumerate(params.blocks):
+
+        # FOR initial
+        for initial in block.initials:
+            initial.parsedValues = initial.values
+        # END FOR
+
+        # FOR Dirichlet
+        parser.params.blockNumber = blockNumber
+        parser.params.dim = '1D'
+        cellSize = 1
+        parser.params.shape = [cellSize/float(model.gridStepX),
+                               cellSize/float(model.gridStepY),
+                               cellSize/float(model.gridStepZ)]
+        for bound in block.bounds:
+            bound.parsedValues = [parser.parseMathExpression(value)
+                                  for value in bound.values]
+        # END FOR
+    # END FOR PARSER
+
     out = cppGen.get_out_for_initials(params)
-    to_file(out, 'from_test_template_initial.cpp')
+    to_file(out, 'from_test_template_initials.cpp')
+
+    return(out)
 
 
 def test_gen_1D(modelFile="tests/brusselator1d_bound_U.json"):
@@ -141,6 +334,7 @@ def test_gen_1D(modelFile="tests/brusselator1d_bound_U.json"):
     bi.getBlockInfo(g, block, 0)
 
     outList = []
+    return(g.generateAllDefinitions())
 
     '''
     PARAMS FOR generateAllDefinitions

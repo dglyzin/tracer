@@ -109,6 +109,7 @@ class BoundCondition:
 
 class Connection:
     def __init__(self, firstIndex, secondIndex, side, ranges, equationNumber, equation, funcName):
+        # ic[firstIndex][secondIndex]
         self.name = "Connection"
         self.firstIndex = firstIndex
         self.secondIndex = secondIndex
@@ -211,7 +212,7 @@ class AbstractGenerator(object):
                                               # (defined by stride)
                                               # ('x': +1,
                                               #  'y': + Block0StrideY*Block0CELLSIZE,
-                                              #  'z': + Block0StrideZ*Block0CELLSIZE
+                                              #  'z': + Block0StrideZ*Block0CELLSIZE =
                                               #         = Block0SizeY*Block0CountY*Block0CELLSIZE)
 
               +  unknownVarIndex[0]           # shift, differ for each variable 

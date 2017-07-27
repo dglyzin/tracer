@@ -21,8 +21,8 @@ END COMMENT #}
 
 //{{num}} central function for 1d model for block with number {{bn}}
 void Block{{bn}}CentralFunction{{num}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
-	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;	      {% for systemNumber, system in enumerate(eq.system) %}
-	result[idx + {{systemNumber}}] = {{system}};
+	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;	      {% for i, value in enumerate(eq.parsedValues) %}
+	result[idx + {{i}}] = {{value}};
      {% endfor %}
 }
 {% endfor %}

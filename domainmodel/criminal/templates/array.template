@@ -1,0 +1,39 @@
+{# COMMENT
+   TEMPLATE FOR INITIAL FUNCTION 1D
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+	namesAndNumbers dict
+END COMMENT #}
+
+//===================================FILL FUNCTIONS===========================//
+{% for blockNumber in namesAndNumbers.keys() %}
+{% set bn = blockNumber %}
+{% set size = len(namesAndNumbers[blockNumber]) %}
+void getBlock{{bn}}BoundFuncArray(func_ptr_t** ppBoundFuncs){
+	func_ptr_t* pBoundFuncs = *ppBoundFuncs;
+	pBoundFuncs = (func_ptr_t*) malloc( {{size}} * sizeof(func_ptr_t) );
+	*ppBoundFuncs = pBoundFuncs;
+      {% for funcNumber, funcName in enumerate(namesAndNumbers[bn]) %}
+	pBoundFuncs[{{funcNumber}}] = {{funcName}};
+      {% endfor %}
+}
+
+{% endfor %}
+
+void getFuncArray(func_ptr_t** ppBoundFuncs, int blockIdx){
+      {% for blockNumber in namesAndNumbers.keys() %}
+	getBlock{{blockNunber}}BoundFuncArray(ppBoundFuncs);
+      {% endfor %}	
+}
+
+void releaseFuncArray(func_ptr_t* BoundFuncs){
+	free(BoundFuncs);

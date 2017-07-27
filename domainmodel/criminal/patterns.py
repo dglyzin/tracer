@@ -73,10 +73,27 @@ class Patterns():
         # FOR TERM like -(-sin(x)+cos(x))*U
         self.termRealForUnary = self.real.copy()
         self.termArgsForUnary = self.termArgs.copy()
+        
+        self.recArgs = Forward()
+
+        self.recArgs << ((self.termArgsForUnary ^ self.termOperand)
+                         + Optional(self.termBinary)
+                         + Optional(self.recArgs)
+                          )
+
+        # self.termArgsForUnary
         self.termFuncArg = Group(self.termFunc
-                                 + self.termBrackets
-                                 + self.termArgsForUnary
-                                 + self.termBrackets)
+                                 + ZeroOrMore(self.termBrackets)
+                                 + self.recArgs
+                                 + ZeroOrMore(self.termBrackets)
+        )
+        '''
+        self.termFuncArg = Group(self.termFunc
+                                 + self.termBrackets #ZeroOrMore(self.termBrackets)
+                                 + self.termArgsForUnary #self.recArgs
+                                 + self.termBrackets #ZeroOrMore(self.termBrackets)
+        )
+        '''
         self.termUnaryFunc = (Group(ZeroOrMore(self.termUnary)
                                     + self.termRealForUnary)
                               ^ Group(self.termBrackets

@@ -71,7 +71,8 @@ class BoundCondition:
         for value in self.values:
             # parse pattern for MathFunction. (see createParsePattern)
             # like value = 'sin((x+3*a))'
-
+            print("value=")
+            print(value)
             try:
                 print("dim = ")
                 print(self.dim)
@@ -88,6 +89,10 @@ class BoundCondition:
                     parser.params.parametersVal = paramValues[0]
                 else:
                     parser.params.parametersVal = paramValues
+
+                # for compatibility reason
+                parser.params.fromOld = True
+
                 parser.parseMathExpression(value)
                 # cpp
                 self.parsedValues.append(parser.out)
@@ -96,8 +101,7 @@ class BoundCondition:
                 
                 # for clear when fail
                 parser.actions.outList = []
-                print("value=")
-                print(value)
+                
                 self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))
         
         self.unknownVars = mathParser.getVariableList(self.equation.system)

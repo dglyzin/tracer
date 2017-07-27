@@ -1,5 +1,6 @@
 from abstractGenerator import BoundCondition, Connection
 from someFuncs import determineNameOfBoundary
+from someFuncs import getCellCountInClosedInterval
 
 
 class Params():
@@ -18,7 +19,110 @@ class Params():
         
         # for name of central functions
         self.namesCf = dict()
+
+        # for compatibility reason
+        # cannot work with terms like
+        # sin(a*x+b)
+        self.fromOld = False
+
     
+    def set_params_for_definitions(self, model):
+        '''
+        DESCRIPTION:
+        Fill params for definitions 1d template.
+        '''
+
+        # FOR addition parameters
+        gridStep = [model.gridStepX, model.gridStepY, model.gridStepZ]
+
+        # count of equation in each cell
+        # (storage of each cell is count of equations in block)
+        eqs = model.equations
+
+        def get_cell_size(block):
+            return(len(eqs[block.defaultEquation].system))
+
+        def get_grid_offsets(block):
+            return([block.offsetX, 0, 0])
+
+        def get_grid_sizes(block):
+            return([block.sizeX, 0, 0])
+        # END FOR addition parameters
+
+        # FOR ERRORS
+        if len(gridStep) < 3:
+            raise AttributeError("A list 'gridStep' should be consist of"
+                                 + " values for ALL independent variables!"
+                                 + " x, y, z")
+        # END FOR ERRORS
+
+        class Args():
+            '''
+            DESCRIPTION:
+            Class for storage args data
+            for code simplification reason.
+            '''
+            def __init__(self):
+                pass
+
+        defaultIndepVars = ['x', 'y', 'z']
+
+        # FOR gridArgs
+        gridArgs = []
+        for i in range(len(gridStep)):
+            gridArg = Args()
+            gridArg.indepVar = defaultIndepVars[i]
+            d = gridStep[i]
+            gridArg.d = d
+            gridArg.d2 = d * d
+            gridArg.dm1 = round(1 / d)
+            gridArg.dm2 = round(1 / (d * d))
+            gridArgs.append(gridArg)
+        # END FOR gridArgs
+
+        # FOR define block (mainly with stride and counts)
+        blocksArgs = []
+        for blockNumber, block in enumerate(model.blocks):
+           
+            blockArgs = Args()
+            blockArgs.blockNumber = blockNumber
+            blockArgs.cellsize = get_cell_size(block)
+
+            # for each var in vars grid step exist
+            countOfVars = len(gridStep)
+
+            # for counts
+            counts = []
+            for i in range(countOfVars):
+                d = gridStep[i]
+                sizeForIndepVar = get_grid_sizes(block)[i]
+                countOfGridStepsInVar = getCellCountInClosedInterval(sizeForIndepVar, d)
+                counts.append(countOfGridStepsInVar)
+
+            # for strides
+            strides = []
+            for i in range(countOfVars):
+                if i == 0:
+                    stride = 1
+                elif i == 1:
+                    stride = counts[0]
+                else:
+                    # if i == 2
+                    stride = counts[0] * counts[1]
+                strides.append(stride)
+
+            blockArgs.indepVars = defaultIndepVars
+            blockArgs.counts = counts
+            blockArgs.strides = strides
+            blockArgs.offsets = get_grid_offsets(block)
+
+            blocksArgs.append(blockArgs)
+        # END FOR stride and counts
+
+        self.gridArgs = gridArgs
+        self.blocksArgs = blocksArgs
+        self.paramsLen = len(model.params)
+        
     def set_params_for_centrals(self, model):
         '''
         DESCRIPTION:
@@ -56,8 +160,26 @@ class Params():
                 equation.number = block.defaultEquation
                 equation.blockNumber = blockNumber
                 equations.append(equation)
+
+
         self.equations = equations
         # END FOR FILL
+
+        # FOR FuncArray
+        funcNamesStack = [('Block' + str(equation.blockNumber)
+                           + 'CentralFunction'
+                           + str(equation.number)) for equation in equations]
+    
+        # check if funcNamesStack alredy exist:
+        if 'funcNamesStack' in self.__dict__:
+            self.funcNamesStack.extend(funcNamesStack)
+        else:
+            self.funcNamesStack = funcNamesStack
+        # END FOR
+
+        # FOR parsing
+        for eq in equations:
+            eq.values = eq.system
 
     def set_params_for_interconnects(self, model):
         '''
@@ -164,6 +286,16 @@ class Params():
         self.ics = ics
         # END FOR FILL
 
+        # FOR FuncArray
+        funcNamesStack = [ic.funcName for ic in ics]
+
+        # check if funcNamesStack alredy exist:
+        if 'funcNamesStack' in self.__dict__:
+            self.funcNamesStack.extend(funcNamesStack)
+        else:
+            self.funcNamesStack = funcNamesStack
+        # END FOR
+
     def set_params_for_bounds(self, model):
         '''
         DESCRIPTION:
@@ -194,7 +326,7 @@ class Params():
             for side in sides:
                 # find equation number for side or use default
                 regsEqNums = [eqReg.equationNumber for eqReg in block.equationRegions
-                              if test(eqRegion)]
+                              if test(eqReg)]
                 equationNum = regsEqNums[0] if len(regsEqNums) > 0 else block.defaultEquation
                 equation = model.equations[equationNum]
 
@@ -236,6 +368,16 @@ class Params():
                 bound.boundName = determineNameOfBoundary(side)
                 self.bounds.append(bound)
         # END FOR FILL
+        
+        # FOR FuncArray
+        funcNamesStack = [bound.funcName for bound in self.bounds]
+        
+        # check if funcNamesStack alredy exist:
+        if 'funcNamesStack' in self.__dict__:
+            self.funcNamesStack.extend(funcNamesStack)
+        else:
+            self.funcNamesStack = funcNamesStack
+        # END FOR
 
     def set_params_for_parameters(self, model):
         '''
@@ -275,11 +417,10 @@ class Params():
             # for initials
             block.initialIndexes = [iR.initialNumber for iR in block.initialRegions
                                     if iR.initialNumber != block.defaultInitial]
+            block.initials = [model.initials[idx] for idx in block.initialIndexes]
+            block.bounds = [model.bounds[idx] for idx in block.fDirichletIndexes]
         self.blocks = model.blocks
         # END FOR FILL
-
-        self.initials = model.initials
-        self.bounds = model.bounds
 
     def init_params_general(self, blockNumber, dim):
         # parameters fill

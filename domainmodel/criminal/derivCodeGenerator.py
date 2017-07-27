@@ -92,10 +92,10 @@ class PureDerivGenerator(DerivGenerator):
 
         # PARAMS FOR SPECIAL
         # self.parsedMathFunction = params.parsedMathFunction
-        self.side = params.side
 
         if ((params.diffMethod == 'special')
             and (params.diffType == 'pure')):
+            self.side = params.side
             if ((self.side % 2 == 0)
                 and (self.indepVarIndexList[0] == self.side / 2)):
                 self.leftOrRightBoundary = 1
@@ -103,6 +103,9 @@ class PureDerivGenerator(DerivGenerator):
                   and self.indepVarIndexList[0] == (self.side - 1) / 2):
                 self.leftOrRightBoundary = 0
             else:
+                # TODO for diffMethod 2d
+                # self.diffMethod = 'common'
+                # and same for interconnects
                 raise(SyntaxError("cannot define leftOrRightBoundary"
                                   + " for special_diff: "
                                   + "side = "+str(self.side)
@@ -110,11 +113,35 @@ class PureDerivGenerator(DerivGenerator):
         # END FOR SPECIAL
 
         # PARAMS FOR INTERCONNECT
-        # for ic[firstIndex][ $ secondIndexSTR $ +
-        # in interconnectPureDerivAlternative
-        self.firstIndex = params.firstIndex
-        self.secondIndexSTR = params.secondIndexSTR
+        if ((params.diffMethod == 'interconnect')
+            and (params.diffType == 'pure')):
+
+            # for ic[firstIndex][ $ secondIndexSTR $ +
+            # in interconnectPureDerivAlternative
+            self.side = params.side
+            self.firstIndex = params.firstIndex
+            self.secondIndexSTR = params.secondIndexSTR
+            '''
+            # TODO for diffMethod 2d
+            if (((self.side % 2 == 0)
+                and (self.indepVarIndexList[0] == self.side / 2)))
+            or (((self.side - 1) % 2 == 0
+                  and self.indepVarIndexList[0] == (self.side - 1) / 2)):
+                self.diffMethod = 'interconnect'
+            else:
+                
+                # self.diffMethod = 'common'
+            '''
         # END FOR INTERCONNECT
+
+        # PARAMS FOR None
+        if params.diffMethod == 'None':
+            # None is depricated
+            # that only for errors removing
+            self.firstIndex = '{{firstIndex}}'
+            self.secondIndexSTR = '{{secondIndexSTR}}'
+            self.side = 0
+        # END FOR None
 
     def createIndicesList(self):
         '''

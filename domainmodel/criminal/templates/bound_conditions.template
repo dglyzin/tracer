@@ -23,7 +23,7 @@ END COMMENT #}
 void {{bound.funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;
      {% for i, value in enumerate(bound.parsedValues)%}
-	 result[idx + i] = value;
+	 result[idx + {{i}}] = {{value}};
      {% endfor %}
 }
 {% endfor %}

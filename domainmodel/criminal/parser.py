@@ -123,10 +123,11 @@ class Parser():
     def parseMathExpression(self, expr):
         # for debug
         self.print_dbg("FROM parseMathExpression:")
-
+        self.print_dbg("expression = ", expr)
+        
         self.clear_data()
         try:
-            parsedExpression = self.patterns.eqExpr.parseString(expr)
+            parsedExpression = self.patterns.eqExpr.parseString(expr, parseAll=True)
         except:
             self.print_dbg("expr is not a equation")
             parsedExpression = self.patterns.termBaseExpr.parseString(expr, parseAll=True)
@@ -134,7 +135,8 @@ class Parser():
         #TODO replace next two lines to action_for_termBaseExpr
         self.out = reduce(lambda x, y: x+y, self.actions.outList)
         self.actions.outList = []
-        return(parsedExpression)
+        # return(parsedExpression)
+        return(self.out)
 
     def clear_data(self):
         '''
@@ -143,6 +145,8 @@ class Parser():
         '''
         self.cppOut.dataTermVarsPoint = []
         self.cppOut.dataTermVarsPointDelay = []
+        self.cppOut.dataTermVarSimpleLocal = {'delays': [],
+                                              'varIndexs': []}
 
     def test(self):
         eqStrList = [u"U'=D[U(t-1.1),{y,1}]+D[U(t-5.9),{y,2}]+U(t-1)",

@@ -174,6 +174,7 @@ def fill_params_for_diff(parser):
     parser.params.diffType = 'pure'
     parser.params.diffMethod = 'common'
     parser.params.parameters = ['a', 'b']
+    parser.params.parametersVal = {'a': 1, 'b': 2}
     # END FOR ALL
     
     # PARAMS FOR BOUND
