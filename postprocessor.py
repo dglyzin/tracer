@@ -200,15 +200,16 @@ def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, coun
     return "produced png: "+ filename
 
 
-def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, isfink, minValue, dx, dy, postfix, resIdx)):
+def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, isfink, countfun, dx, dy, postfix, resIdx)):
     '''
         returns time and requested value from state file binfile  
     '''
     #for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     #xs = np.arange(0, countX)*dx
-    res = [0]*cellSize
-    for idx in range(cellSize):
+    countfun = 1
+    res = [0]*countfun
+    for idx in range(countfun):
         if isfink =="UV":
             res[idx] = data[0,0,:,idx]
         else:
@@ -220,7 +221,8 @@ def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX
     #t = t.split(drawExtension)[0]
     #with open(filename, "w") as f:
     #    f.write(t)
-    
+    if countfun == 2:
+        del res[0]
     #savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
     #print("produced png: "+ filename)
     return t, res#"produced text result: "+ filename
@@ -363,7 +365,7 @@ def createMovie(projectDir, projectName):
     for resultnames in resultlistname:
         if resultnames['Value'] in dictfunc:
             resuls = pool.map(getResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
-                                                offsetY, offsetX, dictfunc[resultnames['Value']], 'UV', minValue, dx, dy, "-final-" + str(idx),
+                                                offsetY, offsetX, cellSize, 'UV', dictfunc[resultnames['Value']], dx, dy, "-final-" + str(idx),
                                                 resIdx) for idx, binFile in enumerate(plotFileLists[plotCount + resIdx])])
             reslist = []
             for line in resuls:
