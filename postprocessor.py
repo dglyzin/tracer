@@ -174,7 +174,7 @@ def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, o
 
 
 
-def saveResults1D( (projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, postfix, plotIdx, saveText) ):
+def savePlots1D( (projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, postfix, plotIdx, saveText) ):
     #for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     
@@ -335,9 +335,9 @@ def createMovie(projectDir, projectName):
         #print "Расчет минимума / максимума: ", t2 - t1
     
         pool = mp.Pool(processes=16)
-        saveResultFunc = saveResults1D
+        saveResultFunc = savePlots1D
         if dimension == 1:
-            saveResultFunc = saveResults1D
+            saveResultFunc = savePlots1D
         if dimension == 2:
             saveResultFunc = saveResults2D
             
