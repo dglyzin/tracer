@@ -1,6 +1,15 @@
 from abstractGenerator import BoundCondition, Connection
 from someFuncs import determineNameOfBoundary
 from someFuncs import getCellCountInClosedInterval
+from someFuncs import getRangesInClosedInterval
+import logging
+from copy import deepcopy as copy
+
+# for independet launching this module
+#logging.basicConfig(level=logging.DEBUG)
+
+# create logger that child of tests.tester loger
+logger = logging.getLogger('tests.tester.criminal.tests_gen.params')
 
 
 class Params():
@@ -25,7 +34,143 @@ class Params():
         # sin(a*x+b)
         self.fromOld = False
 
-    
+    def set_params_for_dom_centrals(self, model):
+        '''
+        DESCRIPTION:
+        mapping equations to block parts.
+        like
+         center: [  [ 1, xfrom, xto, yfrom, yto],
+        means equation[1] for part
+         (xfrom, yfrom), (xto, yto)
+
+        '''
+        # check if functionMaps alredy exist:
+        if 'functionMaps' not in self.__dict__:
+            self.functionMaps = []
+
+        for block in model.blocks:
+            numsForSystems = []
+            blockFuncMap = {'center': []}
+            reservedSpace = 0
+
+            # split equations at regions
+            for eqRegion in block.equationRegions:
+                reservedSpace += eqRegion.xto - eqRegion.xfrom
+
+                # for removing trivial cases
+                cond = (eqRegion.xfrom == eqRegion.xto
+                        and
+                        (eqRegion.xto == 0.0 or eqRegion.xto == block.sizeX))
+
+                if eqRegion.equationNumber not in numsForSystems and not cond:
+                    numsForSystems.append(eqRegion.equationNumber)
+                if not cond:
+                    # see getRangesInClosedInterval description
+                    ranges = getRangesInClosedInterval([eqRegion.xfrom, eqRegion.xto, gen.gridStep[0]])
+                    blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber)] + ranges)
+
+            # add default equation at remaining regions.
+            if block.sizeX > reservedSpace:
+                blockFuncMap.update({'center_default': len(numsForSystems)})
+                numsForSystems.append(block.defaultEquation)
+
+            self.functionMaps.append(blockFuncMap)
+
+    def set_params_for_dom_interconnects(self):
+        '''
+        DESCRIPTION:
+        self.functionMaps must be exist.
+        self.ics must be exist.
+        self.funcNamesStack must be exist.
+        self.namesAndNumbers must be exist.
+
+        So use
+         set_params_for_centrals      for self.funcNamesStack
+         set_params_for_interconnects for self.funcNamesStack
+                                       and self.ics
+         set_params_for_bounds        for self.funcNamesStack
+         set_params_for_dom_centrals  for self.functionMaps
+         set_params_for_array         for namesAndNumbers
+        first.
+        '''
+        # interconnect
+        logger.debug("namesAndNumbers = %s" % (self.namesAndNumbers["0"]))
+        for ic in self.ics:
+            sideName = "side"+str(ic.side)
+            
+            # count of interconnects for each block
+            idx = self.namesAndNumbers[str(ic.blockNumber)].index(ic.funcName)
+            logger.debug("funcName=%s " % str(ic.funcName))
+            logger.debug("sideName, idx= %s, %s " % (str(sideName), str(idx)))
+            self.functionMaps[ic.blockNumber].update({sideName: idx})
+  
+    def set_params_for_dom_bounds(self):
+        '''
+        DESCRIPTION:
+        self.functionMaps must be exist.
+        self.bounds must be exist.
+        self.funcNamesStack must be exist.
+        self.namesAndNumbers must be exist.
+
+        So use
+         set_params_for_centrals      for self.funcNamesStack
+         set_params_for_interconnects for self.funcNamesStack
+         set_params_for_bounds        for self.funcNamesStack
+                                      and self.bounds
+         set_params_for_dom_centrals  for self.functionMaps
+         set_params_for_array         for namesAndNumbers
+        first.
+        '''
+        # bounds
+        for bound in self.bounds:
+            sideName = "side"+str(bound.side)
+
+            # for setDomain
+            idx = self.namesAndNumbers[str(bound.blockNumber)].index(bound.funcName)
+            logger.debug("funcName=%s " % str(bound.funcName))
+            logger.debug("sideName, idx= %s, %s " % (str(sideName), str(idx)))
+            self.functionMaps[bound.blockNumber].update({sideName: idx})
+
+    def set_params_for_array(self):
+        '''
+        DESCRIPTION:
+        factorize funcNames into blockNumber's classes
+        i.e. namesAndNumbers[blockNumber] = [names for blockNumber]
+
+        self.funcNamesStack must exist.
+        
+        '''
+        def get_number(funcName):
+            '''
+            DESCRIPTION:
+            From funcName get blockNumber
+            
+            EXAMPLE:
+            'Block0CentralFunction1' -> '0'
+            '''
+            # cut name Block from funcName
+            tail = funcName[5:]
+            blockNumber = []
+            # find end of number
+            for num in tail:
+                if num in '0123456789':
+                    blockNumber.append(num)
+                else:
+                    break
+            return(blockNumber[0])
+
+        # factorize funcNames into blockNumber's classes
+        # i.e. namesAndNumbers[blockNumber] = [names for blockNumber]
+        namesAndNumbers = {}
+        for funcName in self.funcNamesStack:
+            blockNumber = get_number(funcName)
+            if blockNumber in namesAndNumbers.keys():
+                namesAndNumbers[blockNumber].append(funcName)
+            else:
+                namesAndNumbers[blockNumber] = [funcName]
+
+        self.namesAndNumbers = namesAndNumbers
+
     def set_params_for_definitions(self, model):
         '''
         DESCRIPTION:
@@ -149,18 +294,19 @@ class Params():
 
                 numsForSystems = [eq.number for eq in equations]
                 if eqRegion.equationNumber not in numsForSystems and not cond:
-                    equation = model.equations[eqRegion.equationNumber]
+                    equation = copy(model.equations[eqRegion.equationNumber])
                     equation.number = eqRegion.equationNumber
                     equation.blockNumber = blockNumber
+                    logger.debug('blockNumber eqReg=%s' % str(blockNumber))
                     equations.append(equation)
 
             # add default equation at remaining regions.
             if block.sizeX > reservedSpace:
-                equation = model.equations[block.defaultEquation]
+                equation = copy(model.equations[block.defaultEquation])
                 equation.number = block.defaultEquation
                 equation.blockNumber = blockNumber
+                logger.debug('blockNumber revSp=%s' % str(blockNumber))
                 equations.append(equation)
-
 
         self.equations = equations
         # END FOR FILL
@@ -279,7 +425,14 @@ class Params():
                                     equationNum, equation, funcName)
                     ic.boundName = determineNameOfBoundary(side)
                     ic.blockNumber = blockNumber
-                    ics.append(ic)
+                    
+                    # each block can connect to many other block
+                    # let other block discribe interconnect in
+                    # that casse
+                    icsOld = [icl.funcName for icl in ics]
+                    #logger.debug("icsOld = %s" % str(icsOld))
+                    if ic.funcName not in icsOld:
+                        ics.append(ic)
                 else:
                     continue
 
@@ -324,6 +477,17 @@ class Params():
 
             sides = [0, 1]
             for side in sides:
+                # check if interconnect for this side exist
+                if 'ics' in self.__dict__.keys():
+                    icSides = [ic.side for ic in self.ics
+                               if ic.blockNumber == blockNumber]
+                    if side in icSides:
+                        # if exist then no boundary needed
+                        #logger.debug('icSides = %s' % str(icSides))
+                        #logger.debug('blockNumber = %s' % str(blockNumber))
+                        #logger.debug('side = %s' % str(side))
+                        continue
+
                 # find equation number for side or use default
                 regsEqNums = [eqReg.equationNumber for eqReg in block.equationRegions
                               if test(eqReg)]
@@ -374,6 +538,11 @@ class Params():
         
         # check if funcNamesStack alredy exist:
         if 'funcNamesStack' in self.__dict__:
+            '''
+            for funcName in funcNamesStack:
+                if funcName not in self.funcNamesStack:
+                    self.funcNamesStack.append(funcName)
+            '''
             self.funcNamesStack.extend(funcNamesStack)
         else:
             self.funcNamesStack = funcNamesStack

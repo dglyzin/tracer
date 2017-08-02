@@ -107,14 +107,12 @@ def test_model_create_cpp(modelFile="tests/brusselator1d_bound_U.json"):
     path = os.path.join("tests/introduction/src", fileName)
     # load model
     model = get_model_for_tests(modelFile)
-    model.createCPPandGetFunctionMaps(
-        path,
-        "prepr_folder_path")
-    
+    forDomain = model.createCPPandGetFunctionMaps(path,
+                                                  "prepr_folder_path")
     logger.debug("path = %s" % path)
     logger.debug("modelFile = %s" % modelFile)
 
-    return(model)
+    return(forDomain)
 
 
 def test_cpp(fileName='from_model_createCPP.cpp', _stderr=None):

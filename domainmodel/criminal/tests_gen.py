@@ -11,6 +11,33 @@ from params import Params
 
 from domainmodel.criminal.parser import Parser
 
+import logging
+
+# for independet launching this module
+#logging.basicConfig(level=logging.DEBUG)
+
+# create logger that child of tests.tester loger
+logger = logging.getLogger('tests.tester.criminal.tests_gen')
+
+
+def test_domain_1d(modelFile="tests/brusselator1d_bound_U.json"):
+    model = get_model_for_tests(modelFile)
+    params = Params()
+
+    # for funcNamesStack and bounds and ics from params
+    params.set_params_for_centrals(model)
+    params.set_params_for_interconnects(model)
+    params.set_params_for_bounds(model)
+
+    # for namesAndNumbers
+    params.set_params_for_array()
+
+    params.set_params_for_dom_centrals(model)
+    params.set_params_for_dom_interconnects()
+    params.set_params_for_dom_bounds()
+    
+    return(params.functionMaps)
+
 
 def test_templates_1d(modelFile="tests/brusselator1d_bound_U.json"):
     '''
@@ -25,14 +52,21 @@ def test_templates_1d(modelFile="tests/brusselator1d_bound_U.json"):
     out = test_template_definitions(modelFile)
     out += test_template_initials(modelFile)
     out += test_template_params(modelFile)
-    out += test_template_centrals(modelFile)
-    out += test_template_bounds(modelFile)
-    out += test_template_interconnects(modelFile)
-    out += test_template_array(modelFile)
 
-    print(out)
+    outl, params = test_template_centrals(modelFile)
+    out += outl
+
+    outl, params = test_template_interconnects(modelFile, params)
+    out += outl
+
+    outl, params = test_template_bounds(modelFile, params)
+    out += outl
+    out += test_template_array(modelFile, params)
+
+    # print(out)
 
     to_file(out, 'from_test_template_1d.cpp')
+    return(params)
 
 
 def test_template_definitions(modelFile="tests/brusselator1d_bound_U.json"):
@@ -63,11 +97,16 @@ def test_template_definitions(modelFile="tests/brusselator1d_bound_U.json"):
     return(out)
 
 
-def test_template_array(modelFile="tests/brusselator1d_bound_U.json"):
+def test_template_array(modelFile="tests/brusselator1d_bound_U.json", params=None):
     '''
     DESCRIPTION:
     Generate cpp for centrals from
     template.
+
+    After
+     params.set_params_for_centrals
+     params.set_params_for_interconnects
+     params.set_params_for_bounds
 
     template in :
        'criminal/templates/array.template'
@@ -75,21 +114,27 @@ def test_template_array(modelFile="tests/brusselator1d_bound_U.json"):
     out will be in:
        'tests/introduction/src/from_test_template_array.cpp'
 
+    INPUT:
+    params from central, interconnect, bounds
     '''
-    model = get_model_for_tests(modelFile)
+    #model = get_model_for_tests(modelFile)
 
-    params = Params()
+    
+    #if params is None:
+    #    params = Params()
+
     cppGen = CppOutGen()
 
     # parameters for central
-    params.set_params_for_centrals(model)
+    #params.set_params_for_centrals(model)
 
     # parameters for bound
-    params.set_params_for_bounds(model)
+    #params.set_params_for_bounds(model)
 
     # parameters for interconnect
-    params.set_params_for_interconnects(model)
+    #params.set_params_for_interconnects(model)
 
+    params.set_params_for_array()
     out = cppGen.get_out_for_array(params)
 
     to_file(out, 'from_test_template_array.cpp')
@@ -132,10 +177,10 @@ def test_template_centrals(modelFile="tests/brusselator1d_bound_U.json"):
     
     to_file(out, 'from_test_template_centrals.cpp')
 
-    return(out)
+    return((out, params))
 
-
-def test_template_interconnects(modelFile="tests/1dTests/test1d_three_blocks0.json"):
+    
+def test_template_interconnects(modelFile="tests/1dTests/test1d_three_blocks0.json", params=None):
     '''
     DESCRIPTION:
     Generate cpp for interconnects from
@@ -150,7 +195,9 @@ def test_template_interconnects(modelFile="tests/1dTests/test1d_three_blocks0.js
     '''
     model = get_model_for_tests(modelFile)
     
-    params = Params()
+    if params is None:
+        params = Params()
+
     cppGen = CppOutGen()
     parser = Parser()
 
@@ -179,24 +226,33 @@ def test_template_interconnects(modelFile="tests/1dTests/test1d_three_blocks0.js
     
     to_file(out, 'from_test_template_interconnects.cpp')
 
-    return(out)
+    return((out, params))
 
 
-def test_template_bounds(modelFile="tests/brusselator1d_bound_U.json"):
+def test_template_bounds(modelFile="tests/brusselator1d_bound_U.json", params=None):
     '''
     DESCRIPTION:
     Generate cpp for bounds from
     template.
+
+    It always placed after test_template_interconnects
+    because if interconnect exist for some side then
+    ignore it bound.
 
     template in :
        'criminal/templates/bound_conditions.template'
 
     out will be in:
        'tests/introduction/src/from_test_template_bounds.cpp'
+
+    INPUT:
+    param from test_template_interconnects
     '''
     model = get_model_for_tests(modelFile)
 
-    params = Params()
+    if params is None:
+        params = Params()
+
     cppGen = CppOutGen()
     parser = Parser()
 
@@ -249,7 +305,7 @@ def test_template_bounds(modelFile="tests/brusselator1d_bound_U.json"):
     
     to_file(out, 'from_test_template_bounds.cpp')
 
-    return(out)
+    return((out, params))
 
 
 def test_template_params(modelFile="tests/short_restest_full.json"):

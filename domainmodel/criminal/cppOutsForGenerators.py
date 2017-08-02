@@ -29,41 +29,14 @@ class CppOutsForGenerators():
         return(out)
 
     def get_out_for_array(self, params):
+        '''
+        DESCRIPTION:
+        params.set_params_for_array must be called first.
+        '''
         template = self.env.get_template('array.template')
 
-        # FOR get blockNumber's from funcNames
-        def get_number(funcName):
-            '''
-            DESCRIPTION:
-            From funcName get blockNumber
-            
-            EXAMPLE:
-            'Block0CentralFunction1' -> '0'
-            '''
-            # cut name Block from funcName
-            tail = funcName[5:]
-            blockNumber = []
-            # find end of number
-            for num in tail:
-                if num in '0123456789':
-                    blockNumber.append(num)
-                else:
-                    break
-            return(blockNumber[0])
-
-        # factorize funcNames into blockNumber's classes
-        # i.e. namesAndNumbers[blockNumber] = [names for blockNumber]
-        namesAndNumbers = {}
-        for funcName in params.funcNamesStack:
-            blockNumber = get_number(funcName)
-            if blockNumber in namesAndNumbers.keys():
-                namesAndNumbers[blockNumber].append(funcName)
-            else:
-                namesAndNumbers[blockNumber] = [funcName]
-        # END FOR
-                
         args = {
-            'namesAndNumbers': namesAndNumbers,
+            'namesAndNumbers': params.namesAndNumbers,
             'enumerate': enumerate,
             'len': len
         }

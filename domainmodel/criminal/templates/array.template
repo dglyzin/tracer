@@ -31,7 +31,8 @@ void getBlock{{bn}}BoundFuncArray(func_ptr_t** ppBoundFuncs){
 
 void getFuncArray(func_ptr_t** ppBoundFuncs, int blockIdx){
       {% for blockNumber in namesAndNumbers.keys() %}
-	getBlock{{blockNunber}}BoundFuncArray(ppBoundFuncs);
+        if (blockIdx == {{blockNumber}})
+	   getBlock{{blockNumber}}BoundFuncArray(ppBoundFuncs);
       {% endfor %}	
 }
 
