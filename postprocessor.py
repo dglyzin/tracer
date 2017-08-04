@@ -200,20 +200,19 @@ def savePlots1D( (projectDir, projectName, binFile, info, countZ, countY, countX
     return "produced png: "+ filename
 
 
-def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, isfink, countfun, dx, dy, postfix, resIdx)):
+def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, countfun, idx)):
     '''
         returns time and requested value from state file binfile  
     '''
-    #for idx, binFile in enumerate(binFileList):
+    dictfunc = {u'U': 0, u'V': 1}
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     #xs = np.arange(0, countX)*dx
-    countfun = 1
-    res = [0]*countfun
-    for idx in range(countfun):
-        if isfink =="UV":
-            res[idx] = data[0,0,:,idx]
-        else:
-            res[idx] = np.max(data[0,0,:,idx])
+    if countfun in dictfunc:
+        idx = dictfunc[countfun]
+    else:
+        idx = 0
+
+    res = data[0,0,:,idx]
     #filename = os.path.join(projectDir,projectName+"-res"+str(resIdx) + postfix + ".txt")        
     
     t = binFile.split("-")[-2]
@@ -221,8 +220,6 @@ def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX
     #t = t.split(drawExtension)[0]
     #with open(filename, "w") as f:
     #    f.write(t)
-    if countfun == 2:
-        del res[0]
     #savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
     #print("produced png: "+ filename)
     return t, res#"produced text result: "+ filename
@@ -349,29 +346,18 @@ def createMovie(projectDir, projectName):
             print element
     
         createVideoFile(projectDir, projectName,plotIdx)
-  
-    for resIdx in range(resCount):
-        pool = mp.Pool(processes=16)
-        saveResultFunc = getResults1D
-        resLog = pool.map(saveResultFunc, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
-                                            offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx),
-                                            resIdx) for idx, binFile in enumerate(plotFileLists[plotCount + resIdx]) ] )
-        createResultFile(projectDir, projectName,resIdx, resLog)
 
     #U and V
     #TODO get result all list U or V
-    dictfunc = {u'U':1, u'V':2}
     resIdx = 0
+    #print('aaaa ',resultlistname)
     for resultnames in resultlistname:
-        if resultnames['Value'] in dictfunc:
-            resuls = pool.map(getResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
-                                                offsetY, offsetX, cellSize, 'UV', dictfunc[resultnames['Value']], dx, dy, "-final-" + str(idx),
-                                                resIdx) for idx, binFile in enumerate(plotFileLists[plotCount + resIdx])])
-            reslist = []
-            for line in resuls:
-                reslist.append([line[0],line[1][0]])
-            print('sss',reslist, projectDir, resultnames)
-            createResultFile(projectDir, projectName, resIdx, reslist)
+        pool = mp.Pool(processes=16)
+        resuls = pool.map(getResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
+                                                offsetY, offsetX, cellSize, resultnames['Value'],
+                                              str(idx)) for idx, binFile in enumerate(plotFileLists[plotCount + resIdx])])
+        print('sks',projectDir, resultnames)
+        createResultFile(projectDir, projectName, resIdx, resuls)
         resIdx += 1
 
   
