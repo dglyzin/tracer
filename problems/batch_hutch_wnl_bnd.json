@@ -1,6 +1,6 @@
 { 
     "comment":"",
-    "ProblemFile":"rea-dif-wnl-bnd.json",
+    "ProblemFile":"hutchinson_wnl_bnd.json",
     "ParamRanges": [ 
         {
             "Param": "h",
@@ -10,8 +10,8 @@
         },
         {
             "Param": "g",
-            "Start" : 0.6,
-            "End" : 1.5,
+            "Start" : 0.1,
+            "End" : 0.9,
             "Step" : 0.1
         }
     
@@ -19,7 +19,7 @@
     "Output": [ 
         {
             "Name" : "growth",
-            "Expression":"u_max[-1] > u_max[-2]"
+            "Expression":"abs(u_max[-1] - u_max[-2])<0.001"
         }
     ]
 }

@@ -1,9 +1,9 @@
 {
-    "ProjectName": "Reaction-diffusion with nonlocal bound", 
+    "ProjectName": "Hutchinson-diffusion with nonlocal bound", 
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 5.0, 
+        "FinishTime": 50.0, 
         "TimeStep": 1e-05, 
         "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
@@ -46,7 +46,7 @@
                 "x"
             ], 
             "System": [
-                "U'=d*D[U,{x,2}] + a*U"
+                "U'=d*D[U,{x,2}] + a*U * ( 1-U(t-1) )"
             ]
         }
     ], 
@@ -60,8 +60,8 @@
         "ParamValues": [
             {
                 "d": 1.0,
-                "a": 1.0,
-                "g": 1.1,
+                "a": 2.0,
+                "g": 0.7,
                 "h": 0.7
             }
         ], 
@@ -120,12 +120,12 @@
         {
             "Name": "u_max", 
             "Period": 0.1,
-            "Value": "U"
+            "Value": "Max(U)"
         },
         {
             "Name": "u_min", 
             "Period": 0.1,
-            "Value": "U"
+            "Value": "Min(U)"
         }
 
     ]
