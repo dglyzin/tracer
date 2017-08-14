@@ -125,7 +125,7 @@
         {
             "Name": "u_min", 
             "Period": 0.1,
-            "Value": "Min(U)"
+            "Value": "U"
         }
 
     ]

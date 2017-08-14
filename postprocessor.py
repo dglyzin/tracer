@@ -200,15 +200,15 @@ def savePlots1D( (projectDir, projectName, binFile, info, countZ, countY, countX
     return "produced png: "+ filename
 
 
-def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, countfun, idx)):
+def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, resultExpression, idx)):
     '''
         returns time and requested value from state file binfile  
     '''
     dictfunc = {u'U': 0, u'V': 1}
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     #xs = np.arange(0, countX)*dx
-    if countfun in dictfunc:
-        idx = dictfunc[countfun]
+    if resultExpression in dictfunc:
+        idx = dictfunc[resultExpression]
     else:
         idx = 0
 
@@ -320,7 +320,7 @@ def createMovie(projectDir, projectName):
     model = Model()
     model.loadFromFile(os.path.join(projectDir, projectName + '.json'))
     plotCount = len(model.plots)
-    resultlistname = model.results
+    resultList = model.results
     resCount = len(model.results)
     plotFileLists=getBinFilesByPlot(binFileList, plotValList, plotCount+resCount)
     #print plotFileLists
@@ -351,12 +351,12 @@ def createMovie(projectDir, projectName):
     #TODO get result all list U or V
     resIdx = 0
     #print('aaaa ',resultlistname)
-    for resultnames in resultlistname:
+    for resultItem in resultList:
         pool = mp.Pool(processes=16)
         resuls = pool.map(getResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
-                                                offsetY, offsetX, cellSize, resultnames['Value'],
+                                                offsetY, offsetX, cellSize, resultItem['Value'],
                                               str(idx)) for idx, binFile in enumerate(plotFileLists[plotCount + resIdx])])
-        print('sks',projectDir, resultnames)
+        print('sks',projectDir, resultItem)
         createResultFile(projectDir, projectName, resIdx, resuls)
         resIdx += 1
 
