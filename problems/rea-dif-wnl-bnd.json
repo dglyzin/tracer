@@ -125,8 +125,24 @@
         {
             "Name": "u_min", 
             "Period": 0.1,
-            "Value": "Min(U)"
+            "Value": "min(U)"
+        },
+        {
+            "Name": "u_max", 
+            "Period": 0.2,
+            "Value": "U+1"
+        },
+        {
+            "Name": "u_max", 
+            "Period": 0.25,
+            "Value": "U"
+        },
+        {
+            "Name": "namename", 
+            "Period": 0.5,
+            "Value": "U"
         }
+
 
     ]
 }

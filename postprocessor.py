@@ -200,19 +200,23 @@ def savePlots1D( (projectDir, projectName, binFile, info, countZ, countY, countX
     return "produced png: "+ filename
 
 
-def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, countfun, idx)):
+def getResults1D((projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, nameEquations, countfun, idx)):
     '''
         returns time and requested value from state file binfile  
     '''
-    dictfunc = {u'U': 0, u'V': 1}
+    #dictfunc = {u'U':0, u'V':1}
     data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
     #xs = np.arange(0, countX)*dx
-    if countfun in dictfunc:
-        idx = dictfunc[countfun]
-    else:
-        idx = 0
-
-    res = data[0,0,:,idx]
+    dictfun = {}
+    for numitem, item in enumerate(nameEquations):
+        dictfun[item] = data[0,0,:,numitem]
+    #if countfun in dictfunc:
+    #    idx = dictfunc[countfun]
+    #else:
+    #    idx = 0
+    #res = data[0,0,:,idx]
+    #res = dictfun[countfun]
+    res = eval(countfun,dictfun)
     #filename = os.path.join(projectDir,projectName+"-res"+str(resIdx) + postfix + ".txt")        
     
     t = binFile.split("-")[-2]
@@ -321,6 +325,7 @@ def createMovie(projectDir, projectName):
     model.loadFromFile(os.path.join(projectDir, projectName + '.json'))
     plotCount = len(model.plots)
     resultlistname = model.results
+    namesEquations = model.equations[0].system
     resCount = len(model.results)
     plotFileLists=getBinFilesByPlot(binFileList, plotValList, plotCount+resCount)
     #print plotFileLists
@@ -350,15 +355,18 @@ def createMovie(projectDir, projectName):
     #U and V
     #TODO get result all list U or V
     resIdx = 0
+    for numitem,item in enumerate(namesEquations):
+        namesEquations[numitem] = item[:item.find("'")]
     #print('aaaa ',resultlistname)
     for resultnames in resultlistname:
         pool = mp.Pool(processes=16)
         resuls = pool.map(getResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
-                                                offsetY, offsetX, cellSize, resultnames['Value'],
+                                                offsetY, offsetX, cellSize, namesEquations, resultnames['Value'],
                                               str(idx)) for idx, binFile in enumerate(plotFileLists[plotCount + resIdx])])
-        print('sks',projectDir, resultnames)
+        print('skks',projectDir, resultnames)
         createResultFile(projectDir, projectName, resIdx, resuls)
         resIdx += 1
+    print namesEquations
 
   
 if __name__ == "__main__":
