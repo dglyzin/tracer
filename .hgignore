@@ -21,3 +21,4 @@ ManualHeat/*
 *.sh
 *tempFile
 *~
+problems/*

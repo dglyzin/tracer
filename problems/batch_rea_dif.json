@@ -6,13 +6,13 @@
             "Param": "h",
             "Start" : 0.5,
             "End" : 0.9,
-            "Step" : 0.1
+            "Step" : 0.01
         },
         {
             "Param": "g",
             "Start" : 0.6,
             "End" : 1.5,
-            "Step" : 0.1
+            "Step" : 0.01
         }
     
     ],
