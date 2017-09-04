@@ -107,6 +107,12 @@ class CppOutsForTerms():
             self.print_dbg("diffMethod: interconnect")
 
             out = diffGen.interconnect_diff()
+        elif(self.params.diffMethod == 'vertex'):
+            # for debug
+            self.print_dbg("diffMethod: vertex")
+
+            func = self.dataTermMathFuncForDiffSpec
+            out = diffGen.special_diff(func)
         else:
             # for debug
             self.print_dbg("diffMethod: None")

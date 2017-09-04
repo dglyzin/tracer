@@ -15,6 +15,7 @@ INPUTS:
 END COMMENT #}
 
 //===================INITIAL CONDITIONS==========================//
+{% set countOfBlocks = len(blocks) %}
 {% for blockNumber, block in enumerate(blocks) %}
 {% set bn = blockNumber %}
 {% for initialNumber, initial in enumerate(block.initials) %}
@@ -51,12 +52,21 @@ void Block{{ bn }}FillInitialValues(double* result, unsigned short int* initType
 	initFuncArray[{{ fDirichletNuber }}] = DirichletInitial{{ fDirichletNumber }};
     {% endfor %}	
 
-	
+    {% if dim == 1 %}	
 	for(int idxX = 0; idxX<Block{{ bn }}CountX; idxX++){
 	   	int idx = idxX;
 		int type = initType[idx];
 		initFuncArray[type](result+idx*Block{{ bn }}CELLSIZE, Block{{ bn }}OffsetX + idxX*DX, 0, 0);
 	}
+    {% endif %}
+    {% if dim == 2 %}
+    for(int idxY = 0; idxY<Block{{bn}}CountY; idxY++)
+		for(int idxX = 0; idxX<Block{{bn}}CountX; idxX++){
+			int idx = idxY*Block{{bn}}CountX + idxX;
+			int type = initType[idx];
+			initFuncArray[type](result+idx*Block{{bn}}CELLSIZE, Block{{bn}}OffsetX + idxX*DX, Block{{bn}}OffsetY + idxY*DY, 0);
+    }
+    {% endif %}
 }
 
 {% endfor %}

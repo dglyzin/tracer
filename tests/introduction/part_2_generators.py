@@ -158,8 +158,14 @@ def test_cpp(fileName='from_model_createCPP.cpp', _stderr=None):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = p.communicate()
 
-    if err is not None and len(err) > 0:
+    if (err is not None and len(err) > 0
+        and _stderr is None):
         raise(GccException(err))
+    if _stderr is not None:
+        print("out")
+        print(out)
+        print("err")
+        print(err)
 
     return(out)
 

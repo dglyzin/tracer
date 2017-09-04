@@ -71,6 +71,19 @@ class CppOutsForGenerators():
         out = template.render(args)
         return(out)
 
+    def get_out_for_vertex_2d(self, params):
+        template = self.env.get_template('vertex_conditions.template')
+
+        args = {
+            'bounds': params.bounds_vertex,
+            'enumerate': enumerate,
+            'len': len
+        }
+
+        # args like in dict()
+        out = template.render(args)
+        return(out)
+
     def get_out_for_bounds(self, params):
         template = self.env.get_template('bound_conditions.template')
 
@@ -103,6 +116,7 @@ class CppOutsForGenerators():
 
         args = {
             'blocks': params.blocks,
+            'dim': params.dim,
             'enumerate': enumerate,
             'len': len
         }

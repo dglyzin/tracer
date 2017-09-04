@@ -8,6 +8,14 @@ from domainmodel.criminal.cppOutsForTerms import CppOutsForTerms
 from domainmodel.criminal.patterns import Patterns
 from domainmodel.criminal.actions import Actions
 
+#import logging
+
+# for independet launching this module
+#logging.basicConfig(level=logging.ERROR)
+
+# create logger that child of tests.tester loger
+#logger = logging.getLogger('tests.tester.criminal.parser')
+
 
 class Parser():
     '''
@@ -130,7 +138,11 @@ class Parser():
             parsedExpression = self.patterns.eqExpr.parseString(expr, parseAll=True)
         except:
             self.print_dbg("expr is not a equation")
+            #try:
             parsedExpression = self.patterns.termBaseExpr.parseString(expr, parseAll=True)
+            #except:
+            #    e = ParserException(eq=expr)
+            #    raise(e)
         
         #TODO replace next two lines to action_for_termBaseExpr
         self.out = reduce(lambda x, y: x+y, self.actions.outList)
@@ -162,3 +174,16 @@ class Parser():
             for arg in args:
                 print(self.dbgInx*' '+str(arg))
             print('')
+
+
+class ParserException(Exception):
+    '''
+    DESCRIPTION:
+    For cathing error of parser.
+    For tests cases in tester.py.
+    '''
+    def __init__(self, eq=None):
+        self.eq = eq
+        self.args = ["fail to parse eq: %s" % self.eq]
+        #logger.error("fail to parse eq: %s" % self.eq)
+        

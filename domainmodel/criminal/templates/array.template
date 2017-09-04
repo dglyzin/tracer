@@ -38,3 +38,4 @@ void getFuncArray(func_ptr_t** ppBoundFuncs, int blockIdx){
 
 void releaseFuncArray(func_ptr_t* BoundFuncs){
 	free(BoundFuncs);
+}

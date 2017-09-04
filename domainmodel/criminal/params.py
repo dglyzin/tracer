@@ -3,13 +3,57 @@ from someFuncs import determineNameOfBoundary
 from someFuncs import getCellCountInClosedInterval
 from someFuncs import getRangesInClosedInterval
 import logging
+
 from copy import deepcopy as copy
+from copy import copy as weak_copy
+
+from string import Template
 
 # for independet launching this module
 #logging.basicConfig(level=logging.DEBUG)
 
 # create logger that child of tests.tester loger
 logger = logging.getLogger('tests.tester.criminal.tests_gen.params')
+
+
+class Dbg():
+    def __init__(self, dbg, dbgInx):
+        self.dbg = dbg
+        self.dbgInx = dbgInx
+
+    def print_dbg(self, *args):
+        if self.dbg:
+            for arg in args:
+                print(self.dbgInx*' '+str(arg))
+            print('')
+
+
+class Bound():
+    def __init__(self):
+        # self.tFuncName = tFuncName
+        # self.tFuncNameDefault = tFuncNameDefault
+        pass
+
+    def gen_bound(self):
+        pass
+    
+    def __repr__(self):
+        if self.name == 'sides bound':
+            s = "side %s | " % self.side
+            s += "blockNumber %s | " % self.blockNumber
+            s += "boundNumber %s | " % self.boundNumber
+            s += "equationNumber %s |" % self.equationNumber
+            s += "funcName %s | " % self.funcName
+            s += "btype %s | " % self.btype
+            s += "region %s" % self.region
+        elif(self.name == 'vertex bound'):
+            s = "sides %s | " % self.sides
+            s += "blockNumber %s | " % self.blockNumber
+            s += "boundNumber %s | " % self.boundNumber
+            s += "equationNumber %s |" % self.equationNumber
+            s += "funcName %s | " % self.funcName
+            s += "btype %s " % self.btype
+        return(s)
 
 
 class Params():
@@ -23,6 +67,10 @@ class Params():
     according section.
     '''
     def __init__(self):
+
+        # for debub
+        self.debug = Dbg(True, 1)
+
         # for comment before each central function
         self.hatCf = dict()
         
@@ -408,7 +456,7 @@ class Params():
                     elif iconn.block2 == blockNumber and iconn.block1 != blockNumber:
                         # case differ 2
                         side = iconn.block2Side
-
+                    # len(ics for block) 
                     firstIndex = len(ics)
                     Range = (side == 1) * block.sizeX
                     coord = lambda region: (side == 0) * region.xfrom + (side == 1) * region.xto
@@ -428,7 +476,7 @@ class Params():
                     
                     # each block can connect to many other block
                     # let other block discribe interconnect in
-                    # that casse
+                    # that case
                     icsOld = [icl.funcName for icl in ics]
                     #logger.debug("icsOld = %s" % str(icsOld))
                     if ic.funcName not in icsOld:
@@ -444,6 +492,471 @@ class Params():
 
         # check if funcNamesStack alredy exist:
         if 'funcNamesStack' in self.__dict__:
+            self.funcNamesStack.extend(funcNamesStack)
+        else:
+            self.funcNamesStack = funcNamesStack
+        # END FOR
+
+    def set_params_for_bounds_2d(self, model):
+        '''
+        DESCRIPTION:
+        Fill params for bound 2d template.
+        '''
+
+        # FOR FILL params.bounds
+        self.bounds = []
+
+        # FOR helpful functions:
+        def test_region_exist(eRegion, side):
+            '''
+            DESCRIPTION:
+            Test if equation region exist for this side.
+            '''
+            if side == 0:
+                # test for [0, y]
+                return(eRegion.xfrom == 0.0)
+            elif(side == 3):
+                # test for [x, y_max]
+                return(eRegion.yto == block.sizeY)
+            elif(side == 1):
+                # test for [x_max, y]
+                return(eRegion.xto == block.sizeX)
+            elif(side == 2):
+                # test for [x, 0]
+                return(eRegion.yfrom == 0.0)
+
+        # templates for funcName
+        tFuncName = Template('''Block${blockNumber}${btype}${side}_${boundNumber}__Eqn${equationNumber}''')
+        tFuncNameDefault = Template('''Block${blockNumber}DefaultNeumann__Bound${side}__Eqn${equationNumber}''')
+        tFuncNameVertex = Template('''Block${blockNumber}Default_Vertex${side_0}_${side_1}__Eqn${equationNumber}''')
+        
+        def transform_side(side, block):
+            '''
+            DESCRIPTION:
+            Return
+            [interval | for each equationRegion from eRegionsForSide
+                           if equationRegion intersects with bRegion [1]
+                              where interval.name will be equal equationRegion.equationNumber
+                                    (or dem for default)]
+ 
+            [1]  (see Interval class for more about interval's intersection)
+            
+            den             - default equation number
+
+            INPUT:
+            eRegionsForSide - equationRegions for side
+            bRegion         - boundRegions
+            '''
+            self.debug.print_dbg("FROM transform_side")
+
+            den = block.defaultEquation
+            if side in [0, 1]:
+                # case for [0, y] or [x_max, y]
+
+                _from = lambda region: region.yfrom
+                _to = lambda region: region.yto
+                block_size = block.sizeY
+
+            elif(side in [3, 2]):
+                # case for [x, y_max] or [x, 0]
+
+                _from = lambda region: region.xfrom
+                _to = lambda region: region.xto
+                block_size = block.sizeX
+
+            # find equation regions for side
+            eRegionsForSide = [eRegion for eRegion in block.equationRegions
+                               if test_region_exist(eRegion, side)]
+
+            self.debug.print_dbg("eRegionsForSide")
+            self.debug.print_dbg(eRegionsForSide)
+
+            # find bound region for side
+            bRegionsForSide = [bRegion for bRegion in block.boundRegions
+                               if bRegion.side == side]
+
+            self.debug.print_dbg("bRegionsForSide")
+            self.debug.print_dbg(bRegionsForSide)
+
+            sInterval = Interval([0.0, block_size], name={'b': None, 'e': den})
+
+            bIntervals = [Interval([_from(bRegion), _to(bRegion)],
+                                   name={'b': bRegion.boundNumber})
+                          for bRegion in bRegionsForSide]
+            
+            bIntervals = sInterval.split_all(bIntervals, [])
+
+            self.debug.print_dbg("bIntervals")
+            self.debug.print_dbg(bIntervals)
+            
+            '''
+            for bInterval in bIntervals:
+                print_dbg(bInterval.name)
+            '''
+            eIntervals = [Interval([_from(eRegion), _to(eRegion)],
+                                   name={'e': eRegion.equationNumber})
+                          for eRegion in eRegionsForSide]
+
+            self.debug.print_dbg("eIntervals")
+            self.debug.print_dbg(eIntervals)
+            
+            oIntervals = []
+            for bInterval in bIntervals:
+                oIntervals.extend(bInterval.split_all(copy(eIntervals), []))
+            
+            self.debug.print_dbg("for side", side)
+            self.debug.print_dbg("oIntervals")
+            self.debug.print_dbg(oIntervals)
+            
+            new_side = {'side': side,
+                        'blockNumber': block.blockNumber,
+                        'side_data': oIntervals}
+            return(new_side)
+  
+        def transform_vertex(vertex, sides, block):
+            blockNumber = block.blockNumber
+            side_left = [side for side in sides
+                         if (side['side'] == vertex[0])
+                         and (side['blockNumber'] == blockNumber)][0]
+            side_right = [side for side in sides
+                          if (side['side'] == vertex[1])
+                          and (side['blockNumber'] == blockNumber)][0]
+
+            # choice first or last region of side
+            # according vertex position in block
+            if vertex == [0, 2]:
+                # vertex in [0, 0]
+                vertex_data = [side_left['side_data'][0].name,
+                               side_right['side_data'][0].name]
+            if vertex == [2, 1]:
+                # vertex in [x_max, 0]
+                vertex_data = [side_left['side_data'][-1].name,
+                               side_right['side_data'][0].name]
+            if vertex == [1, 3]:
+                # vertex in [x_max, y_max]
+                vertex_data = [side_left['side_data'][-1].name,
+                               side_right['side_data'][-1].name]
+            if vertex == [3, 0]:
+                # vertex in [0, y_max]
+                vertex_data = [side_left['side_data'][0].name,
+                               side_right['side_data'][-1].name]
+
+            new_vertex = {'sides': vertex,
+                          'blockNumber': block.blockNumber,
+                          'vertex_data': vertex_data,
+                          'side_left': side_left,
+                          'side_right': side_right}
+            return(new_vertex)
+
+        def get_btype_name(boundNumber):
+            '''
+            DESCRIPTION:
+            Get string name of bound type for funcName.
+            '''
+            btype = model.bounds[boundNumber].btype
+            if btype == 1:
+                return("Neumann__Bound")
+            elif(btype == 0):
+                return("Dirichlet__Bound")
+
+        def make_bounds(side):
+            '''
+            DESCRIPTION:
+            Create funcName, outputValues and equation (for parser)
+            boundName for comment.
+            side is out of transform_side
+            side =
+            {'side': side,
+             'blockNumber': block.blockNumber,
+             'side_data': oIntervals}
+               where oIntervals =
+                     {Interval([x, y], name={'b': bval, 'e', eval})}
+            '''
+            bounds = []
+            for region in side['side_data']:
+
+                bound = Bound()
+                bound.name = 'sides bound'
+                bound.side = side['side']
+                bound.blockNumber = side['blockNumber']
+                bound.boundNumber = region.name['b']
+                bound.equationNumber = region.name['e']
+                bound.region = region
+
+                if bound.boundNumber is not None:
+                    make_bounds_for_region(bound)
+                else:
+                    make_bounds_for_default(bound)
+                bounds.append(bound)
+            return(bounds)
+
+        def make_bounds_for_region(bound):
+            '''
+            DESCRIPTION:
+            Make
+            bound.funcName,
+            bound.values,
+            bound.equation (for parser)
+            bound.boundName for comment.
+
+            Bound must contain:
+            blockNumber,
+            side,
+            boundNumber,
+            equationNumber.
+            '''
+            bNumber = bound.boundNumber
+
+            # FOR make funcName from template
+            funcName = tFuncName.substitute(blockNumber=bound.blockNumber,
+                                            btype=get_btype_name(bNumber),
+                                            side=bound.side,
+                                            boundNumber=bNumber,
+                                            equationNumber=bound.equationNumber)
+            bound.funcName = funcName
+            # END FOR
+
+            # FOR equation
+
+            equation = model.equations[bound.equationNumber]
+            bound.equation = equation
+            # END FOR
+
+            # FOR make outputValues
+
+            btype = model.bounds[bNumber].btype
+            bound.btype = btype
+            
+            if btype == 0:
+                # for Dirichlet bound
+                outputValues = list(model.bounds[bNumber].derivative)
+            else:
+                # for Neumann bound
+                outputValues = list(model.bounds[bNumber].values)
+
+                # special for Neumann bound
+                if side == 0 or side == 2:
+                    for idx, value in enumerate(outputValues):
+                        outputValues.pop(idx)
+                        outputValues.insert(idx, '-(' + value + ')')
+
+            bound.values = outputValues
+            # END FOR
+
+            # for comment
+            bound.boundName = determineNameOfBoundary(bound.side)
+
+            return(bound)
+
+        def make_bounds_for_default(bound):
+            '''
+            DESCRIPTION:
+            Make
+            bound.funcName,
+            bound.values,
+            bound.equation (for parser)
+            bound.boundName for comment.
+
+            Bound must contain:
+            blockNumber,
+            side,
+            boundNumber,
+            equationNumber.
+            '''
+            
+            # FOR make funcName for defaults
+            funcName = tFuncNameDefault.substitute(blockNumber=bound.blockNumber,
+                                                   side=bound.side,
+                                                   equationNumber=bound.equationNumber)
+            bound.funcName = funcName
+            # END FOR
+
+            bound.btype = 0
+
+            # for equation
+            bound.equation = model.equations[bound.equationNumber]
+            
+            # for values
+            bound.values = len(bound.equation.system) * ['0.0']
+
+            # for comment
+            bound.boundName = determineNameOfBoundary(bound.side)
+            
+            return(bound)
+
+        def make_vertex(vertex, bounds):
+            '''
+            DESCRIPTION:
+            Create funcName, outputValues and equation (for parser)
+            boundName for comment.
+            vertex is out of transform_vertex
+            vertex =
+            {'sides': [2, 1],
+             'blockNumber': block.blockNumber,
+             'vertex_data': vertex_data,
+             'side_left': side_left,
+             'side_right': side_right}
+                  ***x->
+                  *  
+                  |  ---side 2---
+                  y  |          |
+                     s          s
+                     i          i
+                     d          d
+                     e          e
+                     0          1
+                     |          |
+                     ---side 3---
+
+            '''
+
+            # FOR find bound side for vertex left side (always)
+            # i.e. for [2, 1] use bound side 2 data
+
+            if vertex['sides'] == [0, 2]:
+                # vertex in [0, 0]
+                # first region of side 0
+                region = vertex['side_left']['side_data'][0]
+            if vertex['sides'] == [2, 1]:
+                # vertex in [x_max, 0]
+                # last region of side 2
+                region = vertex['side_left']['side_data'][-1]
+            if vertex['sides'] == [1, 3]:
+                # vertex in [x_max, y_max]
+                # last region of side 1
+                region = vertex['side_left']['side_data'][-1]
+
+            if vertex['sides'] == [3, 0]:
+                # vertex in [0, y_max]
+                # first region of side 3
+                region = vertex['side_left']['side_data'][0]
+
+            bound_side = [bound for bound in bounds
+                          if bound.side == vertex['sides'][0]
+                          and bound.blockNumber == vertex['blockNumber']
+                          and bound.region == region][0]
+            # END FOR
+
+            bound = Bound()
+            bound.name = 'vertex bound'
+            bound.sides = vertex['sides']
+            bound.blockNumber = vertex['blockNumber']
+
+            # data of left side (with index 0)
+            bound.boundNumber = vertex['vertex_data'][0]['b']
+            bound.equationNumber = vertex['vertex_data'][0]['e']
+
+            bound.bound_side = bound_side
+
+            # FOR make funcName for defaults
+            funcName = tFuncNameVertex.substitute(blockNumber=bound.blockNumber,
+                                                  side_0=bound.sides[0],
+                                                  side_1=bound.sides[1],
+                                                  equationNumber=bound.equationNumber)
+            bound.funcName = funcName
+            # END FOR
+
+            # FOR PARSER
+            bound.btype = bound_side.btype
+            bound.equation = bound_side.equation
+            bound.values = bound_side.values
+            # END FOR
+            
+            return(bound)
+
+        def check_interconnect_exist(self, side, blockNumber):
+            '''
+            DESCRIPTION:
+            Check if interconnect for this side exist in ics.
+            
+            '''
+            
+            if 'ics' in self.__dict__.keys():
+                icSides = [ic.side for ic in self.ics
+                           if ic.blockNumber == blockNumber]
+                if side in icSides:
+                    # if exist then no boundary needed
+                    #logger.debug('icSides = %s' % str(icSides))
+                    #logger.debug('blockNumber = %s' % str(blockNumber))
+                    #logger.debug('side = %s' % str(side))
+                    return(True)
+                else:
+                    return(False)
+
+        # END FOR
+
+        # main code:
+        # make long necessary obvious thing:
+        for blockNumber, block in enumerate(model.blocks):
+            block.blockNumber = blockNumber
+
+        # transform sides to regions like list
+        new_sides = [transform_side(side, block)
+                     for block in model.blocks
+                     for side in [2, 3, 0, 1]]
+        
+        #             if not check_interconnect_exist(self, side,
+        #                                             block.blockNumber)]
+        '''
+        for blockNumber, block in enumerate(model.blocks):
+
+            sides = [2, 3, 0, 1]
+
+            for side in sides:
+
+                # check if interconnect for this side exist
+                if check_interconnect_exist(self, side,  blockNumber):
+                    # if exist then no boundary needed
+                    continue
+
+                # FOR region bounds
+                
+                new_side = transform_side(side, block)
+                new_sides.append(new_side)
+        '''
+
+        self.new_sides = new_sides
+        
+        # make bounds for side
+        self.bounds.extend([bound for side in new_sides
+                            for bound in make_bounds(side)
+                            if bound not in self.bounds])
+        
+        # transform vertex:
+        new_vertexs = [transform_vertex(vertex, new_sides, block)
+                       for block in model.blocks
+                       for vertex in [[0, 2], [2, 1], [1, 3], [3, 0]]]
+        '''
+        # main code:
+        for blockNumber, block in enumerate(model.blocks):
+
+            vertexs = [[0, 2], [2, 1], [1, 3], [3, 0]]
+
+            for vertex in vertexs:
+
+                # FOR region bounds
+                
+                new_vertex = transform_vertex(vertex, new_sides, block)
+                self.new_vertexs.append(new_vertex)
+        '''
+        self.new_vertexs = new_vertexs
+
+        # make bounds for vertex
+        self.bounds_vertex = [make_vertex(vertex, self.bounds)
+                              for vertex in self.new_vertexs]
+        # END FOR FILL
+        
+        # FOR FuncArray
+        funcNamesStack = [bound.funcName for bound in self.bounds]
+        funcNamesStack.extend([bound.funcName for bound in self.bounds_vertex])
+
+        # check if funcNamesStack alredy exist:
+        if 'funcNamesStack' in self.__dict__:
+            '''
+            for funcName in funcNamesStack:
+                if funcName not in self.funcNamesStack:
+                    self.funcNamesStack.append(funcName)
+            '''
             self.funcNamesStack.extend(funcNamesStack)
         else:
             self.funcNamesStack = funcNamesStack
@@ -692,3 +1205,323 @@ class Params():
         function.extend(['}\n\n'])
         
         return ''.join(function), arrWithFuncName
+
+
+class Property(object):
+    '''
+    DESCRIPTION:
+    Descriptor for Interval.
+    '''
+    def __init__(self, attrName):
+        self.attrName = attrName
+    
+    def __get__(self, instance, owner=None):
+        '''
+        DESCRIPTION:
+        Instance is instance of UseProperty class.
+        getattr get atrName of instance UseProperty class.
+        '''
+        # print("get")
+        # print(instance)
+        return(getattr(instance, self.attrName))
+    
+    def __set__(self, instance, value):
+        '''
+        DESCRIPTION:
+        If value is dict it update instance.attrName dict
+           if self.attrName is not dict, it replace it
+              by dict value
+        else
+           it just set instance.attrName by value. 
+        '''
+        # print("set")
+        if type(value) is not dict:
+            return(setattr(instance, self.attrName, value))
+
+        old_data = getattr(instance, self.attrName)
+        
+        # print("old_data")
+        # print(old_data)
+        
+        if type(old_data) == dict:
+            new_data = copy(old_data)
+            new_data.update(value)
+        else:
+            new_data = value
+
+        # print("new_data")
+        # print(new_data)
+        
+        return(setattr(instance, self.attrName, new_data))
+
+
+class Interval(list):
+
+    # descriptor at self._name
+    name = Property("_name")
+
+    def __init__(self, _list, name=0):
+        # for debug
+        self.debug = Dbg(False, 3)
+
+        list.__init__(self, _list)
+                
+        self._name = name
+        
+    def __contains__(self, x):
+        if self[0] < x < self[1]:
+            return(True)
+        else:
+            return(False)
+
+    def split_all(self, intervals_list, result=[]):
+        '''
+        DESCRIPTION:
+        Split self at regions with names interval.name
+        where interval in intervals_list.
+
+        Example:
+        >>> i, j, k = pms.Interval([1, 2], name='i'),\
+        pms.Interval([2, 3], name='j'),\
+        pms.Interval([1.5, 2.5],name='k')
+        
+        >>> t = k.split_all([i, j])
+
+        >>> t[0], t[0].name
+        ([1.5, 2], 'i')
+
+        >>> t[1], t[1].name
+        ([2, 2.5], 'j')
+
+        '''
+        self.debug.print_dbg("FROM Interval.split_all")
+
+        if len(result) == 0:
+            result.append(self)
+
+        if len(intervals_list) == 0:
+            self.debug.print_dbg("result")
+            self.debug.print_dbg(result)
+            return(result)
+        
+        first, rest = intervals_list[0], intervals_list[1:]
+
+        new_res = []
+        for res in result:
+            new_res.extend(res.split(first))
+                
+        return(self.split_all(rest, new_res))
+
+    def split(self, interval):
+        '''
+        DESCRIPTION:
+        Split self at regions with names from
+        original and interval.name.
+        
+        RETURN:
+        Never empty.
+
+        Example:
+        >>> a = Interval([1, 3], name='a')
+        >>> b = Interval([1, 2], name='b')
+        
+        >>> cs = a.split(b)
+        >>> cs[0], cs[0].name
+        ([1, 2], 'a')
+
+        >>> cs[1], cs[1].name
+        ([2, 3], 'b')
+        '''
+        interval_from = self
+
+        if (interval[0] not in interval_from and
+            interval[1] not in interval_from):
+            # if interval not in interval_from
+
+            # if interval_from not in interval
+            if (interval[1] <= interval_from[0] or
+                interval[0] >= interval_from[1]):
+                # do nothing
+                return([interval_from])            
+            else:
+                # if interval_from in interval
+                
+                # rename interval_from
+                # if name is dict update it twice
+                # else just set interval.name
+                # (see Property.__set__)
+                interval_from.name = interval_from.name
+                interval_from.name = interval.name
+                return([interval_from])
+
+        elif(interval[0] in interval_from):
+            # if interval intersects interval_from by left side
+
+            result = []
+            iLeft = Interval([interval_from[0], interval[0]])
+            iLeft.name = interval_from.name
+            result.append(iLeft)
+
+            if(interval[1] in interval_from):
+                # if interval in interval_from
+
+                iRight = Interval([interval[1], interval_from[1]])
+                iRight.name = interval_from.name
+
+                iMidle = Interval([interval[0], interval[1]])
+
+                # if name is dict update it twice
+                # else just set interval.name
+                # (see Property.__set__)
+                iMidle.name = interval_from.name
+                iMidle.name = interval.name
+
+                result.append(iMidle)
+                result.append(iRight)
+            else:
+                # if right side of interval not in interval_from
+                iRight = Interval([interval[0], interval_from[1]])
+
+                # if name is dict update it twice
+                # else just set interval.name
+                # (see Property.__set__)
+                iRight.name = interval_from.name
+                iRight.name = interval.name
+
+                result.append(iRight)
+            return(result)
+
+        elif(interval[1] in interval_from):
+            # if interval intersects interval_from by right side
+
+            iLeft = Interval([interval_from[0], interval[1]])
+
+            # if name is dict update it twice
+            # else just set interval.name
+            # (see Property.__set__)
+            iLeft.name = interval_from.name
+            iLeft.name = interval.name
+
+            iRight = Interval([interval[1], interval_from[1]])
+            iRight.name = interval_from.name
+            return([iLeft, iRight])
+
+
+class TestCase():
+
+    def __init__(self):
+        # for debug
+        self.debug = Dbg(True, 1)
+
+        self.tests_cases_for_interval = [
+            "[0, 10];[0, 3];[5, 7]",  # common
+            "[0, 10];[0, 3];[5, 13]",  # right too far
+            "[2.5, 10];[0, 3];[5, 7]",  # left too far
+            "[0, 10];[0, 3];[3, 7]",  # common point
+            "[1, 10];[0, 1];[5, 7]"  # left intersects in point
+        ]
+        
+        self.tests_results_for_interval = [
+            # case 0: "[0, 10];[0, 3];[5, 7]"
+            [Interval([0, 3], name=1),
+             Interval([3, 5], name=0),
+             Interval([5, 7], name=2),
+             Interval([7, 10], name=0)],
+
+            # case 1: "[0, 10];[0, 3];[5, 13]"
+            [Interval([0, 3], name=1),
+             Interval([3, 5], name=0),
+             Interval([5, 10], name=2)],
+
+            # case 2: "[2.5, 10];[0, 3];[5, 7]"
+            [Interval([2.5, 3], name=1),
+             Interval([3, 5], name=0),
+             Interval([5, 7], name=2),
+             Interval([7, 10], name=0)],
+
+            # case 3: "[0, 10];[0, 3];[3, 7]"
+            [Interval([0, 3], name=1),
+             Interval([3, 7], name=2),
+             Interval([7, 10], name=0)],
+            
+            # case 4: "[1, 10];[0, 1];[5, 7]"
+            [Interval([1, 5], name=0),
+             Interval([5, 7], name=2),
+             Interval([7, 10], name=0)]
+        ]
+
+        self.tests_results_for_interval_dict = [
+            # case 0: "[0, 10];[0, 3];[5, 7]"
+            [Interval([0, 3], name={'num': 1}),
+             Interval([3, 5], name={'num': 0}),
+             Interval([5, 7], name={'num': 2}),
+             Interval([7, 10], name={'num': 0})],
+
+            # case 1: "[0, 10];[0, 3];[5, 13]"
+            [Interval([0, 3], name={'num': 1}),
+             Interval([3, 5], name={'num': 0}),
+             Interval([5, 10], name={'num': 2})],
+
+            # case 2: "[2.5, 10];[0, 3];[5, 7]"
+            [Interval([2.5, 3], name={'num': 1}),
+             Interval([3, 5], name={'num': 0}),
+             Interval([5, 7], name={'num': 2}),
+             Interval([7, 10], name={'num': 0})],
+
+            # case 3: "[0, 10];[0, 3];[3, 7]"
+            [Interval([0, 3], name={'num': 1}),
+             Interval([3, 7], name={'num': 2}),
+             Interval([7, 10], name={'num': 0})],
+            
+            # case 4: "[1, 10];[0, 1];[5, 7]"
+            [Interval([1, 5], name={'num': 0}),
+             Interval([5, 7], name={'num': 2}),
+             Interval([7, 10], name={'num': 0})]
+        ]
+
+    def tests_intervals_dict(self):
+
+        tests_cases = self.tests_cases_for_interval
+        tests_results = self.tests_results_for_interval_dict
+
+        for input_string in tests_cases:
+            res = self.interval_interface_dict(input_string)
+
+            # check test
+            assert(res == tests_results[tests_cases.index(input_string)])
+
+            # print result
+            self.debug.print_dbg("for ", input_string)
+            self.debug.print_dbg('res = ')
+            for r in res:
+                self.debug.print_dbg("name %s val %s " % (str(r.name), str(r)))
+        return(True)
+
+    def interval_interface_dict(self, input_string="[0, 10];[0, 3];[5, 7]"):
+        ivs = [Interval(eval(sInterval), name={'num': num})
+               for num, sInterval in enumerate(input_string.split(';'))]
+        return(ivs[0].split_all(ivs[1:], []))
+
+    def tests_intervals(self):
+
+        tests_cases = self.tests_cases_for_interval
+        tests_results = self.tests_results_for_interval
+
+        for input_string in tests_cases:
+            res = self.interval_interface(input_string)
+
+            # check test
+            assert(res == tests_results[tests_cases.index(input_string)])
+
+            # print result
+            self.debug.print_dbg("for ", input_string)
+            self.debug.print_dbg('res = ')
+            for r in res:
+                self.debug.print_dbg("name %s val %s " % (str(r.name), str(r)))
+            return(True)
+
+    def interval_interface(self, input_string="[0, 10];[0, 3];[5, 7]"):
+        ivs = [Interval(eval(sInterval), name=num)
+               for num, sInterval in enumerate(input_string.split(';'))]
+        return(ivs[0].split_all(ivs[1:], []))
+        

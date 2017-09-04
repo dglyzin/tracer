@@ -17,7 +17,7 @@ END COMMENT #}
 {% for eq in equations %}
 {% set bn = eq.blockNumber %}
 {% set num = eq.number %}
-/=========================CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER {{bn}}========================//
+//=========================CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER {{bn}}========================//
 
 //{{num}} central function for 1d model for block with number {{bn}}
 void Block{{bn}}CentralFunction{{num}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){

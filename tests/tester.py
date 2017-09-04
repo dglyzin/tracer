@@ -113,6 +113,8 @@ def set_tests_for_class(_class, dim, genType='old', singleModel=None):
         
         # mNameE - is global name
         # while mNameI is local name in lambda
+        # that used because otherwise all methods
+        # would have same model path.
         mNameE = modelsP[modelName]
         modelFunc = lambda _self, mNameI = mNameE: _class.core(_self, mNameI)
         setattr(_class, testName, modelFunc)
@@ -398,6 +400,7 @@ def run_tests_for_dom():
 
     return(result)
 '''
+
 
 def run_to_file(dim=1, genType='old', singleModel=None):
 

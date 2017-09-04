@@ -1,3 +1,6 @@
+from pyparsing import ParseResults
+
+
 class Actions():
     '''
     TODO:
@@ -62,7 +65,17 @@ class Actions():
 
             # for debug
             self.print_dbg("toks:", toks)
+            self.print_dbg("type(toks)", type(toks))
+
             self.print_dbg("outList", self.outList)
+
+            # if no out generate reduce return error
+            if len(self.outList) == 0:
+                self.print_dbg("len(outList)=0 =>",
+                               " no output for expr %s found" % str(toks),
+                               "and",
+                               " reduce raise error")
+
             out = reduce(lambda x, y: x+y, self.outList)
             
             # change all founded delay marker to
@@ -94,7 +107,8 @@ class Actions():
             self.print_dbg("toks:", toks)
             self.print_dbg("_str:", _str)
             self.print_dbg("loc:", loc)
-
+            self.print_dbg("outList", self.outList)
+            
             # cut out from inner term X: X^power
             # from outList.
             innerTermOut = self.outList.pop()
@@ -150,10 +164,10 @@ class Actions():
     def action_for_termRealForUnary(self):
         def action(_str, loc, toks):
             # for debug
-            # self.print_dbg("FROM action_for_termRealForUnary")
+            self.print_dbg("FROM action_for_termRealForUnary")
 
             # for debug
-            # self.print_dbg("toks:", toks)
+            self.print_dbg("toks:", toks)
 
             self.outList.append(toks[0])
         return(lambda _str, loc, toks: action(_str, loc, toks))
@@ -172,6 +186,8 @@ class Actions():
             out = out.replace("Arg",
                               str(toks[0]).upper())
             self.outList.append(out)
+            self.print_dbg("success")
+            #return(ParseResults([out]))
 
         return(lambda _str, loc, toks: action('termArgsForUnary',
                                               _str, loc, toks))
@@ -180,8 +196,10 @@ class Actions():
     # ACTIONS FOR termFunc
     def action_for_termFunc(self):
         def action(_str, loc, toks):
+            self.print_dbg("FROM action_for_termFunc:")
             # for compatibility reason
             if self.cppOut.params.fromOld:
+                self.print_dbg("from old error")
                 raise(Exception)
 
             self.outList.append(toks[0])
@@ -213,6 +231,8 @@ class Actions():
             out = self.cppOut.get_out_for_termParam()
             out = out.replace("arg_param", str(parameterInx))
             self.outList.append(out)
+            #return(ParseResults([out]))
+
         return(lambda _str, loc, toks: action(_str, loc, toks))
     # END ACTIONS
     
@@ -349,6 +369,7 @@ class Actions():
                               innerTermOutDelay)
 
             self.outList.append(out)
+            #return(ParseResults([out]))
             # END OUTPUT
             
         return(lambda str, loc, toks: action(self.cppOut.dataTermOrder,
@@ -415,6 +436,7 @@ class Actions():
                               str(termData['varIndexs'].index(toks[0])))
  
             self.outList.append(out)
+            #return(ParseResults([out]))
         return(lambda str, loc, toks: action(self.cppOut.dataTermVarsSimpleGlobal,
                                              self.cppOut.dataTermVarsSimpleIndep,
                                              'termVarsSimpleIndep',
@@ -497,7 +519,7 @@ class Actions():
             self.outList.pop()
 
             self.outList.append(out)
-       
+            #return(ParseResults([out]))
         return(lambda str, loc, toks: action_add_delay('termVarsDelay',
                                                        self.cppOut.dataTermVarsSimpleGlobal,
                                                        self.cppOut.dataTermVarsForDelay,
@@ -664,10 +686,10 @@ class Actions():
                         
         '''
         # for debug
-        # self.print_dbg("FROM action_add_args:")
+        self.print_dbg("FROM action_add_args:")
 
         # for debug
-        # self.print_dbg("toks:", toks)
+        self.print_dbg("toks:", toks)
 
         if toks[0] in "xyz":
             data = toks[0].upper()

@@ -67,6 +67,7 @@ class Patterns():
 
         self.termBrackets = Literal('(') ^ Literal(')')
 
+        # self.termArgsForOperand = self.termArgs.copy()
         self.termOperand = (self.termVars ^ self.termParam ^ Group(self.termDiff)
                             ^ self.real ^ self.termArgs ^ self.termParam)
 
@@ -166,6 +167,22 @@ class Patterns():
         self.eqExpr = (Suppress(self.termVarsSimple + "'" + '=')
                        + self.termBaseExpr)  # self.rhsExpr
 
+        # FOR test setResultsName and toks changing:
+
+        self.termTestOperand = self.termOperand.copy()
+        self.termTestBrackets = self.termBrackets.copy()
+        self.termTestBinary = self.termBinary.copy()
+
+        self.termTestRec = Forward()
+        self.termTestRec << (
+            Optional(self.termTestBrackets.setResultsName("br"))
+            + self.termTestOperand.setResultsName("arg")
+            + Optional(self.termTestBrackets.setResultsName("br"))
+            + Optional(self.termTestBinary.setResultsName("bin"))
+            + Optional(self.termTestRec)
+        )
+        # END FOR
+        
     def load_base_patterns(self):
         # terms (!replace in different file)
         self.integer = Word(nums)

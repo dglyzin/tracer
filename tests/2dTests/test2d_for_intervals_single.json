@@ -17,45 +17,6 @@
     }, 
     "Blocks": [
         {
-            "Name": "MainBlock", 
-            "Offset": {
-                "x": 0.0, 
-                "y": 0.0
-            }, 
-            "Size": {
-                "x": 3.0, 
-                "y": 8.0
-            }, 
-            "DefaultEquation": 1, 
-            "DefaultInitial": 0, 
-            "BoundRegions": [], 
-            "InitialRegions": [
-                {
-                    "InitialNumber": 1, 
-                    "xfrom": 0.75, 
-                    "xto": 2.25, 
-                    "yfrom": 0.5, 
-                    "yto": 1.5
-                }
-            ], 
-            "EquationRegions": [
-                {
-                    "EquationNumber": 0, 
-                    "xfrom": 0.0, 
-                    "xto": 3.0, 
-                    "yfrom": 0.0, 
-                    "yto": 1.0
-                }, 
-                {
-                    "EquationNumber": 1, 
-                    "xfrom": 0.0, 
-                    "xto": 3.0, 
-                    "yfrom": 1.0, 
-                    "yto": 2.0
-                }
-            ]
-        }, 
-        {
             "Name": "SecBlock", 
             "Offset": {
                 "x": 3.0, 
@@ -71,9 +32,25 @@
                 {
                     "BoundNumber": 0, 
                     "Side": 1, 
+                    "xfrom": 3.0, 
+                    "xto": 3.0, 
+                    "yfrom": 1.0, 
+                    "yto": 3.0
+                },
+		{
+                    "BoundNumber": 1, 
+                    "Side": 1, 
+                    "xfrom": 3.0, 
+                    "xto": 3.0, 
+                    "yfrom": 3.0, 
+                    "yto": 8.0
+                },
+		{
+                    "BoundNumber": 0, 
+                    "Side": 3, 
                     "xfrom": 0.0, 
-                    "xto": 0.0, 
-                    "yfrom": 0.0, 
+                    "xto": 1.0, 
+                    "yfrom": 8.0, 
                     "yto": 8.0
                 }
             ], 
@@ -90,16 +67,30 @@
                 {
                     "EquationNumber": 0, 
                     "xfrom": 0.0, 
-                    "xto": 3.0, 
+                    "xto": 0.5, 
+                    "yfrom": 0.0, 
+                    "yto": 1.0
+                },
+		{
+                    "EquationNumber": 2, 
+                    "xfrom": 0.5, 
+                    "xto": 2.7, 
                     "yfrom": 0.0, 
                     "yto": 1.0
                 }, 
                 {
-                    "EquationNumber": 1, 
-                    "xfrom": 0.0, 
+                    "EquationNumber": 2, 
+                    "xfrom": 2.5, 
                     "xto": 3.0, 
-                    "yfrom": 1.0, 
-                    "yto": 2.0
+                    "yfrom": 7.0, 
+                    "yto": 8.0
+                },
+		{
+                    "EquationNumber": 3, 
+                    "xfrom": 0.5, 
+                    "xto": 2.5, 
+                    "yfrom": 7.0, 
+                    "yto": 8.0
                 }
             ]
         }
@@ -143,6 +134,16 @@
             "System": [
                 "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - d * D[U,{y,1}]"
             ]
+        },
+	{
+            "Name": "Psevdo Heat", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=c*(D[U,{x,2}])"
+            ]
         }
     ], 
     "EquationParams": {
@@ -164,8 +165,18 @@
     }, 
     "Bounds": [
         {
+            "Name": "Dirichlet 1", 
+            "Type": 1, 
+            "Values": [
+                "sin(y)"
+            ], 
+            "Derivative": [
+                "cos(y)"
+            ]
+        },
+	{
             "Name": "Neumann 1", 
-            "Type": 0, 
+            "Type": 1, 
             "Values": [
                 "sin(y)"
             ], 
