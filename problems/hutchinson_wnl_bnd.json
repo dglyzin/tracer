@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 50.0, 
+        "FinishTime": 1.0, 
         "TimeStep": 1e-05, 
         "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
@@ -86,7 +86,7 @@
     ], 
     "Hardware": [
         {
-            "Name": "any", 
+            "Name": "cnode8", 
             "CpuCount": 1, 
             "CpuMemory": [
                 5
@@ -120,12 +120,12 @@
         {
             "Name": "u_max", 
             "Period": 0.1,
-            "Value": "Max(U)"
+            "Value": "max(U)"
         },
         {
             "Name": "u_min", 
             "Period": 0.1,
-            "Value": "Min(U)"
+            "Value": "min(U)"
         }
 
     ]
