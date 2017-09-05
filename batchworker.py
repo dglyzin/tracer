@@ -166,7 +166,7 @@ USAGE
     parser.add_argument('batchFileNamePath', type = str, help = "local json batch file")
     parser.add_argument("-v", "--verbose", dest="verbose", action="count", default=1, help="set verbosity level [default: %(default)s]")
     parser.add_argument('-V', '--version', action='version', version=program_version_message)
-    parser.add_argument('-retry', help="continue failed run", action="store_true")
+    parser.add_argument('-clean', help="clean folder instead of continuing", action="store_true")
     
     # Process arguments
     args = parser.parse_args()
@@ -193,7 +193,7 @@ USAGE
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise   
-        if args.retry:
+        if not args.clean:
             mainLogger.log("Continuing computation using existing files", LL_USER)
         else:
             mainLogger.log("batch folder exists, cleaning", LL_USER)
