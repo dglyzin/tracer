@@ -25,6 +25,8 @@ import subprocess
 #from model import Model
 
 from bound import bdict
+import domainmodel.criminal.tests_gen as ts
+import shutil
 
 devType = {"cpu":0, "gpu":1}
 
@@ -278,8 +280,6 @@ class BinaryModel(object):
         funcArr[0,xc-1]    = functionMap["v12"]
         funcArr[yc-1,0]    = functionMap["v03"]
         funcArr[yc-1,xc-1] = functionMap["v13"]
-        
-        
         
     def fill3dCompFuncs(self, funcArr, block, functionMap, blockSize):
         print "Filling 2d main function array."
@@ -719,15 +719,48 @@ class BinaryModel(object):
         self.plotPeriodsArr.tofile(domfile)
         #print "plot periods:", self.plotCountArr, self.plotPeriodsArr          
         domfile.close()
-    
-    
+
     def saveFuncs(self, fileName, tracerFolder):
+        '''
+        Tests:
+        In [12]: import domainmodel.binarymodel as bm
+        In [12]: import tests.introduction.part_2_generators as p2
+        In [12]: m=p2.get_model_for_tests("tests/2dTests/test2d_for_intervals_single.json")
+        In [12]: mm=bm.BinaryModel(m)
+        In [12]: mm.saveFuncs('test.cpp','/media/valdecar/forData/data/projectsNew/lab') 
+        In [12]: mm.saveDomain('test.cpp',[])
+        
+        '''
         print("from saveFuncs")
         print(fileName)
-        self.functionMaps, delays = self.dmodel.createCPPandGetFunctionMaps(fileName,
-                                                                            tracerFolder+"/hybriddomain")
+        # self.functionMaps, delays = self.dmodel.createCPPandGetFunctionMaps(fileName,
+        #                                                                     tracerFolder+"/hybriddomain")
+        if self.dmodel.dimension == 1:
+            params = ts.test_templates_1d(self.dmodel)
+            functionMaps = ts.test_domain_1d(self.dmodel)
+            name = 'from_test_template_1d.cpp'
+        elif self.dmodel.dimension == 2:
+            params = ts.test_templates_2d(self.dmodel)
+            functionMaps = ts.test_domain_2d(self.dmodel)
+            name = 'from_test_template_2d.cpp'
+
+        delays = params.delays
+        self.functionMaps = functionMaps
+
         print("from saveFuncs")
         print(self.functionMaps)
+
+        # copy and rename files
+        pathToSave = os.path.join(tracerFolder, "hybriddomain")
+        pathFrom = os.path.join(tracerFolder,
+                                'hybriddomain',
+                                'tests',
+                                'introduction',
+                                'src',
+                                name)
+        shutil.copy2(pathFrom, pathToSave)
+        os.rename(os.path.join(pathToSave, name),
+                  os.path.join(pathToSave, fileName))
         return(delays)
 
     def compileFuncs(self, fileName):

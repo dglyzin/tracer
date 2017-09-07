@@ -1,4 +1,5 @@
 from pyparsing import ParseResults
+from copy import deepcopy as copy
 
 
 class Actions():
@@ -38,6 +39,7 @@ class Actions():
             [5.1, 1.5, 2.7]->
             [3, 1, 2]
             '''
+            delays = copy(delays)
             delays.sort()
 
             # for debug
@@ -77,20 +79,32 @@ class Actions():
                                " reduce raise error")
 
             out = reduce(lambda x, y: x+y, self.outList)
-            
+            '''
             # change all founded delay marker to
             # delay
+            # because each time dataTermVarsForDelay is not
+            # cleared then delays will comulative in that and
+            # We just rewrite params.delay each time.
+            self.cppOut.params.delays = []
             for var in termData.keys():
                 for delay in termData[var]:
                     # convert delays like:
                     # 1.1 -> 1 (see convert_delay)
                     delayConv = convert_delay(delay, termData[var])
+                    self.print_dbg("delays", termData[var])
+                    self.print_dbg("delay", delay)
+                    self.print_dbg("var", var)
+                    
+                    # if no delay then just return same result
                     out = out.replace("arg_delay_"+var+'_'+str(delay),
                                       str(delayConv))
-
+                    self.print_dbg("out", out)
+                    if delayConv not in self.cppOut.params.delays:
+                        self.cppOut.params.delays.append(delayConv)
+            '''
             self.outList = [out]
-            
-            termData.clear()
+           
+            # termData.clear()
             # self.actions.outList = []
 
         return(lambda str, loc, toks: action(self.cppOut.dataTermVarsForDelay,
@@ -502,7 +516,8 @@ class Actions():
             if var not in termData.keys():
                 termData[var] = [delay]
             else:
-                termData[var].append(delay)
+                if delay not in termData[var]:
+                    termData[var].append(delay)
 
             out = out.replace("arg_varIndex",
                               str(termDataInner['varIndexs'].index(toks[0][0])))

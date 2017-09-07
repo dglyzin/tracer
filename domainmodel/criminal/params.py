@@ -82,6 +82,59 @@ class Params():
         # sin(a*x+b)
         self.fromOld = False
 
+    def postprocessing(self, out):
+        def convert_delay(val, delays):
+            '''
+            DESCRIPTION:
+            Find index of floating delay val.
+            independently of order.
+            Value is only important for order:
+            For ex:
+            [5.1, 1.5, 2.7]->
+            [3, 1, 2]
+            '''
+            delays = copy(delays)
+            delays.sort()
+
+            # for debug
+            # self.print_dbg("delay_list:", delays)
+
+            return(delays.index(val)+1)
+
+        # change all founded delay marker to
+        # delay
+        termData = self.dataTermVarsForDelay
+        newTermData = {}
+        
+        for var in termData.keys():
+            newTermData[var] = []
+            for delay in termData[var]:
+                # convert delays like:
+                # 1.1 -> 1 (see convert_delay)
+                delayConv = convert_delay(delay, termData[var])
+                '''
+                self.print_dbg("delays", termData[var])
+                self.print_dbg("delay", delay)
+                self.print_dbg("var", var)
+                '''
+                newTermData[var].append(delayConv)
+
+                # if no delay then just return same result
+                out = out.replace("arg_delay_"+var+'_'+str(delay),
+                                  str(delayConv))
+                # self.print_dbg("out", out)
+        
+        # simple format of delays (all vars in same list)
+        self.delays = [delay for varDelays in newTermData.values()
+                       for delay in varDelays]
+        # remove dublicates from different vars (i.e. U,V)
+        self.delays = list(set(self.delays))
+
+        # thats prabobly beter:
+        # self.delays = newTermData
+        
+        return(out)
+
     def set_params_for_dom_centrals(self, model):
         '''
         DESCRIPTION:
@@ -95,33 +148,89 @@ class Params():
         # check if functionMaps alredy exist:
         if 'functionMaps' not in self.__dict__:
             self.functionMaps = []
+        
+        dim = model.dimension
 
-        for block in model.blocks:
-            numsForSystems = []
+        def init_acc():
+            '''
+            Dont used here.
+            '''
+            if dim == 1:
+                return(0)
+            elif dim == 2:
+                return([0, 0])
+
+        def acc(eRegion, reservedSpace):
+            '''
+            DESCRIPTION:
+            Accumulate equation regions area for checking
+            either it enough or use default eqation.
+            Dont used here
+            '''
+            if dim == 1:
+                reservedSpace += eRegion.xto - eRegion.xfrom
+            elif dim == 2:
+                reservedSpace[0] += eRegion.xto - eRegion.xfrom
+                reservedSpace[1] += eRegion.yto - eRegion.yfrom
+            return(reservedSpace)
+
+        def do_generate_default(reservedSpace, block):
+            '''
+            DESCRIPTION:
+            Check use default or not.
+            Dont used here.
+            '''
+            if dim == 1:
+                return(block.sizeX > reservedSpace)
+            elif dim == 2:
+                return(block.sizeX > reservedSpace[0]
+                       or
+                       block.sizeY > reservedSpace[1])
+
+        def get_ranges(eRegion):
+            if dim == 1:
+                ranges = getRangesInClosedInterval([eRegion.xfrom, eRegion.xto, model.gridStepX])
+            elif dim == 2:
+                ranges = getRangesInClosedInterval([eRegion.xfrom, eRegion.xto, model.gridStepX],
+                                                   [eRegion.yfrom, eRegion.yto, model.gridStepY])
+            return(ranges)
+
+        for blockNumber, block in enumerate(model.blocks):
+
             blockFuncMap = {'center': []}
-            reservedSpace = 0
-
+            for equation in self.equations:
+                if equation.blockNumber == blockNumber:
+                    eq_num = self.namesAndNumbers[equation.blockNumber].index(equation.funcName)
+                    if equation.default:
+                        blockFuncMap['center_default'] = eq_num
+                    else:
+                        ranges = get_ranges(equation.eRegion)
+                        blockFuncMap['center'].append([eq_num]+ranges)
+            '''
             # split equations at regions
-            for eqRegion in block.equationRegions:
-                reservedSpace += eqRegion.xto - eqRegion.xfrom
+            for eRegion in block.equationRegions:
+                reservedSpace = acc(eRegion, reservedSpace)
 
                 # for removing trivial cases
-                cond = (eqRegion.xfrom == eqRegion.xto
+                cond = (eRegion.xfrom == eRegion.xto
                         and
-                        (eqRegion.xto == 0.0 or eqRegion.xto == block.sizeX))
+                        (eRegion.xto == 0.0 or eRegion.xto == block.sizeX))
 
-                if eqRegion.equationNumber not in numsForSystems and not cond:
-                    numsForSystems.append(eqRegion.equationNumber)
+                
+                if eRegion.equationNumber not in numsForSystems and not cond:
+                    numsForSystems.append(eRegion.equationNumber)
                 if not cond:
                     # see getRangesInClosedInterval description
-                    ranges = getRangesInClosedInterval([eqRegion.xfrom, eqRegion.xto, gen.gridStep[0]])
-                    blockFuncMap['center'].append([numsForSystems.index(eqRegion.equationNumber)] + ranges)
-
+                    ranges = get_ranges(eRegion)
+                    # blockFuncMap['center'].append([eq_num] + ranges)
+                    blockFuncMap['center'].append([numsForSystems.index(eRegion.equationNumber)] + ranges)
+            
             # add default equation at remaining regions.
-            if block.sizeX > reservedSpace:
+            if do_generate_default(reservedSpace, block):
+                # add last as default
                 blockFuncMap.update({'center_default': len(numsForSystems)})
                 numsForSystems.append(block.defaultEquation)
-
+            '''
             self.functionMaps.append(blockFuncMap)
 
     def set_params_for_dom_interconnects(self):
@@ -142,17 +251,17 @@ class Params():
         first.
         '''
         # interconnect
-        logger.debug("namesAndNumbers = %s" % (self.namesAndNumbers["0"]))
+        logger.debug("namesAndNumbers = %s" % (self.namesAndNumbers[0]))
         for ic in self.ics:
             sideName = "side"+str(ic.side)
             
             # count of interconnects for each block
-            idx = self.namesAndNumbers[str(ic.blockNumber)].index(ic.funcName)
+            idx = self.namesAndNumbers[ic.blockNumber].index(ic.funcName)
             logger.debug("funcName=%s " % str(ic.funcName))
             logger.debug("sideName, idx= %s, %s " % (str(sideName), str(idx)))
             self.functionMaps[ic.blockNumber].update({sideName: idx})
   
-    def set_params_for_dom_bounds(self):
+    def set_params_for_dom_bounds(self, model):
         '''
         DESCRIPTION:
         self.functionMaps must be exist.
@@ -168,16 +277,124 @@ class Params():
          set_params_for_dom_centrals  for self.functionMaps
          set_params_for_array         for namesAndNumbers
         first.
+
+        namesAndNumbers is copy of pBoundFuncs of
+        getBlockBoundFuncArray function.
+        It contain func names at according position
+        and used for getting right number of equations in domain file.
         '''
-        # bounds
+        dim = model.dimension
+
+        def get_idx(bound):
+            '''
+            DESCRIPTION:
+            Get idx for bound.side. For both 1d and 2d.
+            
+            RETURN:
+            for 1d 
+            equation number
+            for 2d
+            [equation number, xfrom, xto, yfrom, yto]
+            '''
+            eq_num = self.namesAndNumbers[bound.blockNumber].index(bound.funcName)
+            if dim == 1:
+                idx = eq_num
+            elif dim == 2:
+                block = model.blocks[bound.blockNumber]
+                if bound.side == 0:
+                    xfrom = 0
+                    xto = 0
+                    yfrom = bound.region[0]
+                    yto = bound.region[1]
+                                        
+                    intervalX = [xfrom, xto, model.gridStepX]
+                    intervalY = [yfrom, yto, model.gridStepY]
+                    ranges = getRangesInClosedInterval(intervalX, intervalY)
+
+                    # because xfrom == xto == 0
+                    # and Im(xfrom) == 0 and Im(xto) == 1
+                    # make Im(xto) = 0 (==Im(xfrom))
+                    ranges[1] = ranges[0]
+
+                elif(bound.side == 1):
+                    xfrom = block.sizeX
+                    xto = block.sizeX
+                    yfrom = bound.region[0]
+                    yto = bound.region[1]
+                                        
+                    intervalX = [xfrom, xto, model.gridStepX]
+                    intervalY = [yfrom, yto, model.gridStepY]
+                    ranges = getRangesInClosedInterval(intervalX, intervalY)
+
+                    # because xfrom == xto == sizeX
+                    # and Im(xfrom) == Im(sizeX) and Im(xto) == Im(sizeX)+1
+                    # make Im(xfrom) = Im(sizeX)+1 (==Im(xto))
+                    ranges[0] = ranges[1]
+
+                elif(bound.side == 2):
+                    xfrom = bound.region[0]
+                    xto = bound.region[1]
+                    yfrom = 0
+                    yto = 0
+                    
+                    intervalX = [xfrom, xto, model.gridStepX]
+                    intervalY = [yfrom, yto, model.gridStepY]
+                    ranges = getRangesInClosedInterval(intervalX, intervalY)
+
+                    # because yfrom == yto == 0
+                    # and Im(yfrom) == 0 and Im(yto) == 1
+                    # make Im(yto) = 0 (==Im(yfrom))
+                    ranges[3] = ranges[2]
+
+                elif(bound.side == 3):
+                    xfrom = bound.region[0]
+                    xto = bound.region[1]
+                    yfrom = block.sizeY
+                    yto = block.sizeY
+
+                    intervalX = [xfrom, xto, model.gridStepX]
+                    intervalY = [yfrom, yto, model.gridStepY]
+                    ranges = getRangesInClosedInterval(intervalX, intervalY)
+
+                    # because yfrom == yto == sizeY
+                    # and Im(yfrom) == Im(sizeY) and Im(yto) == Im(sizeY)+1
+                    # make Im(yfrom) = Im(sizeY)+1 (==Im(yto))
+                    ranges[2] = ranges[3]
+                    
+                idx = [eq_num] + ranges
+            return(idx)
+
+        # bounds vertex
+        if dim == 2:
+            for bound in self.bounds_vertex:
+                # for compatibility with old version of saveDomain
+                if bound.sides in [[2, 1], [3, 0]]:
+                    vertexName = 'v%d%d' % (bound.sides[1], bound.sides[0])
+                else:
+                    vertexName = 'v%d%d' % (bound.sides[0], bound.sides[1])
+
+                eq_num = self.namesAndNumbers[bound.blockNumber].index(bound.funcName)
+                self.functionMaps[bound.blockNumber].update({vertexName: eq_num})
+
+        # bounds sides
         for bound in self.bounds:
             sideName = "side"+str(bound.side)
 
             # for setDomain
-            idx = self.namesAndNumbers[str(bound.blockNumber)].index(bound.funcName)
+            idx = get_idx(bound)
             logger.debug("funcName=%s " % str(bound.funcName))
             logger.debug("sideName, idx= %s, %s " % (str(sideName), str(idx)))
-            self.functionMaps[bound.blockNumber].update({sideName: idx})
+
+            old = self.functionMaps[bound.blockNumber]
+            if sideName in old.keys():
+                # if side exist
+                self.functionMaps[bound.blockNumber][sideName].append(idx)
+            else:
+                # because in 2d side will be list
+                if dim == 1:
+                    self.functionMaps[bound.blockNumber].update({sideName: idx})
+                elif dim == 2:
+                    self.functionMaps[bound.blockNumber].update({sideName: [idx]})
 
     def set_params_for_array(self):
         '''
@@ -211,7 +428,7 @@ class Params():
         # i.e. namesAndNumbers[blockNumber] = [names for blockNumber]
         namesAndNumbers = {}
         for funcName in self.funcNamesStack:
-            blockNumber = get_number(funcName)
+            blockNumber = int(get_number(funcName))
             if blockNumber in namesAndNumbers.keys():
                 namesAndNumbers[blockNumber].append(funcName)
             else:
@@ -324,35 +541,80 @@ class Params():
         TODO:
         Fill parsedValues from parser.
         '''
+        dim = model.dimension
+
+        def init_acc():
+            if dim == 1:
+                return(0)
+            elif dim == 2:
+                return([0, 0])
+
+        def acc(eRegion, reservedSpace):
+            '''
+            DESCRIPTION:
+            Accumulate equation regions area for checking
+            either it enough or use default eqation.
+            '''
+            if dim == 1:
+                reservedSpace += eRegion.xto - eRegion.xfrom
+            elif dim == 2:
+                reservedSpace[0] += eRegion.xto - eRegion.xfrom
+                reservedSpace[1] += eRegion.yto - eRegion.yfrom
+            return(reservedSpace)
+
+        def do_generate_default(reservedSpace, block):
+            '''
+            DESCRIPTION:
+            Check use default or not.
+            '''
+            if dim == 1:
+                return(block.sizeX > reservedSpace)
+            elif dim == 2:
+                return(block.sizeX > reservedSpace[0]
+                       or
+                       block.sizeY > reservedSpace[1])
+
+        tFuncName = Template('''Block${blockNumber}CentralFunction_Eqn${equationNumber}''')
         # FOR FILL params.equations
         equations = []
 
         for blockNumber, block in enumerate(model.blocks):
-            reservedSpace = 0
+            reservedSpace = init_acc()
 
             # collect all equations for block
             # equationRegions should be sorted
-            for eqRegion in block.equationRegions:
-                reservedSpace += eqRegion.xto - eqRegion.xfrom
+            for eRegion in block.equationRegions:
+                reservedSpace = acc(eRegion, reservedSpace)
 
                 # for removing trivial cases
-                cond = (eqRegion.xfrom == eqRegion.xto
+                cond = (eRegion.xfrom == eRegion.xto
                         and
-                        (eqRegion.xto == 0.0 or eqRegion.xto == block.sizeX))
+                        (eRegion.xto == 0.0 or eRegion.xto == block.sizeX))
 
-                numsForSystems = [eq.number for eq in equations]
-                if eqRegion.equationNumber not in numsForSystems and not cond:
-                    equation = copy(model.equations[eqRegion.equationNumber])
-                    equation.number = eqRegion.equationNumber
+                # numsForSystems = [eq.number for eq in equations]
+                # if eRegion.equationNumber not in numsForSystems and not cond:
+                if not cond:
+                    equation = copy(model.equations[eRegion.equationNumber])
+                    equation.number = eRegion.equationNumber
+                    equation.eRegion = eRegion
+                    equation.dim = dim
                     equation.blockNumber = blockNumber
+                    equation.funcName = tFuncName.substitute(blockNumber=blockNumber,
+                                                             equationNumber=eRegion.equationNumber)
+                    equation.default = False
                     logger.debug('blockNumber eqReg=%s' % str(blockNumber))
                     equations.append(equation)
 
             # add default equation at remaining regions.
-            if block.sizeX > reservedSpace:
+            if do_generate_default(reservedSpace, block):
                 equation = copy(model.equations[block.defaultEquation])
                 equation.number = block.defaultEquation
+                equation.eRegion = None
+                equation.dim = dim
                 equation.blockNumber = blockNumber
+                equation.funcName = tFuncName.substitute(blockNumber=blockNumber,
+                                                         equationNumber=block.defaultEquation)
+                equation.default = True
                 logger.debug('blockNumber revSp=%s' % str(blockNumber))
                 equations.append(equation)
 
@@ -360,10 +622,8 @@ class Params():
         # END FOR FILL
 
         # FOR FuncArray
-        funcNamesStack = [('Block' + str(equation.blockNumber)
-                           + 'CentralFunction'
-                           + str(equation.number)) for equation in equations]
-    
+        funcNamesStack = [equation.funcName for equation in equations]
+
         # check if funcNamesStack alredy exist:
         if 'funcNamesStack' in self.__dict__:
             self.funcNamesStack.extend(funcNamesStack)
@@ -392,9 +652,9 @@ class Params():
             Choice equation number from equationRegions
             if any satisfy the test, else choice default.
             '''
-            for eqRegion in block.equationRegions:
-                if test(eqRegion):
-                    equationNum = eqRegion.equationNumber
+            for eRegion in block.equationRegions:
+                if test(eRegion):
+                    equationNum = eRegion.equationNumber
                     break
             else:
                 equationNum = block.defaultEquation
@@ -418,12 +678,12 @@ class Params():
 
                     # find equation
                     # for first block (one side of closed block)
-                    side_test = lambda eqRegion: coord1(eqRegion) == Range1
+                    side_test = lambda eRegion: coord1(eRegion) == Range1
                     equationNum1 = choice_equation_num(side_test, block)
 
                     # find equation
                     # for second block (other side of closed block)
-                    side_test = lambda eqRegion: coord2(eqRegion) == Range2
+                    side_test = lambda eRegion: coord2(eRegion) == Range2
                     equationNum2 = choice_equation_num(side_test, block)
 
                     equation1 = model.equations[equationNum1]
@@ -462,7 +722,7 @@ class Params():
                     coord = lambda region: (side == 0) * region.xfrom + (side == 1) * region.xto
 
                     # find equation for block
-                    side_test = lambda eqRegion: coord(eqRegion) == Range
+                    side_test = lambda eRegion: coord(eRegion) == Range
                     equationNum = choice_equation_num(side_test, block)
 
                     equation = model.equations[equationNum]

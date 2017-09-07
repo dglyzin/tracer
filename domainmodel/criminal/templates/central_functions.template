@@ -19,8 +19,8 @@ END COMMENT #}
 {% set num = eq.number %}
 //=========================CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER {{bn}}========================//
 
-//{{num}} central function for 1d model for block with number {{bn}}
-void Block{{bn}}CentralFunction{{num}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+//{{num}} central function for {{eq.dim}}d model for block with number {{bn}}
+void {{eq.funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;	      {% for i, value in enumerate(eq.parsedValues) %}
 	result[idx + {{i}}] = {{value}};
      {% endfor %}

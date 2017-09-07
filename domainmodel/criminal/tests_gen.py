@@ -23,8 +23,45 @@ import matplotlib.patches as pchs
 #logger = logging.getLogger('tests.tester.criminal.tests_gen')
 
 
+def test_domain_2d(modelFile="tests/2dTests/test2d_for_intervals_single_delay.json"):
+    
+    if type(modelFile) == str:
+        model = get_model_for_tests(modelFile)
+    else:
+        model = modelFile
+
+    params = Params()
+
+    # for funcNamesStack and bounds and ics from params
+    params.set_params_for_centrals(model)
+    
+    params.set_params_for_bounds_2d(model)
+
+    # for namesAndNumbers
+    params.set_params_for_array()
+
+    params.set_params_for_dom_centrals(model)
+    try:
+        params.set_params_for_dom_interconnects()
+    except:
+        pass
+
+    params.set_params_for_dom_bounds(model)
+    
+    out = str(params.functionMaps)
+    to_file(out, "from_test_domain_2d.txt")
+
+    return(params.functionMaps)
+
+
 def test_domain_1d(modelFile="tests/brusselator1d_bound_U.json"):
-    model = get_model_for_tests(modelFile)
+    
+    if type(modelFile) == str:
+        model = get_model_for_tests(modelFile)
+    else:
+        model = modelFile
+
+    # model = get_model_for_tests(modelFile)
     params = Params()
 
     # for funcNamesStack and bounds and ics from params
@@ -34,15 +71,18 @@ def test_domain_1d(modelFile="tests/brusselator1d_bound_U.json"):
 
     # for namesAndNumbers
     params.set_params_for_array()
-
+    # return(params)
     params.set_params_for_dom_centrals(model)
     params.set_params_for_dom_interconnects()
-    params.set_params_for_dom_bounds()
-    
+    params.set_params_for_dom_bounds(model)
+
+    out = str(params.functionMaps)
+    to_file(out, "from_test_domain_1d.txt")
+
     return(params.functionMaps)
 
 
-def test_templates_2d(modelFile="tests/2dTests/test2d_for_intervals_single.json"):
+def test_templates_2d(modelFile="tests/2dTests/test2d_for_intervals_single_delay.json"):
     '''
     DESCRIPTION:
     Generate cpp for 2d.
@@ -65,9 +105,10 @@ def test_templates_2d(modelFile="tests/2dTests/test2d_for_intervals_single.json"
 
     outl, params = test_template_bounds_2d(modelFile, params)
     out += outl
-    out += test_template_array(modelFile, params)
+    out += test_template_array(params)
 
-    # print(out)
+    out = params.postprocessing(out)
+    params.out = out
 
     to_file(out, 'from_test_template_2d.cpp')
     return(params)
@@ -92,13 +133,28 @@ def test_template_bounds_2d(modelFile="tests/2dTests/test2d_for_intervals_single
     INPUT:
     param from test_template_interconnects
     '''
-    model = get_model_for_tests(modelFile)
+    if type(modelFile) == str:
+        model = get_model_for_tests(modelFile)
+    else:
+        model = modelFile
+
+    # model = get_model_for_tests(modelFile)
 
     if params is None:
         params = Params()
+    else:
+        # for delays from other templates
+        try:
+            dataTermVarsForDelay = params.dataTermVarsForDelay
+        except:
+            dataTermVarsForDelay = None
 
     cppGen = CppOutGen()
     parser = Parser()
+
+    # for delays
+    if dataTermVarsForDelay is not None:
+        parser.cppOut.dataTermVarsForDelay = dataTermVarsForDelay
 
     # parameters for bound
     params.set_params_for_bounds_2d(model)
@@ -366,6 +422,10 @@ def test_template_bounds_2d(modelFile="tests/2dTests/test2d_for_intervals_single
 
     out = out_bounds
     out += out_vertex
+
+    # for delays
+    params.dataTermVarsForDelay = parser.cppOut.dataTermVarsForDelay
+
     return((out, params))
 
     
@@ -391,10 +451,13 @@ def test_templates_1d(modelFile="tests/brusselator1d_bound_U.json"):
 
     outl, params = test_template_bounds(modelFile, params)
     out += outl
-    out += test_template_array(modelFile, params)
+    out += test_template_array(params)
 
     # print(out)
+    
+    out = params.postprocessing(out)
 
+    params.out = out
     to_file(out, 'from_test_template_1d.cpp')
     return(params)
 
@@ -412,7 +475,12 @@ def test_template_definitions(modelFile="tests/brusselator1d_bound_U.json"):
        'tests/introduction/src/from_test_template_definitions.cpp'
 
     '''
-    model = get_model_for_tests(modelFile)
+    if type(modelFile) == str:
+        model = get_model_for_tests(modelFile)
+    else:
+        model = modelFile
+
+    # model = get_model_for_tests(modelFile)
 
     params = Params()
     cppGen = CppOutGen()
@@ -427,7 +495,7 @@ def test_template_definitions(modelFile="tests/brusselator1d_bound_U.json"):
     return(out)
 
 
-def test_template_array(modelFile="tests/brusselator1d_bound_U.json", params=None):
+def test_template_array(params=None):
     '''
     DESCRIPTION:
     Generate cpp for centrals from
@@ -485,7 +553,12 @@ def test_template_centrals(modelFile="tests/brusselator1d_bound_U.json"):
        'tests/introduction/src/from_test_template_centrals.cpp'
 
     '''
-    model = get_model_for_tests(modelFile)
+    if type(modelFile) == str:
+        model = get_model_for_tests(modelFile)
+    else:
+        model = modelFile
+
+    # model = get_model_for_tests(modelFile)
     
     params = Params()
     cppGen = CppOutGen()
@@ -509,6 +582,9 @@ def test_template_centrals(modelFile="tests/brusselator1d_bound_U.json"):
     
     to_file(out, 'from_test_template_centrals.cpp')
 
+    # for delays
+    params.dataTermVarsForDelay = parser.cppOut.dataTermVarsForDelay
+
     return((out, params))
 
     
@@ -525,13 +601,28 @@ def test_template_interconnects(modelFile="tests/1dTests/test1d_three_blocks0.js
        'tests/introduction/src/from_test_template_interconnects.cpp'
 
     '''
-    model = get_model_for_tests(modelFile)
+    if type(modelFile) == str:
+        model = get_model_for_tests(modelFile)
+    else:
+        model = modelFile
+
+    # model = get_model_for_tests(modelFile)
     
     if params is None:
         params = Params()
+    else:
+        # for delays from other templates
+        try:
+            dataTermVarsForDelay = params.dataTermVarsForDelay
+        except:
+            dataTermVarsForDelay = None
 
     cppGen = CppOutGen()
     parser = Parser()
+
+    # for delays
+    if dataTermVarsForDelay is not None:
+        parser.cppOut.dataTermVarsForDelay = dataTermVarsForDelay
 
     # parameters for interconnect
     params.set_params_for_interconnects(model)
@@ -558,6 +649,9 @@ def test_template_interconnects(modelFile="tests/1dTests/test1d_three_blocks0.js
     
     to_file(out, 'from_test_template_interconnects.cpp')
 
+    # for delays
+    params.dataTermVarsForDelay = parser.cppOut.dataTermVarsForDelay
+
     return((out, params))
 
 
@@ -580,13 +674,28 @@ def test_template_bounds(modelFile="tests/brusselator1d_bound_U.json", params=No
     INPUT:
     param from test_template_interconnects
     '''
-    model = get_model_for_tests(modelFile)
+    if type(modelFile) == str:
+        model = get_model_for_tests(modelFile)
+    else:
+        model = modelFile
+
+    # model = get_model_for_tests(modelFile)
 
     if params is None:
         params = Params()
+    else:
+        # for delays from other templates
+        try:
+            dataTermVarsForDelay = params.dataTermVarsForDelay
+        except:
+            dataTermVarsForDelay = None
 
     cppGen = CppOutGen()
     parser = Parser()
+
+    # for delays
+    if dataTermVarsForDelay is not None:
+        parser.cppOut.dataTermVarsForDelay = dataTermVarsForDelay
 
     # parameters for bound
     params.set_params_for_bounds(model)
@@ -636,6 +745,9 @@ def test_template_bounds(modelFile="tests/brusselator1d_bound_U.json", params=No
     out = cppGen.get_out_for_bounds(params)
     
     to_file(out, 'from_test_template_bounds.cpp')
+    
+    # for delays
+    params.dataTermVarsForDelay = parser.cppOut.dataTermVarsForDelay
 
     return((out, params))
 
@@ -655,7 +767,12 @@ def test_template_params(modelFile="tests/short_restest_full.json"):
     params = Params()
     cppGen = CppOutGen()
 
-    model = get_model_for_tests(modelFile)
+    if type(modelFile) == str:
+        model = get_model_for_tests(modelFile)
+    else:
+        model = modelFile
+
+    # model = get_model_for_tests(modelFile)
     params.set_params_for_parameters(model)
     out = cppGen.get_out_for_parameters(params)
     to_file(out, 'from_test_template_params.cpp')
@@ -679,7 +796,12 @@ def test_template_initials(modelFile="tests/short_restest_full.json", dim=1):
     cppGen = CppOutGen()
     parser = Parser()
 
-    model = get_model_for_tests(modelFile)
+    if type(modelFile) == str:
+        model = get_model_for_tests(modelFile)
+    else:
+        model = modelFile
+
+    # model = get_model_for_tests(modelFile)
     params.set_params_for_initials(model)
 
     # FOR PARSER
