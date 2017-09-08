@@ -3,9 +3,9 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 1, 
+        "FinishTime": 2.3, 
         "TimeStep": 1e-05, 
-        "SaveInterval": 0.01, 
+        "SaveInterval": 0.1, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
@@ -94,23 +94,23 @@
     }, 
     "Plots": [ {
             "Title": "u(t,x)", 
-            "Period": 0.01,
+            "Period": 0.1,
             "Value": "U"
         }],
     "Results":[
         {
             "Name": "u", 
-            "Period": 0.01,
+            "Period": 0.1,
             "Value": "U"
         },
         {
             "Name": "u_max", 
-            "Period": 0.01,
+            "Period": 0.1,
             "Value": "max(U)"
         },
         {
             "Name": "u_min", 
-            "Period": 0.01,
+            "Period": 0.1,
             "Value": "min(U)"
         }]
 }
