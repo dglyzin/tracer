@@ -16,7 +16,7 @@ from matplotlib import cm
 
 from domainmodel.model import Model
 from domainmodel.binaryFileReader import readBinFile, readDomFile, getDomainProperties
-from postprocessor import calcMinMax, saveResults1D, saveResults2D
+from postprocessor import calcMinMax, savePlots1D, saveResults2D
 from fileUtils import getPlotValList
 
 def decodePlotNumbers(plot_code):
@@ -57,7 +57,7 @@ def createPlots(dbin_pathNameExt, plot_code):
     saveText=0
     for plotIdx in plot_nums:    
         if dimension == 1:        
-            saveResults1D([projectDir, projectName, dbinNameExt, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-current-" + binTimeStr, plotIdx, saveText])
+            savePlots1D([projectDir, projectName, dbinNameExt, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-current-" + binTimeStr, plotIdx, saveText])
         if dimension == 2:        
             saveResults2D([projectDir, projectName, dbinNameExt, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-current-" + binTimeStr, plotIdx, saveText] )
     

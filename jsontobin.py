@@ -23,7 +23,7 @@ from fileUtils import getSortedLoadBinFileList
 import os
 
 
-def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, nortpng, outFileName):    
+def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, nortpng, outFileName, nocppgen):    
     finishTimeProvided = not (finish is None)   
     continueEnabled = not (cont is None)
     continueFnameProvided =  not (cont  == "/") if continueEnabled else False
@@ -75,7 +75,7 @@ def createBinaries(inputFile, tracerFolder, jobId, finish, cont, debug, nortpng,
         partModel = partitionAndMap(model)
     
     bm = BinaryModel(partModel)
-    delays = bm.saveFuncs(OutputFuncFile, tracerFolder)
+    delays = bm.saveFuncs(OutputFuncFile, tracerFolder,nocppgen)
     bm.saveDomain(OutputDataFile, delays)
     bm.compileFuncs(OutputFuncFile)
     
@@ -112,8 +112,10 @@ if __name__=='__main__':
     parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
     parser.add_argument('-outFileName', type = str, help="specify output project filename (fileName is default)")
     parser.add_argument('-nortpng', help="add this flag to avoid creating png in real time", action="store_true")
+    parser.add_argument('-nocppgen', help="add this flag to avoid cpp generation", action="store_true")
+    
     args = parser.parse_args()
   
     print "jsontobin input:", args
-    createBinaries(args.fileName, args.tracerFolder, args.jobId, args.finish, args.cont, args.debug, args.nortpng, args.outFileName)
+    createBinaries(args.fileName, args.tracerFolder, args.jobId, args.finish, args.cont, args.debug, args.nortpng, args.outFileName, args.nocppgen)
     

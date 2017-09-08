@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 5.0, 
+        "FinishTime": 1.0, 
         "TimeStep": 1e-05, 
         "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
@@ -46,22 +46,22 @@
                 "x"
             ], 
             "System": [
-                "U'=d*D[U,{x,2}] + a*U"
+                "U'=a*D[U,{x,2}] + d*U"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
-            "d",
-            "a", 
-            "g",
+            "a",
+            "d", 
+            "b",
             "h"
         ], 
         "ParamValues": [
             {
-                "d": 1.0,
                 "a": 1.0,
-                "g": 1.1,
+                "d": 1.0,
+                "b": 1.1,
                 "h": 0.7
             }
         ], 
@@ -72,7 +72,7 @@
             "Name": "nonlocal", 
             "Type": 1, 
             "Values": [
-                "- g * U(t,{x,h})"
+                "- b * U(t,{x,h})"
             ]
         }
     ], 
@@ -86,7 +86,7 @@
     ], 
     "Hardware": [
         {
-            "Name": "any", 
+            "Name": "cnode8", 
             "CpuCount": 1, 
             "CpuMemory": [
                 5
@@ -120,13 +120,29 @@
         {
             "Name": "u_max", 
             "Period": 0.1,
-            "Value": "Max(U)"
+            "Value": "U"
         },
         {
             "Name": "u_min", 
             "Period": 0.1,
-            "Value": "Min(U)"
+            "Value": "min(U)"
+        },
+        {
+            "Name": "u_max", 
+            "Period": 0.2,
+            "Value": "U+1"
+        },
+        {
+            "Name": "u_max", 
+            "Period": 0.25,
+            "Value": "U"
+        },
+        {
+            "Name": "namename", 
+            "Period": 0.5,
+            "Value": "U"
         }
+
 
     ]
 }

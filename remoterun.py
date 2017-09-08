@@ -71,7 +71,7 @@ class Connection(object):
     def loadFromFile(self, fileNamePath):
         pass
         
-def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug, nortpng, projectFolder, logger):
+def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug, nortpng, nocppgen, projectFolder, logger):
     '''
       connection: file with connection settings
       inputFile:  project file
@@ -158,6 +158,20 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         
         #3 Run jsontobin on json
         logger.log('\nRunning preprocessor:', LL_USER)
+        
+        if nocppgen:
+            optionalArgs += ' -nocppgen'
+            #also put cpp from local machine
+            projectPathName, _ = os.path.splitext(inputFile)  
+            cppFileNamePath = projectPathName+".cpp"
+            remoteCppFileName, _ = os.path.splitext(remoteProjectFileName)
+            remoteCppFileName += ".cpp"
+            
+            cftp=client.open_sftp()
+            cftp.put(cppFileNamePath, projFolder+"/"+remoteCppFileName)
+            cftp.close()
+            
+            
         command = 'python '+connection.tracerFolder+'/hybriddomain/jsontobin.py '+ projFolder+'/'+remoteProjectFileName + " " + connection.tracerFolder
         
         logger.log(command + optionalArgs, LL_DEVEL)
@@ -229,13 +243,13 @@ def getConnection(connFileName):
 
 def finalParseAndRun(connection, inputFileName, args, projectFolder=None):
     finishTimeProvided = not (args.finish is None)
-    continueFileName = args.cont  
+    continueFileName = args.cont      
     continueEnabled = not (continueFileName is None)
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
     
     logger = Logger(args.verbose, logAPI = False, logFileName = None)
        
-    remoteProjectRun(connection, inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug, args.nortpng, projectFolder, logger)
+    remoteProjectRun(connection, inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug, args.nortpng, args.nocppgen, projectFolder, logger)
     logger.clean()
 
 if __name__=='__main__':    
@@ -253,7 +267,7 @@ if __name__=='__main__':
     parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
     parser.add_argument('-nortpng', help="add this flag to not create png in real time", action="store_true")
     parser.add_argument("-v", "--verbose", dest="verbose", action="count", default=1, help="set verbosity level [default: %(default)s]")
-    
+    parser.add_argument('-nocppgen', help="add this flag to use pre-generated cpp with the same baseneame as .json", action="store_true")
     
     args = parser.parse_args()
     

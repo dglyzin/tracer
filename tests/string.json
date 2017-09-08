@@ -1,13 +1,13 @@
 {
-    "ProjectName": "Hutchinson-diffusion with nonlocal bound", 
+    "ProjectName": "String equation", 
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 50.0, 
-        "TimeStep": 1e-05, 
-        "SaveInterval": 0, 
-        "AbsTolerance": 0.001, 
-        "RelTolerance": 0.001
+        "FinishTime": 5, 
+        "TimeStep": 1e-06, 
+        "SaveInterval": 0.0, 
+        "AbsTolerance": 1e-08, 
+        "RelTolerance": 1e-08
     }, 
     "Grid": {
         "Dimension": 1, 
@@ -17,7 +17,7 @@
     }, 
     "Blocks": [
         {
-            "Name": "Block 0", 
+            "Name": "MainBlock", 
             "Offset": {
                 "x": 0.0
             }, 
@@ -26,12 +26,14 @@
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [                
+            "BoundRegions": [
                 {
                     "BoundNumber": 0, 
-                    "Side": 1, 
-                    "xfrom": 1.0, 
-                    "xto": 1.0
+                    "Side": 0
+                }, 
+                {
+                    "BoundNumber": 0, 
+                    "Side": 1
                 }
             ], 
             "InitialRegions": [], 
@@ -41,38 +43,38 @@
     "Interconnects": [], 
     "Equations": [
         {
-            "Name": "rd", 
+            "Name": "Flat Brusselator", 
             "Vars": [
                 "x"
             ], 
             "System": [
-                "U'=d*D[U,{x,2}] + a*U * ( 1-U(t-1) )"
+                "U'=V", 
+                "V'=a*a * D[U,{x,2}]"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
-            "d",
-            "a", 
-            "g",
-            "h"
+            "a"
         ], 
         "ParamValues": [
             {
-                "d": 1.0,
-                "a": 2.0,
-                "g": 0.7,
-                "h": 0.7
+                "a": 1.0
             }
         ], 
         "DefaultParamsIndex": 0
     }, 
     "Bounds": [
         {
-            "Name": "nonlocal", 
-            "Type": 1, 
+            "Name": "Left point", 
+            "Type": 0, 
             "Values": [
-                "- g * U(t,{x,h})"
+                "0", 
+                "0"
+            ], 
+            "Derivative": [
+                "0", 
+                "0"
             ]
         }
     ], 
@@ -80,7 +82,8 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "x+1"
+                "sin(2*3.14159265359*x)", 
+                "0"
             ]
         }
     ], 
@@ -89,7 +92,7 @@
             "Name": "any", 
             "CpuCount": 1, 
             "CpuMemory": [
-                5
+                56
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
@@ -111,22 +114,15 @@
     }, 
     "Plots": [
         {
-            "Title": "u(t,x)", 
-            "Period": 0.1,
-            "Value": "U"
+            "Title": "u(t)", 
+            "Period": 0.2
         }
     ],
     "Results": [
         {
-            "Name": "u_max", 
-            "Period": 0.1,
-            "Value": "max(U)"
-        },
-        {
-            "Name": "u_min", 
-            "Period": 0.1,
-            "Value": "min(U)"
+            "Name": "uu", 
+            "Period": 0.2,
+            "Value": "U"
         }
-
     ]
 }

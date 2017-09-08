@@ -1,11 +1,11 @@
 {
-    "ProjectName": "Hutchinson-diffusion with nonlocal bound", 
+    "ProjectName": "test1d_one_block0", 
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 50.0, 
+        "FinishTime": 1, 
         "TimeStep": 1e-05, 
-        "SaveInterval": 0, 
+        "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
@@ -17,70 +17,53 @@
     }, 
     "Blocks": [
         {
-            "Name": "Block 0", 
+            "Name": "MainBlock", 
             "Offset": {
                 "x": 0.0
             }, 
             "Size": {
-                "x": 1.0
+                "x": 5.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [                
-                {
-                    "BoundNumber": 0, 
-                    "Side": 1, 
-                    "xfrom": 1.0, 
-                    "xto": 1.0
-                }
             ], 
             "InitialRegions": [], 
-            "EquationRegions": []
+            "EquationRegions": [         
+            ]
         }
     ], 
     "Interconnects": [], 
     "Equations": [
         {
-            "Name": "rd", 
+            "Name": "1D heat 1", 
             "Vars": [
                 "x"
             ], 
             "System": [
-                "U'=d*D[U,{x,2}] + a*U * ( 1-U(t-1) )"
+                "U'= a * D[U,{x,2}]"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
-            "d",
-            "a", 
-            "g",
-            "h"
+            "a"
         ], 
         "ParamValues": [
             {
-                "d": 1.0,
-                "a": 2.0,
-                "g": 0.7,
-                "h": 0.7
+                "a": 1
             }
         ], 
         "DefaultParamsIndex": 0
     }, 
     "Bounds": [
-        {
-            "Name": "nonlocal", 
-            "Type": 1, 
-            "Values": [
-                "- g * U(t,{x,h})"
-            ]
-        }
+        
     ], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
-                "x+1"
+                "x"
             ]
         }
     ], 
@@ -89,7 +72,7 @@
             "Name": "any", 
             "CpuCount": 1, 
             "CpuMemory": [
-                5
+                56
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
@@ -109,24 +92,25 @@
             }
         ]
     }, 
-    "Plots": [
-        {
+    "Plots": [ {
             "Title": "u(t,x)", 
-            "Period": 0.1,
+            "Period": 0.01,
             "Value": "U"
-        }
-    ],
-    "Results": [
+        }],
+    "Results":[
+        {
+            "Name": "u", 
+            "Period": 0.01,
+            "Value": "U"
+        },
         {
             "Name": "u_max", 
-            "Period": 0.1,
+            "Period": 0.01,
             "Value": "max(U)"
         },
         {
             "Name": "u_min", 
-            "Period": 0.1,
+            "Period": 0.01,
             "Value": "min(U)"
-        }
-
-    ]
+        }]
 }
