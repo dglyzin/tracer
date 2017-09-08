@@ -559,7 +559,7 @@ class Model(object):
         d = DelayHandler()
         return d.determineDelay(self.equations[0].system,self.params, self.equations[0].vars)
 
-    def createCPPandGetFunctionMaps(self, cppFileName, preprocessorFolder):
+    def createCPPandGetFunctionMaps(self, cppFileName, preprocessorFolder, nocppgen):
         #generator1
         # try:
         gridStep = [self.gridStepX, self.gridStepY, self.gridStepZ]
@@ -581,9 +581,10 @@ class Model(object):
         #    print("###")
         #    print(ex)
         # else:
-        f = open(cppFileName,'w')
-        f.write(outputStr)
-        f.close()
+        if not nocppgen:
+            f = open(cppFileName,'w')
+            f.write(outputStr)
+            f.close()
         return (functionMaps, gen.delays)
         #generator2
         #generateCfromDict(self.toDict(),cppFileName)

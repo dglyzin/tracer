@@ -724,11 +724,11 @@ class BinaryModel(object):
         domfile.close()
     
     
-    def saveFuncs(self, fileName, tracerFolder):
+    def saveFuncs(self, fileName, tracerFolder, nocppgen):
         print("from saveFuncs")
         print(fileName)
         self.functionMaps, delays = self.dmodel.createCPPandGetFunctionMaps(fileName,
-                                                                            tracerFolder+"/hybriddomain")
+                                                                            tracerFolder+"/hybriddomain", nocppgen)
         print("from saveFuncs")
         print(self.functionMaps)
         return(delays)
