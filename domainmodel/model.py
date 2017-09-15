@@ -207,7 +207,8 @@ class Model(object):
        
         try:
             self.plots = [ OrderedDict([("Title", plot["Title"]),
-                                    ("Period", plot["Period"])
+                                    ("Period", plot["Period"]),
+                                    ("Value", plot["Value"])
                                     ]
                                    )
                  for plot in projectDict["Plots"] ]
@@ -267,7 +268,8 @@ class Model(object):
                                      for block in projectDict["Mapping"]["BlockMapping"] ]
        
         self.plots = [ OrderedDict([("Title", plot["Title"]),
-                                    ("Period", plot["Period"])
+                                    ("Period", plot["Period"]),
+                                    ("Value", plot["Value"])
                                     ]
                                    )
              for plot in projectDict["Plots"] ]

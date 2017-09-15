@@ -45,7 +45,6 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
     column = math.ceil(cellSize / row)
 
     figure.suptitle(t)
-
     for i in range(cellSize):
         m = 100 * row + 10 * column + i + 1
         axes = figure.add_subplot(m)
@@ -54,12 +53,12 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
 
         cmap=cm.jet
 
-        amp = maxValue[i] - minValue[i]
+        amp = maxValue - minValue
 
-        minV = minValue[i] - amp/10
-        maxV = maxValue[i] + amp/10
+        minV = minValue - amp/10
+        maxV = maxValue + amp/10
 
-        layer = data[0,0,:,i]
+        layer = data
         axes.set_ylim(minV, maxV)
         axes.set_xlim(X.min(), X.max())
         #axes.axis([X.min(), X.max(), minValue, maxValue])
@@ -174,28 +173,24 @@ def calcMinMax(projectDir, binFileList, info, countZ, countY, countX, offsetZ, o
 
 
 
-def savePlots1D( (projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, postfix, plotIdx, saveText) ):
+def savePlots1D( (projectDir, projectName, data, t, countX, offsetZ, offsetY, offsetX,
+                 maxValue, minValue, dx, dy, postfix, plotIdx) ):
     #for idx, binFile in enumerate(binFileList):
-    data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
+    #data = readBinFile(projectDir+"/"+binFile, info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
 
     xs = np.arange(0, countX)*dx
-    #ys = np.arange(0, countY)*dy
-    #print "xs", xs
-
-    #X,Y = np.meshgrid(xs,ys)
-    #print "X", X
-
-    #plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
-    #plt.colorbar()
+    #dictfun = {}
+    #for numitem, item in enumerate(namesEquations):
+    #    dictfun[item] = data[0, 0, :, numitem]
 
     filename = os.path.join(projectDir,projectName+"-plot"+str(plotIdx) + postfix + ".png")
     #plt.savefig(filename, format='png')
     #print 'save #', idx, binFile, "->", filename
     #plt.clf()
-
-    t = binFile.split("-")[-2]
+    #data1 = eval(plotValue, dictfun)
+    #t = binFile.split("-")[-2]
     #t = t.split(drawExtension)[0]
-    savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
+    savePng1D(filename, xs, data, maxValue, minValue, t, 1)
     #print("produced png: "+ filename)
     return "produced png: "+ filename
 
@@ -328,9 +323,13 @@ def createMovie(projectDir, projectName):
     namesEquations = model.equations[0].system
     resCount = len(model.results)
     plotFileLists=getBinFilesByPlot(binFileList, plotValList, plotCount+resCount)
-    #print plotFileLists
+    for numitem,item in enumerate(namesEquations):
+        namesEquations[numitem] = item[:item.find("'")]
+    # print plotFileLists
+    plotList = model.plots
+    print('plotplot',plotList)
 
-    for plotIdx in range(plotCount):
+    for plotIdx, plot in enumerate(plotList):
         #t1 = time.time()
         maxValue, minValue = calcMinMax(projectDir, plotFileLists[plotIdx], info, countZ, countY, countX, offsetZ, offsetY, offsetX, cellSize)
         #t2 = time.time()
@@ -343,9 +342,16 @@ def createMovie(projectDir, projectName):
         if dimension == 2:
             saveResultFunc = saveResults2D
 
-        log = pool.map(saveResultFunc, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
-                                         offsetY, offsetX, cellSize, maxValue, minValue, dx, dy, "-final-" + str(idx),
-                                         plotIdx, saveText) for idx, binFile in enumerate(plotFileLists[plotIdx]) ] )
+        logData = pool.map(getResults1D, [(projectDir, projectName, binFile, info, countZ, countY, countX, offsetZ,
+                                                offsetY, offsetX, cellSize, namesEquations, plot['Value'],
+                                              str(idx)) for idx, binFile in enumerate(plotFileLists[plotIdx])])
+
+        dataListMin = min([min(i[1]) for i in logData])
+        dataListMax = max([max(i[1]) for i in logData])
+        print('min',dataListMin)
+        log = pool.map(saveResultFunc, [(projectDir, projectName, dataNum[1], dataNum[0], countX, offsetZ,
+                                         offsetY, offsetX, dataListMax, dataListMin, dx, dy, str(Idx),
+                                         plotIdx) for Idx, dataNum in enumerate(logData) ] )
 
         for element in log:
             print element
@@ -355,8 +361,6 @@ def createMovie(projectDir, projectName):
     #U and V
     #TODO get result all list U or V
     resIdx = 0
-    for numitem,item in enumerate(namesEquations):
-        namesEquations[numitem] = item[:item.find("'")]
     #print('aaaa ',resultlistname)
     for resultItem in resultList:
         pool = mp.Pool(processes=16)
