@@ -1,7 +1,18 @@
-from abstractGenerator import BoundCondition, Connection
-from someFuncs import determineNameOfBoundary
-from someFuncs import getCellCountInClosedInterval
-from someFuncs import getRangesInClosedInterval
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.criminal.abstractGenerator import BoundCondition, Connection
+    from domainmodel.criminal.someFuncs import determineNameOfBoundary
+    from domainmodel.criminal.someFuncs import getCellCountInClosedInterval
+    from domainmodel.criminal.someFuncs import getRangesInClosedInterval
+
+else:
+    from abstractGenerator import BoundCondition, Connection
+    from someFuncs import determineNameOfBoundary
+    from someFuncs import getCellCountInClosedInterval
+    from someFuncs import getRangesInClosedInterval
+
 import logging
 
 from copy import deepcopy as copy
@@ -14,6 +25,8 @@ from string import Template
 
 # create logger that child of tests.tester loger
 logger = logging.getLogger('tests.tester.criminal.tests_gen.params')
+
+import numpy as np
 
 
 class Dbg():
@@ -134,6 +147,157 @@ class Params():
         # self.delays = newTermData
         
         return(out)
+
+    def fill_parameters(self, model):
+        params = np.zeros((len(model.params)))
+        for i, param in enumerate(model.params):
+            params[i] = model.paramValues[0][param]
+
+        params = params.astype('double')
+        
+        return(params)
+        
+    def fill_2d_func_idxs(self, model, functionMap):
+        '''
+        DESCRIPTION:
+        functionMaps from set_params_for_dom_*
+        '''
+
+        block = model.blocks[0]
+
+        cellCountList = block.getCellCount(model.gridStepX, model.gridStepY,
+                                           model.gridStepZ)
+        cellCount = cellCountList[0]*cellCountList[1]*cellCountList[2]
+
+        zc, yc, xc = cellCountList[2], cellCountList[1], cellCountList[0]
+
+        blockCompFuncArr = np.zeros(cellCount, dtype=np.int32)
+        funcArr = blockCompFuncArr.reshape([yc, xc])
+
+        print("Filling 2d main function array.")
+        print("Function mapping for this block:")
+        print(functionMap)
+        xc = cellCountList[0]
+        yc = cellCountList[1]
+        print("size:")
+        print("x")
+        print(xc)
+        print("y")
+        print(yc)
+        haloSize = model.getHaloSize()
+        if haloSize > 1:
+            raise AttributeError("Halosize>1 is not supported yet")
+
+        # 1 fill center funcs
+        if "center_default" in functionMap:
+            funcArr[:] = functionMap["center_default"]
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["center"]:
+            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
+
+        # side 0
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side0"]:
+            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
+
+        # side 1
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side1"]:
+            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
+
+        # side 2
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side2"]:
+            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
+
+        # side 3
+        for [funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx] in functionMap["side3"]:
+            funcArr[yfromIdx:ytoIdx, xfromIdx:xtoIdx] = funcIdx
+
+        #2 fill edges
+        # funcArr[0,0]       = functionMap["v02"]
+        # funcArr[0,xc-1]    = functionMap["v12"]
+        # funcArr[yc-1,0]    = functionMap["v03"]
+        # funcArr[yc-1,xc-1] = functionMap["v13"]
+
+        print("funcIdxs")
+        print(funcArr)
+
+        return(funcArr)
+
+    def fill_2d_init_funcs(self, model):
+
+        block = model.blocks[0]
+
+        cellCountList = block.getCellCount(model.gridStepX, model.gridStepY,
+                                           model.gridStepZ)
+        cellCount = cellCountList[0]*cellCountList[1]*cellCountList[2]
+        zc, yc, xc = cellCountList[2], cellCountList[1], cellCountList[0]
+
+        blockInitFuncArr = np.zeros(cellCount, dtype=np.int32)
+
+        funcArr = blockInitFuncArr.reshape([yc, xc])
+
+        bdict = {"dirichlet": 0, "neumann": 1}
+
+        print("Filling 2d initial function array.")
+        xc = cellCountList[0]
+        yc = cellCountList[1]
+
+        # 1 fill default conditions
+        funcArr[:] = block.defaultInitial
+
+        # 2 fill user-defined conditions
+        # 2.1 collect user-defines initial conditions that are used in this block
+        usedIndices = 0
+        usedInitNums = [block.defaultInitial]
+        for initReg in block.initialRegions:
+            if not (initReg.initialNumber in usedInitNums):
+                usedInitNums.append(initReg.initialNumber)
+        # 2.2 fill them    
+        for initReg in block.initialRegions:
+            initFuncNum = usedIndices + usedInitNums.index(initReg.initialNumber)
+            xstart, xend = model.getXrange(block, initReg.xfrom, initReg.xto)
+            ystart, yend = model.getYrange(block, initReg.yfrom, initReg.yto)            
+            funcArr[ystart:yend, xstart:xend] = initFuncNum             
+
+        print("Used init nums:")
+        print(usedInitNums)
+
+        # 3 overwrite with values that come from Dirichlet bounds
+        # 3.1 collect dirichlet bound numbers that are used in this block
+        usedIndices += len(usedInitNums)
+        usedDirBoundNums = []
+        for boundReg in block.boundRegions:
+            if not (boundReg.boundNumber in usedDirBoundNums):
+                if (model.bounds[boundReg.boundNumber].btype == bdict["dirichlet"]):
+                    usedDirBoundNums.append(boundReg.boundNumber)
+
+        usedDirBoundNums.sort()
+        print("Used Dirichlet bound nums:")
+        print(usedDirBoundNums)
+
+        # 3.2 fill them
+        for boundReg in block.boundRegions:
+            if (model.bounds[boundReg.boundNumber].btype == bdict["dirichlet"]):
+                initFuncNum = usedIndices + usedDirBoundNums.index(boundReg.boundNumber)
+                if boundReg.side == 0:       
+                    idxX = 0         
+                    ystart, yend = model.getYrange(block, boundReg.yfrom, boundReg.yto)    
+                    funcArr[ystart:yend, idxX] = initFuncNum                
+                elif boundReg.side == 1:
+                    idxX = xc - 1
+                    ystart, yend = model.getYrange(block, boundReg.yfrom, boundReg.yto)           
+                    funcArr[ystart:yend, idxX] = initFuncNum                    
+                elif boundReg.side == 2:
+                    idxY =  0
+                    xstart, xend = model.getXrange(block, boundReg.xfrom, boundReg.xto) 
+                    funcArr[idxY, xstart:xend] = initFuncNum
+                elif boundReg.side == 3:
+                    idxY = yc-1
+                    xstart, xend = model.getXrange(block, boundReg.xfrom, boundReg.xto)
+                    funcArr[idxY, xstart:xend] = initFuncNum
+
+        print("initFunc")
+        print(funcArr)
+
+        return(funcArr)
 
     def set_params_for_dom_centrals(self, model):
         '''
@@ -314,7 +478,7 @@ class Params():
                     # because xfrom == xto == 0
                     # and Im(xfrom) == 0 and Im(xto) == 1
                     # make Im(xto) = 0 (==Im(xfrom))
-                    ranges[1] = ranges[0]
+                    # ranges[1] = ranges[0]
 
                 elif(bound.side == 1):
                     xfrom = block.sizeX
@@ -329,7 +493,7 @@ class Params():
                     # because xfrom == xto == sizeX
                     # and Im(xfrom) == Im(sizeX) and Im(xto) == Im(sizeX)+1
                     # make Im(xfrom) = Im(sizeX)+1 (==Im(xto))
-                    ranges[0] = ranges[1]
+                    # ranges[0] = ranges[1]
 
                 elif(bound.side == 2):
                     xfrom = bound.region[0]
@@ -344,7 +508,7 @@ class Params():
                     # because yfrom == yto == 0
                     # and Im(yfrom) == 0 and Im(yto) == 1
                     # make Im(yto) = 0 (==Im(yfrom))
-                    ranges[3] = ranges[2]
+                    # ranges[3] = ranges[2]
 
                 elif(bound.side == 3):
                     xfrom = bound.region[0]
@@ -359,7 +523,7 @@ class Params():
                     # because yfrom == yto == sizeY
                     # and Im(yfrom) == Im(sizeY) and Im(yto) == Im(sizeY)+1
                     # make Im(yfrom) = Im(sizeY)+1 (==Im(yto))
-                    ranges[2] = ranges[3]
+                    # ranges[2] = ranges[3]
                     
                 idx = [eq_num] + ranges
             return(idx)
@@ -453,10 +617,28 @@ class Params():
             return(len(eqs[block.defaultEquation].system))
 
         def get_grid_offsets(block):
-            return([block.offsetX, 0, 0])
+            try:
+                # 3d
+                return([block.offsetX, block.offsetY, block.offsetZ])
+            except:
+                try:
+                    # 2d
+                    return([block.offsetX, block.offsetY, 0])
+                except:
+                    # 1d
+                    return([block.offsetX, 0, 0])
 
         def get_grid_sizes(block):
-            return([block.sizeX, 0, 0])
+            try:
+                # 3d
+                return([block.sizeX, block.sizeY, block.sizeZ])
+            except:
+                try:
+                    # 2d
+                    return([block.sizeX, block.sizeY, 0])
+                except:
+                    # 1d
+                    return([block.sizeX, 0, 0])
         # END FOR addition parameters
 
         # FOR ERRORS
@@ -484,7 +666,7 @@ class Params():
             gridArg.indepVar = defaultIndepVars[i]
             d = gridStep[i]
             gridArg.d = d
-            gridArg.d2 = d * d
+            gridArg.d2 = round(d * d, 5)
             gridArg.dm1 = round(1 / d)
             gridArg.dm2 = round(1 / (d * d))
             gridArgs.append(gridArg)
@@ -532,7 +714,8 @@ class Params():
         self.gridArgs = gridArgs
         self.blocksArgs = blocksArgs
         self.paramsLen = len(model.params)
-        
+        self.timeStep = model.timeStep
+
     def set_params_for_centrals(self, model):
         '''
         DESCRIPTION:
@@ -603,7 +786,9 @@ class Params():
                                                              equationNumber=eRegion.equationNumber)
                     equation.default = False
                     logger.debug('blockNumber eqReg=%s' % str(blockNumber))
-                    equations.append(equation)
+
+                    if equation.funcName not in [e.funcName for e in equations]:
+                        equations.append(equation)
 
             # add default equation at remaining regions.
             if do_generate_default(reservedSpace, block):
@@ -616,7 +801,8 @@ class Params():
                                                          equationNumber=block.defaultEquation)
                 equation.default = True
                 logger.debug('blockNumber revSp=%s' % str(blockNumber))
-                equations.append(equation)
+                if equation.funcName not in [e.funcName for e in equations]:
+                    equations.append(equation)
 
         self.equations = equations
         # END FOR FILL
@@ -995,7 +1181,7 @@ class Params():
                 outputValues = list(model.bounds[bNumber].values)
 
                 # special for Neumann bound
-                if side == 0 or side == 2:
+                if bound.side == 0 or bound.side == 2:
                     for idx, value in enumerate(outputValues):
                         outputValues.pop(idx)
                         outputValues.insert(idx, '-(' + value + ')')
@@ -1037,7 +1223,9 @@ class Params():
             bound.equation = model.equations[bound.equationNumber]
             
             # for values
-            bound.values = len(bound.equation.system) * ['0.0']
+            # bound.values = len(bound.equation.system) * ['0.0']
+            block = model.blocks[bound.blockNumber]
+            bound.values = list(model.bounds[block.defaultBound].values)
 
             # for comment
             bound.boundName = determineNameOfBoundary(bound.side)

@@ -22,7 +22,11 @@ END COMMENT #}
 //{{num}} central function for {{eq.dim}}d model for block with number {{bn}}
 void {{eq.funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;	      {% for i, value in enumerate(eq.parsedValues) %}
-	result[idx + {{i}}] = {{value}};
+	{{value}};
      {% endfor %}
 }
+
+//device side function pointer declaration and init:
+func_ptr_t p_{{eq.funcName}} = {{eq.funcName}};
+
 {% endfor %}

@@ -26,7 +26,12 @@ firstIndex
 secondIndexSTR
 
 '''
-from someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
+import sys
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.criminal.someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
+else:
+    from someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
 
 
 class DerivGenerator():

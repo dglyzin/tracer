@@ -8,6 +8,12 @@ from domainmodel.criminal.cppOutsForTerms import CppOutsForTerms
 from domainmodel.criminal.patterns import Patterns
 from domainmodel.criminal.actions import Actions
 
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from functools import reduce
+
 #import logging
 
 # for independet launching this module
@@ -136,6 +142,22 @@ class Parser():
         self.clear_data()
         try:
             parsedExpression = self.patterns.eqExpr.parseString(expr, parseAll=True)
+
+            # insert U' as source[0][idx+0] + DT*(...)
+            self.actions.outList.insert(0, 'DT*(')
+            last_idx = len(self.actions.outList)
+            self.actions.outList.insert(last_idx, ')')
+
+            # add source[0][idx+var_index] +
+            o = self.actions.cppOut.get_out_for_termVarsSimpleIndep()
+            termData = self.actions.cppOut.dataTermVarsSimpleGlobal
+            var_index = str(termData['varIndexs'].index(expr[0]))
+            o = o.replace("arg_varIndex",
+                          var_index)
+
+            # add result[idx + var_index] =
+            self.actions.outList.insert(0, ("result[idx + % s] = " + o + "+") % var_index)
+
         except:
             self.print_dbg("expr is not a equation")
             #try:

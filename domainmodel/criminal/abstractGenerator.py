@@ -4,10 +4,21 @@ Created on 11 авг. 2015 г.
 
 @author: golubenets
 '''
-from ..equationParser import MathExpressionParser
-from someFuncs import generateCodeForMathFunction
-from ..rhsCodeGenerator import RHSCodeGenerator
-from someFuncs import getCellCountInClosedInterval
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.criminal.someFuncs import generateCodeForMathFunction
+    from domainmodel.equationParser import MathExpressionParser
+    from domainmodel.criminal.someFuncs import generateCodeForMathFunction
+    from domainmodel.rhsCodeGenerator import RHSCodeGenerator
+    from domainmodel.criminal.someFuncs import getCellCountInClosedInterval
+
+else:
+    from ..equationParser import MathExpressionParser
+    from someFuncs import generateCodeForMathFunction
+    from ..rhsCodeGenerator import RHSCodeGenerator
+    from someFuncs import getCellCountInClosedInterval
 # from parser import Parser
 
 

@@ -4,9 +4,19 @@ Created on 11 авг. 2015 г.
 
 @author: golubenets
 '''
-from abstractGenerator import AbstractGenerator, BoundCondition, Connection, InterconnectRegion
-from equationParser import MathExpressionParser
-from someFuncs import determineNameOfBoundary, squareOrVolume, determineCellIndexOfStartOfConnection2D, getRangesInClosedInterval
+
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.abstractGenerator import AbstractGenerator, BoundCondition, Connection, InterconnectRegion
+    from domainmodel.equationParser import MathExpressionParser
+    from domainmodel.someFuncs import determineNameOfBoundary,  squareOrVolume, determineCellIndexOfStartOfConnection2D, getRangesInClosedInterval
+
+else:
+    from abstractGenerator import AbstractGenerator, BoundCondition, Connection, InterconnectRegion
+    from equationParser import MathExpressionParser
+    from someFuncs import determineNameOfBoundary, squareOrVolume, determineCellIndexOfStartOfConnection2D, getRangesInClosedInterval
 
 class Generator2D(AbstractGenerator):
     def __init__(self, delay_lst, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex):

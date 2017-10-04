@@ -4,6 +4,12 @@ from pyparsing import Suppress, restOfLine
 from pyparsing import OneOrMore, ZeroOrMore
 from pyparsing import Combine
 
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from functools import reduce
+    
 
 class Patterns():
     def __init__(self):

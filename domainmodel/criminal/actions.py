@@ -1,6 +1,12 @@
 from pyparsing import ParseResults
 from copy import deepcopy as copy
 
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from functools import reduce
+
 
 class Actions():
     '''
@@ -210,13 +216,29 @@ class Actions():
     # ACTIONS FOR termFunc
     def action_for_termFunc(self):
         def action(_str, loc, toks):
+            '''
+            DESCRIPTION:
+            Also for cuda sin((float)...)
+            '''
             self.print_dbg("FROM action_for_termFunc:")
             # for compatibility reason
             if self.cppOut.params.fromOld:
                 self.print_dbg("from old error")
                 raise(Exception)
 
-            self.outList.append(toks[0])
+            self.outList.append(toks[0]+'((float)')
+        return(lambda _str, loc, toks: action(_str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termFuncArg
+    def action_for_termFuncArg(self):
+        def action(_str, loc, toks):
+            '''
+            DESCRIPTION:
+            For cuda sin((float)...)
+            '''
+            self.print_dbg("FROM action_for_termFuncArg:")
+            self.outList.append(')')
         return(lambda _str, loc, toks: action(_str, loc, toks))
     # END ACTIONS
 

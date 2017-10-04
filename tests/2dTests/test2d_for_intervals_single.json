@@ -4,14 +4,14 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 1.0, 
-        "TimeStep": 1e-05, 
+        "TimeStep": 0.0001, 
         "SaveInterval": 0.05, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
         "Dimension": 2, 
-        "dx": 0.5, 
+        "dx": 0.1, 
         "dy": 0.1, 
         "dz": 1
     }, 
@@ -23,14 +23,15 @@
                 "y": 3.0
             }, 
             "Size": {
-                "x": 3.0, 
+                "x": 8.0, 
                 "y": 8.0
             }, 
             "DefaultEquation": 1, 
             "DefaultInitial": 0, 
+	    "DefaultBound": 1,
             "BoundRegions": [
                 {
-                    "BoundNumber": 0, 
+                    "BoundNumber": 1, 
                     "Side": 1, 
                     "xfrom": 3.0, 
                     "xto": 3.0, 
@@ -46,7 +47,7 @@
                     "yto": 8.0
                 },
 		{
-                    "BoundNumber": 0, 
+                    "BoundNumber": 1, 
                     "Side": 3, 
                     "xfrom": 0.0, 
                     "xto": 1.0, 
@@ -56,7 +57,7 @@
             ], 
             "InitialRegions": [
                 {
-                    "InitialNumber": 1, 
+                    "InitialNumber": 4.0, 
                     "xfrom": 0.75, 
                     "xto": 2.25, 
                     "yfrom": 0.5, 
@@ -106,7 +107,7 @@
                 "y"
             ], 
             "System": [
-                "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
+                "U'= U + a*(D[U,{x,2}]+ D[U,{y,2}])"
             ]
         }, 
         {
@@ -116,7 +117,7 @@
                 "y"
             ], 
             "System": [
-                "U'=b*(D[U,{x,2}]+ D[U,{y,2}])"
+                "U'=U + b*(D[U,{x,2}]+ D[U,{y,2}])"
             ]
         }, 
         {
@@ -126,7 +127,7 @@
                 "y"
             ], 
             "System": [
-                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - d * D[U,{y,1}]"
+                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - d * D[U,{y,1}]+U"
             ]
         },
 	{
@@ -136,7 +137,7 @@
                 "y"
             ], 
             "System": [
-                "U'=c*(D[U,{x,2}])"
+                "U'=c*(D[U,{x,2}])+U"
             ]
         }
     ], 
@@ -149,17 +150,17 @@
         ], 
         "ParamValues": [
             {
-                "a": 2, 
-                "c": 0.1, 
-                "b": 3, 
-                "d": 100
+                "a": 2.0, 
+                "c": 0.3, 
+                "b": 3.0, 
+                "d": 1.0
             }
         ], 
         "DefaultParamsIndex": 0
     }, 
     "Bounds": [
         {
-            "Name": "Dirichlet 1", 
+            "Name": "Neumann 1", 
             "Type": 1, 
             "Values": [
                 "sin(y)"
@@ -169,13 +170,23 @@
             ]
         },
 	{
-            "Name": "Neumann 1", 
-            "Type": 1, 
+            "Name": "Dirichlet 1", 
+            "Type": 0, 
             "Values": [
-                "sin(y)"
+                500.0
             ], 
             "Derivative": [
-                "cos(y)"
+                300.0
+            ]
+        },
+	{
+            "Name": "Dirichlet 2", 
+            "Type": 0, 
+            "Values": [
+                500.0
+            ], 
+            "Derivative": [
+                300.0
             ]
         }
     ], 

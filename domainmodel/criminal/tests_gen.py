@@ -1,18 +1,29 @@
-from ..block import Block
-from ..equation import Equation
-from ..model import Model
-from ..funcGenerator import FuncGenerator
-from generator1D import Generator1D, BlockInfo
 import os
 # from ...tests.introduction.part_2_2_gen_bouns import to_file
-
-from cppOutsForGenerators import CppOutsForGenerators as CppOutGen
-from params import Params
 
 from domainmodel.criminal.parser import Parser
 
 import matplotlib.pyplot as plt
 import matplotlib.patches as pchs
+
+import sys
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.block import Block
+    from domainmodel.equation import Equation
+    from domainmodel.model import Model
+    from domainmodel.funcGenerator import FuncGenerator
+    from domainmodel.criminal.generator1D import Generator1D, BlockInfo
+    from domainmodel.criminal.cppOutsForGenerators import CppOutsForGenerators as CppOutGen
+    from domainmodel.criminal.params import Params
+else:
+    from ..block import Block
+    from ..equation import Equation
+    from ..model import Model
+    from ..funcGenerator import FuncGenerator
+    from generator1D import Generator1D, BlockInfo
+    from cppOutsForGenerators import CppOutsForGenerators as CppOutGen
+    from params import Params
 
 #import logging
 
@@ -142,6 +153,7 @@ def test_template_bounds_2d(modelFile="tests/2dTests/test2d_for_intervals_single
 
     if params is None:
         params = Params()
+        dataTermVarsForDelay = None
     else:
         # for delays from other templates
         try:
@@ -576,8 +588,18 @@ def test_template_centrals(modelFile="tests/brusselator1d_bound_U.json"):
         print("eq.values")
         print(eq.values)
         parser.params.blockNumber = eq.blockNumber
+        if eq.cpp:
+            eq.parsedValues = eq.values
+        else:
+            eq.parsedValues = [parser.parseMathExpression(value)
+                               for value in eq.values]
+        '''
+        print("eq.values")
+        print(eq.values)
+        parser.params.blockNumber = eq.blockNumber
         eq.parsedValues = [parser.parseMathExpression(value)
                            for value in eq.values]
+        '''
     out = cppGen.get_out_for_centrals(params)
     
     to_file(out, 'from_test_template_centrals.cpp')

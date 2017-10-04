@@ -23,7 +23,7 @@ void getBlock{{bn}}BoundFuncArray(func_ptr_t** ppBoundFuncs){
 	pBoundFuncs = (func_ptr_t*) malloc( {{size}} * sizeof(func_ptr_t) );
 	*ppBoundFuncs = pBoundFuncs;
       {% for funcNumber, funcName in enumerate(namesAndNumbers[bn]) %}
-	pBoundFuncs[{{funcNumber}}] = {{funcName}};
+	pBoundFuncs[{{funcNumber}}] = p_{{funcName}};
       {% endfor %}
 }
 

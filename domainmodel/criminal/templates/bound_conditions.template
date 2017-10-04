@@ -26,4 +26,7 @@ void {{bound.funcName}}(double* result, double** source, double t, int idxX, int
 	 result[idx + {{i}}] = {{value}};
      {% endfor %}
 }
+//device side function pointer declaration and init:
+func_ptr_t p_{{bound.funcName}} = {{bound.funcName}};
+
 {% endfor %}

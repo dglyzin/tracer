@@ -11,6 +11,15 @@ import sys
 logger = logging.getLogger('tests.tester.criminal.tests')
 
 
+def test_equation(eq="V'= U + V"):
+    parser = Parser()
+    out = parser.parseMathExpression(eq)
+    
+    logger.debug("out")
+    logger.debug(out)
+    return(parser)
+
+
 def test_powers():
     parser = Parser()
     parser = fill_params_for_diff(parser)

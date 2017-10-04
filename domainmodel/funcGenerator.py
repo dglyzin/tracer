@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
-from generator1D import Generator1D
-from generator2D import Generator2D
-from generator3D import Generator3D
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.generator1D import Generator1D
+    from domainmodel.generator2D import Generator2D
+    from domainmodel.generator3D import Generator3D
+
+else:
+    from generator1D import Generator1D
+    from generator2D import Generator2D
+    from generator3D import Generator3D
 
 class FuncGenerator:
     def __init__(self, delay_lst, maxDerivOrder, haloSize, equations, blocks, initials, bounds, interconnects, gridStep, params, paramValues, defaultParamIndex, preprocessorFolder):
@@ -35,7 +44,7 @@ class FuncGenerator:
             
             totalArrWithFunctionNames.append(arrWithFunctionNames)
             functionMaps.append(blockFunctionMap)
-            print blockFunctionMap
+            print(blockFunctionMap)
             outputStr += cf + bf
             
         final = self.generator.generateGetBoundFuncArray(totalArrWithFunctionNames)

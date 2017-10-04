@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
-from equationParser import MathExpressionParser
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.equationParser import MathExpressionParser
+else:
+    from equationParser import MathExpressionParser
+
 
 class DelayHandler:
     

@@ -27,7 +27,9 @@
                 "y": 8.0
             }, 
             "DefaultEquation": 1, 
-            "DefaultInitial": 0, 
+            "DefaultInitial": 0,
+	    "DefaultBound": 0,
+
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 

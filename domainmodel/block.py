@@ -5,9 +5,18 @@ Created on Mar 19, 2015
 @author: dglyzin
 '''
 
-from regions import  *
-from someFuncs import getCellCountInClosedInterval, getCellCountInHalfInterval
-from objectsTemplate import Object
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.regions import  *
+    from domainmodel.someFuncs import getCellCountInClosedInterval, getCellCountInHalfInterval
+    from domainmodel.objectsTemplate import Object
+
+else:
+    from regions import  *
+    from someFuncs import getCellCountInClosedInterval, getCellCountInHalfInterval
+    from objectsTemplate import Object
 
 
 class Block(Object):
@@ -59,7 +68,7 @@ class Block(Object):
             yc = getCellCountInHalfInterval(self.offsetY,dy)
         if self.dimension >2:
             zc = getCellCountInHalfInterval(self.offsetZ,dz)
-        print "block", self.name
+        print("block", self.name)
         #print self.offsetX, self.offsetY
         return [xc, yc, zc]
         
@@ -75,6 +84,7 @@ class Block(Object):
             self.sizeZ = bdict["Size"]["z"]            
         
         self.defaultEquation = bdict["DefaultEquation"]
+        self.defaultBound = bdict["DefaultBound"]
         self.defaultInitial = bdict["DefaultInitial"]
         
         self.boundRegions = []

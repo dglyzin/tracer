@@ -4,9 +4,18 @@ Created on 11 авг. 2015 г.
 
 @author: golubenets
 '''
-from abstractGenerator import AbstractGenerator, BoundCondition, Connection
-from ..equationParser import MathExpressionParser
-from someFuncs import determineNameOfBoundary, getRangesInClosedInterval
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.criminal.abstractGenerator import AbstractGenerator, BoundCondition, Connection
+    from domainmodel.equationParser import MathExpressionParser
+    from domainmodel.criminal.someFuncs import determineNameOfBoundary, getRangesInClosedInterval
+
+else:
+    from abstractGenerator import AbstractGenerator, BoundCondition, Connection
+    from ..equationParser import MathExpressionParser
+    from someFuncs import determineNameOfBoundary, getRangesInClosedInterval
 
 
 class Generator1D(AbstractGenerator):
