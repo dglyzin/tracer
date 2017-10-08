@@ -348,10 +348,6 @@ def createMovie(projectDir, projectName):
                                              offsetY, offsetX, dataListMax, dataListMin, dx, dy, str(Idx),
                                              plotIdx, picCount) for Idx, dataNum in enumerate(logData) ] )
 
-            for element in log:
-                print element
-
-            createVideoFile(projectDir, projectName,plotIdx)
         if plotType == list:
             print 'ЛИСТ! Ы'
             logData = []
@@ -374,10 +370,10 @@ def createMovie(projectDir, projectName):
             log = pool.map(saveResultFunc, [(projectDir, projectName, logDataNp[:,Idx], dataTime[Idx], countX, offsetZ,
                                              offsetY, offsetX, dataListMax, dataListMin, dx, dy, str(Idx),
                                              plotIdx, picCount) for Idx, itemd in enumerate(logDataNp[0])])
-            for element in log:
-                print element
+        for element in log:
+            print element
 
-            createVideoFile(projectDir, projectName, plotIdx)
+        createVideoFile(projectDir, projectName, plotIdx)
 
     #U and V
     #TODO get result all list U or V
