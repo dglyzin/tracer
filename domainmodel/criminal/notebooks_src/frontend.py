@@ -159,23 +159,36 @@ class FrontState(object):
                       bAdd, bShow,
                       bBack, bNext]
 
-        mNode = widgets.Box(children=[lNameM, tModel, bModel, bNext])
+        box_layout = widgets.Layout(display='flex',
+                                    flex_flow='column',
+                                    align_items='stretch',
+                                    border='solid',
+                                    width='50%')
+        
+        mNode = widgets.Box(children=[lNameM, tModel, bModel, bNext],
+                            layout=box_layout)
 
-        eNode1 = widgets.Box(children=wChildrenE)
-        eNode2 = widgets.Box(children=cChildrenE)
+        eNode1 = widgets.Box(children=wChildrenE,
+                             layout=box_layout)
+        eNode2 = widgets.Box(children=cChildrenE,
+                             layout=box_layout)
 
-        bNode1 = widgets.Box(children=wChildrenB)
+        bNode1 = widgets.Box(children=wChildrenB,
+                             layout=box_layout)
 
-        iNode = widgets.Box(children=[lNameI, bBack, bNext])
-        cNode = widgets.Box(children=[lNameC, bBack, bNext])
+        iNode = widgets.Box(children=[lNameI, bBack, bNext],
+                            layout=box_layout)
+        cNode = widgets.Box(children=[lNameC, bBack, bNext],
+                            layout=box_layout)
         sNode = widgets.Box(children=[lNameS, tSolverC, tSolverS,
                                       cCuda,
-                                      bBack, bNext])
+                                      bBack, bNext],
+                            layout=box_layout)
 
-        
         # for interact usage later
-        self.rChildren = [lNameR, bReinit,]
-        rNode = widgets.Box(children=self.rChildren)
+        self.rChildren = [lNameR, bReinit]
+        rNode = widgets.Box(children=self.rChildren,
+                            layout=box_layout)
 
         self.accordions = {}
 
@@ -348,10 +361,10 @@ class FrontState(object):
 
         @make_event(self, 'model')
         def on_button_bModel(event, self):
-            clear_output()
+            # clear_output()
             mName = self.texts['model'].value
             path = os.path.join("tests", "2dTests", mName)
-            display(path)
+            print(path)
             self.state.get_model(path)
 
     def make_action_for_tab(self, tab_name, tab_current=None):
