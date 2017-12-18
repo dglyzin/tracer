@@ -71,7 +71,7 @@ class Connection(object):
     def loadFromFile(self, fileNamePath):
         pass
         
-def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvided, continueFileName, jobId, finishTimeProvided, finishTime, debug, nortpng, nocppgen, projectFolder, logger):
+def remoteProjectRun(connection, inputFile, params, projectFolder, logger):
     '''
       connection: file with connection settings
       inputFile:  project file
@@ -86,20 +86,27 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
     '''
     
     #prepare command line argumetnts for preprocessor
-    optionalArgs=''    
-    if not (jobId is None):
-        optionalArgs+=" -jobId "+str(jobId)
-    if finishTimeProvided:
-        optionalArgs+=" -finish "+str(finishTime)
-    if continueEnabled:
-        optionalArgs+=" -cont"
-        if continueFnameProvided:
-            optionalArgs+=" "+continueFileName
-    if debug:
-        optionalArgs+=" -debug"
-    if nortpng:
-        optionalArgs+=" -nortpng"
-    
+    optionalArgs = ''
+    if not (params["jobId"] is None):
+        optionalArgs += " -jobId "+str(params["jobId"])
+    if not (params["finish"] is None):
+        optionalArgs += " -finish "+str(params["finishTime"])
+    if params["continueEnabled"]:
+        optionalArgs += " -cont"
+        if params["continueFnameProvided"]:
+            optionalArgs += " "+params["continueFileName"]
+    if params["nortpng"]:
+        optionalArgs += " -nortpng"
+    if not (params["partition"] is None):
+        optionalArgs += " -p "+str(params["partition"])
+    if not (params["nodes"] is None):
+        optionalArgs += " -w " + str(params["nodes"])
+    if not (params["affinity"] is None):
+        optionalArgs += " -aff " + str(params["affinity"])
+    if not (params["mpimap"] is None):
+        optionalArgs += " -mpimap " + str(params["mpimap"])
+
+
     
     #get project file name without extension
     logger.log(inputFile, LL_USER)
@@ -136,16 +143,16 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
             stdin, stdout, stderr = client.exec_command('mkdir  '+projFolder)
             logger.log("Folder created.", LL_USER)
         else:
-            if not continueEnabled:  
+            if not params["continueEnabled"]:
                 stdin, stdout, stderr = client.exec_command('rm -rf '+projFolder+'/*')
                 stdout.read()
                 logger.log("Folder cleaned.", LL_USER)                
             else:
                 logger.log("Folder exists, no cleaning needed.", LL_USER)
                 #now check if file to continue from exists
-                if continueFnameProvided:
-                    logger.log("Checking if file to continue from  ("+continueFileName+") exists...", LL_USER)
-                    stdin, stdout, stderr = client.exec_command('test -f '+continueFileName)
+                if params["continueFnameProvided"]:
+                    logger.log("Checking if file to continue from  ("+params["continueFileName"]+") exists...", LL_USER)
+                    stdin, stdout, stderr = client.exec_command('test -f '+params["continueFileName"])
                     if stdout.channel.recv_exit_status():
                         logger.log("File not found, please specify existing file to continue", LL_USER)
                         return
@@ -159,7 +166,7 @@ def remoteProjectRun(connection, inputFile, continueEnabled, continueFnameProvid
         #3 Run jsontobin on json
         logger.log('\nRunning preprocessor:', LL_USER)
         
-        if nocppgen:
+        if params["nocppgen"]:
             optionalArgs += ' -nocppgen'
             #also put cpp from local machine
             projectPathName, _ = os.path.splitext(inputFile)  
@@ -242,14 +249,27 @@ def getConnection(connFileName):
 
 
 def finalParseAndRun(connection, inputFileName, args, projectFolder=None):
-    finishTimeProvided = not (args.finish is None)
     continueFileName = args.cont      
     continueEnabled = not (continueFileName is None)
     continueFnameProvided =  not (continueFileName == "/") if continueEnabled else False
     
     logger = Logger(args.verbose, logAPI = False, logFileName = None)
+
+    params = {
+        "continueEnabled": continueEnabled,
+        "continueFnameProvided": continueFnameProvided,
+        "continueFileName": continueFileName,
+        "jobId": args.jobId,
+        "finish": args.finish,
+        "partition": args.p,
+        "nodes": args.w,
+        "affinity": args.aff,
+        "mpimap": args.mpimap,
+        "nortpng": args.nortpng,
+        "nocppgen": args.nocppgen
+    }
        
-    remoteProjectRun(connection, inputFileName, continueEnabled, continueFnameProvided, continueFileName, args.jobId, finishTimeProvided, args.finish, args.debug, args.nortpng, args.nocppgen, projectFolder, logger)
+    remoteProjectRun(connection, inputFileName, params, projectFolder, logger)
     logger.clean()
 
 if __name__=='__main__':    
@@ -264,8 +284,17 @@ if __name__=='__main__':
     #optional argument with one or no argument, filename to continue computations from
     #if no filename is provided with this option, the last state is taken
     parser.add_argument('-cont', nargs='?', const="/", type=str, help = "add this flag if you want to continue existing solution.\n Provide specific remote filename or the last one will be used. ")
-    parser.add_argument('-debug', help="add this flag to run program in debug partition", action="store_true")
-    parser.add_argument('-nortpng', help="add this flag to not create png in real time", action="store_true")
+    #partition to run on
+    parser.add_argument('-p', type=str, help="slurm partition")
+    #also node
+    parser.add_argument('-w', type=str, help="slurm nodes")
+    #also affinnity
+    parser.add_argument('-aff', type=str, help="GOMP_CPU_AFFINITY='?' ")
+    #also mapby
+    parser.add_argument('-mpimap', type=str, help="mpirun --map-by argument")
+
+
+    parser.add_argument('-nortpng', help="add this flag to avoid runtime png creation", action="store_true")
     parser.add_argument("-v", "--verbose", dest="verbose", action="count", default=1, help="set verbosity level [default: %(default)s]")
     parser.add_argument('-nocppgen', help="add this flag to use pre-generated cpp with the same baseneame as .json", action="store_true")
     
