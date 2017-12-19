@@ -106,7 +106,7 @@ if __name__=='__main__':
     # also affinnity
     parser.add_argument('-aff', type=str, help="GOMP_CPU_AFFINITY='?' ")
     # also mapby
-    parser.add_argument('-mpimap', type=str, help="mpirun --map-by argument")
+    parser.add_argument('-mpimap', nargs='?', const="/", type=str, help="mpirun --map-by argument")
 
     args = parser.parse_args()
   

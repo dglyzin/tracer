@@ -776,7 +776,11 @@ class BinaryModel(object):
             params["nodes"] = "-w "+params["nodes"]
 
         if params["mpimap"] is None:
-            params["mpimap"] = 'ppr:1:node:pe=16'
+            params["mpimap"] = ''
+        elif  params["mpimap"] =='/':
+            params["mpimap"] = '--map-by ppr:1:node:pe=16'
+        else:
+            params["mpimap"] = '--map-by '+ params["mpimap"]
 
         if params["affinity"] is None:
             params["affinity"] = '0-15'
@@ -786,7 +790,7 @@ class BinaryModel(object):
         #runFile.write("export OMP_NUM_THREADS=16\n")
         runFile.write("export GOMP_CPU_AFFINITY='" + params["affinity"] + "'\n")
         runFile.write("salloc -N "+str(nodeCount) + " -n "+ str(nodeCount) + " " + params["nodes"] + params["partition"] + \
-                      " mpirun --map-by "+ params["mpimap"] +" "+ solverExecutable+" "+OutputDomFile + \
+                      " mpirun "+ params["mpimap"] +" "+ solverExecutable+" "+OutputDomFile + \
                       " "+str(flag)+" "+str(finishTime) + " " + params["cont"] + "\n")
         #runFile.write("srun -N "+str(nodeCount)+" " +  partitionOption + " "+ solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
         runFile.write("srun -n1" + " " + params["nodes"] + params["partition"] +"python " + postprocessor +" " + projectDir+"/" +" " + outProjectTitle )
