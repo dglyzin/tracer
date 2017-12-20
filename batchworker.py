@@ -105,7 +105,7 @@ def checkOutfilesExists(projectFileNamePath):
 
     return True
 
-def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) ):
+def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount, partition) ):
     '''
         returns  base path and filename:  
     ''' 
@@ -122,7 +122,22 @@ def launchJob( (paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLo
             mainLogger.log("Job {} of {} started".format(jobIdx+1, jobCount), LL_USER)
             logFileName = baseProblemNamePath + pathifyParams(paramSet)  + ".log"
             jobLogger = Logger(LL_DEVEL, logAPI = False, logFileName = logFileName)
-            remoteProjectRun(conn, newProjectFileNamePath, False, False, None, None, False, None, False, True, None, jobLogger)
+            #connection, inputFile, params, projectFolder, logger
+            #False, False, None, None, False, None, False, True,
+            params = {
+                "continueEnabled": False,
+                "continueFnameProvided": False,
+                "continueFileName": None,
+                "jobId": None,
+                "finish": None,
+                "partition": partition,
+                "nodes": None,
+                "affinity": None,
+                "mpimap": None,
+                "nortpng": True,
+                "nocppgen": False
+            }
+            remoteProjectRun(conn, newProjectFileNamePath, params, None, jobLogger)
             jobLogger.clean()       
             mainLogger.log("Job {} of {} finished".format(jobIdx+1, jobCount), LL_USER)
         else:
@@ -166,6 +181,7 @@ USAGE
     parser.add_argument('batchFileNamePath', type = str, help = "local json batch file")
     parser.add_argument("-v", "--verbose", dest="verbose", action="count", default=1, help="set verbosity level [default: %(default)s]")
     parser.add_argument('-V', '--version', action='version', version=program_version_message)
+    parser.add_argument('-p', type=str, help="slurm partition")
     parser.add_argument('-clean', help="clean folder instead of continuing", action="store_true")
     
     # Process arguments
@@ -207,7 +223,7 @@ USAGE
     paramQueue = paramGenerator([], batch.batchDict["ParamRanges"])
     
     pool = mp.Pool(processes=8)
-    paramResultFiles = pool.map(launchJob, [( paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount) for jobIdx, paramSet in enumerate(paramQueue) ] )
+    paramResultFiles = pool.map(launchJob, [( paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount, args.p) for jobIdx, paramSet in enumerate(paramQueue) ] )
     #for jobIdx, paramSet in enumerate(paramQueue):
     #    launchJob( ( paramSet, conn, problemFileNamePath, baseProblemNamePath, mainLogger, jobIdx, jobCount )  )
     
