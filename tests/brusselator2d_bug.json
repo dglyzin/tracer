@@ -1,55 +1,64 @@
 {
-    "ProjectName": "Like in Hairer and Wanner", 
+    "ProjectName": "Brusselator2d", 
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 0.05, 
-        "TimeStep": 1e-07, 
-        "SaveInterval": 0.005, 
+        "FinishTime": 1, 
+        "TimeStep": 1e-06, 
+        "SaveInterval": 0.0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
-        "Dimension": 1, 
-        "dx": 0.025, 
-        "dy": 1, 
+        "Dimension": 2, 
+        "dx": 0.01, 
+        "dy": 0.01, 
         "dz": 1
     }, 
     "Blocks": [
         {
             "Name": "MainBlock", 
             "Offset": {
-                "x": 0.0
+                "x": 0.0, 
+                "y": 0.0
             }, 
             "Size": {
-                "x": 1.0
+                "x": 1.0, 
+                "y": 1.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
-            "BoundRegions": [
-                {
-                    "BoundNumber": 0, 
-                    "Side": 0
-                }, 
-                {
-                    "BoundNumber": 0, 
-                    "Side": 1
-                }
-            ], 
+            "BoundRegions": [], 
             "InitialRegions": [], 
             "EquationRegions": []
         }
     ], 
-    "Interconnects": [], 
+    "Interconnects": [
+        {
+            "Name": "connection 1", 
+            "Block1": 0, 
+            "Block2": 0, 
+            "Block1Side": 1, 
+            "Block2Side": 0
+        }, 
+        {
+            "Name": "connection 1", 
+            "Block1": 0, 
+            "Block2": 0, 
+            "Block1Side": 3, 
+            "Block2Side": 2
+        }
+    ], 
     "Equations": [
         {
             "Name": "Flat Brusselator", 
             "Vars": [
-                "x"
+                "x", 
+                "y"
             ], 
             "System": [
-                "U'=a+U*U*V-(b+1)*U+c*D[U,{x,2}]", 
-                "V'=b*U-U*U*V+c*D[V,{x,2}]"
+                "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}]+D[U,{y,2}])", 
+                "V'=b*U-U*U*V+c*(D[V,{x,2}]+D[V,{y,2}])"
             ]
         }
     ], 
@@ -62,38 +71,25 @@
         "ParamValues": [
             {
                 "a": 1.0, 
-                "c": 0.02, 
-                "b": 3
+                "c": 0.002, 
+                "b": 3.4
             }
         ], 
         "DefaultParamsIndex": 0
     }, 
-    "Bounds": [
-        {
-            "Name": "Left point", 
-            "Type": 0, 
-            "Values": [
-                "1", 
-                "3"
-            ], 
-            "Derivative": [
-                "0", 
-                "0"
-            ]
-        }
-    ], 
+    "Bounds": [], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
-                "1+sin(6.28*x)", 
-                "3"
+                "0.5+y", 
+                "1+5*x"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "any", 
+            "Name": "cnode1", 
             "CpuCount": 1, 
             "CpuMemory": [
                 56
@@ -118,22 +114,8 @@
     }, 
     "Plots": [
         {
-            "Title": "u(t,x)", 
-            "Period": 0.1,
-            "Value": "U"
+            "Title": "u(t)", 
+            "Period": 0.05
         }
-    ],
-    "Results": [
-        {
-            "Name": "u_max", 
-            "Period": 0.1,
-            "Value": "max(U)"
-        },
-        {
-            "Name": "u_min", 
-            "Period": 0.1,
-            "Value": "min(U)"
-        }
-
     ]
 }

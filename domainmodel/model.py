@@ -81,6 +81,8 @@ class Model(object):
         self.bounds = []
         self.initials = []
         self.compnodes = []
+        self.plots = []
+        self.results = []
 
     #the following function is useful for json format updating
     
@@ -228,12 +230,25 @@ class Model(object):
        
         try:
             self.plots = [ OrderedDict([("Title", plot["Title"]),
-                                    ("Period", plot["Period"])
+                                    ("Period", plot["Period"]),
+                                    ("Value", plot["Value"])
                                     ]
                                    )
                  for plot in projectDict["Plots"] ]
         except:        
             self.plots = [ ]
+
+        try:
+            self.results = [ OrderedDict([("Name", result["Name"]),
+                                    ("Period", result["Period"]),
+                                    ("Value", result["Value"])
+                                    ]
+                                   )
+                 for result in projectDict["Results"] ]
+        except:        
+            self.results = [ ]
+        
+
         
         self.initSessionSettings()
         self.projectFileAssigned = True
@@ -276,11 +291,18 @@ class Model(object):
                                      for block in projectDict["Mapping"]["BlockMapping"] ]
        
         self.plots = [ OrderedDict([("Title", plot["Title"]),
-                                    ("Period", plot["Period"])
+                                    ("Period", plot["Period"]),
+                                    ("Value", plot["Value"])
                                     ]
                                    )
              for plot in projectDict["Plots"] ]
         
+        self.results = [ OrderedDict([("Name", result["Name"]),
+                                    ("Period", result["Period"]),
+                                    ("Value", result["Value"])
+                                    ]
+                                   )
+             for result in projectDict["Results"] ]
         self.initSessionSettings()
         self.projectFileAssigned = True
         self.projectFile = fileName
@@ -362,7 +384,8 @@ class Model(object):
             ("Mapping", OrderedDict ([("IsMapped", self.isMapped),
                                       ("BlockMapping", self.mapping) 
                                     ]) ),
-            ("Plots", self.plots)
+            ("Plots", self.plots),
+            ("Results", self.results),
         ])
         return modelDict
 
@@ -543,7 +566,7 @@ class Model(object):
             if node.name == "any":
                 return ""
             else:
-                paramLine = paramLine + " " + node.name
+                paramLine = paramLine + "," + node.name
         return paramLine
 
     def getCellSize(self):
@@ -561,7 +584,7 @@ class Model(object):
         d = DelayHandler()
         return d.determineDelay(self.equations[0].system,self.params, self.equations[0].vars)
 
-    def createCPPandGetFunctionMaps(self, cppFileName, preprocessorFolder):
+    def createCPPandGetFunctionMaps(self, cppFileName, preprocessorFolder, nocppgen):
         #generator1
         # try:
         gridStep = [self.gridStepX, self.gridStepY, self.gridStepZ]
@@ -583,9 +606,10 @@ class Model(object):
         #    print("###")
         #    print(ex)
         # else:
-        f = open(cppFileName,'w')
-        f.write(outputStr)
-        f.close()
+        if not nocppgen:
+            f = open(cppFileName,'w')
+            f.write(outputStr)
+            f.close()
         return (functionMaps, gen.delays)
         #generator2
         #generateCfromDict(self.toDict(),cppFileName)
@@ -663,6 +687,8 @@ class Model(object):
         return minCapacity #like 100*100*100 000 elements = 8GB < 64GB
             
     
-    
+    def applyParams(self,paramSet):
+        for param in paramSet:
+            self.paramValues[0][param["Name"]] = param["Value"]
     
     

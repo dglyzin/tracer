@@ -656,12 +656,15 @@ class BinaryModel(object):
                 self.interconnect2dFill(icIdx)
 
     def fillBinaryPlots(self):
-        self.plotCount = len(self.dmodel.plots)
-        self.plotCountArr = np.zeros(1, dtype=np.int32)
-        self.plotCountArr[0] = self.plotCount
-        self.plotPeriodsArr = np.zeros(self.plotCount, dtype=np.float64)
-        for plotIdx in range(self.plotCount):
-            self.plotPeriodsArr[plotIdx] = self.dmodel.plots[plotIdx]["Period"]
+        plotCount = len(self.dmodel.plots)
+        resCount = len(self.dmodel.results)          
+        self.plotAndResCountArr = np.zeros(1, dtype=np.int32)
+        self.plotAndResCountArr[0] = plotCount + resCount
+        self.plotAndResPeriodsArr = np.zeros(plotCount + resCount, dtype=np.float64)
+        for plotIdx in range(plotCount):
+            self.plotAndResPeriodsArr[plotIdx] = self.dmodel.plots[plotIdx]["Period"]
+        for resIdx in range(resCount):
+            self.plotAndResPeriodsArr[plotCount + resIdx] = self.dmodel.results[resIdx]["Period"]
         
         
     #this will only work if saveFuncs was called and self.functionMaps are filled
@@ -715,12 +718,12 @@ class BinaryModel(object):
             icArr.tofile(domfile)
         
         self.fillBinaryPlots()
-        self.plotCountArr.tofile(domfile)
-        self.plotPeriodsArr.tofile(domfile)
-        #print "plot periods:", self.plotCountArr, self.plotPeriodsArr          
+        self.plotAndResCountArr.tofile(domfile)
+        self.plotAndResPeriodsArr.tofile(domfile)
+        print "plot periods:", self.plotAndResCountArr, self.plotAndResPeriodsArr          
         domfile.close()
 
-    def saveFuncs(self, fileName, tracerFolder):
+    def saveFuncs(self, fileName, tracerFolder, nocppgen):
         '''
         Tests:
         In [12]: import domainmodel.binarymodel as bm
@@ -734,7 +737,7 @@ class BinaryModel(object):
         print("from saveFuncs")
         print(fileName)
         # self.functionMaps, delays = self.dmodel.createCPPandGetFunctionMaps(fileName,
-        #                                                                     tracerFolder+"/hybriddomain")
+                                                                            tracerFolder+"/hybriddomain", nocppgen)
         if self.dmodel.dimension == 1:
             params = ts.test_templates_1d(self.dmodel)
             functionMaps = ts.test_domain_1d(self.dmodel)
@@ -775,83 +778,59 @@ class BinaryModel(object):
         print "compilation finished"
 
 
-    def createCOnlyRunFile(self, OutputRunFile, projectDir, projectTitle, tracerFolder, debug, nortpng,
-                     DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName):
+    def createCOnlyRunFile(self, OutputRunFile, projectDir, outProjectTitle, OutputDomFile, params):
         '''
         in this case we run only c mpi workers and then process results
         '''    
         print "generating launcher script..."
         flag = 0
-        if finishTimeProvided: flag+=1
+        if not(params["finish"] is None): flag+=1
         else: finishTime = -1.1
-        if continueEnabled: flag +=2
-        else: continueFileName = "n_a"
-        if nortpng: flag+=4
+        if not(params["cont"] is None): flag +=2
+        else: params["cont"] = "n_a"
+        if params["nortpng"]: flag+=4
         #print OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName
         runFile = open(OutputRunFile, "w")        
-        postprocessor = tracerFolder + "/hybriddomain/postprocessor.py"
+        postprocessor = params["tracerFolder"] + "/hybriddomain/postprocessor.py"
          
-        partitionOption = " -p exp "
-        #if debug:
-        #    partitionOption = " -p debug "
-        
-        solverExecutable = tracerFolder+"/hybridsolver/bin/HS"
+
+        solverExecutable = params["tracerFolder"]+"/hybridsolver/bin/HS"
         
         nodeCount = self.dmodel.getNodeCount()
-        nodeSpec = self.dmodel.getNodeSpec()
+
+        if params["partition"] is None:
+            params["partition"] = " "
+        else:
+            params["partition"] = " -p " + params["partition"] + " "
+
+        if params["nodes"] is None:
+            params["nodes"] = self.dmodel.getNodeSpec()
+        else:
+            params["nodes"] = "-w "+params["nodes"]
+
+        if params["mpimap"] is None:
+            params["mpimap"] = ''
+        elif  params["mpimap"] =='/':
+            params["mpimap"] = '--map-by ppr:1:node:pe=16'
+        else:
+            params["mpimap"] = '--map-by '+ params["mpimap"]
+
+        if params["affinity"] is None:
+            params["affinity"] = '0-15'
+
         runFile.write("echo Welcome to generated kernel launcher!\n")
         runFile.write("export LD_LIBRARY_PATH="+projectDir+":$LD_LIBRARY_PATH\n")
         #runFile.write("export OMP_NUM_THREADS=16\n")
-        runFile.write("export GOMP_CPU_AFFINITY='0-15'\n")
-        runFile.write("salloc -N "+str(nodeCount) + " -n "+ str(nodeCount) + " " + nodeSpec + partitionOption + " mpirun --map-by ppr:1:node:pe=16 "+ solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
+        runFile.write("export GOMP_CPU_AFFINITY='" + params["affinity"] + "'\n")
+        runFile.write("salloc -N "+str(nodeCount) + " -n "+ str(nodeCount) + " " + params["nodes"] + params["partition"] + \
+                      " mpirun "+ params["mpimap"] +" "+ solverExecutable+" "+OutputDomFile + \
+                      " "+str(flag)+" "+str(finishTime) + " " + params["cont"] + "\n")
         #runFile.write("srun -N "+str(nodeCount)+" " +  partitionOption + " "+ solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
-        runFile.write("srun -n1" + partitionOption +"python " + postprocessor +" " + projectDir+"/" +" " + projectTitle )
+        runFile.write("srun -n1" + " " + params["nodes"] + params["partition"] +"python " + postprocessor +" " + projectDir+"/" +" " + outProjectTitle )
         runFile.close()
    
                    
-    def createMixRunFile(self, OutputSpmdFile, OutputRunFile, projectDir, projectTitle, tracerFolder, jobId, debug, 
-                    DomFileName, finishTimeProvided, finish, continueEnabled, continueFileName):
-        '''
-          here we want to run mpi in mpmd mode with one python master process
-          and some c workers
-          1. create slurm-mpmd file
-          2. create sh script
-          no results handling needed, as it is done by python master          
-        '''
-        print "generating launcher script..."
-        flag = 0
-        if finishTimeProvided: flag+=1
-        else: finishTime = -1.1
-        if continueEnabled: flag +=2
-        else: continueFileName = "n_a"
-        #print OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName
-                
-        partitionOption = " "
-        if debug:
-            partitionOption = " -p debug "
-        
-        pythonMaster = tracerFolder+"/hybriddomain/mpimaster.py"
-        solverExecutable = tracerFolder+"/hybridsolver/bin/HS"
-        runOptions = DomFileName + " " + str(flag) + " " + str(finishTime) + " " + continueFileName
-        
-        nodeCount = self.dmodel.getNodeCount()
-         
-        spmdFile = open(OutputSpmdFile, "w")
-        spmdFile.write("0 python " + pythonMaster + " " + str(jobId) + " " + runOptions + "\n")
-        spmdFile.write("1-" + str(nodeCount) + " " + solverExecutable + " " + runOptions + "\n") 
-        
-        spmdFile.close()
-        
-        
-        runFile = open(OutputRunFile, "w")
-        runFile.write("echo Welcome to generated kernel launcher!\n")
-        runFile.write("export LD_LIBRARY_PATH="+projectDir+":$LD_LIBRARY_PATH\n")
-        #dirty trick to let python process consume one processor core 
-        runFile.write("export OMP_NUM_THREADS=15\n")
-        runFile.write("srun -N "+ str(nodeCount) + " "+ partitionOption+ "--multi-prog " + OutputSpmdFile +"\n")        
-        #postprocessor = tracerFolder + "/hybriddomain/postprocessor.py"
-        #runFile.write("srun -n1" + partitionOption +"python " + postprocessor +" " + projectDir+"/" )
-        runFile.close()
+
     
     def generateState(self, fillFunc, dbinFileName, stateTime=0.0, stateTimeStep=1.0):
         ##!  uint8: 253

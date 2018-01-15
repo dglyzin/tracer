@@ -51,8 +51,8 @@
 ##!  I_d*int32 destination offset
 ### END OF IC
 
-### Plot config
-##!  int32: number of plots N_P
+### Plot and text results config
+##!  int32: number of plots and results N_P
 ##!  N_P * float64 interval values
 ### End of plot config
 

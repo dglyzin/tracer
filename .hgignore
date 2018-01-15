@@ -21,4 +21,5 @@ ManualHeat/*
 *.sh
 *tempFile
 *~
+problems/*
 TAGS
