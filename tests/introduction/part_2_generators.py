@@ -114,7 +114,9 @@ def test_model_create_cpp(modelFile="tests/brusselator1d_bound_U.json"):
 
     return(forDomain)
 
+    return(forDomain)
 
+def test_cpp(fileName='from_model_createCPP.cpp', _stderr=None):
 def test_cpp(fileName='from_model_createCPP.cpp', _stderr=None):
     '''
     DESCRIPTION:
