@@ -4,6 +4,12 @@ from pyparsing import Suppress, restOfLine
 from pyparsing import OneOrMore, ZeroOrMore
 from pyparsing import Combine
 
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from functools import reduce
+    
 
 class Patterns():
     def __init__(self):
@@ -67,16 +73,34 @@ class Patterns():
 
         self.termBrackets = Literal('(') ^ Literal(')')
 
+        # self.termArgsForOperand = self.termArgs.copy()
         self.termOperand = (self.termVars ^ self.termParam ^ Group(self.termDiff)
                             ^ self.real ^ self.termArgs ^ self.termParam)
 
         # FOR TERM like -(-sin(x)+cos(x))*U
         self.termRealForUnary = self.real.copy()
         self.termArgsForUnary = self.termArgs.copy()
+        
+        self.recArgs = Forward()
+
+        self.recArgs << ((self.termArgsForUnary ^ self.termOperand)
+                         + Optional(self.termBinary)
+                         + Optional(self.recArgs)
+                          )
+
+        # self.termArgsForUnary
         self.termFuncArg = Group(self.termFunc
-                                 + self.termBrackets
-                                 + self.termArgsForUnary
-                                 + self.termBrackets)
+                                 + ZeroOrMore(self.termBrackets)
+                                 + self.recArgs
+                                 + ZeroOrMore(self.termBrackets)
+        )
+        '''
+        self.termFuncArg = Group(self.termFunc
+                                 + self.termBrackets #ZeroOrMore(self.termBrackets)
+                                 + self.termArgsForUnary #self.recArgs
+                                 + self.termBrackets #ZeroOrMore(self.termBrackets)
+        )
+        '''
         self.termUnaryFunc = (Group(ZeroOrMore(self.termUnary)
                                     + self.termRealForUnary)
                               ^ Group(self.termBrackets
@@ -149,6 +173,22 @@ class Patterns():
         self.eqExpr = (Suppress(self.termVarsSimple + "'" + '=')
                        + self.termBaseExpr)  # self.rhsExpr
 
+        # FOR test setResultsName and toks changing:
+
+        self.termTestOperand = self.termOperand.copy()
+        self.termTestBrackets = self.termBrackets.copy()
+        self.termTestBinary = self.termBinary.copy()
+
+        self.termTestRec = Forward()
+        self.termTestRec << (
+            Optional(self.termTestBrackets.setResultsName("br"))
+            + self.termTestOperand.setResultsName("arg")
+            + Optional(self.termTestBrackets.setResultsName("br"))
+            + Optional(self.termTestBinary.setResultsName("bin"))
+            + Optional(self.termTestRec)
+        )
+        # END FOR
+        
     def load_base_patterns(self):
         # terms (!replace in different file)
         self.integer = Word(nums)

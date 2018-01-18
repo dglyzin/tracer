@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
-from someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
+
+import sys
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
+else:
+    from someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
+
 
 class PureDerivGenerator:
     def __init__(self, blockNumber, unknownVarIndex, indepVarList, indepVarIndexList, derivativeOrderList, userIndepVariables, parsedMathFunction, side, firstIndex, secondIndexSTR, delay):

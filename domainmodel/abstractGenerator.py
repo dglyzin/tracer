@@ -4,11 +4,22 @@ Created on 11 авг. 2015 г.
 
 @author: golubenets
 '''
-from equationParser import MathExpressionParser
-from someFuncs import generateCodeForMathFunction
-from rhsCodeGenerator import RHSCodeGenerator
-from someFuncs import getCellCountInClosedInterval
-from criminal.parser import Parser
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.equationParser import MathExpressionParser
+    from domainmodel.someFuncs import generateCodeForMathFunction
+    from domainmodel.rhsCodeGenerator import RHSCodeGenerator
+    from domainmodel.someFuncs import getCellCountInClosedInterval
+    from domainmodel.criminal.parser import Parser
+
+else:
+    from equationParser import MathExpressionParser
+    from someFuncs import generateCodeForMathFunction
+    from rhsCodeGenerator import RHSCodeGenerator
+    from someFuncs import getCellCountInClosedInterval
+    from criminal.parser import Parser
 
 
 class BoundCondition:
@@ -71,7 +82,8 @@ class BoundCondition:
         for value in self.values:
             # parse pattern for MathFunction. (see createParsePattern)
             # like value = 'sin((x+3*a))'
-
+            print("value=")
+            print(value)
             try:
                 print("dim = ")
                 print(self.dim)
@@ -88,6 +100,10 @@ class BoundCondition:
                     parser.params.parametersVal = paramValues[0]
                 else:
                     parser.params.parametersVal = paramValues
+
+                # for compatibility reason
+                parser.params.fromOld = True
+
                 parser.parseMathExpression(value)
                 # cpp
                 self.parsedValues.append(parser.out)
@@ -96,8 +112,7 @@ class BoundCondition:
                 
                 # for clear when fail
                 parser.actions.outList = []
-                print("value=")
-                print(value)
+                
                 self.parsedValues.append(mathParser.parseMathExpression(value, params, indepVars))
         
         self.unknownVars = mathParser.getVariableList(self.equation.system)

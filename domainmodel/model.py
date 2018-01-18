@@ -16,21 +16,44 @@ Use add*(dict) to create * from existing dict
 import json
 from collections import OrderedDict
 import os
-from block import Block
-from interconnect import Interconnect
-from equation import Equation
-from bound import Bound
-from initial import Initial
-from compnode import Compnode
-from criminal.parser import Parser
 
-from DerivHandler import DerivativeHandler
-from DelayHandler import DelayHandler
-#generators
-from customOfficer import Reviewer
-from funcGenerator import FuncGenerator
-from someFuncs import getRangesInClosedInterval
-from domainmodel import compnode
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.block import Block
+    from domainmodel.interconnect import Interconnect
+    from domainmodel.equation import Equation
+    from domainmodel.bound import Bound
+    from domainmodel.initial import Initial
+    from domainmodel.compnode import Compnode
+    from domainmodel.criminal.parser import Parser
+
+    from domainmodel.DerivHandler import DerivativeHandler
+    from domainmodel.DelayHandler import DelayHandler
+    # generators
+    from domainmodel.customOfficer import Reviewer
+    from domainmodel.funcGenerator import FuncGenerator
+    from domainmodel.someFuncs import getRangesInClosedInterval
+    from domainmodel import compnode
+
+else:
+    from block import Block
+    from interconnect import Interconnect
+    from equation import Equation
+    from bound import Bound
+    from initial import Initial
+    from compnode import Compnode
+    from criminal.parser import Parser
+
+    from DerivHandler import DerivativeHandler
+    from DelayHandler import DelayHandler
+    # generators
+    from customOfficer import Reviewer
+    from funcGenerator import FuncGenerator
+    from someFuncs import getRangesInClosedInterval
+    from domainmodel import compnode
+
 #from libGenerateC import generateCfromDict
 
 
@@ -266,20 +289,23 @@ class Model(object):
                                      ("DeviceIdx", block["DeviceIdx"])
                                      ])                                   
                                      for block in projectDict["Mapping"]["BlockMapping"] ]
-       
-        self.plots = [ OrderedDict([("Title", plot["Title"]),
-                                    ("Period", plot["Period"]),
-                                    ("Value", plot["Value"])
-                                    ]
-                                   )
-             for plot in projectDict["Plots"] ]
-        
-        self.results = [ OrderedDict([("Name", result["Name"]),
-                                    ("Period", result["Period"]),
-                                    ("Value", result["Value"])
-                                    ]
-                                   )
-             for result in projectDict["Results"] ]
+        try:
+           
+            self.plots = [OrderedDict([("Title", plot["Title"]),
+                                       ("Period", plot["Period"]),
+                                       ("Value", plot["Value"])])
+                          for plot in projectDict["Plots"]]
+        except:
+            self.plots = []
+
+        try:
+            self.results = [OrderedDict([("Name", result["Name"]),
+                                         ("Period", result["Period"]),
+                                         ("Value", result["Value"])])
+                            for result in projectDict["Results"]]
+        except:
+            self.results = []
+
         self.initSessionSettings()
         self.projectFileAssigned = True
         self.projectFile = fileName

@@ -1,0 +1,27 @@
+{# COMMENT
+   TEMPLATE FOR INITIAL FUNCTION 1D
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+	ics interconnects list
+END COMMENT #}
+
+{% for ic in ics %}
+{% set bn = ic.blockNumber %}
+
+//Interconnect for block {{bn}} for boundary {{ic.boundName}}
+void {{ic.funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;
+     {% for i, value in enumerate(ic.parsedValues)%}
+	 result[idx + {{i}}] = {{value}};
+     {% endfor %}
+}
+{% endfor %}

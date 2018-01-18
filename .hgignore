@@ -15,6 +15,7 @@ config/*
 .pydevproject
 ManualHeat/*
 *.log
+*.html
 *statistic
 *.so
 *.cpp
@@ -22,3 +23,4 @@ ManualHeat/*
 *tempFile
 *~
 problems/*
+TAGS

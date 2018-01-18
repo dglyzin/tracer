@@ -26,7 +26,12 @@ firstIndex
 secondIndexSTR
 
 '''
-from someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
+import sys
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.criminal.someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
+else:
+    from someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
 
 
 class DerivGenerator():
@@ -90,31 +95,110 @@ class PureDerivGenerator(DerivGenerator):
         self.make_general_data()
         # END FOR ALL
 
+        # PARAMS FOR VERTEX:
+        if params.diffMethod == 'vertex':
+            sides = params.vertex_sides
+            if sides == [0, 2]:  # [[0, 2], [2, 1], [1, 3], [3, 0]]
+                # for 'x' and 'y' both left side
+                self.leftOrRightBoundary = 1
+            elif(sides == [2, 1]):
+                # if 'x'
+                if self.indepVarIndexList[0] == 0:
+                    # right
+                    self.leftOrRightBoundary = 0
+                elif(self.indepVarIndexList[0] == 1):
+                    # left
+                    self.leftOrRightBoundary = 1
+            elif(sides == [1, 3]):
+                # for 'x' and 'y' both right side
+                self.leftOrRightBoundary = 0
+            elif(sides == [3, 0]):
+                # if 'x'
+                if self.indepVarIndexList[0] == 0:
+                    # left
+                    self.leftOrRightBoundary = 1
+                elif(self.indepVarIndexList[0] == 1):
+                    # right
+                    self.leftOrRightBoundary = 0
+            
+        # END FOR
+
         # PARAMS FOR SPECIAL
         # self.parsedMathFunction = params.parsedMathFunction
-        self.side = params.side
+        
+        if params.diffMethod == 'special':
+            self.side = params.side
 
         if ((params.diffMethod == 'special')
             and (params.diffType == 'pure')):
+            self.side = params.side
+
+            # for debug
+            self.print_dbg("FROM PureDerivGenerator.init",
+                           "for special")
+            self.print_dbg("self.side", self.side)
+            self.print_dbg("self.indepVarIndexList",
+                           self.indepVarIndexList)
+
             if ((self.side % 2 == 0)
                 and (self.indepVarIndexList[0] == self.side / 2)):
+                # left side (0 or 2)
                 self.leftOrRightBoundary = 1
             elif ((self.side - 1) % 2 == 0
                   and self.indepVarIndexList[0] == (self.side - 1) / 2):
+                # right side (1 or 3)
                 self.leftOrRightBoundary = 0
             else:
+                # TODO for diffMethod 2d
+                self.diffMethod = 'common'
+                params.diffMethod = 'common'
+                # and same for interconnects
+                '''
                 raise(SyntaxError("cannot define leftOrRightBoundary"
                                   + " for special_diff: "
                                   + "side = "+str(self.side)
                                   + " VarIndex[0]="+str(self.indepVarIndexList[0])))
+                '''
+
+        # for debug
+        self.print_dbg("FROM PureDerivGenerator.init",
+                       "end for special")
+
         # END FOR SPECIAL
 
         # PARAMS FOR INTERCONNECT
-        # for ic[firstIndex][ $ secondIndexSTR $ +
-        # in interconnectPureDerivAlternative
-        self.firstIndex = params.firstIndex
-        self.secondIndexSTR = params.secondIndexSTR
+        if ((params.diffMethod == 'interconnect')
+            and (params.diffType == 'pure')):
+
+            # for ic[firstIndex][ $ secondIndexSTR $ +
+            # in interconnectPureDerivAlternative
+            self.side = params.side
+            self.firstIndex = params.firstIndex
+            self.secondIndexSTR = params.secondIndexSTR
+            
+            # TODO for diffMethod 2d
+            if (((self.side % 2 == 0)
+                 and (self.indepVarIndexList[0] == self.side / 2))
+                or
+                (((self.side - 1) % 2 == 0
+                  and self.indepVarIndexList[0] == (self.side - 1) / 2))):
+                
+                self.diffMethod = 'interconnect'
+                params.diffMethod = 'interconnect'
+            else:
+                self.diffMethod = 'common'
+                params.diffMethod = 'common'
+
         # END FOR INTERCONNECT
+
+        # PARAMS FOR None
+        if params.diffMethod == 'None':
+            # None is depricated
+            # that only for errors removing
+            self.firstIndex = '{{firstIndex}}'
+            self.secondIndexSTR = '{{secondIndexSTR}}'
+            self.side = 0
+        # END FOR None
 
     def createIndicesList(self):
         '''
@@ -328,6 +412,8 @@ class PureDerivGenerator(DerivGenerator):
         INPUT:
         leftOrRightBoundary --- это число либо 0 (если краевое условие наложено на левую границу)
                                 либо 1 (если краевое условие наложено на правую границу)
+        leftOrRightBoundary = 0 - right border
+        leftOrRightBoundary = 1 - left
         specialIncrement - sin(x)*specialIncrement
 
         USED FUNCTIONS:
@@ -800,3 +886,43 @@ class MixDerivGenerator(DerivGenerator):
             return self.special_diff(func)
         else:
             return self.common_diff()
+
+
+class TestCase():
+    def __init__(self):
+        class Params():
+            def __init__(self):
+                self.unknownVarIndex = 0
+                self.blockNumber = 0
+                self.indepVarList = ['x']
+                self.side = 0
+                self.derivOrder = 2
+                self.diffType = 'pure'
+                self.diffMethod = 'vertex'
+        self.params = Params()
+
+    def test_diff_vertex(self):
+        self.params.vertex_sides = [2, 1]
+        print("for vertex")
+        print(self.params.vertex_sides)
+
+        func = "func"
+
+        print("for x")
+        self.params.indepVarList = ['x']
+        self.gen = PureDerivGenerator(self.params)
+        
+        print(self.gen.special_diff(func))
+        
+        print("for y")
+        self.params.indepVarList = ['y']
+        self.gen = PureDerivGenerator(self.params)
+        
+        print(self.gen.special_diff(func))
+
+    def test_diff_special(self):
+        self.gen = PureDerivGenerator(self.params)
+
+        func = "func"
+        print(self.gen.special_diff(func))
+    

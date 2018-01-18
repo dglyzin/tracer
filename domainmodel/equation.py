@@ -6,7 +6,13 @@ Created on Mar 19, 2015
 '''
 
 from collections import OrderedDict
-from objectsTemplate import Object
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.objectsTemplate import Object
+else:
+    from objectsTemplate import Object
 
 
 class Equation(Object):
@@ -14,6 +20,7 @@ class Equation(Object):
         self.name = name
         self.vars = "x"
         self.system = ["U'=1"]
+        self.cpp = False
 
     def fillProperties(self, edict):
         self.name = edict["Name"]

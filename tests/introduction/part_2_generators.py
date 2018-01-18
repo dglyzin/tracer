@@ -25,13 +25,29 @@ uses
          RHSCodeGenerator.generateRightHandSideCode{..Delay}
           from rhsCodeGenerator.py
 '''
-from domainmodel.block import Block
-from domainmodel.equation import Equation
 from domainmodel.model import Model
 from domainmodel.funcGenerator import FuncGenerator
-from domainmodel.generator2D import Generator2D
-from domainmodel.abstractGenerator import AbstractGenerator
+
 import os
+import logging
+import subprocess
+
+# create logger that child of tests.tester loger
+logger = logging.getLogger('tests.tester.part_2_generators')
+
+
+def test_logger():
+    '''
+    DESCRIPTION:
+    For demonstration. See tests/tester.py
+    Call from tester.py  will use
+    it as parent. (because of name in getLogger)
+    See:
+    https://docs.python.org/2.7/howto/logging-cookbook.html#using-logging-in-multiple-modules
+    '''
+    logger.info("logger info")
+    logger.debug("logger debug")
+    logger.error("logger error")
 
 
 def get_gen_for_test(modelFile="tests/short_restest_full.json"):
@@ -79,27 +95,39 @@ def test_model_create_cpp(modelFile="tests/brusselator1d_bound_U.json"):
     How .json become .cpp.
     .json = "hybriddomain/tests/short_restest_delay.json"
     .cpp =  "hybriddomain/tests/introduction/src/
-                from_model_createCPP.cpp"
+                short_restest_delay.cpp"
     '''
-    
+    logger.debug("FROM test_model_create_cpp")
+
+    fileName = os.path.basename(modelFile)
+    # removing type
+    fileName = fileName.split('.')[0]
+    # add new type
+    fileName = fileName + '.cpp'
+    path = os.path.join("tests/introduction/src", fileName)
     # load model
     model = get_model_for_tests(modelFile)
-    model.createCPPandGetFunctionMaps(
-        "tests/introduction/src/from_model_createCPP.cpp",
-        "prepr_folder_path")
-    return(model)
+    forDomain = model.createCPPandGetFunctionMaps(path,
+                                                  "prepr_folder_path", True)
+    logger.debug("path = %s" % path)
+    logger.debug("modelFile = %s" % modelFile)
+
+    return(forDomain)
 
 
-def test_cpp(fileName='from_model_createCPP.cpp'):
+def test_cpp(fileName='from_model_createCPP.cpp', _stderr=None):
     '''
     DESCRIPTION:
     Test generated file by gcc.
     File should be in "/hybriddomain/tests/indtroduction/src"
     folder and libuserfuncs.so, userfuncs.h also
-
-    
     '''
-    path = os.path.join('tests',
+    logger.debug("FROM test_cpp")
+    curDir = os.getcwd()
+
+    # assuming that this file launched from domainmodel
+    path = os.path.join(curDir,
+                        'tests',
                         'introduction',
                         'src')
     cpp = os.path.join(path, fileName)
@@ -115,12 +143,32 @@ def test_cpp(fileName='from_model_createCPP.cpp'):
     f.close()
 
     # call gcc
-    cmd = ('gcc ' + cpp + ' -shared -O3 -o '
-           + lib + ' -fPIC')
-    print("cmd = ")
-    print(cmd)
-    p = os.system(cmd)
-    return(p)
+    cmd = ['gcc', cpp, '-shared', '-O3', '-o',
+           lib, '-fPIC']
+    logger.debug("cmd = %s" % str(cmd))
+    
+    '''
+    stdout and stderr PIPE means
+    that new child stream will be created
+    so standart output will be unused.
+    See:
+    https://docs.python.org/2.7/library/subprocess.html#frequently-used-arguments
+    https://docs.python.org/2.7/library/subprocess.html#subprocess.Popen.communicate
+    '''
+    p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = p.communicate()
+
+    if (err is not None and len(err) > 0
+        and _stderr is None):
+        raise(GccException(err))
+    if _stderr is not None:
+        print("out")
+        print(out)
+        print("err")
+        print(err)
+
+    return(out)
+
 
 def test_func_gen():
     '''
@@ -135,3 +183,13 @@ def test_func_gen():
     outputStr, functionMaps = gen.generateAllFunctions()
 
     return(outputStr, functionMaps)
+
+
+class GccException(Exception):
+    '''
+    DESCRIPTION:
+    For cathing error of gcc.
+    For tests cases in tester.py.
+    '''
+    def __init__(self, err):
+        self.err = err

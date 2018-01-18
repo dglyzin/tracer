@@ -1,0 +1,32 @@
+{# COMMENT
+   TEMPLATE FOR INITIAL FUNCTION 1D
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+	equations list	
+END COMMENT #}
+
+{% for eq in equations %}
+{% set bn = eq.blockNumber %}
+{% set num = eq.number %}
+//=========================CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER {{bn}}========================//
+
+//{{num}} central function for {{eq.dim}}d model for block with number {{bn}}
+void {{eq.funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;	      {% for i, value in enumerate(eq.parsedValues) %}
+	{{value}};
+     {% endfor %}
+}
+
+//device side function pointer declaration and init:
+func_ptr_t p_{{eq.funcName}} = {{eq.funcName}};
+
+{% endfor %}

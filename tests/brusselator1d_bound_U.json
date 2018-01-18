@@ -25,6 +25,7 @@
                 "x": 1.0
             }, 
             "DefaultEquation": 0, 
+	    "DefaultBound": 0,
             "DefaultInitial": 0, 
             "BoundRegions": [
                 {

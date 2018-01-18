@@ -1,94 +1,83 @@
 from domainmodel.criminal.parser import Parser
 from domainmodel.criminal.derivCodeGenerator import MixDerivGenerator
 from domainmodel.criminal.cppOutsForTerms import CppOutsForTerms
+import logging
+import sys
+
+# for independet launching this module
+#logging.basicConfig(level=logging.DEBUG)
+
+# create logger that child of tests.tester loger
+logger = logging.getLogger('tests.tester.criminal.tests')
+
+
+def test_equation(eq="V'= U + V"):
+    parser = Parser()
+    out = parser.parseMathExpression(eq)
+    
+    logger.debug("out")
+    logger.debug(out)
+    return(parser)
 
 
 def test_powers():
     parser = Parser()
     parser = fill_params_for_diff(parser)
     
-    print('########')
-    eq = "U^3"
-    print('for eq =')
-    print(eq)
-    parser.parseMathExpression(eq)
-    print("out")
-    print(parser.out)
-
-    print('########')
-    eq = "V(t-1.1,{x, 0.7})^3"
-    print('for eq =')
-    print(eq)
-    parser.parseMathExpression(eq)
-    print("out")
-    print(parser.out)
-
-    print('########')
-    eq = "D[V(t-1.1),{x, 2}]^3"
-    print('for eq =')
-    print(eq)
-    parser.parseMathExpression(eq)
-    print("out")
-    print(parser.out)
-    return(parser)
+    eqs = ["U^3", "V(t-1.1,{x, 0.7})^3",
+           "D[V(t-1.1),{x, 2}]^3"]
+    for eq in eqs:
+        logger.debug('########')
+        logger.debug('for eq =')
+        logger.debug(eq)
+        try:
+            parser.parseMathExpression(eq)
+        except:
+            raise(ParserException(testName='powers',
+                                  eq=eq))
+        logger.debug("out")
+        logger.debug(parser.out)
+    assert(True)
 
 
-def test_power(eq='U(t-1)^3'):
+def simple_test_power(eq='U(t-1)^3'):
     parser = Parser()
     parser.parseMathExpression(eq)
     return(parser)
 
 
-def test_diff():
+def test_diff_outs():
     '''
     DESCRIPTION:
     Tests get_out_for_termDiff for
     different parameters.
     '''
-    # for pure
-    print("pure, common")
-    out = test_diff_out('pure', 'common', ['x'])
-    print(out)
+    tests = [['pure', 'common', ['x']],
+             ['pure', 'special', ['x']],
+             ['pure', 'interconnect', ['x']],
+             ['pure', 'None', ['x']],
+             ['mix', 'common', ['x', 'y']],
+             ['mix', 'special', ['x', 'y']],
+             ['mix', 'special', ['y', 'x']],
+             ['mix', 'None', ['x', 'y']]]
 
-    print("#######")
-    print("pure, special")
-    out = test_diff_out('pure', 'special', ['x'])
-    print(out)
-
-    print("#######")
-    print("pure, interconnect")
-    out = test_diff_out('pure', 'interconnect', ['x'])
-    print(out)
-
-    print("#######")
-    print("pure, None")
-    out = test_diff_out('pure', 'None', ['x'])
-    print(out)
-
-    # for mix
-    print("#######")
-    print("mix, common")
-    out = test_diff_out('mix', 'common', ['x', 'y'])
-    print(out)
-
-    print("#######")
-    print("mix, special, dxdy")
-    out = test_diff_out('mix', 'special', ['x', 'y'])
-    print(out)
-
-    print("#######")
-    print("mix, special, dydx")
-    out = test_diff_out('mix', 'special', ['y', 'x'])
-    print(out)
-
-    print("#######")
-    print("mix, None")
-    out = test_diff_out('mix', 'None', ['x', 'y'])
-    print(out)
+    for test in tests:
+        logger.debug("#######")
+        logger.debug("mix, None")
+        try:
+            out = diff_out(*test)
+        except:
+            e = ParserException(testName='test_diff_outs',
+                                testArgs='diff,'+str(test),
+                                eq=None)
+            logger.debug(e.data[1])
+            raise(e)
+        logger.debug(out)
+    assert(True)
 
 
-def test_diff_out(diffType, diffMethod, vars, deriveOrder=2,
-                  func="sin(arg_X, arg_Y)*arg_T"):
+def diff_out(diffType, diffMethod, vars, deriveOrder=2,
+             func="sin(arg_X, arg_Y)*arg_T"):
     parser = Parser()
     parser = fill_params_for_diff(parser)
 
@@ -98,7 +87,7 @@ def test_diff_out(diffType, diffMethod, vars, deriveOrder=2,
     parser.params.indepVarList = vars
     parser.params.derivOrder = deriveOrder
     # parser.params.leftOrRightBoundary = 0 or 1
-    
+    parser.params.unknownVarIndex = 0
     cppOut = CppOutsForTerms(parser.params)
 
     # func
@@ -126,38 +115,62 @@ def test_diff_parser(eq=("D[U(t-1.1),{x,2}]+D[U(t-5.1),{y,2}]"
     # for special
     parser.cppOut.dataTermMathFuncForDiffSpec = func
 
-    print('########')
-    print('for method None ')
+    logger.debug('########')
+    logger.debug('for method None ')
     parser.params.diffMethod = 'None'
-    parser.parseMathExpression(eq)
-    print("out")
-    print(parser.out)
+    try:
+        parser.parseMathExpression(eq)
+    except:
+        e = ParserException(testName='test_diff_parser',
+                            testArgs='diff, parser, None',
+                            eq=eq)
+        logger.debug(e.data[1])
+        raise(e)
 
-    print('########')
-    print('for method common ')
+    logger.debug("out")
+    logger.debug(parser.out)
+
+    logger.debug('########')
+    logger.debug('for method common ')
     parser.params.diffMethod = 'common'
-    parser.parseMathExpression(eq)
-    print("out")
-    print(parser.out)
+    try:
+        parser.parseMathExpression(eq)
+    except:
+        e = ParserException(testName='test_diff_parser',
+                            testArgs='diff, parser, common',
+                            eq=eq)
+        logger.debug(e.data[1])
+        raise(e)
 
-    print('########')
-    print('for method special ')
+    logger.debug("out")
+    logger.debug(parser.out)
+
+    logger.debug('########')
+    logger.debug('for method special ')
     parser.params.diffMethod = 'special'
-    parser.parseMathExpression(eq)
-    print("out")
-    print(parser.out)
+    try:
+        parser.parseMathExpression(eq)
+    except:
+        e = ParserException(testName='test_diff_parser',
+                            testArgs='diff, parser, special',
+                            eq=eq)
+        logger.debug(e.data[1])
+        raise(e)
+
+    logger.debug("out")
+    logger.debug(parser.out)
 
     try:
-        print('########')
-        print('for method interconnect ')
+        logger.debug('########')
+        logger.debug('for method interconnect ')
         parser.params.diffMethod = 'interconnect'
         parser.parseMathExpression(eq)
-        print("out")
-        print(parser.out)
+        logger.debug("out")
+        logger.debug(parser.out)
     except:
-        print("interconnect fail"
+        logger.debug("interconnect fail"
               + " prabobly for mix")
-    return(parser)
+    assert(True)
 
 
 def fill_params_for_diff(parser):
@@ -174,6 +187,7 @@ def fill_params_for_diff(parser):
     parser.params.diffType = 'pure'
     parser.params.diffMethod = 'common'
     parser.params.parameters = ['a', 'b']
+    parser.params.parametersVal = {'a': 1, 'b': 2}
     # END FOR ALL
     
     # PARAMS FOR BOUND
@@ -195,13 +209,12 @@ def fill_params_for_diff(parser):
 
 
 def test_bounds():
-    parser1d = test_bounds_1d()
-    parser2d = test_bounds_2d()
+    bounds_1d()
+    bounds_2d()
+    assert(True)
 
-    return(parser1d)
 
-
-def test_bounds_1d():
+def bounds_1d():
     parser = Parser()
     parser.params.blockNumber = 0
     parser.params.dim = '1D'
@@ -209,45 +222,26 @@ def test_bounds_1d():
     parser.params.parameters = ['a']
     parser.params.parametersVal = {'a': 0.5}
 
-    print('for eq = ')
-    eq = "-(U(t,{x, a}))"
-    print(eq)
-    parser.parseMathExpression(eq)
-    print("out = ")
-    print(parser.out)
-    print('##############')
-
-    print('for eq = ')
-    eq = "-(U(t,{x, 0.7}))"
-    print(eq)
-    parser.parseMathExpression(eq)
-    print("out = ")
-    print(parser.out)
-    print('##############')
-
-    print('for eq = ')
-    eq = "-(V(t-1.1,{x, a}))"
-    print(eq)
-    parser.params.parameters = ['a']
-    parser.params.parametersVal = {'a': 0.5}
-    parser.parseMathExpression(eq)
-    print("out = ")
-    print(parser.out)
-    print('##############')
-
-    print('for eq = ')
-    eq = "-(V+U)"
-    print(eq)
-    parser.parseMathExpression(eq)
-
-    print("out = ")
-    print(parser.out)
-    print('##############')
+    eqs = ["-(U(t,{x, a}))", "-(U(t,{x, 0.7}))",
+           "-(V(t-1.1,{x, a}))", "-(V+U)"]
+    for eq in eqs:
+        logger.debug('for eq = ')
+        logger.debug(eq)
+        try:
+            parser.parseMathExpression(eq)
+        except:
+            e = ParserException(testName='bound1d',
+                                eq=eq)
+            logger.debug(e.data[1])
+            raise(e)
+        logger.debug("out = ")
+        logger.debug(parser.out)
+        logger.debug('##############')
 
     return(parser)
 
 
-def test_bounds_2d():
+def bounds_2d():
     parser = Parser()
     parser.params.blockNumber = 0
     parser.params.dim = '2D'
@@ -255,20 +249,37 @@ def test_bounds_2d():
     parser.params.parameters = []
     parser.params.parametersVal = {}
 
-    print('for eq = ')
-    eq = "-(W(t,{x, 0.7}{y, 0.3}))"
-    print(eq)
-    parser.parseMathExpression(eq)
-
-    print("out = ")
-    print(parser.out)
-    print('##############')
-
-    print('for eq = ')
-    eq = "-(U(t-1.1,{x, 0.7}{y, 0.3}))"
-    print(eq)
-    parser.parseMathExpression(eq)
-
-    print("out = ")
-    print(parser.out)
+    eqs = ["-(W(t,{x, 0.7}{y, 0.3}))",
+           "-(U(t-1.1,{x, 0.7}{y, 0.3}))"]
+    for eq in eqs:
+        logger.debug('for eq = ')
+        logger.debug(eq)
+        try:
+            parser.parseMathExpression(eq)
+        except:
+            e = ParserException(testName='bound2d',
+                                eq=eq)
+            logger.debug(e.data[1])
+            raise(e)
+        logger.debug("out = ")
+        logger.debug(parser.out)
+        logger.debug('##############')
     return(parser)
+
+
+class ParserException(Exception):
+    '''
+    DESCRIPTION:
+    For cathing error of parser.
+    For tests cases in tester.py.
+    '''
+    def __init__(self, testName, testArgs=None, eq=None):
+        self.testName = testName
+        self.testArgs = testArgs
+        self.eq = eq
+        self.data = sys.exc_info()
+        logger.error(self.testName)
+        logger.error(self.testArgs)
+        logger.error(self.eq)
+        logger.error(self.data[1])
+        logger.error('line ' + str(self.data[2].tb_lineno))

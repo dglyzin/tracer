@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-from derivCodeGenerator import PureDerivGenerator, MixDerivGenerator
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+
+    from domainmodel.derivCodeGenerator import PureDerivGenerator, MixDerivGenerator
+else:
+    from derivCodeGenerator import PureDerivGenerator, MixDerivGenerator
+
 
 class RHSCodeGenerator:
     '''

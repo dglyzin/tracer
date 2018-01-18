@@ -1,0 +1,86 @@
+{# COMMENT
+   TEMPLATE FOR INITIAL FUNCTION 1D
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+	blocks
+END COMMENT #}
+
+//===================INITIAL CONDITIONS==========================//
+{% set countOfBlocks = len(blocks) %}
+{% for blockNumber, block in enumerate(blocks) %}
+{% set bn = blockNumber %}
+{% for initialNumber, initial in enumerate(block.initials) %}
+
+void Initial{{ initialNumber }}(double* cellstart, double x, double y, double z){
+     {% for valueNumber, value in enumerate(initial.parsedValues) %}
+	cellstart[{{ valueNumber }}] = {{ value }};
+     {% endfor %}
+}
+
+{% endfor %}
+
+{% for boundNumber, bound in enumerate(block.bounds) %}
+
+void DirichletInitial{{ boundNumber }}(double* cellstart, double x, double y, double z){
+     {% for valueNumber, value in enumerate(bound.parsedValues) %}
+	cellstart[{{ valueNumber }}] = {{ value }};
+     {% endfor %}
+}
+
+{% endfor %}
+
+{% set initialCount = len(block.initialIndexes) %}
+{% set fDirichletCount = len(block.fDirichletIndexes) %}
+
+void Block{{ bn }}FillInitialValues(double* result, unsigned short int* initType){
+	initfunc_ptr_t initFuncArray[{{ initialCount + fDirichletCount }}];
+	
+    {% for initialNumber, initial in enumerate(block.initials) %}
+	initFuncArray[{{ initialNumber }}] = Initial{{ initialNumber }};
+    {% endfor %}
+
+    {% for fDirichletNumber, bound in enumerate(block.bounds) %}				
+	initFuncArray[{{ fDirichletNuber }}] = DirichletInitial{{ fDirichletNumber }};
+    {% endfor %}	
+
+    {% if dim == 1 %}	
+	for(int idxX = 0; idxX<Block{{ bn }}CountX; idxX++){
+	   	int idx = idxX;
+		int type = initType[idx];
+		initFuncArray[type](result+idx*Block{{ bn }}CELLSIZE, Block{{ bn }}OffsetX + idxX*DX, 0, 0);
+	}
+    {% endif %}
+    {% if dim == 2 %}
+    for(int idxY = 0; idxY<Block{{bn}}CountY; idxY++)
+		for(int idxX = 0; idxX<Block{{bn}}CountX; idxX++){
+			int idx = idxY*Block{{bn}}CountX + idxX;
+			int type = initType[idx];
+			initFuncArray[type](result+idx*Block{{bn}}CELLSIZE, Block{{bn}}OffsetX + idxX*DX, Block{{bn}}OffsetY + idxY*DY, 0);
+    }
+    {% endif %}
+}
+
+{% endfor %}
+
+void getInitFuncArray(initfunc_fill_ptr_t** ppInitFuncs){
+	initfunc_fill_ptr_t* pInitFuncs;
+	pInitFuncs = (initfunc_fill_ptr_t*) malloc( {{ countOfBlocks }} * sizeof(initfunc_fill_ptr_t) );
+	*ppInitFuncs = pInitFuncs;
+	
+    {% for blockNumber, block in enumerate(blocks) %}
+	pInitFuncs[{{ blockNumber}}] = Block{{ blockNumber }}FillInitialValues;
+    {% endfor %}
+}
+
+void releaseInitFuncArray(initfunc_fill_ptr_t* InitFuncs){
+	free(InitFuncs);
+}

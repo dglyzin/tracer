@@ -8,6 +8,20 @@ from domainmodel.criminal.cppOutsForTerms import CppOutsForTerms
 from domainmodel.criminal.patterns import Patterns
 from domainmodel.criminal.actions import Actions
 
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from functools import reduce
+
+#import logging
+
+# for independet launching this module
+#logging.basicConfig(level=logging.ERROR)
+
+# create logger that child of tests.tester loger
+#logger = logging.getLogger('tests.tester.criminal.parser')
+
 
 class Parser():
     '''
@@ -42,6 +56,7 @@ class Parser():
     (see Action.action_add_args).
     In that case arg1 means first added args by some
     local pattern, arg2 -second and so on.
+
     FOR EXAMPLE:
     IF pattern looks like:
     termDemo = Group(termLocPatt1.setParseAction()
@@ -122,18 +137,40 @@ class Parser():
     def parseMathExpression(self, expr):
         # for debug
         self.print_dbg("FROM parseMathExpression:")
-
+        self.print_dbg("expression = ", expr)
+        
         self.clear_data()
         try:
-            parsedExpression = self.patterns.eqExpr.parseString(expr)
+            parsedExpression = self.patterns.eqExpr.parseString(expr, parseAll=True)
+
+            # insert U' as source[0][idx+0] + DT*(...)
+            self.actions.outList.insert(0, 'DT*(')
+            last_idx = len(self.actions.outList)
+            self.actions.outList.insert(last_idx, ')')
+
+            # add source[0][idx+var_index] +
+            o = self.actions.cppOut.get_out_for_termVarsSimpleIndep()
+            termData = self.actions.cppOut.dataTermVarsSimpleGlobal
+            var_index = str(termData['varIndexs'].index(expr[0]))
+            o = o.replace("arg_varIndex",
+                          var_index)
+
+            # add result[idx + var_index] =
+            self.actions.outList.insert(0, ("result[idx + % s] = " + o + "+") % var_index)
+
         except:
             self.print_dbg("expr is not a equation")
+            #try:
             parsedExpression = self.patterns.termBaseExpr.parseString(expr, parseAll=True)
+            #except:
+            #    e = ParserException(eq=expr)
+            #    raise(e)
         
         #TODO replace next two lines to action_for_termBaseExpr
         self.out = reduce(lambda x, y: x+y, self.actions.outList)
         self.actions.outList = []
-        return(parsedExpression)
+        # return(parsedExpression)
+        return(self.out)
 
     def clear_data(self):
         '''
@@ -142,6 +179,8 @@ class Parser():
         '''
         self.cppOut.dataTermVarsPoint = []
         self.cppOut.dataTermVarsPointDelay = []
+        self.cppOut.dataTermVarSimpleLocal = {'delays': [],
+                                              'varIndexs': []}
 
     def test(self):
         eqStrList = [u"U'=D[U(t-1.1),{y,1}]+D[U(t-5.9),{y,2}]+U(t-1)",
@@ -157,3 +196,16 @@ class Parser():
             for arg in args:
                 print(self.dbgInx*' '+str(arg))
             print('')
+
+
+class ParserException(Exception):
+    '''
+    DESCRIPTION:
+    For cathing error of parser.
+    For tests cases in tester.py.
+    '''
+    def __init__(self, eq=None):
+        self.eq = eq
+        self.args = ["fail to parse eq: %s" % self.eq]
+        #logger.error("fail to parse eq: %s" % self.eq)
+        

@@ -4,11 +4,22 @@ Created on 11 авг. 2015 г.
 
 @author: golubenets
 '''
-from ..equationParser import MathExpressionParser
-from someFuncs import generateCodeForMathFunction
-from ..rhsCodeGenerator import RHSCodeGenerator
-from someFuncs import getCellCountInClosedInterval
-from parser import Parser
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.criminal.someFuncs import generateCodeForMathFunction
+    from domainmodel.equationParser import MathExpressionParser
+    from domainmodel.criminal.someFuncs import generateCodeForMathFunction
+    from domainmodel.rhsCodeGenerator import RHSCodeGenerator
+    from domainmodel.criminal.someFuncs import getCellCountInClosedInterval
+
+else:
+    from ..equationParser import MathExpressionParser
+    from someFuncs import generateCodeForMathFunction
+    from ..rhsCodeGenerator import RHSCodeGenerator
+    from someFuncs import getCellCountInClosedInterval
+# from parser import Parser
 
 
 class BoundCondition:
@@ -109,6 +120,7 @@ class BoundCondition:
 
 class Connection:
     def __init__(self, firstIndex, secondIndex, side, ranges, equationNumber, equation, funcName):
+        # ic[firstIndex][secondIndex]
         self.name = "Connection"
         self.firstIndex = firstIndex
         self.secondIndex = secondIndex
@@ -190,21 +202,68 @@ class AbstractGenerator(object):
         # for saveDomain
         self.delays = []
 
+        # for debugging:
+        self.dbg = True
+        self.dbgInx = 1
+
     def generateAllDefinitions(self):
-# allBlockSizeLists = [[Block0SizeX, Block0SizeY, Block0SizeZ], [Block1SizeX, Block1SizeY, Block1SizeZ]}, ...]
-# allBlockOffsetList = [[Block0OffsetX, Block0OffsetY, Block0OffsetZ], [Block1OffsetX, Block1OffsetY, Block1OffsetZ]}, ...]
-# cellsizeList= [Block0CELLSIZE, Block1CELLSIZE, ...]
-# allStrideLists --- это список strideОВ для каждого блока: [[block0StrideX,block0StrideY,block0StrideZ],[block1StrideX,Y,Z], ...]
-# allCountLists --- аналогичный список, только для countОВ
-# DList = [DX,DY,DZ]
-# D2List = [DX2,DY2,DZ2]
-# DM2List = [DXM2,DYM2,DZM2]
-#         Требуем, чтобы длины всех массивов были одинаковы
+        '''
+        DESCRIPTION:
+        strides used because block stored in source[] array in
+        one dimension space. So, for example, for block dim = 2
+        to find value for (x, y) We should looks
+        at source[x + y*Block0StrideY] where Block0StrideY is
+        size of X dimension in block. It similiar to .bmp file
+        storage.
+
+        source[
+              idx                             # point in that derive will find
+
+              + k * stride  * Block0CELLSIZE  # +1 to some of {x,y,z} direction
+                                              # (defined by stride)
+                                              # ('x': +1,
+                                              #  'y': + Block0StrideY*Block0CELLSIZE,
+                                              #  'z': + Block0StrideZ*Block0CELLSIZE =
+                                              #         = Block0SizeY*Block0CountY*Block0CELLSIZE)
+
+              +  unknownVarIndex[0]           # shift, differ for each variable 
+                                              # ('U': +0, 'V': +1)
+        ]
+        allStrideLists --- это список strideОВ для каждого блока:
+                           [[block0StrideX,block0StrideY,block0StrideZ],
+                            [block1StrideX,Y,Z], ...]
+        allCountLists --- аналогичный список, только для countОВ
+        DList = [DX,DY,DZ]
+        D2List = [DX2,DY2,DZ2]
+        DM2List = [DXM2,DYM2,DZM2]
+
+        USED FUNCTIONS:
+        self.gridStep
+        self.defaultIndepVars = ['x', 'y', 'z']
+        self.params
+
+        self.allBlockSizeLists = [[Block0SizeX, Block0SizeY, Block0SizeZ],
+                                  [Block1SizeX, Block1SizeY, Block1SizeZ]},
+                                 ...]
+        self.allBlockOffsetList = [[Block0OffsetX, Block0OffsetY, Block0OffsetZ],
+                                   [Block1OffsetX, Block1OffsetY, Block1OffsetZ],
+                                   ...]
+        self.cellsizeList = [Block0CELLSIZE, Block1CELLSIZE, ...]
+        
+        getCellCountInClosedInterval
+        '''
+        # for debug
+        self.print_dbg("FROM generateAllDefinitions:")
+
+        # Требуем, чтобы длины всех массивов были одинаковы
         if len(self.gridStep) != len(self.defaultIndepVars):
-            raise AttributeError("A list 'gridStep' should be consist of values for ALL independent variables!")
+            raise AttributeError("A list 'gridStep' should be consist of"
+                                 + " values for ALL independent variables!")
         a = set({len(self.allBlockSizeList), len(self.cellsizeList), len(self.allBlockOffsetList)})
         if len(a) != 1:
-            raise AttributeError("Number of elements in 'allBlockSizeLists', 'cellsizeList' and 'allBlockOffsetList' should be the same!")
+            raise AttributeError("Number of elements in 'allBlockSizeLists',"
+                                 + " 'cellsizeList' and 'allBlockOffsetList'"
+                                 + " should be the same!")
         
         D2List = list([])
         DM1List = list([])
@@ -215,19 +274,23 @@ class AbstractGenerator(object):
             DM1List.append(round(1 / d))
             DM2List.append(round(1 / d2))
         
-#         Вычисляем все страйды и каунты    
+        # Вычисляем все страйды и каунты
         allStrideLists = list([])
         allCountLists = list([])
         for blockNumber, blockSizeList in enumerate(self.allBlockSizeList):
             strideList = list([])
             countList = list([])
+            
+            # for counts
             for (d, sizeForIndepVar) in zip(self.gridStep, blockSizeList):
                 #countList.append(int(sizeForIndepVar / d))
                 # TODO: Исправление проблемы, которая аналогична исправленной в коммите fe154c5
                 # см. TODO domainmodel/block.py:37
-                countList.append(getCellCountInClosedInterval(sizeForIndepVar, d) )                                
+                countList.append(getCellCountInClosedInterval(sizeForIndepVar, d))                                
             allCountLists.append(countList)
-            for indepVarIndex,count in enumerate(countList):
+            
+            # for strides
+            for indepVarIndex, count in enumerate(countList):
                 if indepVarIndex == 0:
                     strideList.append(1)
                 elif indepVarIndex == 1:
@@ -236,38 +299,73 @@ class AbstractGenerator(object):
                     strideList.append(countList[0] * countList[1])
             allStrideLists.append(strideList)
         
-#         Создаем дефайны
+        # for debug
+        self.print_dbg("allCountLists:", allCountLists)
+        self.print_dbg("allStrideLists:", allStrideLists)
+        
+        # Создаем дефайны
         definitions = list()
-        for (indepVar, d, d2, dm1, dm2) in zip(self.defaultIndepVars, self.gridStep, D2List, DM1List, DM2List):
+        definitions.append(u'// FROM abstractGenerator.generateAllDefinitions //')
+        defArgs = zip(self.defaultIndepVars, self.gridStep,
+                      D2List, DM1List, DM2List)
+        for (indepVar, d, d2, dm1, dm2) in defArgs:
             definitions.append('#define D' + indepVar.upper() + ' ' + str(d) + '\n')
             definitions.append('#define D' + indepVar.upper() + '2 ' + str(d2) + '\n')
             definitions.append('#define D' + indepVar.upper() + 'M1 ' + str(dm1) + '\n')
             definitions.append('#define D' + indepVar.upper() + 'M2 ' + str(dm2) + '\n')
-        for blockNumber,(strideList, countList, offsetList, cellsize) in enumerate(zip(allStrideLists, allCountLists, self.allBlockOffsetList, self.cellsizeList)):
-            definitions.append('\n#define Block' + str(blockNumber) + 'CELLSIZE ' + str(cellsize) + '\n\n')
-            for (indepVar, stride, count, offset) in zip(self.defaultIndepVars, strideList, countList, offsetList):
-                definitions.append('#define Block' + str(blockNumber) + 'Stride' + indepVar.upper() + ' ' + str(stride) + '\n')
-                definitions.append('#define Block' + str(blockNumber) + 'Count' + indepVar.upper() + ' ' + str(count) + '\n')
-                definitions.append('#define Block' + str(blockNumber) + 'Offset' + indepVar.upper() + ' ' + str(offset) + '\n')
-        definitions.append("\n#define PAR_COUNT " + str(len(self.params)) + "\n\n")
 
+        defArgs = zip(allStrideLists, allCountLists,
+                      self.allBlockOffsetList, self.cellsizeList)
+        for blockNumber, (strideList, countList, offsetList, cellsize) in enumerate(defArgs):
+            definitions.append('\n#define Block' + str(blockNumber)
+                               + 'CELLSIZE ' + str(cellsize) + '\n\n')
+
+            strideArgs = zip(self.defaultIndepVars, strideList, countList, offsetList)
+            for (indepVar, stride, count, offset) in strideArgs:
+                definitions.append('#define Block' + str(blockNumber) + 'Stride'
+                                   + indepVar.upper() + ' ' + str(stride) + '\n')
+                definitions.append('#define Block' + str(blockNumber) + 'Count'
+                                   + indepVar.upper() + ' ' + str(count) + '\n')
+                definitions.append('#define Block' + str(blockNumber) + 'Offset'
+                                   + indepVar.upper() + ' ' + str(offset) + '\n')
+        definitions.append("\n#define PAR_COUNT " + str(len(self.params)) + "\n\n")
+        definitions.append(u'// END FROM abstractGenerator.generateAllDefinitions //')
         return ''.join(definitions)
     
     def generateInitials(self):
         '''
         DESCRIPTION:
         Pure function. Return valus only.
-        No self state changed.
-        
+                
         RETURN:
         some string.
 
         USED FUNCTIONS:
+        self.generateParamFunction
+         self.paramValues
+         self.params
+         self.defaultParamIndex
+
         self.generateAllPointInitials
+         !self.parser
+         self.initials
+         self.bounds
+        
+        # from child !!!
         self.generateFillInitValFuncsForAllBlocks
+         self.block
+         self.genCommonPartForFillInitValFunc
+          block.defaultInitial
+          block.initialRegions
+          block.boundRegions
+          self.bounds
+
         self.generateGetInitFuncArray
+         self.blocks
+         self.countOfBlocks
+
         '''
-#         initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
+        # initials --- массив [{"Name": '', "Values": []}, {"Name": '', "Values": []}]
         output = list(["//===================PARAMETERS==========================//\n\n"])
         output.append(self.generateParamFunction())
         output.append("//===================INITIAL CONDITIONS==========================//\n\n")
@@ -283,17 +381,27 @@ class AbstractGenerator(object):
         return ''.join(output)
                    
     def generateParamFunction(self):
+        '''
+        USED FUNCTIONS:
+        self.paramValues
+        self.params
+        self.defaultParamIndex
+
+        '''
         output = list(["void initDefaultParams(double** pparams, int* pparamscount){\n"])
         if len(self.paramValues) > 0:
             paramCount = len(self.params)
             paramValuesCount = len(self.paramValues[self.defaultParamsIndex])
             if paramCount != paramValuesCount:
-                raise AttributeError("Count of parameter values is not corresponds to count of parameters!")
+                raise AttributeError("Count of parameter values is"
+                                     + " not corresponds to count of parameters!")
             output.append("\t*pparamscount = PAR_COUNT;\n")
             output.append("\t*pparams = (double *) malloc(sizeof(double)*PAR_COUNT);\n")
             
-            for index,param in enumerate(self.params):
-                output.append("\t(*pparams)[" + str(index) + "] = " + str(self.paramValues[self.defaultParamsIndex][param]) + ";\n")
+            for index, param in enumerate(self.params):
+                output.append("\t(*pparams)[" + str(index) + "] = "
+                              + str(self.paramValues[self.defaultParamsIndex][param])
+                              + ";\n")
         
             output.append("}\n\nvoid releaseParams(double *params){\n\tfree(params);\n}\n\n")
         else:
@@ -312,6 +420,12 @@ class AbstractGenerator(object):
         в массиве файла .json.
         countOfEquations = len(self.system)
 
+        
+        OUTPUT:
+        string with cpp code for initial functions
+        listWithInitialFunctionNames 
+        listWithDirichletFunctionNames
+
         USED FUNCTIONS:
         # for parser
         parser
@@ -323,9 +437,16 @@ class AbstractGenerator(object):
         self.bounds
         
         '''
+        # for debug
+        self.print_dbg("FROM generateAllPointInitials:")
+
         parser = MathExpressionParser()
         allFunctions = list()
         listWithInitialFunctionNames = list()
+
+        # for debug
+        self.print_dbg("initials:", self.initials)
+
         for initialNumber, initial in enumerate(self.initials):
             pointFunction = list()
             valueList = initial.values
@@ -335,16 +456,19 @@ class AbstractGenerator(object):
             pointFunction.append("void " + name + "(double* cellstart, double x, double y, double z){\n")
             
             indepVarsForInitialFunction = self.userIndepVars + ['t']
-            for k,value in enumerate(valueList):
+
+            for k, value in enumerate(valueList):
                 '''
                 parsedInitial = parser.parseMathExpression(value, self.params, indepVarsForInitialFunction)
                 newValue = generateCodeForMathFunction(parsedInitial, self.userIndepVars, indepVarsForInitialFunction)
                 '''
-                newValue = ' $ value from gen.initials $ '
+                newValue = ("arg_value_from_gen.initials.values_is_"
+                            + value+"_endArg")
                 pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
             pointFunction.append("}\n\n")
             allFunctions.append(''.join(pointFunction))
-#         Все для условий Дирихле
+
+        # Все для условий Дирихле
         listWithDirichletFunctionNames = list()
         for boundNumber, bound in enumerate(self.bounds):
             if bound.btype == 0:
@@ -356,13 +480,14 @@ class AbstractGenerator(object):
                 pointFunction.append("void " + name + "(double* cellstart, double x, double y, double z){\n")
                 
                 indepVarsForInitialFunction = self.userIndepVars + ['t']
-                for k,value in enumerate(valueList):
+                for k, value in enumerate(valueList):
                     '''
                     parsedInitial = parser.parseMathExpression(value, self.params, indepVarsForInitialFunction)
                     parsedInitialAfterReplacing = self.replaceTimeToZeroInInitialCondition(parsedInitial)
                     newValue = generateCodeForMathFunction(parsedInitialAfterReplacing, self.userIndepVars, indepVarsForInitialFunction)
                     '''
-                    newValue = ' $ value from bound.values $ '
+                    newValue = ("arg_value_from_bound.values_is_"
+                                + value+"_endArg")
                     pointFunction.append("\tcellstart[" + str(k) + "] = " + newValue + ";\n")
                 pointFunction.append("}\n\n")
                 allFunctions.append(''.join(pointFunction))
@@ -478,6 +603,12 @@ class AbstractGenerator(object):
         return ''.join(partOfFillFunction)
     
     def generateGetInitFuncArray(self):
+        '''
+        USED FUNCTIONS:
+        self.blocks
+        self.countOfBlocks
+        
+        '''
         countOfBlocks = len(self.blocks)
         strCountOfBlocks = str(countOfBlocks)
         output = list(["void getInitFuncArray(initfunc_fill_ptr_t** ppInitFuncs){\n"])
@@ -727,3 +858,9 @@ class AbstractGenerator(object):
         output.append("void releaseFuncArray(func_ptr_t* BoundFuncs){\n\tfree(BoundFuncs);\n}\n\n")
         
         return ''.join(output)
+
+    def print_dbg(self, *args):
+        if self.dbg:
+            for arg in args:
+                print(self.dbgInx*' '+str(arg))
+            print('')

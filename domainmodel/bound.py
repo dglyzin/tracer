@@ -7,7 +7,14 @@ Created on Mar 19, 2015
 bdict = {"dirichlet":0, "neumann":1}
 
 from collections import OrderedDict
-from objectsTemplate import Object
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from domainmodel.objectsTemplate import Object
+else:
+    from objectsTemplate import Object
+
 
 class Bound(Object):
     def __init__(self, name):

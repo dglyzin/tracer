@@ -1,3 +1,13 @@
+from pyparsing import ParseResults
+from copy import deepcopy as copy
+
+import sys
+
+# python 2 or 3
+if sys.version_info[0] > 2:
+    from functools import reduce
+
+
 class Actions():
     '''
     TODO:
@@ -35,6 +45,7 @@ class Actions():
             [5.1, 1.5, 2.7]->
             [3, 1, 2]
             '''
+            delays = copy(delays)
             delays.sort()
 
             # for debug
@@ -62,24 +73,46 @@ class Actions():
 
             # for debug
             self.print_dbg("toks:", toks)
-            self.print_dbg("outList", self.outList)
-            out = reduce(lambda x, y: x+y, self.outList)
+            self.print_dbg("type(toks)", type(toks))
 
+            self.print_dbg("outList", self.outList)
+
+            # if no out generate reduce return error
+            if len(self.outList) == 0:
+                self.print_dbg("len(outList)=0 =>",
+                               " no output for expr %s found" % str(toks),
+                               "and",
+                               " reduce raise error")
+
+            out = reduce(lambda x, y: x+y, self.outList)
+            '''
             # change all founded delay marker to
             # delay
+            # because each time dataTermVarsForDelay is not
+            # cleared then delays will comulative in that and
+            # We just rewrite params.delay each time.
+            self.cppOut.params.delays = []
             for var in termData.keys():
                 for delay in termData[var]:
                     # convert delays like:
                     # 1.1 -> 1 (see convert_delay)
                     delayConv = convert_delay(delay, termData[var])
+                    self.print_dbg("delays", termData[var])
+                    self.print_dbg("delay", delay)
+                    self.print_dbg("var", var)
+                    
+                    # if no delay then just return same result
                     out = out.replace("arg_delay_"+var+'_'+str(delay),
                                       str(delayConv))
-
+                    self.print_dbg("out", out)
+                    if delayConv not in self.cppOut.params.delays:
+                        self.cppOut.params.delays.append(delayConv)
+            '''
             self.outList = [out]
-
-            termData.clear()
+           
+            # termData.clear()
             # self.actions.outList = []
-        
+
         return(lambda str, loc, toks: action(self.cppOut.dataTermVarsForDelay,
                                              str, loc, toks))
     # END ACTIONS
@@ -94,7 +127,8 @@ class Actions():
             self.print_dbg("toks:", toks)
             self.print_dbg("_str:", _str)
             self.print_dbg("loc:", loc)
-
+            self.print_dbg("outList", self.outList)
+            
             # cut out from inner term X: X^power
             # from outList.
             innerTermOut = self.outList.pop()
@@ -150,10 +184,10 @@ class Actions():
     def action_for_termRealForUnary(self):
         def action(_str, loc, toks):
             # for debug
-            # self.print_dbg("FROM action_for_termRealForUnary")
+            self.print_dbg("FROM action_for_termRealForUnary")
 
             # for debug
-            # self.print_dbg("toks:", toks)
+            self.print_dbg("toks:", toks)
 
             self.outList.append(toks[0])
         return(lambda _str, loc, toks: action(_str, loc, toks))
@@ -172,6 +206,8 @@ class Actions():
             out = out.replace("Arg",
                               str(toks[0]).upper())
             self.outList.append(out)
+            self.print_dbg("success")
+            #return(ParseResults([out]))
 
         return(lambda _str, loc, toks: action('termArgsForUnary',
                                               _str, loc, toks))
@@ -180,7 +216,29 @@ class Actions():
     # ACTIONS FOR termFunc
     def action_for_termFunc(self):
         def action(_str, loc, toks):
-            self.outList.append(toks[0])
+            '''
+            DESCRIPTION:
+            Also for cuda sin((float)...)
+            '''
+            self.print_dbg("FROM action_for_termFunc:")
+            # for compatibility reason
+            if self.cppOut.params.fromOld:
+                self.print_dbg("from old error")
+                raise(Exception)
+
+            self.outList.append(toks[0]+'((float)')
+        return(lambda _str, loc, toks: action(_str, loc, toks))
+    # END ACTIONS
+
+    # ACTIONS FOR termFuncArg
+    def action_for_termFuncArg(self):
+        def action(_str, loc, toks):
+            '''
+            DESCRIPTION:
+            For cuda sin((float)...)
+            '''
+            self.print_dbg("FROM action_for_termFuncArg:")
+            self.outList.append(')')
         return(lambda _str, loc, toks: action(_str, loc, toks))
     # END ACTIONS
 
@@ -209,6 +267,8 @@ class Actions():
             out = self.cppOut.get_out_for_termParam()
             out = out.replace("arg_param", str(parameterInx))
             self.outList.append(out)
+            #return(ParseResults([out]))
+
         return(lambda _str, loc, toks: action(_str, loc, toks))
     # END ACTIONS
     
@@ -258,10 +318,14 @@ class Actions():
 
             # for debug
             self.print_dbg("varIndexs:", varIndexs)
-
+            self.print_dbg("dataTermVarSimple",
+                           self.cppOut.dataTermVarSimpleLocal)
             # find index of local var for shift
             # like (U,V)-> (source[+0], source[+1])
-            varIndex = varIndexs.index(self.cppOut.dataTermVarSimpleLocal['varIndexs'][0])
+            try:
+                varIndex = varIndexs.index(self.cppOut.dataTermVarSimpleLocal['varIndexs'][0])
+            except:
+                varIndex = varIndexs.index(self.cppOut.dataTermVarsSimpleIndep['varIndexs'][0])
             self.cppOut.params.unknownVarIndex = varIndex
             # END FOR
 
@@ -283,6 +347,8 @@ class Actions():
 
             # FOR indepVarList
             # vars like ['x'] for which diff make's
+            # also used for choice special or common in
+            # bound and interconnect.
             indepVar = termData['indepVar']
             self.cppOut.params.indepVarList = indepVar
             # END FOR
@@ -339,6 +405,7 @@ class Actions():
                               innerTermOutDelay)
 
             self.outList.append(out)
+            #return(ParseResults([out]))
             # END OUTPUT
             
         return(lambda str, loc, toks: action(self.cppOut.dataTermOrder,
@@ -405,6 +472,7 @@ class Actions():
                               str(termData['varIndexs'].index(toks[0])))
  
             self.outList.append(out)
+            #return(ParseResults([out]))
         return(lambda str, loc, toks: action(self.cppOut.dataTermVarsSimpleGlobal,
                                              self.cppOut.dataTermVarsSimpleIndep,
                                              'termVarsSimpleIndep',
@@ -470,7 +538,8 @@ class Actions():
             if var not in termData.keys():
                 termData[var] = [delay]
             else:
-                termData[var].append(delay)
+                if delay not in termData[var]:
+                    termData[var].append(delay)
 
             out = out.replace("arg_varIndex",
                               str(termDataInner['varIndexs'].index(toks[0][0])))
@@ -487,7 +556,7 @@ class Actions():
             self.outList.pop()
 
             self.outList.append(out)
-       
+            #return(ParseResults([out]))
         return(lambda str, loc, toks: action_add_delay('termVarsDelay',
                                                        self.cppOut.dataTermVarsSimpleGlobal,
                                                        self.cppOut.dataTermVarsForDelay,
@@ -553,6 +622,9 @@ class Actions():
         # for debug
         self.print_dbg("FROM action_generate_out_map:")
 
+        # for debug
+        self.print_dbg("toks", args[2])
+
         self.out = self.cppOut.get_out_for_term(termName)
      
         # for debug
@@ -578,8 +650,12 @@ class Actions():
         varIndexs = self.cppOut.dataTermVarsSimpleGlobal['varIndexs']
 
         # for debug
-        self.print_dbg("varIndexs:",
+        self.print_dbg("varIndexs from global:",
                        varIndexs)
+
+        # for debug
+        self.print_dbg("varIndexs from local:",
+                       self.cppOut.dataTermVarSimpleLocal['varIndexs'])
 
         # find index of local var
         var = self.cppOut.dataTermVarSimpleLocal['varIndexs'][0]
@@ -647,10 +723,10 @@ class Actions():
                         
         '''
         # for debug
-        # self.print_dbg("FROM action_add_args:")
+        self.print_dbg("FROM action_add_args:")
 
         # for debug
-        # self.print_dbg("toks:", toks)
+        self.print_dbg("toks:", toks)
 
         if toks[0] in "xyz":
             data = toks[0].upper()
