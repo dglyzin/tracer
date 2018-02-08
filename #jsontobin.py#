@@ -23,7 +23,7 @@ python2 jsontobin.py '/home/user/projects/lab/hybriddomain/tests/2dTests/test2d_
 
 '''
 
-from domainmodel.enums import *
+From domainmodel.enums import *
 import argparse
 from domainmodel.model import Model
 from domainmodel.binarymodel import BinaryModel

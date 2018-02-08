@@ -454,7 +454,32 @@ def run_tests_for_dom():
 '''
 
 
+def clear_previus():
+    # FOR remove previus results:
+    curDir = os.getcwd()
+
+    # assuming that this file launched from domainmodel
+    path = os.path.join(curDir,
+                        'tests',
+                        'introduction',
+                        'src')
+    cpps = os.listdir(path)
+    for cpp in cpps:
+        if cpp.split('.')[1] in ('cpp', 'so'):
+            cpp_path = os.path.join(path, cpp)
+
+            # remove previus results:
+            try:
+                os.remove(cpp_path)
+            except:
+                logger.debug("os.remove: nothing to remove")
+    # END FOR
+
+
 def run_to_file(dim=1, genType='old', singleModel=None):
+
+    # clear previus files:
+    clear_previus()
 
     set_tests_for_class(CppGenTestCases, dim, genType, singleModel)
 

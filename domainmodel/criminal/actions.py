@@ -221,6 +221,7 @@ class Actions():
             Also for cuda sin((float)...)
             '''
             self.print_dbg("FROM action_for_termFunc:")
+
             # for compatibility reason
             if self.cppOut.params.fromOld:
                 self.print_dbg("from old error")

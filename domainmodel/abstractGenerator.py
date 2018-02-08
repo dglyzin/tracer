@@ -105,6 +105,7 @@ class BoundCondition:
                 parser.params.fromOld = True
 
                 parser.parseMathExpression(value)
+
                 # cpp
                 self.parsedValues.append(parser.out)
             except:

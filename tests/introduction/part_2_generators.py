@@ -5,8 +5,7 @@ generators of .cpp code work.
 
 For generate and test cpp:
 import tests.introduction.part_2_generators as p2
-p2.test_model_create_cpp(testFile)
-p2.test_cpp()
+p2.test_create_and_gcc_cpp('tests/2dTests/test2d_one_block0.json')
 
 From most general to particlular.
 
@@ -32,8 +31,13 @@ import os
 import logging
 import subprocess
 
+# if using from tester.py uncoment that:
 # create logger that child of tests.tester loger
 logger = logging.getLogger('tests.tester.part_2_generators')
+
+# if using directly uncoment that:
+#logger = logging.getLogger('part_2')
+#logger.setLevel(logging.DEBUG)
 
 
 def test_logger():
@@ -108,10 +112,9 @@ def test_model_create_cpp(modelFile="tests/brusselator1d_bound_U.json"):
     # load model
     model = get_model_for_tests(modelFile)
     forDomain = model.createCPPandGetFunctionMaps(path,
-                                                  "prepr_folder_path", True)
+                                                  "prepr_folder_path", False)
     logger.debug("path = %s" % path)
     logger.debug("modelFile = %s" % modelFile)
-
     return(forDomain)
 
 
@@ -146,7 +149,7 @@ def test_cpp(fileName='from_model_createCPP.cpp', _stderr=None):
     cmd = ['gcc', cpp, '-shared', '-O3', '-o',
            lib, '-fPIC']
     logger.debug("cmd = %s" % str(cmd))
-    
+
     '''
     stdout and stderr PIPE means
     that new child stream will be created
@@ -168,6 +171,45 @@ def test_cpp(fileName='from_model_createCPP.cpp', _stderr=None):
         print(err)
 
     return(out)
+
+
+def test_create_and_gcc_cpp(modelFile="tests/brusselator1d_bound_U.json"):
+    '''
+    Test old file generation method.
+    '''
+    
+    # FOR json to cpp fileName 
+    cppFileName = os.path.basename(modelFile)
+    
+    # removing type
+    cppFileName = cppFileName.split('.')[0]
+    
+    # add new type
+    cppFileName = cppFileName + '.cpp'
+    # END FOR
+
+    # FOR remove previus results:
+    curDir = os.getcwd()
+
+    # assuming that this file launched from domainmodel
+    path = os.path.join(curDir,
+                        'tests',
+                        'introduction',
+                        'src')
+    cpp = os.path.join(path, cppFileName)
+    
+    # remove previus results:
+    try:
+        os.remove(cpp)
+    except:
+        logger.debug("os.remove: nothing to remove")
+    # END FOR
+
+    # try create cpp:
+    test_model_create_cpp(modelFile)
+    
+    # test cpp with gcc:
+    test_cpp(cppFileName)
 
 
 def test_func_gen():
@@ -193,3 +235,4 @@ class GccException(Exception):
     '''
     def __init__(self, err):
         self.err = err
+        logger.error(self.err)

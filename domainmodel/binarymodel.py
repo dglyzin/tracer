@@ -736,8 +736,9 @@ class BinaryModel(object):
         '''
         print("from saveFuncs")
         print(fileName)
-        # self.functionMaps, delays = self.dmodel.createCPPandGetFunctionMaps(fileName,
+        self.functionMaps, delays = self.dmodel.createCPPandGetFunctionMaps(fileName,
                                                                             tracerFolder+"/hybriddomain", nocppgen)
+        '''
         if self.dmodel.dimension == 1:
             params = ts.test_templates_1d(self.dmodel)
             functionMaps = ts.test_domain_1d(self.dmodel)
@@ -764,6 +765,7 @@ class BinaryModel(object):
         shutil.copy2(pathFrom, pathToSave)
         os.rename(os.path.join(pathToSave, name),
                   os.path.join(pathToSave, fileName))
+        '''
         return(delays)
 
     def compileFuncs(self, fileName):
@@ -771,6 +773,7 @@ class BinaryModel(object):
         print "compiling..."
         #command = "nvcc "+ fileName + " -shared  -O3 -o libuserfuncs.so -Xcompiler -fPIC"
         command = "gcc "+ fileName + " -shared  -O3 -o " + dirName+"/libuserfuncs.so -fPIC"
+        
         print command
         PIPE = subprocess.PIPE
         p = subprocess.Popen(command, shell=True, stdin=PIPE, stdout=PIPE, stderr=subprocess.STDOUT)
