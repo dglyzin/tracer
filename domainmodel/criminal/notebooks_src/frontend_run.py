@@ -102,6 +102,10 @@ class FrontState(object):
             generate_files(self.params)
             display("done")
 
+            # jupyter bug:
+            #clear_output()
+            #self.show()
+
         @make_event(self, 'solve')
         def on_button_bSolve(event, self):
             '''
@@ -121,6 +125,10 @@ class FrontState(object):
 
             # run_solver(self.params)
             # display("done")
+
+            # jupyter bug:
+            #clear_output()
+            #self.show()
 
         @make_event(self, 'result')
         def on_button_bResult(event, self):
@@ -144,6 +152,9 @@ class FrontState(object):
             ''' % ('test', 'test')
             # display(str_video)
             display(HTML(str_video))
+            
+            # jupyter bug:
+            # self.show()
 
         @make_event(self, 'clear')
         def on_button_bClear(event, self):
@@ -152,7 +163,11 @@ class FrontState(object):
             
             '''
             clear_output()
-    
+            
+            # jupyter bug:
+            #clear_output()
+            #self.show()
+
     def show_params(self):
         display("tracer_folder")
         display(self.params['tracerFolder'])
