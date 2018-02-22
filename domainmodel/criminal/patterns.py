@@ -101,19 +101,19 @@ class Patterns():
                                  + self.termBrackets #ZeroOrMore(self.termBrackets)
         )
         '''
-        self.termUnaryFunc = (Group(ZeroOrMore(self.termUnary)
-                                    + self.termRealForUnary)
-                              ^ Group(self.termBrackets
-                                      + OneOrMore(self.termUnary)
-                                      + self.termRealForUnary
-                                      + self.termBrackets)
+        self.termUnaryFunc = (Group(self.termBrackets
+                                    + OneOrMore(self.termUnary)
+                                    + self.termRealForUnary
+                                    + self.termBrackets)
                               ^ Group(ZeroOrMore(self.termUnary)
                                       + self.termFuncArg)
                               ^ Group(self.termBrackets
                                       + OneOrMore(self.termUnary)
                                       + self.termFuncArg
                                       + self.termBrackets)
-                              ^ self.termOperand)
+                              #^ self.termOperand
+                              ^ Group(ZeroOrMore(self.termUnary)
+                                      + self.termRealForUnary))
         
         # FOR TERM ^
         self.termRealForPower = self.real.copy()

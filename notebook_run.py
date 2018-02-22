@@ -165,7 +165,11 @@ class GccException(Exception):
 
 if __name__ == '__main__':
 
-    file_name = 'test2d_one_block1.json'
+    if '-f' in sys.argv:
+        file_name = sys.argv[sys.argv.index('-f')+1]
+    else:
+        file_name = 'test2d_one_block1.json'
+    
     test_folder = 'tests/2dTests'
     params = fill_params(file_name, test_folder)
     print('file_name:\n', file_name)

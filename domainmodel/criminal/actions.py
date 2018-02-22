@@ -222,11 +222,12 @@ class Actions():
             '''
             self.print_dbg("FROM action_for_termFunc:")
 
+            '''
             # for compatibility reason
             if self.cppOut.params.fromOld:
                 self.print_dbg("from old error")
                 raise(Exception)
-
+            '''
             self.outList.append(toks[0]+'((float)')
         return(lambda _str, loc, toks: action(_str, loc, toks))
     # END ACTIONS
