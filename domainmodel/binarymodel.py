@@ -802,14 +802,14 @@ class BinaryModel(object):
         nodeCount = self.dmodel.getNodeCount()
 
         if params["partition"] is None:
-            params["partition"] = " "
+            params["partition"] = " -p exp "
         else:
             params["partition"] = " -p " + params["partition"] + " "
 
         if params["nodes"] is None:
             params["nodes"] = self.dmodel.getNodeSpec()
         else:
-            params["nodes"] = "-w "+params["nodes"]
+            params["nodes"] = " -w "+params["nodes"]
 
         if params["mpimap"] is None:
             params["mpimap"] = ''
