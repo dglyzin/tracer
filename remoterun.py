@@ -179,16 +179,17 @@ def remoteProjectRun(connection, inputFile, params, projectFolder, logger):
             cftp.close()
             
             
-        command = 'python '+connection.tracerFolder+'/hybriddomain/jsontobin.py '+ projFolder+'/'+remoteProjectFileName + " " + connection.tracerFolder
+        command = 'python2 '+connection.tracerFolder+'/hybriddomain/jsontobin.py '+ projFolder+'/'+remoteProjectFileName + " " + connection.tracerFolder
         
-        logger.log(command + optionalArgs, LL_DEVEL)
+        logger.log(command + optionalArgs, LL_USER)
         stdin, stdout, stderr = client.exec_command(command+optionalArgs)
         
-        logger.log("finally", LL_DEVEL)
-        logger.log( stdout.read(), LL_DEVEL)
-        logger.log("jsontobin stderr:", LL_DEVEL)
-        logger.log(stderr.read(), LL_DEVEL)
-        logger.log("stderr END", LL_DEVEL)
+        logger.log("finally", LL_USER)
+        logger.log( stdout.read(), LL_USER)
+        logger.log("jsontobin stderr:", LL_USER)
+        logger.log(stderr.read(), LL_USER)
+        logger.log("stderr END", LL_USER)
+
         #4 Run Solver binary on created files
         logger.log("Checking if solver executable at "+connection.tracerFolder+"/hybridsolver/bin/HS exists...", LL_USER)
         stdin, stdout, stderr = client.exec_command('test -f '+connection.tracerFolder + "/hybridsolver/bin/HS")

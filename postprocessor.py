@@ -296,13 +296,12 @@ def getBinFilesByPlot(binFileList, plotValList, plotCount):
 def createMovie(projectDir, projectName):
     saveText = False
 
-
     info, cellSize, dx, dy, dz, dimension = readDomFile(os.path.join(projectDir, projectName + defaultGeomExt) )
 
     countZ, countY, countX, offsetZ, offsetY, offsetX = getDomainProperties(info)
 
     command = "rm " + projectDir + projectName + "-final-*.png " + projectDir + projectName + "-plot*.mp4" + projectDir + projectName + "-res*.txt" + projectDir + projectName + "-res*.out"
-    print command
+    print(command)
     subprocess.call(command, shell=True)
 
     binFileList = getSortedDrawBinFileList(projectDir, projectName)
@@ -320,7 +319,7 @@ def createMovie(projectDir, projectName):
         namesEquations[numitem] = item[:item.find("'")]
     # print plotFileLists
     plotList = model.plots
-    print('plotplot',plotList)
+    print('plotplot', plotList)
 
     for plotIdx, plot in enumerate(plotList):
         #t1 = time.time()
@@ -394,10 +393,14 @@ if __name__ == "__main__":
     t1 = time.time()
 
     parser = argparse.ArgumentParser(description='Creating pictures and a movie for a given folder.', epilog = "Have fun!")
-    #mandatory argument, project folder
-    parser.add_argument('projectDir', type = str, help = "local folder to process")
-    #mandatory argument, project name without extension
-    parser.add_argument('projectName', type = str, help = "project name without extension")
+
+    # mandatory argument, project folder
+    parser.add_argument('projectDir', type = str,
+                        help = "local folder to process")
+
+    # mandatory argument, project name without extension
+    parser.add_argument('projectName', type = str,
+                        help = "project name without extension")
     args = parser.parse_args()
 
     createMovie(args.projectDir, args.projectName)

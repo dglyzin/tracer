@@ -829,7 +829,7 @@ class BinaryModel(object):
                       " mpirun "+ params["mpimap"] +" "+ solverExecutable+" "+OutputDomFile + \
                       " "+str(flag)+" "+str(finishTime) + " " + params["cont"] + "\n")
         #runFile.write("srun -N "+str(nodeCount)+" " +  partitionOption + " "+ solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
-        runFile.write("srun -n1" + " " + params["nodes"] + params["partition"] +"python " + postprocessor +" " + projectDir+"/" +" " + outProjectTitle )
+        runFile.write("srun -n1" + " " + params["nodes"] + params["partition"] +"python2 " + postprocessor +" " + projectDir+"/" +" " + outProjectTitle )
         runFile.close()
    
                    

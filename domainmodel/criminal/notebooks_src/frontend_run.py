@@ -10,12 +10,17 @@ from tests.test_client import run_cmd_interact
 
 
 class FrontState(object):
-    def __init__(self, json_file_name):
+    def __init__(self, config_file_name):
+        ''' config_file_name - name of file, for ssh. (from LoginForm).
+        
+        '''
         object.__init__(self)
 
         try:
             # fill params for given name:
-            self.params = fill_params(json_file_name)
+            # self.params = fill_params(json_file_name)
+            self.params = {}
+            self.params['login_file'] = config_file_name
             self.show_params()
         except:
             display("choice json file")
@@ -54,11 +59,18 @@ class FrontState(object):
         self.buttons['clear'] = bClear
         # END FOR
 
+        # FOR login:
+
+        self.texts = {}
+        
+        # END FOR
+
         # FOR others:
         self.others = {}
         
         self.tests = []
 
+        self.tests.extend(glob("tests/gpu1block1d/*.json"))
         self.tests.extend(glob("tests/*.json"))
         self.tests.extend(glob("tests/1dTests/*.json"))
         self.tests.extend(glob("tests/2dTests/*.json"))
@@ -78,23 +90,27 @@ class FrontState(object):
                                     width='50%')
         
         # put all together:
-        mNode = widgets.Box(children=[  # lNameM, dModel,
-                                      bCompile,
-                                      bSolve, bResult,
-                                      bClear],
+        children = [
+            lNameM, dModel,
+            # bCompile,
+            bSolve, bResult,
+            bClear]
+        mNode = widgets.Box(children=children,
                             layout=box_layout)
+        
         self.scene_node = mNode
 
     def show(self):
         display(self.scene_node)
 
     def set_callbacks(self):
-
+        
         @make_event(self, 'compile')
         def on_button_bCompile(event, self):
             '''
             DESCRIPTION:
-            
+            Compile file (in jupyter server)
+            not used.
             '''
             clear_output()
             # display("model choice:", self.others['model'].value)
@@ -110,18 +126,30 @@ class FrontState(object):
         def on_button_bSolve(event, self):
             '''
             DESCRIPTION:
-            
+            Run python2 remoterun.py config_file_name model_file
+            with -w from model file (dnode1)
+                 -p exp
+            progress use regexp from stdout.
             '''
             clear_output()
             
             # progress:
-            progress_obj = Progress(STEPS=9)
+            progress_obj = Progress(STEPS=100)
             display(progress_obj.progress)
 
             # run interactive:
+            '''
             script_name = 'tests/test_solver.py'
             cmd = ['python3', script_name, '-s', str(10)]
-            run_cmd_interact(cmd, o=progress_obj, re_pat=".*\d.*")
+            '''
+            script_name = 'remoterun.py'
+            cmd = ['python2', script_name,
+                   self.params['login_file'],  # 'config/valdecar.json',
+                   self.others['model'].value]
+            # 'tests/2dTests/test2d_one_block1.json'
+
+            run_cmd_interact(cmd, o=progress_obj,
+                             re_pat=r".*Done (?P<proc>\d\d|\d)")
 
             # run_solver(self.params)
             # display("done")
@@ -134,24 +162,29 @@ class FrontState(object):
         def on_button_bResult(event, self):
             '''
             DESCRIPTION:
-            
+            Show result or link to it.
             '''
             clear_output()
-
+            model_name = (self.others['model'].value).split('.')[0]
+            video_file = model_name + '-plot0.mp4'
+            self.video_file = video_file
             str_video = '''
             <script>
             </script>
 
             <video controls>
-              <source src="%s.mp4" type="video/mp4">
-              <source src="rabbit320.webm" type="video/webm">
-              <p>Your browser doesn't support HTML5 video.
-                 Here is a <a href="%s.mp4">link to the video</a>
-                 instead.</p>
+              <source src="%s" type="video/mp4">
+              <!--<source src="rabbit320.webm" type="video/webm">-->
             </video>
-            ''' % ('test', 'test')
-            # display(str_video)
+            <p>If your browser doesn't support HTML5 video.
+                 Here is a <a href="%s">link to the video</a>
+                 instead.</p>
+           
+            ''' % (video_file, video_file)
+            
             display(HTML(str_video))
+            # display(str_video)
+            display(video_file)
             
             # jupyter bug:
             # self.show()
@@ -160,10 +193,18 @@ class FrontState(object):
         def on_button_bClear(event, self):
             '''
             DESCRIPTION:
-            
+            Remove video (created with solve).
             '''
             clear_output()
-            
+            try:
+                # solve button was used
+                video_file = self.video_file
+                os.remove(self.video_file)
+            except:
+                # solve button was not used:
+                model_name = (self.others['model'].value).split('.')[0]
+                video_file = model_name + '-plot0.mp4'
+                os.remove(video_file)
             # jupyter bug:
             #clear_output()
             #self.show()
@@ -180,6 +221,11 @@ class FrontState(object):
         
 
 class Progress():
+
+    ''' Progress for test_client.py
+    that used subprocess interactively
+    and update progress from stdout.'''
+
     def __init__(self, STEPS):
 
         self.step_progress = 0

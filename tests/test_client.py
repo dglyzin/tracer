@@ -66,18 +66,22 @@ def run_cmd_interact(cmd, o=None, re_pat=".*\d.*", _stderr=None):
                 # find progress data using re:
                 if re_pat is None:
                     re_pat = ".*\d.*"
-                res = re.search(re_pat, str(s))
-                res_str = res.group()
+                try:
+                    res = re.search(re_pat, str(s))
+                    res_str = res.groups()[0]
 
-                if o is not None:
-                    o.succ(int(res_str))
-                else:
-                    print("thread t_1")
-                    print("original line:")
-                    print(str(line))
-            
-                    print("parsed line")
-                    print(res_str)
+                    if o is not None:
+                        o.succ(int(res_str))
+                    else:
+                        print("thread t_1")
+                        print("original line:")
+                        print(str(line))
+
+                        print("parsed line")
+                        print(res_str)
+                except:
+                    # print(str(s))
+                    pass
 
         # remove progress after finishing:
         if o is not None:
