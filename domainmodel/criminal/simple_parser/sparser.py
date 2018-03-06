@@ -135,8 +135,15 @@ def lex(sent="a+U*U*V+D[V,{y,1}]-c*D[U,{x,2}]", out=None):
             rest = out["out_str"].replace(first, pattern)
 
             out["out_str"] = rest
-            out[first] = [pattern, res]
 
+            # save pattern type and it's number:
+            if pattern in out.keys():
+                out[pattern] += 1
+                out[first] = [pattern, res, out[pattern]]
+            else:
+                out[pattern] = 0
+                out[first] = [pattern, res, 0]
+            
             # go next
             return(lex(sent, out))
 
@@ -161,13 +168,13 @@ def syn(sent="(exp_1+exp_2)*exp_3"):
         rest = sent[res.end():]
         
         if pattern == 'term_bracket':
-            
+            pass
 
-def parse(sent="U'=a+U*U*V-(b+1)*U+c*D[U,{x,2}]"):
+
+def parse(sent=r"U'=a+U*U*V-(b+1)*U+c*D[U,{x,2}]"):
     try:
         ''' For term "V(t-1.5,{x,1.3})" '''
 
-        
         res = re.search(bound_delay_point,
                         sent)
     except:

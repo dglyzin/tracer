@@ -119,8 +119,8 @@ class FrontState(object):
             display("done")
 
             # jupyter bug:
-            #clear_output()
-            #self.show()
+            clear_output()
+            self.show()
 
         @make_event(self, 'solve')
         def on_button_bSolve(event, self):
@@ -155,8 +155,8 @@ class FrontState(object):
             # display("done")
 
             # jupyter bug:
-            #clear_output()
-            #self.show()
+            clear_output()
+            self.show()
 
         @make_event(self, 'result')
         def on_button_bResult(event, self):
@@ -206,8 +206,8 @@ class FrontState(object):
                 video_file = model_name + '-plot0.mp4'
                 os.remove(video_file)
             # jupyter bug:
-            #clear_output()
-            #self.show()
+            clear_output()
+            self.show()
 
     def show_params(self):
         display("tracer_folder")

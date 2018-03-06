@@ -13,7 +13,7 @@ class LoginForm(object):
     Or use existing in hybriddomain/config.
     Will update solver cell.'''
 
-    def __init__(self, params, solver_cell=5):
+    def __init__(self, params, solver_cell=6):
 
         ''' In params login_file will be added to keys for
         connection by update button.
@@ -63,10 +63,15 @@ class LoginForm(object):
         self.log_files.extend(glob("config/example/*.json"))
         self.log_files.extend(glob("config/*.json"))
 
+        if len(self.log_files) == 0:
+            dlog_val = "none"
+        else:
+            dlog_val = self.log_files[0]
+        
         lChoice = widgets.Label(value=r'обязательно:')
         self.dlogFile = widgets.Dropdown(
             options=self.log_files,
-            value=self.log_files[0],
+            value=dlog_val,
             description='config file:')
         # END FOR
 
@@ -105,20 +110,31 @@ class LoginForm(object):
 
             update_solver = '''
             <script>
-            $( document ).ready(function(){
+            //$( document ).ready(function(){
             
             // update solver cell:
-            var cell = IPython.notebook.get_cell(%d);
-            cell.execute();
+            try {
+                for (var i = 4; i < 30; i++){
+                      var cell = IPython.notebook.get_cell(i);
+                      cell.execute();
+                   }
+            }
+            catch(error){
+               console.log("too many cells to update ");
+            }
             
-            })
+            //})
             </script>
-            ''' % (self.solver_cell)
+            '''  # % (self.solver_cell)
 
             display(HTML(update_solver))
            
             display("file selected:", self.dlogFile.value)
-        
+                    
+            # jupyter bug:
+            # clear_output()
+            # self.show()
+
         @make_event(self, 'login')
         def on_button_bLogin(event, self):
             '''
@@ -134,8 +150,8 @@ class LoginForm(object):
             
             # fill config file:
             config = {
-                "Host": "corp7.uniyar.ac.ru",
-                "Port": 2222,
+                "Host": "192.168.10.100",  # corp7.uniyar.ac.ru
+                "Port": 22,  # 2222
                 "Username": self.texts['login'].value,
                 "Password": self.texts['pass'].value,
                 "Workspace": self.texts['workspace'].value,
@@ -160,8 +176,8 @@ class LoginForm(object):
             display("Dropdown updated")
 
             # jupyter bug:
-            #clear_output()
-            #self.show()
+            clear_output()
+            self.show()
 
         @make_event(self, 'clear')
         def on_button_bClear(event, self):
@@ -176,8 +192,8 @@ class LoginForm(object):
             display("file %s removed" % (user_file))
 
             # jupyter bug:
-            #clear_output()
-            #self.show()
+            clear_output()
+            self.show()
 
     def show_params(self):
         display("tracer_folder")
