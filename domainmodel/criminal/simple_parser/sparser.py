@@ -7,13 +7,14 @@ def preproc(sent):
     sent = sent.replace(" ", "")
 
 
-class Grammer():
+class Lex():
     def __init__(self):
 
         self.patterns = {}
 
         self.init_terms()
         self.init_base_patterns()
+        self.init_var_pattern()
         self.init_bound_pattern()
         self.init_diff_pattern()
 
@@ -80,6 +81,12 @@ class Grammer():
                 + ")")
         return(args)
 
+    def init_var_pattern(self):
+        val_pattern = ('[%s](\(%s\))?'
+                       % (self.dep_vars, self.arg_time))
+        
+        self.patterns['val_pattern'] = val_pattern
+
     def init_bound_pattern(self):
 
         ''' For "V(t-1.1,{x,1.3})" in begining of sent'''
@@ -95,6 +102,7 @@ class Grammer():
                              % (self.dep_vars, self.arg_time, self.args_space))
         
         self.bound_delay_point = bound_delay_point
+        self.patterns['bdp'] = bound_delay_point
 
     def init_diff_pattern(self):
 
@@ -119,7 +127,12 @@ class Grammer():
 
 
 def lex(sent="a+U*U*V+D[V,{y,1}]-c*D[U,{x,2}]", out=None):
-    g = Grammer()
+
+    '''Return dict with:
+    D[pattern_matched_term] = [pattern_name, match_object, index]
+    where index is count of such pattern in sent (from zero)'''
+
+    g = Lex()
 
     # if first time:
     if out is None:

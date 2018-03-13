@@ -155,7 +155,7 @@ class FrontState(object):
             # display("done")
 
             # jupyter bug:
-            clear_output()
+            # clear_output()
             self.show()
 
         @make_event(self, 'result')
@@ -187,7 +187,7 @@ class FrontState(object):
             display(video_file)
             
             # jupyter bug:
-            # self.show()
+            self.show()
 
         @make_event(self, 'clear')
         def on_button_bClear(event, self):
@@ -201,10 +201,13 @@ class FrontState(object):
                 video_file = self.video_file
                 os.remove(self.video_file)
             except:
-                # solve button was not used:
-                model_name = (self.others['model'].value).split('.')[0]
-                video_file = model_name + '-plot0.mp4'
-                os.remove(video_file)
+                try:
+                    # solve button was not used:
+                    model_name = (self.others['model'].value).split('.')[0]
+                    video_file = model_name + '-plot0.mp4'
+                    os.remove(video_file)
+                except:
+                    pass
             # jupyter bug:
             clear_output()
             self.show()

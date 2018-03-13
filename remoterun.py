@@ -131,8 +131,8 @@ def remoteProjectRun(connection, inputFile, params, projectFolder, logger):
         logger.log("Checking if folder "+connection.workspace+" exists...", LL_USER)
         stdin, stdout, stderr = client.exec_command('test -d '+connection.workspace)
         if stdout.channel.recv_exit_status():
-            logger.log("Please create workspace folder and put hybriddomain preprocessor into it", LL_USER)
-            return
+            logger.log("Please create workspace folder", LL_USER)
+            return()
         else:
             logger.log("Workspace OK.", LL_USER)
 
