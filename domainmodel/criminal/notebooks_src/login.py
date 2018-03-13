@@ -64,6 +64,7 @@ class LoginForm(object):
         self.log_files.extend(glob("config/*.json"))
 
         if len(self.log_files) == 0:
+            self.log_files = ["none"]
             dlog_val = "none"
         else:
             dlog_val = self.log_files[0]
