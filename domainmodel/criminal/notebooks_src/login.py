@@ -133,8 +133,8 @@ class LoginForm(object):
             display("file selected:", self.dlogFile.value)
                     
             # jupyter bug:
-            # clear_output()
-            # self.show()
+            clear_output()
+            self.show()
 
         @make_event(self, 'login')
         def on_button_bLogin(event, self):
