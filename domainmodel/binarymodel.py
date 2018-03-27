@@ -669,7 +669,7 @@ class BinaryModel(object):
         
     #this will only work if saveFuncs was called and self.functionMaps are filled
     def saveDomain(self, fileName, delays):
-        print "saving domain..."
+        print("saving domain...")
         #computing
         self.fillBinarySettings()
         #this will only work if saveFuncs was called and self.functionMaps are filled
@@ -725,6 +725,9 @@ class BinaryModel(object):
 
     def saveFuncs(self, fileName, tracerFolder, nocppgen):
         '''
+        Input:
+        fileName = Workspace + project_folder + cpp_name
+
         Tests:
         In [12]: import domainmodel.binarymodel as bm
         In [12]: import tests.introduction.part_2_generators as p2
@@ -736,9 +739,11 @@ class BinaryModel(object):
         '''
         print("from saveFuncs")
         print(fileName)
+        '''
         self.functionMaps, delays = self.dmodel.createCPPandGetFunctionMaps(fileName,
                                                                             tracerFolder+"/hybriddomain", nocppgen)
         '''
+        # begin
         if self.dmodel.dimension == 1:
             params = ts.test_templates_1d(self.dmodel)
             functionMaps = ts.test_domain_1d(self.dmodel)
@@ -755,7 +760,8 @@ class BinaryModel(object):
         print(self.functionMaps)
 
         # copy and rename files
-        pathToSave = os.path.join(tracerFolder, "hybriddomain")
+        # pathToSave = os.path.join(tracerFolder, "hybriddomain")
+        pathToSave = os.path.dirname(fileName)
         pathFrom = os.path.join(tracerFolder,
                                 'hybriddomain',
                                 'tests',
@@ -763,9 +769,12 @@ class BinaryModel(object):
                                 'src',
                                 name)
         shutil.copy2(pathFrom, pathToSave)
+        
+        #os.rename(os.path.join(pathToSave, name),
+        #          os.path.join(pathToSave, fileName))
         os.rename(os.path.join(pathToSave, name),
-                  os.path.join(pathToSave, fileName))
-        '''
+                  fileName)
+        # end
         return(delays)
 
     def compileFuncs(self, fileName):

@@ -23,6 +23,21 @@
 Запускает решатель
 
 model -> mapped model -> domain.dom+funcs.cpp+run.sh
+
+It use jsontobin.py as:
+'python2 '+connection.tracerFolder+'/hybriddomain/jsontobin.py '+ projFolder+'/'+remoteProjectFileName + " " + connection.tracerFolder
+   where
+    projFolder = Workspace + projectFolder
+    remoteProjectFileName = projectTitle + '.json'
+    projectTitle = projectFolder
+    projectFolder = outFileName ('porject/out_file_name')
+        
+# Input:
+user config file relative path
+json_file
+
+# EXAMPLE:
+python2 remoterun.py config/user.json tests/2dTests/test2d_one_block1.json
 '''
 #remoteRunScriptName='project.sh'
 #remoteProjectFileName='project.json'
@@ -158,7 +173,7 @@ def remoteProjectRun(connection, inputFile, params, projectFolder, logger):
                         return
                     else:
                         logger.log("File OK.", LL_USER)
-                                      
+        # copy json to server
         cftp=client.open_sftp()
         cftp.put(inputFile, projFolder+"/"+remoteProjectFileName)
         cftp.close()
@@ -178,7 +193,11 @@ def remoteProjectRun(connection, inputFile, params, projectFolder, logger):
             cftp.put(cppFileNamePath, projFolder+"/"+remoteCppFileName)
             cftp.close()
             
-            
+        # projFolder = Workspace+ projectFolder
+        # remoteProjectFileName = projectTitle + '.json'
+        # projectTitle = projectFolder
+        # projectFolder = 'porject/out_file_name'
+        # python2 jsontobin.py json_full_name tracerFolder
         command = 'python2 '+connection.tracerFolder+'/hybriddomain/jsontobin.py '+ projFolder+'/'+remoteProjectFileName + " " + connection.tracerFolder
         
         logger.log(command + optionalArgs, LL_USER)

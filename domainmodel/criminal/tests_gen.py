@@ -591,7 +591,8 @@ def test_template_centrals(modelFile="tests/brusselator1d_bound_U.json"):
         if eq.cpp:
             eq.parsedValues = eq.values
         else:
-            eq.parsedValues = [parser.parseMathExpression(value)
+            #TODO parser
+            eq.parsedValues = [value  # parser.parseMathExpression(value)
                                for value in eq.values]
         '''
         print("eq.values")
@@ -762,7 +763,9 @@ def test_template_bounds(modelFile="tests/brusselator1d_bound_U.json", params=No
                 value = parser.parseMathExpression(bound.values[i])
                 parser.cppOut.dataTermMathFuncForDiffSpec = value
                 # parse eq(phi)
-                bound.parsedValues.append(parser.parseMathExpression(eq))
+                ### bound.parsedValues.append(parser.parseMathExpression(eq))
+                # TODO parser
+                bound.parsedValues.append(eq)
 
     out = cppGen.get_out_for_bounds(params)
     

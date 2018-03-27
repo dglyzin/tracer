@@ -4,7 +4,7 @@ from IPython.display import display, clear_output, HTML
 import os
 from glob import glob
 
-from domainmodel.criminal.notebooks_src.frontend import make_event
+from domainmodel.criminal.notebooks_src.base import make_event
 from notebook_run import fill_params, generate_files, run_solver
 from tests.test_client import run_cmd_interact
 

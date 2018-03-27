@@ -34,6 +34,9 @@ import os
 
 
 def createBinaries(params):
+    '''
+    params['fileName'] = full name of .json
+    '''
 
     projectDir = os.path.dirname(params["fileName"])
     inProjectName, _ = os.path.splitext(params["fileName"])
@@ -79,7 +82,8 @@ def createBinaries(params):
         partModel = partitionAndMap(model)
     
     bm = BinaryModel(partModel)
-    delays = bm.saveFuncs(OutputFuncFile, params["tracerFolder"],params["nocppgen"])
+    delays = bm.saveFuncs(OutputFuncFile, params["tracerFolder"],
+                          params["nocppgen"])
     bm.saveDomain(OutputDomFile, delays)
     
     print("OutputFuncFile")
