@@ -1,3 +1,0 @@
-# Breakpoints
-b /usr/lib/python2.7/dist-packages/pyparsing.py: 688
-b /home/valdecar/Documents/projects/projectsNew/lab/hybriddomain/jsontobin.py: 82
