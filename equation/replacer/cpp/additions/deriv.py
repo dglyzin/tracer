@@ -39,6 +39,14 @@ else:
     from someFuncs import NewtonBinomCoefficient, generateCodeForMathFunction
 '''
 
+import logging
+
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('equation.py')
+logger.setLevel(level=log_level)
+
 
 class DerivGenerator():
     '''
@@ -53,8 +61,8 @@ class DerivGenerator():
     def print_dbg(self, *args):
         if self.dbg:
             for arg in args:
-                print(self.dbgInx*' '+str(arg))
-            print('')
+                logger.debug(self.dbgInx*' '+str(arg))
+            
 
 
 class PureDerivGenerator(DerivGenerator):

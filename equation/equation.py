@@ -75,8 +75,8 @@ logging.basicConfig(level=log_level)
 logger = logging.getLogger('equation.py')
 logger.setLevel(level=log_level)
 
-logger.info('sys.path')
-logger.info(sys.path)
+logger.debug('sys.path[0]')
+logger.debug(sys.path[0])
 
 '''
 # add import's path:
@@ -268,15 +268,15 @@ class Equation():
 
     def show_tree_original(self):
         if self.have_tree:
-            self.operator_tree.show_original()
+            print(self.operator_tree.show_original())
     
     def show_tree_cpp_out(self):
         if self.have_tree:
-            self.operator_tree.show_cpp_out()
+            print(self.operator_tree.show_cpp_out())
         
     def show_tree_cpp_data(self):
         if self.have_tree:
-            self.operator_tree.show_cpp_data()
+            print(self.operator_tree.show_cpp_data())
 
     # FOR set out cpp parameters:
 
