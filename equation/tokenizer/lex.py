@@ -48,6 +48,7 @@ class Lex():
         self.init_pow_pattern()
         self.init_func_pattern()
         self.init_free_var_pattern()
+        self.init_diff_time_var_pattern()
 
         self.patterns = []
         
@@ -55,6 +56,8 @@ class Lex():
         self.patterns.append(('diff_pattern', self.diff_pattern))
         self.patterns.append(('bdp', self.bound_delay_point))
         self.patterns.append(('func_pattern', self.func_pattern))
+        self.patterns.append(('diff_time_var_pattern',
+                              self.var_diff_t_pattern))
         self.patterns.append(('var_pattern', self.var_pattern))
         self.patterns.append(('free_var_pattern', self.free_var_pattern))
         self.patterns.append(('coefs_pattern', self.coefs_pattern))
@@ -65,6 +68,7 @@ class Lex():
         # map_patterns_to_grammar:
         self.map_ptg = dict([('diff_pattern', 'a'),
                              ('bdp', 'a'),
+                             ('diff_time_var_pattern', 'a'),
                              ('var_pattern', 'a'),
                              ('free_var_pattern', 'a'),
                              ('coefs_pattern', 'a'),
@@ -143,6 +147,14 @@ class Lex():
         var_pattern = ('(?P<val>[%s](\(%s\))?)'
                        % (self.dep_vars, self.arg_time))
         self.var_pattern = var_pattern
+
+    def init_diff_time_var_pattern(self):
+
+        '''For U' or U(t-1.5)'.'''
+
+        var_diff_t_pattern = ("(?P<val>[%s](\(%s\))?)\'"
+                              % (self.dep_vars, self.arg_time))
+        self.var_diff_t_pattern = var_diff_t_pattern
 
     def init_free_var_pattern(self):
 

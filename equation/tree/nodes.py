@@ -2,6 +2,8 @@
 NodeR contain some addition functions
 for parse to operator tree convetion (convert func in tree.py)'''
 from functools import reduce
+import inspect
+from tokenizer.words import Word
 
 
 class Node():
@@ -13,6 +15,12 @@ class Node():
         # self.right = right
         self.children = children
         self.visited = visited
+
+    def __getitem__(self, k):
+        return(self.children[k])
+
+    def __len__(self):
+        return(len(self.children))
 
     def add_parent(self):
 
@@ -132,11 +140,35 @@ class NodeR(Node):
             except AttributeError:
                 out = _self.name
             return(out)
-            
+
+        def gen_sympy_out(_self):
+            try:
+                out = _self.sympy
+            except AttributeError:
+                try:
+                    out = _self.name.lex[0]
+                except AttributeError:
+                    out = _self.name
+            return(out)
+
+        def gen_rand(_self):
+            try:
+                out = str(_self.rand)
+            except AttributeError:
+                try:
+                    out = _self.name.lex[0]
+                except AttributeError:
+                    out = _self.name
+            return(out)
+
         if key == 'original':
             return(self._flatten(gen_orig))
         elif key == 'cpp':
             return(self._flatten(gen_cpp_out))
+        elif key == 'rand':
+            return(self._flatten(gen_rand))
+        elif key == 'sympy':
+            return(self._flatten(gen_sympy_out))
         else:
             BaseException("key not supported")
 
@@ -219,6 +251,26 @@ class NodeR(Node):
         return(self.print_node(begin=0,
                                out_gen=gen))
 
+    def show_sympy_out(self):
+        def gen(_self):
+            try:
+                out = inspect.getsource(_self.lambda_sympy)
+            except AttributeError:
+                try:
+                    out = _self.arg_sympy
+                except AttributeError:
+                    try:
+                        out = _self.sympy
+                    except AttributeError:
+                        try:
+                            out = _self.name.lex[0]
+                        except AttributeError:
+                            out = _self.name
+            return(out)
+
+        return(self.print_node(begin=0,
+                               out_gen=gen))
+
     def py_bug_fix(self):
 
         '''For strange python bug'''
@@ -266,7 +318,8 @@ class NodeR(Node):
         '''Find node_id in self.children'''
         
         for id, child in enumerate(self.children):
-            if child.name == node.name:
+            if child == node:
+                # if child.name == node.name:
                 return(id)
 
     def get_children(self, node_type_list):
@@ -368,6 +421,7 @@ class NodeCommon(NodeR):
     ''' Node for Word' representation'''
 
     def __init__(self, name):
+        name = Word(name, [name, None, None])
         NodeR.__init__(self, [None, name])
 
 

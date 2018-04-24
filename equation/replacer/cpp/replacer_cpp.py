@@ -107,6 +107,15 @@ class CppGen(Gen):
             # transform to cpp:
             term.cpp.out = self.var_gen.print_cpp()
 
+        elif pattern == 'diff_time_var_pattern':
+            # add data to term:
+            data = self.var_gen.set_base(term)
+            if data is not None:
+                term.cpp.global_data = data
+
+            # transform to cpp:
+            term.cpp.out = self.var_gen.print_cpp()
+
         elif pattern == 'free_var_pattern':
             
             # extract var name:
