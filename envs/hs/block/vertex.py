@@ -2,20 +2,46 @@ class Vertex():
     def __init__(self, sides_nums, sides, block):
         self.block = block
         self.sides_nums = sides_nums
-        dim = self.block.size.dimension
-        if dim == 1:
-            side = list(sides.values())[0]
+        self.dim = self.block.size.dimension
+        self.set_vertex()
+
+    def set_vertex(self):
+        sides = self.block.sides
+
+        if self.dim == 1:
+            # in case of 1d block has only one
+            # side sides[2]:
+            side = sides[2]
+            # side = list(sides.values())[0]
             self._set_vertex_1d(side)
-        elif dim == 2:
+        elif self.dim == 2:
             self._set_vertex_2d(sides)
 
     def _set_vertex_1d(self, side):
+
+        '''In case of 1d self.sides_nums it not Side object nums
+        but 0 or 1 i.e. left or rigth side of Side'''
+
         if self.sides_nums[0] == 0:
             vertex_data = side.interval[0].name
+
+            # in case of 1d must be only one block:
+            try:
+                self.boundNumber = self.block.boundRegions[0][0].boundNumber
+            except IndexError:
+                # regions not set yet:
+                self.boundNumber = None
         elif self.sides_nums[0] == 1:
             vertex_data = side.interval[-1].name
 
-        self.boundNumber = vertex_data['b']
+            # in case of 1d must be only one block:
+            try:
+                self.boundNumber = self.block.boundRegions[1][0].boundNumber
+            except IndexError:
+                # regions not set yet:
+                self.boundNumber = None
+                
+        # self.boundNumber = vertex_data['b']
         self.equationNumber = vertex_data['e']
         
     def _set_vertex_2d(self, sides):

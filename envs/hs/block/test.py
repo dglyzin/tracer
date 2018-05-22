@@ -1,10 +1,35 @@
 from math_space.pde.regions import BoundRegion, EquationRegion
-from envs.hs.block.side import Side
+from envs.hs.block.side.side_main import SideNet as Side
 from envs.hs.block.block_size import BlockSize
 from envs.hs.block.block_main import BlockNet as Block
 
 
-def test_block():
+def test_block_1d():
+    # m = model.Model()
+    # m.io.loadFromFile('tests/test1d_two_blocks0.json')
+    # m.blocks[0].sides
+    # m.blocks[1].sides
+    # m.interconnects
+
+    e0 = EquationRegion(dim=1, EquationNumber=1,
+                        xfrom=0.1, xto=0.2)
+
+    e1 = EquationRegion(dim=1, EquationNumber=2,
+                        xfrom=0.2, xto=0.3)
+    s = Side(2, eRegions=[e0], dim=1)
+    
+    size = BlockSize()
+    size.set_default(dimension=1)
+        
+    b = Block(name="Block 1", size=size, sides=[s],
+              eRegions=[e1])
+    return(b)
+    # m.editor.add_block(b)
+    # ic = test_ic()
+    # m.editor.add_ic(ic)
+
+
+def test_block_2d():
     b00 = BoundRegion(BoundNumber=0, Side=0, dim=2,
                       xfrom=0, xto=0.5, yfrom=0, yto=0.5)
     b01 = BoundRegion(BoundNumber=1, Side=0, dim=2,

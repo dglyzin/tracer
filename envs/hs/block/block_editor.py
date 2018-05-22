@@ -1,4 +1,4 @@
-from envs.hs.block.side import Side
+from envs.hs.block.side.side_main import SideNet as Side
 from envs.hs.block.vertex import Vertex
 
 
@@ -21,9 +21,10 @@ class BlockEditor():
             self.replace_block_regions(self.net.sides[side_num])
 
         # for side in self.net.sides:
-        #    side.split_side()
+        #    side.separator.split_side()
 
-    def init_regions(self):
+    def init_state(self):
+        # FOR regions:
         # boundRegions factorize at classes with
         # different sides_nums (i.e boundRegions[side_num]):
         side_nums = [0, 1, 2, 3]
@@ -32,7 +33,11 @@ class BlockEditor():
         self.net.equationRegions = []
         self.net.initialRegions = []
         self.set_regions_defaults(0, 0, 0)
+        # END FOR
 
+        self.net.vertexs = {}
+        self.net.sides = {}
+        
     def fill_regions(self, bRegions, eRegions, iRegions):
 
         '''Fill all regions. All sides must exist.'''
@@ -55,11 +60,11 @@ class BlockEditor():
     def set_vertexs(self):
         dim = self.net.size.dimension
         if dim == 1:
-            self.net.vertexs = None
+            # self.net.vertexs = None
             vertexs_sides = [[0], [1]]
         elif dim == 2:
             vertexs_sides = [[0, 2], [2, 1], [1, 3], [3, 0]]
-        self.net.vertexs = dict([(str(vertex),
+        self.net.vertexs.update([(str(vertex),
                                   Vertex(vertex, self.net.sides, self.net))
                                  for vertex in vertexs_sides])
 
@@ -84,12 +89,12 @@ class BlockEditor():
         # find side with side.side_num:
         if side.side_num in self.net.sides.keys():
             # change it:
-            side.set_block(self.net)
+            side.editor.set_block(self.net)
             self.net.sides[side.side_num] = side
 
             # sinch boundRegion dict:
             self.replace_block_regions(side)
-            side.split_side(rewrite=True)
+            side.separator.split_side(rewrite=True)
             return(side.side_num)
 
         # if nothing found:
@@ -108,12 +113,17 @@ class BlockEditor():
 
         else:
             # if not:
-            side.set_block(self.net)
+            side.editor.set_block(self.net)
             self.net.sides[side.side_num] = side
             
             # sinch boundRegion dict:
             self.replace_block_regions(side)
-            side.split_side(rewrite=True)
+            
+            # add eRegions from side:
+            for eRegion in side.eRegions:
+                self.add_eq_region(eRegion)
+
+            side.separator.split_side(rewrite=True)
             return(side.side_num)
 
     def replace_block_regions(self, side):
@@ -153,21 +163,36 @@ class BlockEditor():
                           if eRegion not in eRegionsS])
         
         side.set_block(self.net)
-        side.split_side(rewrite=True)
+        side.separator.split_side(rewrite=True)
         
     def add_bound_region(self, bRegion):
 
         '''Add region to block.boundRegions[side_num]
-        and to according side. Side must exist.'''
-
+        and to according side and vertex. Side must exist.
+        if dim == 1 Side not used (because side is only
+        one (side_num=2) and it's stores eRegions interval)'''
+        
         side_num = bRegion.side_num
-        self.net.sides[side_num].add_bound_region(bRegion)
 
+        if self.net.size.dimension == 1:
+            # for 1d just add to boundRegions:
+            self.net.boundRegions[side_num] = [bRegion]
+        elif self.net.size.dimension == 2:
+            # for 2d Side used:
+            self.net.sides[side_num].editor.add_bound_region(bRegion)
+
+        try:
+            for vertex in self.net.vertexs.values():
+                if side_num in vertex.sides_nums:
+                    vertex.set_vertex()
+        except AttributeError:
+            # vertexs not exist yet:
+            pass
         '''
         if side_num in self.net.boundRegions:
             if bRegion not in self.net.boundRegions[side_num]:
                 self.net.boundRegions[side_num].append(bRegion)
-                self.net.sides[side_num].split_side(rewrite=True)
+                self.net.sides[side_num].separator.split_side(rewrite=True)
         else:
             raise(BaseException("side %s not exist" % (str(side_num))))
         #    self.net.boundRegions[side_num] = [bRegion]
@@ -177,12 +202,21 @@ class BlockEditor():
 
     def add_eq_region(self, eRegion):
 
-        '''Add region to block'''
+        '''Add region to block, sides and vertexs'''
 
         if eRegion not in self.net.equationRegions:
+
+            # to block:
             self.net.equationRegions.append(eRegion)
+
+            # to sides:
             for side_num in self.net.sides:
-                self.net.sides[side_num].add_eq_region(eRegion)
-                
+                self.net.sides[side_num].editor.add_eq_region(eRegion)
+
+            # to vertexs:
+            # TODO: check if region cover vertex (as in side)
+            for vertex in self.net.vertexs.values():
+                vertex.set_vertex()
+
     def sinch_sides(self):
         pass

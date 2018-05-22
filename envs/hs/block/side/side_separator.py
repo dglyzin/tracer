@@ -1,78 +1,28 @@
-from envs.hs.block.interval import Interval
+from envs.hs.block.side.interval import Interval
 
 from copy import deepcopy as copy
 from copy import copy as weak_copy
-
-from pandas import DataFrame
 
 import logging
 
 # create logger
 log_level = logging.INFO  # logging.DEBUG
 logging.basicConfig(level=log_level)
-logger = logging.getLogger('side.py')
+logger = logging.getLogger('side_separator.py')
 logger.setLevel(level=log_level)
 
 
-class Side():
-    '''
-    ***x->
-    *  
-    |  ---side 2---
-    y  |          |
-       s          s
-       i          i
-       d          d
-       e          e
-       0          1
-       |          |
-       ---side 3---
-    '''
-    def __init__(self, side_num, block=None,
-                 bRegions=None, eRegions=None,
-                 default_size=None):
-        if bRegions is None:
-            bRegions = []
-        if eRegions is None:
-            eRegions = []
-        
-        logger.debug("bRegions")
-        logger.debug(bRegions)
-        
-        for bRegion in bRegions:
-            if side_num != bRegion.side_num:
-                raise(BaseException("side_num must be equal "
-                                    + "in Side and all it's boundRegions"))
+class SideSeparator():
 
-        self.block = block
+    '''Used to separate (split) sede at intervals
+    (i.e. fill net.interval data)'''
 
-        if default_size is not None:
-            self.default_size = default_size
-
-        self.side_num = side_num
-        
-        self.bRegions = bRegions
-        self.eRegions = eRegions
-
-        # add side_num to all regions:
-        for bRegion in self.bRegions:
-            bRegion.side = self.side_num
-
-        self.split_side()
-
-    def __repr__(self):
-        try:
-            rs = [list(i) for i in self.interval]
-            ns = [(i.name['b'], i.name['e']) for i in self.interval]
-        except AttributeError:
-            raise(BaseException("split_side firts"))
-            
-        out = str(DataFrame([ns, rs], index=['bound/eq', 'range']))
-        return(out)
+    def __init__(self, net):
+        self.net = net
 
     def has_interval(self):
         try:
-            self.interval
+            self.net.interval
         except AttributeError:
             return(False)
         return(True)
@@ -82,7 +32,7 @@ class Side():
         '''If rewrite False, check if interval exist.'''
         
         if not rewrite and self.has_interval():
-            return(self.interval)
+            return(self.net.interval)
         else:
             
             # try:
@@ -92,11 +42,10 @@ class Side():
 
     def _split_side(self):
         '''
-        TODO: use local regions (instead of block ones).
         DESCRIPTION:
         Separate side at intervals according existing regions.
         This function using equationRegions and boundRegions
-        from self.block.
+        from self.net.block.
 
         Return
         [interval([from, to], name={e: eqNum, b: boundNum})
@@ -106,17 +55,17 @@ class Side():
         (see Interval class for more about interval's intersection)
         '''
         logger.debug("FROM split_side")
-        side_num = self.side_num
+        side_num = self.net.side_num
         bRegions = []
         eRegions = []
-        block = self.block
+        block = self.net.block
         if block is not None:
             bRegions = block.boundRegions[side_num]
             eRegions = block.equationRegions
-            den = self.block.defaultEquation
+            den = block.defaultEquation
         else:
-            bRegions = self.bRegions
-            eRegions = self.eRegions
+            bRegions = self.net.bRegions
+            eRegions = self.net.eRegions
             den = 0
 
         block_size = self._choice_block_size(bRegions, eRegions)
@@ -138,10 +87,13 @@ class Side():
 
         sInterval = Interval([0.0, block_size], name={'b': None, 'e': den})
 
-        bIntervals = [Interval([_from(bRegion), _to(bRegion)],
-                               name={'b': bRegion.boundNumber})
-                      for bRegion in bRegionsForSide]
-
+        if self.net.editor.get_dim() != 1:
+            bIntervals = [Interval([_from(bRegion), _to(bRegion)],
+                                   name={'b': bRegion.boundNumber})
+                          for bRegion in bRegionsForSide]
+        else:
+            # in case of dim == 1 bound is just a point:
+            bIntervals = []
         bIntervals = sInterval.split_all(bIntervals, [])
 
         logger.debug("bIntervals")
@@ -159,16 +111,17 @@ class Side():
         logger.debug(eIntervals)
 
         oIntervals = []
+        
         for bInterval in bIntervals:
             oIntervals.extend(bInterval.split_all(copy(eIntervals), []))
-
+        
         logger.debug("for side")
         logger.debug(side_num)
 
         logger.debug("oIntervals")
         logger.debug(oIntervals)
 
-        self.interval = oIntervals
+        self.net.interval = oIntervals
 
         new_side = {'side_num': side_num,
                     # 'blockNumber': block.blockNumber,
@@ -177,12 +130,13 @@ class Side():
 
     def _choice_block_size(self, bRegions, eRegions):
         
-        '''Extract block size according to side_num.
+        '''Extract block size according to side_num (which
+        defined side).
         If block given, use it, else try to use regions
         for calculate size. At last use self.default_size.'''
         
-        side_num = self.side_num
-        block = self.block
+        side_num = self.net.side_num
+        block = self.net.block
 
         def extract_from_regions(bRegions, eRegions, sides_nums):
 
@@ -211,15 +165,20 @@ class Side():
                                                   sides_nums)
             except ValueError:
                 try:
-                    block_size = self.default_size
+                    block_size = self.net.default_size
                 except AttributeError:
                     raise(BaseException(("give either block "
-                                         + "or self.default_size"
+                                         + "or Size.default_size"
                                          + "or regions")))
         return(block_size)
 
     def _choice_regions_intervals_gen(self):
-        side_num = self.side_num
+
+        '''Return functions from and to which extract
+        regions distance according to side direction
+        (defined with side_num)'''
+
+        side_num = self.net.side_num
 
         if side_num in [0, 1]:
             # case for [0, y] or [x_max, y]
@@ -236,45 +195,26 @@ class Side():
         return((_from, _to))
 
     def _test_region_exist(self, eRegion, side_num):
+
         '''
         DESCRIPTION:
-        Test if equation region exist for this side.
-        '''
-        if self.block is not None:
-            if self.block.size.dimension == 1:
-                return(True)
+        Test if equation region exist for this side (i.e.
+        intersects this side).
+        If dimension is 1 then region always intersecs
+        side.'''
+
+        if self.net.editor.get_dim() == 1:
+            return(True)
 
         if side_num == 0:
             # test for [0, y]
             return(eRegion.xfrom == 0.0)  # eRegion.xto == 0.0
         elif(side_num == 3):
             # test for [x, y_max]
-            return(eRegion.yto == self.block.size.sizeY)
+            return(eRegion.yto == self.net.block.size.sizeY)
         elif(side_num == 1):
             # test for [x_max, y]
-            return(eRegion.xto == self.block.size.sizeX)
+            return(eRegion.xto == self.net.block.size.sizeX)
         elif(side_num == 2):
             # test for [x, 0]
             return(eRegion.yfrom == 0.0)  # eRegion.yto == 0.0
-
-    def set_block(self, block):
-        self.block = block
-        self.split_side(rewrite=True)
-
-    def add_bound_region(self, bRegion):
-
-        '''Add region to side and it's block'''
-
-        if bRegion not in self.bRegions:
-            self.bRegions.append(bRegion)
-            self.split_side(rewrite=True)
-
-        # depricated
-        # if self.block is not None:
-        #    self.block.sinch_side_regions(self)
-
-    def add_eq_region(self, eRegion):
-        side_num = self.side_num
-        if self._test_region_exist(eRegion, side_num):
-            self.split_side(rewrite=True)
-        

@@ -44,7 +44,7 @@ class icMain():
         out = "\nic: %s\n" % (str(self.base.name))
         out += "blockNumber1: %s\n" % (str(self.block1))
         out += "blockNumber2: %s\n" % (str(self.block2))
-        out += "block1Side1: %s\n" % (str(self.block1Side))
-        out += "block1Side2: %s\n" % (str(self.block2Side))
+        out += "block1Side: %s\n" % (str(self.block1Side))
+        out += "block2Side: %s\n" % (str(self.block2Side))
 
         return(out)

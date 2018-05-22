@@ -119,16 +119,17 @@ class BoundRegion(Region):
 
     def fillProperties(self, bdict):
         
-        '''if dim == 1 side always 2'''
+        ''''''
 
         self.boundNumber = bdict["BoundNumber"]
-        if self.dim != 1:
-            self.side_num = bdict["Side"]
-        else:
-            self.side_num = 2
 
+        self.side_num = bdict["Side"]
+        
         if self.dim != 1:
-            self._set_coords_from_bdict(bdict)
+            try:
+                self._set_coords_from_bdict(bdict)
+            except KeyError:
+                pass
 
     def getPropertiesDict(self, dim):
         propDict = OrderedDict([

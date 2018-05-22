@@ -32,11 +32,9 @@ class BlockNet():
         else:
             self.size = size
 
-        # init regions before side done:
-        self.editor.init_regions()
+        # init all state data:
+        self.editor.init_state()
 
-        self.sides = {}
-        
         # fill sides if they given:
         if len(sides) > 0:
             for side in sides:
