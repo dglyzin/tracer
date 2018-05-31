@@ -10,7 +10,13 @@ class sysIO():
         self.net.base.name = edict["Name"]
         self.net.base.vars = edict["Vars"]
         self.net.eqs = [Equation(sent) for sent in edict["System"]]
-
+        
+        for i, eq in enumerate(self.net.eqs):
+            try:
+                self.net.eqs[i].parse()
+            except:
+                raise(SyntaxError("eq %s not supported" % eq.sent))
+    
     def getPropertiesDict(self):
         propDict = OrderedDict([
             ("Name", self.net.base.name),

@@ -27,21 +27,22 @@ domain = model.gen_domain('hybridsolver')
 src = model.gen_cpp('hybridsolver')
 solver.run(domain, src)
 '''
-
 from math_space.common.equation.equation import Equation
+
+import traceback
 
 
 tests = ["(U)^3",
-         "(V(t-1.1, {x, 0.7}))^3",
+         "(V(t-1.1, {x, 0.7}{y, 0.7}))^3",
          "(D[V(t-1.1), {x, 2}])^3",
          '(U(t-1))^3',
          "D[U(t-1.1), {x,2}]+D[U(t-5.1), {y,2}]+D[V(t-1.1), {x,1}]",
-         "-(U(t,{x, a}))",
-         "-(U(t,{x, 0.7}))",
-         "-(V(t-1.1, {x, a}))",
+         "-U(t,{x, a})",
+         "-U(t,{x, 0.7}{y, 0.7})",
+         "-V(t-1.1, {x, a}{y, 0.7})",
          "-(V+U)",
-         "-(W(t, {x, 0.7}{y, 0.3}))",
-         "-(U(t-1.1, {x, 0.7}{y, 0.3}))",
+         "-W(t, {x, 0.7}{y, 0.3})",
+         "-U(t-1.1, {x, 0.7}{y, 0.3})",
          "f(x, y)*t",
 
          "U'=a+U+U*U*V-(b+1)*U+c*D[U,{x,2}]",
@@ -67,7 +68,7 @@ tests = ["(U)^3",
          "U'=a*D[U,{x,2}]+ r*U*(1-U(t-1))",
          "U'= D[U,{x,2}] + D[V,{x,2}]",
          "U'=a*D[U,{x,2}] + d*U",
-         "U(t,{x,0.7})",
+         "U(t,{x,0.7}{y, 0.7})",
          "U'=a*D[U,{x,2}]",
          "U'=a*(D[U,{x,2}] + D[U,{y,2}])",
          "U'=a*(D[U,{x,2}]+D[U,{y,2}])+U(t-3.1)+U(t-1.3)",
@@ -96,16 +97,20 @@ tests = ["(U)^3",
          "f(x, y,)+g(y,z,)+h(x,z,)"]
 
 
-def test_one(test, _id=0):
+def test_one(test, _id=0, verbose=False):
     eq = Equation(test)
     print("\n=== test %s: %s ===" % (_id, tests[_id]))
     try:
         try:
             eq.parse()
-        except:
+        except BaseException as e:
             # print(eq.from_lex)
             # print(eq.from_cyk)
+            if verbose:
+                print(e)
+                traceback.print_exc()
             pass
+
         eq.set_default()
 
         print('\noriginal:')
@@ -114,8 +119,11 @@ def test_one(test, _id=0):
         print('\ncpp:')
         eq.show_cpp()
         return(True)
-    except:
+    except BaseException as e:
         print("fail test %s" % (_id))
+        if verbose:
+            print(e)
+            traceback.print_exc()
         return(False)
 
 

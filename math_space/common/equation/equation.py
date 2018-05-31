@@ -110,10 +110,7 @@ class Equation():
         '''Get eq_left, eq_mid, eq_right = self.eq
         it convert eq_left and eq_right to
         operator_tree, then convert eq_mid to Node like objects,
-        then unite all to single Node like object.
-
-        Return:
-        self.eq_tree'''
+        then unite all to single Node like object.'''
 
         eq_left, eq_mid, eq_right = self.eq
         if eq_left is not None:
@@ -122,7 +119,26 @@ class Equation():
             eq_right = self._sym_step(eq_right)
         if eq_mid is not None:
             eq_mid = NodeCommon("".join(eq_mid))
-            eq_mid.children = [eq_right, eq_left]
+
+            if (eq_left is not None
+                and eq_right is not None):
+                # case x=y
+                eq_mid.children = [eq_right, eq_left]
+            elif eq_left is None:
+                # case -y -> 0-y
+                eq_left = NodeCommon("0")
+                eq_mid.children = [eq_right, eq_left]
+            '''
+            elif eq_right is None:
+                # case y- -> y-0
+                # y? -> ?+y
+                eq_right = NodeCommon("0")
+                eq_mid.children = [eq_right, eq_left]
+            '''
+            
+            if eq_left is None and eq_right is None:
+                raise(BaseException("eq_left or eq_right must exist"))
+
             eq_tree = eq_mid
         else:
             # if equation not like U'=sin(U) but
@@ -346,7 +362,8 @@ class Equation():
                     if len(eq_right[1:]) == 1:
                         sent_right = "("+sent[1:]+")"
                         eq_right = lex(sent=sent_right)
-
+                    else:
+                        eq_right = eq_right[1:]
             # if sent is equation (U'=sin(U) or U'=-sin(U)
             # or U'=-(U+V)):
             elif mid in sent:
@@ -649,6 +666,10 @@ class Equation():
         '''
         print(sympy.printing.pprint(self.eq_sympy))
 
+    def __repr__(self):
+        out = self.sent
+        return(out)
+
     def classify_pde(self):
         '''
         Example:
@@ -686,7 +707,7 @@ class Equation():
 
         self.set_diff_type(diffType='pure',
                            diffMethod='common')
-        self.set_point(point=[3, 3])
+        self.set_shape(shape=[30, 30])
 
     def set_dim(self, **kwargs):
 
@@ -725,14 +746,14 @@ class Equation():
 
         self.tree_cpp_replacer.set_diff_type(**kwargs)
 
-    def set_point(self, **kwargs):
+    def set_shape(self, **kwargs):
 
         '''For bound like "V(t-1.1,{x,1.3}{y, 5.3})".
 
         Input:
-        point=[3, 3]'''
+        shape=[3, 3]'''
 
-        self.tree_cpp_replacer.set_point(**kwargs)
+        self.tree_cpp_replacer.set_shape(**kwargs)
         
     def set_coeffs_indexes(self, **kwargs):
 

@@ -66,15 +66,30 @@ class Term():
         (for conversion in postprocessing)'''
 
         pattern = term.name.lex[1]
-
+        # print(pattern.groups())
         delay = pattern.group('delay')
         if delay is not None:
             self.parent.global_params.delays_owner_id += 1
             delay_index = self.parent.global_params.delays_owner_id
             self.parent.global_params.delays[delay_index] = delay
+
+            # var_index ex: U(t-1.1)
             val_index = pattern.group('val')
             return((delay_index, val_index, delay))
         return(None)
+
+    def set_varList(self, term):
+
+        '''Find values and it's orders (like {x, 2})
+        Or {x, 2.1} for case of bdp'''
+        
+        pattern = term.name.lex[1]
+        for var in 'xyz':
+            order = pattern.group('val_'+var)
+            if order is not None:
+                self.params.indepVarList.append(var)
+                self.params.indepVarOrders[var] = float(order)
+                # break
 
     def print_dbg(self, *args):
         if self.dbg:
@@ -87,7 +102,7 @@ class Diff(Term):
 
     def set_base(self, term):
 
-        '''Used for fill local data'''
+        '''Used for dinamicaly fill local data'''
 
         '''Orders and varList will be set here
         from term's pattern (like {x, 2})
@@ -103,18 +118,6 @@ class Diff(Term):
             return({'delay_data': delay_data})
         else:
             return(None)
-
-    def set_varList(self, term):
-
-        '''Find values and it's orders (like {x, 2})'''
-        
-        pattern = term.name.lex[1]
-        for var in 'xyz':
-            order = pattern.group('val_'+var)
-            if order is not None:
-                self.params.indepVarList.append(var)
-                self.params.indepVarOrders[var] = int(order)
-                break
 
     def set_diff_type(self, **kwargs):
 
@@ -258,14 +261,16 @@ class Bdp(Term):
         '''
         delay_data = self.set_delay(term)
         self.set_var_index(term)
+        
+        self.set_varList(term)
 
         if delay_data is not None:
             return({'delay_data': delay_data})
         else:
             return(None)
 
-    def set_point(self, point):
-        self.params.point = point
+    def set_shape(self, shape):
+        self.params.shape = shape
 
     def print_cpp(self):
         return(self.var_point())
@@ -280,16 +285,22 @@ class Bdp(Term):
         
         if self.params.dim == 1:
             try:
-                x = self.params.point[0]
-            except:
-                raise(BaseException('for var point 1d set point = [val]'))
+                print(self.params.indepVarList)
+                val_x = self.params.indepVarOrders['x']
+                x = str(int(float(val_x)*self.params.shape[0]))
+
+            except AttributeError:
+                raise(BaseException('for var point 1d set_shape'))
             return(self.var_point_1d(x))
         elif self.params.dim == 2:
             try:
-                x, y = self.params.point
-            except:
-                raise(BaseException('for var point 2d set point '
-                                    + '= [val, val]'))
+                val_x = self.params.indepVarOrders['x']
+                val_y = self.params.indepVarOrders['y']
+                
+                x = str(int(float(val_x)*self.params.shape[0]))
+                y = str(int(float(val_y)*self.params.shape[1]))
+            except AttributeError:
+                raise(BaseException('for var point 2d set_shape'))
             return(self.var_point_2d(x, y))
 
     def var_point_1d(self, x):
@@ -299,10 +310,15 @@ class Bdp(Term):
         '''
         blockNumber = self.params.blockNumber
         varIndex = self.params.unknownVarIndex
+        '''
         return('source[delay]['+str(x)+'*idxX'+'*'
                + 'Block'+str(blockNumber)+'CELLSIZE+'
                + str(varIndex)+']')
-        
+        '''
+        return('source[delay]['+str(x)+''+'*'
+               + 'Block'+str(blockNumber)+'CELLSIZE+'
+               + str(varIndex)+']')
+
     def var_point_2d(self, x, y):
         '''
         DESCRIPTION:
@@ -310,6 +326,7 @@ class Bdp(Term):
         '''
         blockNumber = self.params.blockNumber
         varIndex = self.params.unknownVarIndex
+        '''
         return(('source[delay][('+str(x)+'*idxX'
                 + '+'
                 + str(y)+'*idxY*Block'
@@ -317,7 +334,14 @@ class Bdp(Term):
                 + 'StrideY)*'
                 + 'Block'+str(blockNumber)+'CELLSIZE+'
                 + str(varIndex)+']'))
-
+        '''
+        return(('source[delay][('+str(x)+''
+                + '+'
+                + str(y)+'*Block'
+                + str(blockNumber)
+                + 'StrideY)*'
+                + 'Block'+str(blockNumber)+'CELLSIZE+'
+                + str(varIndex)+']'))
 
 class Var(Term):
 
@@ -474,6 +498,9 @@ def delay_postproc(node):
     First it collect delays (and remember from whom)
     then convert them,
     finely replace them into it's term.cpp.out string.
+
+    var (like U(t-1.1)) used for factorize delays. In
+    that case used only var[0] (U).
 
     Examples:
     for node:

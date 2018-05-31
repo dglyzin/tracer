@@ -3,8 +3,8 @@ from math_space.common.someFuncs import getCellCountInHalfInterval
 
 
 class BlockSize():
-    # def __init__(self, net):
-    #     self.net = net
+    def __init__(self, net):
+        self.net = net
 
     def __repr__(self):
         out = ""
@@ -66,3 +66,7 @@ class BlockSize():
         # print self.offsetX, self.offsetY
         return [xc, yc, zc]
 
+    def get_cell_size(self, model):
+        # count of equation in each cell
+        # (storage of each cell is count of equations in block)
+        return(len(model.equations[self.net.defaultEquation].eqs))

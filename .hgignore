@@ -11,13 +11,13 @@ syntax: glob
 .hgempty
 .settings*
 config/*
+tests/src/generated/*
 .project
 .pydevproject
 ManualHeat/*
 *.log
 *.html
 *statistic
-*.so
 *.cpp
 *.sh
 *tempFile

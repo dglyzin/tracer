@@ -1,12 +1,16 @@
 from math_space.common.someFuncs import getRangesInClosedInterval
 
 
-class Grid():
+class GridBase():
+    def __init__(self, net):
+        self.net = net
+
     def getXrange(self, xfrom, xto):
         # xfrom -= block.offsetX
         # xto -= block.offsetX
-        fromIdx, toIdx = getRangesInClosedInterval([xfrom, xto, self.gridStepX])
-        # [xc, _, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
+        fromIdx, toIdx = getRangesInClosedInterval([xfrom, xto,
+                                                    self.net.gridStepX])
+        # [xc, _, _ ] = block.getCellCount(self.gridStepX, self.gridStepY,self.gridStepZ)
         # if fromIdx == 0: fromIdx = 1
         # if toIdx == xc: toIdx = xc-1
         return fromIdx, toIdx
@@ -14,8 +18,9 @@ class Grid():
     def getYrange(self, block, yfrom, yto):
         # yfrom -= block.offsetY
         # yto -= block.offsetY
-        fromIdx, toIdx = getRangesInClosedInterval([yfrom, yto, self.gridStepY])
-        # [_, yc, _ ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
+        fromIdx, toIdx = getRangesInClosedInterval([yfrom, yto,
+                                                    self.net.gridStepY])
+        # [_, yc, _ ] = block.getCellCount(self.net.gridStepX, self.gridStepY,self.gridStepZ)
         # if fromIdx == 0: fromIdx = 1
         # if toIdx == yc: toIdx = yc-1
         return fromIdx, toIdx
@@ -23,15 +28,9 @@ class Grid():
     def getZrange(self, block, zfrom, zto):
         # zfrom -= block.offsetZ
         # zto -= block.offsetZ
-        fromIdx, toIdx = getRangesInClosedInterval([zfrom, zto, self.gridStepZ])
+        fromIdx, toIdx = getRangesInClosedInterval([zfrom, zto,
+                                                    self.net.gridStepZ])
         # [_, _, zc ] = block.getCellCount(self.gridStepX,self.gridStepY,self.gridStepZ)
         # if fromIdx == 0: fromIdx = 1
         # if toIdx == zc: toIdx = zc-1
         return fromIdx, toIdx
-
-    def __repr__(self):
-        out = ""
-        attrs = self.__dict__
-        for key_atr in attrs.keys():
-            out += key_atr + ":" + str(attrs[key_atr]) + "\n"
-        return(out)

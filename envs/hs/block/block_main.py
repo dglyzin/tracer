@@ -3,6 +3,7 @@ from envs.hs.block.block_io import BlockIO
 from envs.hs.block.block_size import BlockSize
 from envs.hs.block.block_plot import BlockPlotter
 from envs.hs.block.block_editor import BlockEditor
+from envs.hs.block.block_cpp import BlockCpp
 
 from functools import reduce
 
@@ -25,12 +26,14 @@ class BlockNet():
         self.io = BlockIO(self)
         self.plotter = BlockPlotter(self)
         self.editor = BlockEditor(self)
+        self.cpp = BlockCpp(self)
 
         if size is None:
-            self.size = BlockSize()
+            self.size = BlockSize(self)
             self.size.set_default()
         else:
             self.size = size
+            self.size.net = self
 
         # init all state data:
         self.editor.init_state()

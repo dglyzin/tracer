@@ -1,0 +1,37 @@
+{# COMMENT
+   TEMPLATE FOR INITIAL FUNCTION 1D
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+	params list
+	paramValues dict
+END COMMENT #}
+//===================PARAMETERS==========================//
+
+{% if len(params) > 0 %}
+
+void initDefaultParams(double** pparams, int* pparamscount){
+	*pparamscount = PAR_COUNT;
+	*pparams = (double *) malloc(sizeof(double)*PAR_COUNT);
+     {% for index, param in enumerate(params) %}
+	(*pparams)[{{ index }}] = {{ paramValues[param] }};
+     {% endfor %}
+}
+void releaseParams(double *params){
+	free(params);
+}
+
+{% else %}
+
+void initDefaultParams(double** pparams, int* pparamscount){}
+void releaseParams(double *params){}
+
+{% endif %}

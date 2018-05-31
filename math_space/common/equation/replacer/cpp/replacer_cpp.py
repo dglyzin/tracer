@@ -155,8 +155,8 @@ class CppGen(Gen):
     def set_dim(self, **kwargs):
         self.bdp_gen.set_dim(kwargs['dim'])
 
-    def set_point(self, **kwargs):
-        self.bdp_gen.set_point(kwargs['point'])
+    def set_shape(self, **kwargs):
+        self.bdp_gen.set_shape(kwargs['shape'])
 
     def set_blockNumber(self, **kwargs):
         self.diff_gen.set_blockNumber(kwargs['blockNumber'])

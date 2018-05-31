@@ -42,12 +42,14 @@ class Lex():
         self.init_terms()
         self.init_base_patterns()
         self.init_var_pattern()
+        self.init_bdp_var_pattern()
         self.init_coefs_pattern()
         self.init_bound_pattern()
         self.init_diff_pattern()
         self.init_pow_pattern()
         self.init_func_pattern()
         self.init_free_var_pattern()
+        self.init_time_pattern()
         self.init_diff_time_var_pattern()
 
         self.patterns = []
@@ -60,6 +62,7 @@ class Lex():
                               self.var_diff_t_pattern))
         self.patterns.append(('var_pattern', self.var_pattern))
         self.patterns.append(('free_var_pattern', self.free_var_pattern))
+        self.patterns.append(('time_pattern', self.time_pattern))
         self.patterns.append(('coefs_pattern', self.coefs_pattern))
         self.patterns.append(('pow_pattern', self.pow_pattern))
         self.patterns.append(('float_pattern', self.term_float))
@@ -71,6 +74,7 @@ class Lex():
                              ('diff_time_var_pattern', 'a'),
                              ('var_pattern', 'a'),
                              ('free_var_pattern', 'a'),
+                             ('time_pattern', 'a'),
                              ('coefs_pattern', 'a'),
                              ('pow_pattern', 'w'),
                              ('func_pattern', 'f'),
@@ -98,10 +102,10 @@ class Lex():
 
     def init_base_patterns(self):
 
-        self.term_int = r"\d"
+        self.term_int = r"\d+"
 
         # 1.5 or 1:
-        self.term_float = r"\d\.\d|\d"
+        self.term_float = r"\d+\.\d+|\d+"
 
         # (?P<delay>1.5)
         self.term_delay = r"(?P<delay>%s)" % (self.term_float)
@@ -142,15 +146,29 @@ class Lex():
 
     def init_var_pattern(self):
 
-        '''For U or U(t-1.5)'''
+        '''For U or U(t-1.5)
+        For all vars pattern first symbol will be
+        used to classify delays (U(t-1.1)->delay[U]=map(1.1)).'''
 
         var_pattern = ('(?P<val>[%s](\(%s\))?)'
                        % (self.dep_vars, self.arg_time))
         self.var_pattern = var_pattern
 
+    def init_bdp_var_pattern(self):
+
+        '''For U
+        For all vars pattern first symbol will be
+        used to classify delays (U(t-1.1)->delay[U]=map(1.1)).'''
+
+        var_pattern = ('(?P<val>[%s])'
+                       % (self.dep_vars))
+        self.var_bdp_pattern = var_pattern
+
     def init_diff_time_var_pattern(self):
 
-        '''For U' or U(t-1.5)'.'''
+        '''For U' or U(t-1.5)'.
+        For all vars pattern first symbol will be
+        used to classify delays (U(t-1.1)->delay[U]=map(1.1)).'''
 
         var_diff_t_pattern = ("(?P<val>[%s](\(%s\))?)\'"
                               % (self.dep_vars, self.arg_time))
@@ -162,6 +180,13 @@ class Lex():
 
         var_pattern = "[%s]" % (self.indep_vars)
         self.free_var_pattern = var_pattern
+
+    def init_time_pattern(self):
+
+        '''For t'''
+
+        time_pattern = "[t]"
+        self.time_pattern = time_pattern
 
     def init_coefs_pattern(self):
         coefs_pattern = ('[%s]'
@@ -179,8 +204,10 @@ class Lex():
         # 'V(t-1.1,{x,1.3})'
         #bound_delay_point = (r"^[%s]\(%s,%s\)"
         #                     % (self.dep_vars, self.arg_time, self.args_space))
-        bound_delay_point = (r"[%s]\(%s,%s\)"
-                             % (self.dep_vars, self.arg_time, self.args_space))
+        # var_pattern used only as U (not U(t-1.1)).
+        bound_delay_point = (r"%s\(%s,%s\)"
+                             % (self.var_bdp_pattern,
+                                self.arg_time, self.args_space))
         
         self.bound_delay_point = bound_delay_point
         

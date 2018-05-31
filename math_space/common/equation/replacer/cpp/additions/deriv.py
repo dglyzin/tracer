@@ -27,8 +27,9 @@ secondIndexSTR
 
 '''
 import sys
-from math_space.common.equation.replacer.cpp.additions.someFuncs import NewtonBinomCoefficient
-from math_space.common.equation.replacer.cpp.additions.someFuncs import generateCodeForMathFunction
+
+from math_space.common.someFuncs import NewtonBinomCoefficient
+from math_space.common.someFuncs import generateCodeForMathFunction
 
 '''
 # python 2 or 3
@@ -97,7 +98,7 @@ class PureDerivGenerator(DerivGenerator):
         # TODO use 'x' instead:
         self.indepVarList = params.indepVarList
         x = params.indepVarList[0]
-        self.derivOrder = params.indepVarOrders[x]
+        self.derivOrder = int(params.indepVarOrders[x])
 
         # like ['x', 'y', 'z']
         self.userIndepVariables = ['x', 'y', 'z']

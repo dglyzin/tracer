@@ -1,9 +1,9 @@
 from envs.hs.model.model_base import ModelBase
 from envs.hs.model.model_io import ModelIO
 from envs.hs.model.model_device import ModelDevice
-from envs.hs.model.model_gen_cpp import ModelGenCpp
+from envs.hs.model.cpp.model_gen_cpp import ModelGenCpp
 from envs.hs.model.model_editor import ModelEditor
-from envs.hs.model.grid import Grid
+from envs.hs.model.grid.grid_main import GridNet as Grid
 
 
 class Tmp():

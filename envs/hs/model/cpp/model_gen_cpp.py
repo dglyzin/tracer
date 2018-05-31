@@ -1,8 +1,6 @@
-from envs.hs.model.model_base import ModelBase
-
-
-class ModelGenCpp(ModelBase):
-    pass
+class ModelGenCpp():
+    def __init__(self, net):
+        self.net = net
 
 
 '''

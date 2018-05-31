@@ -175,7 +175,7 @@ class ModelIO():
 
     def add_block_io(self, bdict, dimension):
         name = u"Block {num}".format(num=len(self.net.blocks) + 1)
-        size = BlockSize()
+        size = BlockSize(None)
         size.set_default(self.net.dimension)
         index = len(self.net.blocks)
         block = Block(name, index, size)

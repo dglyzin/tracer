@@ -14,6 +14,7 @@ Created on Mar 19, 2015
 from math_space.common.equation.equation import Equation
 from math_space.common.system.sys_base import sysBase
 from math_space.common.system.sys_io import sysIO
+from math_space.common.system.sys_cpp import sysCpp
 
 
 class sysNet():
@@ -32,8 +33,14 @@ class sysNet():
     def __init__(self, name=None, system=[], vars="x", cpp=False):
         self.base = sysBase(self, name, vars, cpp)
         self.io = sysIO(self)
-        
+        self.cpp = sysCpp(self)
+
         self.eqs = [Equation(sent) if type(sent) == str else sent
                     for sent in system]
-
+        for i, eq in enumerate(self.eqs):
+            try:
+                self.eqs[i].parse()
+            except:
+                raise(SyntaxError("eq %s not supported" % eq.sent))
     
+        
