@@ -15,7 +15,7 @@ class GridBase():
         # if toIdx == xc: toIdx = xc-1
         return fromIdx, toIdx
     
-    def getYrange(self, block, yfrom, yto):
+    def getYrange(self, yfrom, yto):
         # yfrom -= block.offsetY
         # yto -= block.offsetY
         fromIdx, toIdx = getRangesInClosedInterval([yfrom, yto,
@@ -25,7 +25,7 @@ class GridBase():
         # if toIdx == yc: toIdx = yc-1
         return fromIdx, toIdx
     
-    def getZrange(self, block, zfrom, zto):
+    def getZrange(self, zfrom, zto):
         # zfrom -= block.offsetZ
         # zto -= block.offsetZ
         fromIdx, toIdx = getRangesInClosedInterval([zfrom, zto,

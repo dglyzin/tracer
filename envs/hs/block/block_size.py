@@ -8,9 +8,26 @@ class BlockSize():
 
     def __repr__(self):
         out = ""
+        '''
         attrs = self.__dict__
         for key_atr in attrs.keys():
             out += key_atr + ": " + str(attrs[key_atr]) + "\n"
+        '''
+        out += "dim: " + str(self.dimension)
+        out += "offsetX: " + str(self.offsetX)
+        out += "sizeX: " + str(self.sizeX)
+        out += "gridStepX: " + str(self.gridStepX)
+        
+        if self.dimension > 1:
+            out += "offsetY: " + str(self.offsetY)
+            out += "sizeY: " + str(self.sizeY)
+            out += "gridStepY: " + str(self.gridStepY)
+            
+        if self.dimension > 2:
+            out += "offsetZ: " + str(self.offsetZ)
+            out += "sizeZ: " + str(self.sizeZ)
+            out += "gridStepZ: " + str(self.gridStepZ)
+        
         return(out)
 
     def set_default(self, dimension=1):

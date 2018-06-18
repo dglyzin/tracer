@@ -4,6 +4,22 @@ from math_space.pde.regions import InitialRegion
 
 from collections import OrderedDict
 
+import logging
+
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+logger = logging.getLogger('tests.tester.block_io')
+
+# if using directly uncoment that:
+'''
+# create logger
+log_level = logging.DEBUG  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('block_io')
+logger.setLevel(level=log_level)
+'''
+
 
 class BlockIO():
 
@@ -25,7 +41,7 @@ class BlockIO():
         try:
             self.net.defaultBound = bdict["DefaultBound"]
         except:
-            print("DefaultBound not set")
+            logger.info("DefaultBound not set")
         self.net.defaultInitial = bdict["DefaultInitial"]
         
         for side_num in self.net.boundRegions:

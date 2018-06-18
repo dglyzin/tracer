@@ -1,3 +1,20 @@
+import logging
+
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+logger = logging.getLogger('tests.tester.model_editor')
+
+# if using directly uncoment that:
+'''
+# create logger
+log_level = logging.DEBUG  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('model_editor')
+logger.setLevel(level=log_level)
+'''
+
+
 class ModelEditor():
     def __init__(self, net):
         self.net = net
@@ -54,6 +71,6 @@ class ModelEditor():
             o.num = index
             ols.append(o)
         else:
-            print("obj alredy exist:")
-            print(o)
+            logger.debug("obj alredy exist:")
+            logger.debug(str(o))
 

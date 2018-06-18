@@ -1,0 +1,227 @@
+{
+    "ProjectName": "Brusselator1d", 
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 60.0, 
+        "TimeStep": 1e-05, 
+        "SaveInterval": 0.1, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "Dimension": 1, 
+        "dx": 0.001, 
+        "dy": 1, 
+        "dz": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "MainBlock", 
+            "Offset": {
+                "x": 0.0
+            }, 
+            "Size": {
+                "x": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }, 
+        {
+            "Name": "SecBlock1", 
+            "Offset": {
+                "x": 1.0
+            }, 
+            "Size": {
+                "x": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }, 
+        {
+            "Name": "SecBlock2", 
+            "Offset": {
+                "x": 2.0
+            }, 
+            "Size": {
+                "x": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }, 
+        {
+            "Name": "SecBlock3", 
+            "Offset": {
+                "x": 3.0
+            }, 
+            "Size": {
+                "x": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }
+    ], 
+    "Interconnects": [
+        {
+            "Name": "connection 1", 
+            "Block1": 0, 
+            "Block2": 1, 
+            "Block1Side": 1, 
+            "Block2Side": 0
+        }, 
+        {
+            "Name": "connection 2", 
+            "Block1": 1, 
+            "Block2": 2, 
+            "Block1Side": 1, 
+            "Block2Side": 0
+        }, 
+        {
+            "Name": "connection 3", 
+            "Block1": 2, 
+            "Block2": 3, 
+            "Block1Side": 1, 
+            "Block2Side": 0
+        }, 
+        {
+            "Name": "connection 3", 
+            "Block1": 1, 
+            "Block2": 3, 
+            "Block1Side": 0, 
+            "Block2Side": 1
+        }
+    ], 
+    "Equations": [
+        {
+            "Name": "Flat Brusselator", 
+            "Vars": [
+                "x"
+            ], 
+            "System": [
+                "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}])", 
+                "V'=b*U-U*U*V+c*(D[V,{x,2}])"
+            ]
+        }
+    ], 
+    "EquationParams": {
+        "Params": [
+            "a", 
+            "b", 
+            "c"
+        ], 
+        "ParamValues": [
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 0.1
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 1.5
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 1.6
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 1.7
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 1.8
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 1.9
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 4.5
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
+    "Bounds": [], 
+    "Initials": [
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "10.0 * x", 
+                "10.0 * sin(x)"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "CpuMemory": [
+                56
+            ], 
+            "GpuCount": 3, 
+            "GpuMemory": [
+                5, 
+                5, 
+                5
+            ]
+        }, 
+        {
+            "Name": "cnode2", 
+            "CpuCount": 1, 
+            "CpuMemory": [
+                56
+            ], 
+            "GpuCount": 3, 
+            "GpuMemory": [
+                5, 
+                5, 
+                5
+            ]
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 1, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 1, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
+        ]
+    }, 
+    "Plots": []
+}

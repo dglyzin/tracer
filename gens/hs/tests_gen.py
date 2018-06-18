@@ -18,7 +18,7 @@ if sys.version_info[0] > 2:
 # for independet launching this module
 #logging.basicConfig(level=logging.DEBUG)
 
-# create logger that child of tests.tester loger
+# create logger that child of tester loger
 #logger = logging.getLogger('tests.tester.criminal.tests_gen')
 
 
@@ -52,33 +52,6 @@ def test_domain_2d(modelFile="tests/2dTests/test2d_for_intervals_single_delay.js
 
     return(params.functionMaps)
 
-
-def test_domain_1d(modelFile="tests/brusselator1d_bound_U.json"):
-    
-    if type(modelFile) == str:
-        model = get_model_for_tests(modelFile)
-    else:
-        model = modelFile
-
-    # model = get_model_for_tests(modelFile)
-    params = Params()
-
-    # for funcNamesStack and bounds and ics from params
-    params.set_params_for_centrals(model)
-    params.set_params_for_interconnects(model)
-    params.set_params_for_bounds(model)
-
-    # for namesAndNumbers
-    params.set_params_for_array()
-    # return(params)
-    params.set_params_for_dom_centrals(model)
-    params.set_params_for_dom_interconnects()
-    params.set_params_for_dom_bounds(model)
-
-    out = str(params.functionMaps)
-    to_file(out, "from_test_domain_1d.txt")
-
-    return(params.functionMaps)
 
 
 def test_templates_2d(modelFile="tests/2dTests/test2d_for_intervals_single_delay.json"):

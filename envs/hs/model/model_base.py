@@ -267,13 +267,16 @@ class ModelBase(object):
         self.net.initials = []
 
     def getCellSize(self):
-        return(len(self.net.equations[0].system))
+        return(len(self.net.equations[0]))
 
-    # TODO: getMaxDerivOrder
+    def getMaxDerivOrder(self):
+        # TODO: extract from equation:
+        return(2)
+
     def getHaloSize(self):
-        order =  self.getMaxDerivOrder()
-        return(order/2 + order%2)
-                    
+        order = self.getMaxDerivOrder()
+        return(order/2 + order % 2)
+
     def applyParams(self, paramSet):
         for param in paramSet:
             self.net.paramValues[0][param["Name"]] = param["Value"]

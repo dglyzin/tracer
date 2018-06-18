@@ -5,11 +5,19 @@ from copy import copy as weak_copy
 
 import logging
 
+
+# if using from tester.py uncoment that:
+# create logger that child of tests.tester.loger
+logger = logging.getLogger('tests.tester.side_separator')
+
+# if using directly uncoment that:
+'''
 # create logger
-log_level = logging.INFO  # logging.DEBUG
+log_level = logging.DEBUG  # logging.DEBUG
 logging.basicConfig(level=log_level)
-logger = logging.getLogger('side_separator.py')
+logger = logging.getLogger('side_separator')
 logger.setLevel(level=log_level)
+'''
 
 
 class SideSeparator():

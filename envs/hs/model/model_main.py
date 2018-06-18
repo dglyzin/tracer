@@ -23,6 +23,8 @@ class ModelNet():
             self.grid = Grid()
         else:
             self.grid = grid
+        self.grid.set_model(self)
+        
         self.solver = Tmp()
 
         self.blocks = blocks

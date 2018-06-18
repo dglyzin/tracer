@@ -43,4 +43,14 @@ class sysNet():
             except:
                 raise(SyntaxError("eq %s not supported" % eq.sent))
     
-        
+    def __getitem__(self, k):
+        return(self.eqs[k])
+
+    def __setitem__(self, k, v):
+        self.eqs[k] = v
+
+    def append(self, v):
+        self.eqs.append(v)
+
+    def __len__(self):
+        return(len(self.eqs))
