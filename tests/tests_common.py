@@ -35,7 +35,7 @@ def test_logger():
     logger.error("logger error")
 
 
-def get_model_for_tests(modelFile="tests/test1d_two_blocks0.json"):
+def get_model_for_tests(modelFile="problems/test1d_two_blocks0"):
     '''
     DESCRIPTION:
     What is model.
@@ -71,8 +71,8 @@ def to_file(out, fileName, ext='.cpp', rm=True):
     f.write(out)
     f.close()
 
-    pathFrom = os.path.join('tests', 'src', 'libs', 'libuserfuncs.so')
-    shutil.copy2(pathFrom, folder)
+    # pathFrom = os.path.join('tests', 'src', 'libs', 'libuserfuncs.so')
+    # shutil.copy2(pathFrom, folder)
 
     pathFrom = os.path.join('tests', 'src', 'libs', 'userfuncs.h')
     shutil.copy2(pathFrom, folder)

@@ -152,57 +152,7 @@ class BinaryModel(object):
         print "compilation finished"
 
 
-    def createCOnlyRunFile(self, OutputRunFile, projectDir, outProjectTitle, OutputDomFile, params):
-        '''
-        in this case we run only c mpi workers and then process results
-        '''    
-        print "generating launcher script..."
-        flag = 0
-        if not(params["finish"] is None): flag+=1
-        else: finishTime = -1.1
-        if not(params["cont"] is None): flag +=2
-        else: params["cont"] = "n_a"
-        if params["nortpng"]: flag+=4
-        #print OutputRunFile, DomFileName, finishTimeProvided, finishTime, continueEnabled, continueFileName
-        runFile = open(OutputRunFile, "w")        
-        postprocessor = params["tracerFolder"] + "/hybriddomain/postprocessor.py"
-         
-
-        solverExecutable = params["tracerFolder"]+"/hybridsolver/bin/HS"
-        
-        nodeCount = self.dmodel.getNodeCount()
-
-        if params["partition"] is None:
-            params["partition"] = " "
-        else:
-            params["partition"] = " -p " + params["partition"] + " "
-
-        if params["nodes"] is None:
-            params["nodes"] = self.dmodel.getNodeSpec()
-        else:
-            params["nodes"] = "-w "+params["nodes"]
-
-        if params["mpimap"] is None:
-            params["mpimap"] = ''
-        elif  params["mpimap"] =='/':
-            params["mpimap"] = '--map-by ppr:1:node:pe=16'
-        else:
-            params["mpimap"] = '--map-by '+ params["mpimap"]
-
-        if params["affinity"] is None:
-            params["affinity"] = '0-15'
-
-        runFile.write("echo Welcome to generated kernel launcher!\n")
-        runFile.write("export LD_LIBRARY_PATH="+projectDir+":$LD_LIBRARY_PATH\n")
-        #runFile.write("export OMP_NUM_THREADS=16\n")
-        runFile.write("export GOMP_CPU_AFFINITY='" + params["affinity"] + "'\n")
-        runFile.write("salloc -N "+str(nodeCount) + " -n "+ str(nodeCount) + " " + params["nodes"] + params["partition"] + \
-                      " mpirun "+ params["mpimap"] +" "+ solverExecutable+" "+OutputDomFile + \
-                      " "+str(flag)+" "+str(finishTime) + " " + params["cont"] + "\n")
-        #runFile.write("srun -N "+str(nodeCount)+" " +  partitionOption + " "+ solverExecutable+" "+DomFileName+" "+str(flag)+" "+str(finishTime)+" "+continueFileName+ "\n")
-        runFile.write("srun -n1" + " " + params["nodes"] + params["partition"] +"python " + postprocessor +" " + projectDir+"/" +" " + outProjectTitle )
-        runFile.close()
-   
+    
                    
 
     

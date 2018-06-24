@@ -20,6 +20,7 @@ ManualHeat/*
 *statistic
 *.cpp
 *.sh
+*.so
 *tempFile
 *~
 problems/*

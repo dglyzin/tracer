@@ -34,7 +34,40 @@ class ModelIO():
     def setWorkDirectory(self, folder):
         self.workDirectory = folder
         
-    def loadFromFile(self, fileName):
+    def loadFromFile(self, project_folder=('problems/1dTests/'
+                                           + 'test1d_two_blocks0')):
+
+        '''project_folder is relative path to project folder where
+        .json file located (including problems folder).
+
+        Ex: problems/1dTests/test1d_two_blocks0
+           for
+              problems/1dTests/test1d_two_blocks0/test1d_two_blocks0.json
+           '''
+
+        # FOR pathes:
+        if 'problems' not in project_folder:
+            raise(BaseException('path to folder with json must begin from'
+                                + ' problems folder \n'
+                                + ' like problems/1dTests/test1d_two_blocks0'))
+        elif len(project_folder.split('.')) != 1:
+            raise(BaseException('project_folder is name of folder in with'
+                                + ' json file contained'
+                                + ' like problems/1dTests/test1d_two_blocks0'))
+        elif project_folder[0] == '/':
+            raise(BaseException('project_folder is name of folder in with \n'
+                                + ' json file contained, relative to '
+                                + 'hybriddomain folder \n'
+                                + ' like problems/1dTests/test1d_two_blocks0'))
+        
+        self.net.project_path = project_folder.replace('problems/', "")
+        self.net.project_name = os.path.basename(self.net.project_path)
+
+        # json file:
+        fileName = [f for f in os.listdir(project_folder) if '.json' in f][0]
+        fileName = os.path.join(project_folder, fileName)
+        # END FOR
+
         self.net.base.deleteAllBlocks()
         self.net.base.deleteAllInterconnects()
         self.net.base.deleteAllEquations()

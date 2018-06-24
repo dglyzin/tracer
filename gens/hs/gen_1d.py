@@ -8,8 +8,6 @@ from gens.hs.env.array.array_main import Gen as GenArr
 
 from gens.hs.arrays_filler.filler_main import Filler
 
-from tests.tests_common import get_model_for_tests
-
 import logging
 
 # if using from tester.py uncoment that:
@@ -28,13 +26,10 @@ logger.setLevel(level=log_level)
 
 class GenD1():
 
-    def __init__(self, model="tests/test1d_two_blocks0.json"):
+    def __init__(self, net):
 
-        if type(model) == str:
-            self.model = get_model_for_tests(model)
-        else:
-            self.model = model
-
+        self.net = net
+        self.model = net.model
         self.delays = []
 
     def gen_cpp(self):
