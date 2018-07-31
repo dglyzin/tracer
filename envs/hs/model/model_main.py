@@ -5,6 +5,20 @@ from envs.hs.model.cpp.model_gen_cpp import ModelGenCpp
 from envs.hs.model.model_editor import ModelEditor
 from envs.hs.model.grid.grid_main import GridNet as Grid
 
+import logging
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+# logger = logging.getLogger('model_main.model_device')
+
+# if using directly uncoment that:
+
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('model_main')
+logger.setLevel(level=log_level)
+
 
 class Tmp():
     def __repr__(self):

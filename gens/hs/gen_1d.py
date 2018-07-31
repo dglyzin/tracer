@@ -1,3 +1,5 @@
+from gens.hs.postproc.postproc_main import Postproc
+
 from gens.hs.env.definitions.def_main import Gen as GenDef
 from gens.hs.env.initials.initials_main import Gen as GenInit
 from gens.hs.env.params.params_main import Gen as GenParams
@@ -29,6 +31,9 @@ class GenD1():
     def __init__(self, net):
 
         self.net = net
+
+        self.postproc = Postproc(self)
+
         self.model = net.model
         self.delays = []
 
@@ -51,36 +56,30 @@ class GenD1():
         out = ""
 
         # out for definitions
-        gen = GenDef()
-        gen.common.set_params_for_definitions(model)
-        out += gen.cpp_render.get_out_for_definitions()
+        gen_def = GenDef()
+        gen_def.common.set_params_for_definitions(model)
 
         # out for initials:
-        gen = GenInit()
-        gen.cpp.set_params_for_initials(model)
-        out += gen.cpp_render.get_out_for_initials()
+        gen_init = GenInit()
+        gen_init.cpp.set_params_for_initials(model)
 
         # out for params:
-        gen = GenParams()
-        gen.cpp.set_params_for_parameters(model)
-        out += gen.cpp_render.get_out_for_parameters()
+        gen_params = GenParams()
+        gen_params.cpp.set_params_for_parameters(model)
 
         funcNamesStack = []
         
         # out and funcNames for centrals:
-        gen = GenCent()
-        gen.common.set_params_for_centrals(model, funcNamesStack)
-        out += gen.cpp_render.get_out_for_centrals()
+        gen_cent = GenCent()
+        gen_cent.common.set_params_for_centrals(model, funcNamesStack)
 
         # out and funcNames for bounds:
-        gen = GenBounds()
-        gen.common.set_params_for_bounds(model, funcNamesStack)
-        out += gen.cpp_render.get_out_for_bounds()
+        gen_bounds = GenBounds()
+        gen_bounds.common.set_params_for_bounds(model, funcNamesStack)
 
         # out and funcNames for ics:
-        gen = GenIcs()
-        gen.common.set_params_for_interconnects(model, funcNamesStack)
-        out += gen.cpp_render.get_out_for_interconnects()
+        gen_ics = GenIcs()
+        gen_ics.common.set_params_for_interconnects(model, funcNamesStack)
 
         ### FOR remove duplicates:
         tmp = []
@@ -96,12 +95,29 @@ class GenD1():
         ### END FOR
 
         # out and namesAndNumbers:
-        gen = GenArr()
-        gen.common.set_params_for_array(funcNamesStack)
-        namesAndNumbers = gen.params.namesAndNumbers
-        out += gen.cpp_render.get_out_for_array()
+        gen_arr = GenArr()
+        gen_arr.common.set_params_for_array(funcNamesStack)
+        namesAndNumbers = gen_arr.params.namesAndNumbers
 
-        # out = params.postprocessing(out)
+        # for postproc:
+        delays = self.postproc.postporc_delays([gen_cent,
+                                                gen_bounds, gen_ics])
+        logger.info("delays:")
+        logger.info(delays)
+        sizes_delays = dict([(len(delays[var]), delays[var])
+                             for var in delays])
+        max_delays_seq = sizes_delays[max(sizes_delays)]
+        self.delays = max_delays_seq
+        logger.info("max_delays_seq:")
+        logger.info(max_delays_seq)
+        
+        out += gen_def.cpp_render.get_out_for_definitions()
+        out += gen_init.cpp_render.get_out_for_initials()
+        out += gen_params.cpp_render.get_out_for_parameters()
+        out += gen_cent.cpp_render.get_out_for_centrals()
+        out += gen_bounds.cpp_render.get_out_for_bounds()
+        out += gen_ics.cpp_render.get_out_for_interconnects()
+        out += gen_arr.cpp_render.get_out_for_array()
 
         self.cpp_out = out
         self.funcNamesStack = funcNamesStack

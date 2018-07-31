@@ -37,3 +37,7 @@ def test_gen_1d_old(model="tests/test1d_two_blocks0.json"):
     gen.filler.save_bin(binFileName)
 
     return(os.path.basename(cppFileName))
+
+
+if __name__ == '__main__':
+    test_gen_1d('problems/1dTests/two_blocks0_delays')

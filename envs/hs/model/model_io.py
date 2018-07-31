@@ -4,7 +4,7 @@ import json
 from envs.hs.block.block_main import BlockNet as Block
 from envs.hs.block.block_size import BlockSize
 from envs.hs.interconnect.ic_main import icMain as Interconnect
-from math_space.common.system.sys_main import sysNet as System
+from math_space.common.env.system.sys_main import sysNet as System
 from math_space.pde.bound import Bound
 from math_space.pde.initial import Initial
 from envs.hs.model.compnode import Compnode

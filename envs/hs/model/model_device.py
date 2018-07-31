@@ -1,3 +1,20 @@
+
+import logging
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+logger = logging.getLogger('model_main.model_device')
+
+# if using directly uncoment that:
+'''
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('model_main')
+logger.setLevel(level=log_level)
+'''
+
+
 class ModelDevice():
 
     def __init__(self, net):
@@ -44,9 +61,9 @@ class ModelDevice():
             if ((nodeIdx == mapping["NodeIdx"])
                 and (deviceType == mapping["DeviceType"])
                 and (deviceIdx == mapping["DeviceIdx"])):
-                cellCount = block.getCellCount(self.net.grid.gridStepX,
-                                               self.net.grid.gridStepY,
-                                               self.net.grid.gridStepZ)
+                cellCount = block.size.getCellCount(self.net.grid.gridStepX,
+                                                    self.net.grid.gridStepY,
+                                                    self.net.grid.gridStepZ)
                 cellCountFull = cellCount[0]*cellCount[1]*cellCount[2]
                 devStateSize += cellCountFull*self.net.base.getCellSize()
         return devStateSize
@@ -71,9 +88,9 @@ class ModelDevice():
                     capacity = "infinity"
                 print_args = (node.name, "cpu", cpuIdx,
                               memorySize, devStateSize, capacity)
-                print(("For node {} {}{} memory is {}GB,"
-                       + " total state size is {} elems,"
-                       + " capacity={}.").format(*print_args))
+                logger.info(("For node {} {}{} memory is {}GB,"
+                             + " total state size is {} elems,"
+                             + " capacity={}.").format(*print_args))
             for gpuIdx in range(node.gpuCount):
                 memorySize = node.gpuMemory[gpuIdx]
                 devStateSize = self.getDeviceStateSize(nodeIdx, "gpu", gpuIdx)
@@ -85,8 +102,8 @@ class ModelDevice():
                     capacity = "infinity"
                 print_args = (node.name, "gpu", gpuIdx,
                               memorySize, devStateSize, capacity)
-                print(("For node {} {}{} memory is {}GB,"
-                       + " total state size is {} elems,"
-                       + " capacity={}.").format(*print_args))
+                logger.info(("For node {} {}{} memory is {}GB,"
+                             + " total state size is {} elems,"
+                             + " capacity={}.").format(*print_args))
                     
         return minCapacity  # like 100*100*100 000 elements = 8GB < 64GB

@@ -7,7 +7,7 @@ Created on Mar 19, 2015
 from collections import OrderedDict
 import sys
 
-from math_space.common.system.sys_main import sysNet as System
+from math_space.common.env.system.sys_main import sysNet as System
 
 # python 2 or 3
 # if sys.version_info[0] > 2:

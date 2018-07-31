@@ -97,8 +97,9 @@ class GenCommon(GenBaseCommon):
                                 blockNumber, tFuncName):
         # equation = copy(model.equations[eRegion.equationNumber])
         eParam = Params()
-        eSystem = model.equations[eRegion.equationNumber]
-
+        eSystem = model.equations[eRegion.equationNumber].copy()
+        
+        eParam.equation = eSystem
         eParam.equationNumber = eRegion.equationNumber
         eParam.eRegion = eRegion
         eParam.dim = dim
@@ -121,9 +122,10 @@ class GenCommon(GenBaseCommon):
         # model.equations is a list of equation systems
 
         # equation = copy(model.equations[block.defaultEquation])
-        eSystem = model.equations[block.defaultEquation]
+        eSystem = model.equations[block.defaultEquation].copy()
         eParam = Params()
 
+        eParam.equation = eSystem
         eParam.equationNumber = block.defaultEquation
         eParam.eRegion = None
         eParam.dim = dim
@@ -148,7 +150,8 @@ class GenCommon(GenBaseCommon):
         eSystem.cpp.set_blockNumber(eParam.blockNumber)
         eSystem.cpp.set_diff_type_common(diffType='pure', diffMethod='common')
 
-        return([eq.flatten('cpp') for eq in eSystem.eqs])
+        return([eq.replacer.cpp.make_cpp() for eq in eSystem.eqs])
+        # return([eq.flatten('cpp') for eq in eSystem.eqs])
     
     def _init_acc(self, dim):
         if dim == 1:

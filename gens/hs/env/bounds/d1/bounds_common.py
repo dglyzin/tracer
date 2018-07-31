@@ -1,7 +1,7 @@
 from gens.hs.env.base.base_common import GenBaseCommon
 from gens.hs.env.base.base_common import Params
 from math_space.common.someFuncs import determineNameOfBoundary
-from math_space.common.equation.equation import Equation
+from math_space.common.env.equation.equation import Equation
 
 
 class GenCommon(GenBaseCommon):
@@ -64,7 +64,7 @@ class GenCommon(GenBaseCommon):
                               if self.test(block, eqReg, side_num)]
                 equationNum = (regsEqNums[0] if len(regsEqNums) > 0
                                else block.defaultEquation)
-                eSystem = model.equations[equationNum]
+                eSystem = model.equations[equationNum].copy()
 
                 # find bound region for side or use default
                 regionsForSide = [bRegion
@@ -221,15 +221,18 @@ class GenCommon(GenBaseCommon):
         # parse border values:
         for i, bv in enumerate(border_values):
             ebv = Equation(bv)
-            ebv.parse()
-            ebv.set_default()
-            ebv.set_dim(dim=dim)
-            ebv.set_shape(shape=shape)
-            ebv_cpp = ebv.flatten('cpp')
-            eSystem.eqs[i].set_diff_type(diffType='pure',
-                                         diffMethod='special',
-                                         btype=btype, side=side_num,
-                                         func=ebv_cpp)
+            ebv.parser.parse()
+            ebv.replacer.cpp.editor.set_default()
+            ebv.replacer.cpp.editor.set_dim(dim=dim)
+            ebv.replacer.cpp.editor.set_shape(shape=shape)
+            
+            ebv_cpp = ebv.replacer.cpp.make_cpp()
+            editor = eSystem.eqs[i].replacer.cpp.editor
+            editor.set_diff_type(diffType='pure',
+                                 diffMethod='special',
+                                 btype=btype, side=side_num,
+                                 func=ebv_cpp)
             
     def _get_eq_cpp(self, eSystem):
-        return([eq.flatten('cpp') for eq in eSystem.eqs])
+        return([eq.replacer.cpp.make_cpp() for eq in eSystem.eqs])
+        # return([eq.flatten('cpp') for eq in eSystem.eqs])

@@ -84,7 +84,7 @@ class GenCommon(GenBaseCommon):
         side_test = lambda eRegion: coord(eRegion) == Range
         equationNum = self.choice_equation_num(side_test, block)
 
-        equation = model.equations[equationNum]
+        equation = model.equations[equationNum].copy()
         # END FOR
 
         funcName = ("Block" + str(blockNumber)
@@ -147,8 +147,8 @@ class GenCommon(GenBaseCommon):
         side_test = lambda eRegion: coord2(eRegion) == Range2
         equationNum2 = self.choice_equation_num(side_test, block)
 
-        equation1 = model.equations[equationNum1]
-        equation2 = model.equations[equationNum2]
+        equation1 = model.equations[equationNum1].copy()
+        equation2 = model.equations[equationNum2].copy()
         # END FOR
 
         funcName1 = ("Block" + str(blockNumber)
@@ -217,7 +217,8 @@ class GenCommon(GenBaseCommon):
                                      secondIndex=secondIndex)
 
     def _get_eq_cpp(self, eSystem):
-        return([eq.flatten('cpp') for eq in eSystem.eqs])
+        return([eq.replacer.cpp.make_cpp() for eq in eSystem.eqs])
+        # return([eq.flatten('cpp') for eq in eSystem.eqs])
     
     def test(self, region, side_num, block):
         '''
