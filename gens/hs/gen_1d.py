@@ -106,11 +106,14 @@ class GenD1():
         logger.info(delays)
         sizes_delays = dict([(len(delays[var]), delays[var])
                              for var in delays])
-        max_delays_seq = sizes_delays[max(sizes_delays)]
-        self.delays = max_delays_seq
-        logger.info("max_delays_seq:")
-        logger.info(max_delays_seq)
-        
+        try:
+            max_delays_seq = sizes_delays[max(sizes_delays)]
+            self.delays = max_delays_seq
+            logger.info("max_delays_seq:")
+            logger.info(max_delays_seq)
+        except ValueError:
+            self.delays = []
+
         out += gen_def.cpp_render.get_out_for_definitions()
         out += gen_init.cpp_render.get_out_for_initials()
         out += gen_params.cpp_render.get_out_for_parameters()
