@@ -77,11 +77,16 @@ class Settings():
         # path to project folder at server:
         pathes['hs']['project_path'] = os.path.join(workspace,
                                                     pathes['model']['path'])
+        #  file at server:
+        pathes['hs']['out_folder'] = (os.path
+                                      .join(pathes['hs']['project_path'],
+                                            pathes['model']['out_folder']))
+
         # dom file at server:
         pathes['hs']['dom_bin'] = (os.path
-                                   .join(pathes['hs']['project_path'],
-                                         pathes['model']['out_folder'],
+                                   .join(pathes['hs']['out_folder'],
                                          pathes['model']['name'] + '_dom.bin'))
+
 
     def convert_problems(self):
 

@@ -33,7 +33,9 @@ class GenSH():
 
         # where projects stored at server:
         self.projectDir = (self.net.settings
-                           .pathes['pathes_hs_base']['TracerFolder'])
+                           .pathes['hs']['out_folder'])
+        # self.projectDir = (self.net.settings
+        #                    .pathes['pathes_hs_base']['Workspace'])
 
         # title for postprocessing:
         self.title = self.net.settings.pathes['model']['name']
@@ -52,7 +54,8 @@ class GenSH():
         self.affinity = '0-15'
 
         self.postprocessor = (self.tracerFolder
-                              + "/hybriddomain/postprocessor.py")
+                              + "/hybriddomain/solvers/hs/postproc/"
+                              + "postprocessor.py")
         self.solverExecutable = self.tracerFolder + "/hybridsolver/bin/HS"
         self.nodeCount = str(self.net.model.device.getNodeCount())
 
@@ -97,12 +100,16 @@ class GenSH():
         self.flag = str(flag)
 
         self.postprocessor = (self.tracerFolder
-                              + "/hybriddomain/postprocessor.py")
+                              + "/hybriddomain/solvers/hs/postproc/"
+                              + "postprocessor.py")
         self.solverExecutable = self.tracerFolder + "/hybridsolver/bin/HS"
         self.nodeCount = str(self.net.model.device.getNodeCount())
 
         if "partition" in params.keys():
-            self.partition = " -p " + params["partition"] + " "
+            if params["partition"] == '':
+                self.partition = ""
+            else:
+                self.partition = " -p " + params["partition"] + " "
         else:
             self.partition = " "
 
@@ -115,6 +122,8 @@ class GenSH():
             self.mpimap = ''
         elif params["mpimap"] == '/':
             self.mpimap = '--map-by ppr:1:node:pe=16'
+        elif params["mpimap"] == '':
+            self.mpimap = ''
         else:
             self.mpimap = '--map-by ' + params["mpimap"]
 
@@ -158,8 +167,9 @@ class GenSH():
                           + " " + str(finishTime)+" "+continueFileName+"\n")
             '''
 
-            runFile.write("srun -n1" + " " + self.nodes + self.partition
-                          + "python " + self.postprocessor
+            runFile.write("srun -n1" + " " + self.nodes
+                          + " " + self.partition
+                          + " python " + self.postprocessor
                           + " " + self.projectDir+"/"
                           + " " + self.title)
         runFile.close()
