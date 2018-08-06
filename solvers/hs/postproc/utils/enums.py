@@ -1,0 +1,17 @@
+'''
+Created on Sep 30, 2015
+
+@author: dglyzin
+'''
+
+JS_NEW = 0
+JS_STARTED = 1
+JS_PREPROCESSING = 2
+JS_QUEUED = 3
+JS_RUNNING = 4
+JS_CANCELLED = 5
+JS_FINISHED = 6
+JS_FAILED = 7
+
+USER_STOP = 0
+USER_RUN = 1
