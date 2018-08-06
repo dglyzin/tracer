@@ -40,7 +40,7 @@ class Settings():
         hd_path = os.getcwd()
         pathes = self.pathes
 
-        # modlel pathes:
+        # model pathes:
         pathes['model'] = {}
         pathes['model']['path'] = model.project_path
         pathes['model']['name'] = model.project_name
@@ -60,7 +60,7 @@ class Settings():
                                          pathes['model']['name'] + '_dom.txt'))
         pathes['hd']['dom_bin'] = (os.path
                                    .join(pathes['hd']['out_folder'],
-                                         pathes['model']['name'] + '_dom.bin'))
+                                         pathes['model']['name'] + '.dom'))
         pathes['hd']['sh'] = os.path.join(pathes['hd']['out_folder'],
                                           pathes['model']['name'] + '.sh')
         pathes['hd']['so'] = os.path.join(pathes['hd']['out_folder'],
@@ -68,12 +68,22 @@ class Settings():
         pathes['hd']['userfuncs'] = os.path.join(hd_path, 'gens', 'hs', 'src',
                                                  'userfuncs.h')
 
+        pathes['hd']['plot'] = os.path.join(pathes['hd']['out_folder'],
+                                            'params_plot.txt')
+
         # hs pathes:
         pathes['hs'] = {}
 
         # projects folder at server:
         workspace = pathes['pathes_hs_base']['Workspace']
-        
+
+        # traceFolder:
+        tracerFolder = pathes['pathes_hs_base']['TracerFolder']
+
+        # path to solver:
+        pathes['hs']['solver'] = os.path.join(tracerFolder,
+                                              "hybridsolver", "bin", "HS")
+
         # path to project folder at server:
         pathes['hs']['project_path'] = os.path.join(workspace,
                                                     pathes['model']['path'])
@@ -87,6 +97,14 @@ class Settings():
                                    .join(pathes['hs']['out_folder'],
                                          pathes['model']['name'] + '_dom.bin'))
 
+        pathes['hs']['postproc'] = os.path.join(tracerFolder,
+                                                'hybriddomain',
+                                                'solvers', 'hs',
+                                                'postproc', 'video',
+                                                'postprocessor.py')
+
+        pathes['hs']['plot'] = os.path.join(pathes['hs']['out_folder'],
+                                            'params_plot.txt')
 
     def convert_problems(self):
 

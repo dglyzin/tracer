@@ -5,7 +5,7 @@ Created on Sep 30, 2015
 '''
 import struct
 import numpy as np
-from solvers.hs.postproc.utils.enums import *
+from utils.enums import *
 
 import logging
 

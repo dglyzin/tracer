@@ -43,6 +43,12 @@ class GenSH():
         # dom file at server:
         self.domFile = self.net.settings.pathes['hs']['dom_bin']
 
+        self.solverExecutable = self.net.settings.pathes['hs']['solver']
+        
+        # postproc:
+        self.postprocessor = self.net.settings.pathes['hs']['postproc']
+        self.plot_params = self.net.settings.pathes['hs']['plot']
+
     def set_params_default(self):
         self.flag = '0'
         self.finishTime = '-1.1'
@@ -53,10 +59,6 @@ class GenSH():
         self.mpimap = ''
         self.affinity = '0-15'
 
-        self.postprocessor = (self.tracerFolder
-                              + "/hybriddomain/solvers/hs/postproc/"
-                              + "postprocessor.py")
-        self.solverExecutable = self.tracerFolder + "/hybridsolver/bin/HS"
         self.nodeCount = str(self.net.model.device.getNodeCount())
 
     def set_params(self, params):
@@ -99,10 +101,6 @@ class GenSH():
             self.nortpng = ""
         self.flag = str(flag)
 
-        self.postprocessor = (self.tracerFolder
-                              + "/hybriddomain/solvers/hs/postproc/"
-                              + "postprocessor.py")
-        self.solverExecutable = self.tracerFolder + "/hybridsolver/bin/HS"
         self.nodeCount = str(self.net.model.device.getNodeCount())
 
         if "partition" in params.keys():
@@ -171,5 +169,6 @@ class GenSH():
                           + " " + self.partition
                           + " python " + self.postprocessor
                           + " " + self.projectDir+"/"
-                          + " " + self.title)
+                          + " " + self.title
+                          + " " + self.plot_params)
         runFile.close()

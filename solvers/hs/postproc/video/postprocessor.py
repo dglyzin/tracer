@@ -30,17 +30,41 @@ from matplotlib import cm
 
 import math
 
-from envs.hs.model.model_main import ModelNet as Model
+from collections import OrderedDict
+
+import logging
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+# logger = logging.getLogger('tests.postproc.video')
+
+# if using directly uncoment that:
+# create logger
+log_level = logging.DEBUG  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('postproc.video')
+logger.setLevel(level=log_level)
+
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+
+folder = "video"
+sourcedir = currentdir.split(folder)[0]
+logger.info("postproc dir:")
+logger.info(sourcedir)
+if sourcedir not in sys.path:
+    sys.path += [sourcedir]
+
 # from domainmodel.model import Model
 
-from solvers.hs.postproc.utils.fileUtils import getSortedDrawBinFileList
-from solvers.hs.postproc.utils.fileUtils import drawExtension
-from solvers.hs.postproc.utils.fileUtils import defaultGeomExt
-from solvers.hs.postproc.utils.fileUtils import getPlotValList
+from utils.fileUtils import getSortedDrawBinFileList
+from utils.fileUtils import drawExtension
+from utils.fileUtils import defaultGeomExt
+from utils.fileUtils import getPlotValList
 
-from solvers.hs.postproc.utils.binaryFileReader import readBinFile 
-from solvers.hs.postproc.utils.binaryFileReader import readDomFile
-from solvers.hs.postproc.utils.binaryFileReader import getDomainProperties
+from utils.binaryFileReader import readBinFile 
+from utils.binaryFileReader import readDomFile
+from utils.binaryFileReader import getDomainProperties
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -73,7 +97,7 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
         axes.set_xlim(X.min(), X.max())
         # axes.axis([X.min(), X.max(), minValue, maxValue])
         # a = np.arange(X.min(), X.max(), (X.max() - X.min()) / layer.size)
-        # print(a.size, layer.size)
+        # logger.info(a.size, layer.size)
         axes.plot(X, layer)
 
         # cb = axes.pcolormesh(X, Y, layer, vmin=minValue[i], vmax=maxValue[i])
@@ -177,8 +201,8 @@ def calcMinMax(projectDir, binFileList, info,
             maxValue[i] = maxValue[i] + 1
             minValue[i] = minValue[i] - 1
 
-    print(maxValue)
-    print(minValue)
+    logger.info(maxValue)
+    logger.info(minValue)
 
     return maxValue, minValue
 
@@ -200,7 +224,7 @@ def savePlots1D(projectDir, projectName, data, t, countX,
     filename = os.path.join(projectDir, (projectName+"-plot"
                                          + str(plotIdx) + postfix + ".png"))
     savePng1D(filename, xs, data, maxValue, minValue, t, picCount)
-    # print("produced png: "+ filename)
+    # logger.info("produced png: "+ filename)
     return "produced png: " + filename
 
 
@@ -216,6 +240,7 @@ def getResults1D(projectDir, projectName, binFile, info,
                        countZ, countY, countX,
                        offsetZ, offsetY, offsetX,
                        cellSize)
+
     # xs = np.arange(0, countX)*dx
     dictfun = {}
     for numitem, item in enumerate(nameEquations):
@@ -236,18 +261,18 @@ def getResults1D(projectDir, projectName, binFile, info,
     # with open(filename, "w") as f:
     #    f.write(t)
     # savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
-    # print("produced png: "+ filename)
+    # logger.info("produced png: "+ filename)
     return t, res  # "produced text result: "+ filename
 
 
 def createResultFile(projectDir, projectName, resIdx, resLog):
-    print("Creating out file:")
+    logger.info("Creating out file:")
 
     outfileNamePath = projectDir+projectName+"-res"+str(resIdx)+".out"
 
     with open(outfileNamePath, "w") as f:
-        for time, item in resLog:
-            f.write(str(time)+": " + str(item)+"\n")
+        for _time, item in resLog:
+            f.write(str(_time)+": " + str(item)+"\n")
 
     # infileNamePath  = (projectDir+projectName+"-plot"
     #                    +str(resIdx)+"-final-%d.png")
@@ -257,7 +282,7 @@ def createResultFile(projectDir, projectName, resIdx, resLog):
     #                         stdout=PIPE, stderr=subprocess.STDOUT)
     # proc.wait()
     # subprocess.call(command, shell=True)
-    print("Done")
+    logger.info("Done")
 
 
 def saveResults2D(projectDir, projectName, binFile, info,
@@ -281,7 +306,7 @@ def saveResults2D(projectDir, projectName, binFile, info,
     filename = os.path.join(projectDir, (projectName+"-plot"
                                          +str(plotIdx)+postfix + ".png"))
     # plt.savefig(filename, format='png')
-    # print 'save #', idx, binFile, "->", filename
+    # logger.info 'save #', idx, binFile, "->", filename
     # plt.clf()
 
     t = binFile.split("-")[1]
@@ -292,22 +317,22 @@ def saveResults2D(projectDir, projectName, binFile, info,
     #    filenameTxt = projectDir+projectName+"-txtFile-" + str(idx) + ".txt"
     #    saveTxt2D(filenameTxt, X, Y, data, maxValue, minValue, t, cellSize)
 
-    # print("produced png: "+ filename)
+    # logger.info("produced png: "+ filename)
     return "produced png: " + filename
 
 
 def createVideoFile(projectDir, projectName, plotIdx):
-    print("Creating video file:")
+    logger.info("Creating video file:")
     command = ("avconv -r 5 -loglevel panic -i "+projectDir+projectName
                + "-plot"+str(plotIdx)+"%d.png -b:v 1000k "
                + projectDir+projectName+"-plot"+str(plotIdx)+".mp4")
-    print(command)
+    logger.info(command)
     # PIPE = subprocess.PIPE
     # proc = subprocess.Popen(command, shell=True, stdin=PIPE,
     #                         stdout=PIPE, stderr=subprocess.STDOUT)
     # proc.wait()
     subprocess.call(command, shell=True)
-    print("Done")
+    logger.info("Done")
 
 
 def plot_contains(idx, val):
@@ -329,7 +354,7 @@ def getBinFilesByPlot(binFileList, plotValList, plotCount):
     return result
 
 
-def createMovie(projectDir, projectName):
+def createMovie(projectDir, projectName, modelParams):
     saveText = False
 
     path = os.path.join(projectDir, projectName + defaultGeomExt)
@@ -341,26 +366,45 @@ def createMovie(projectDir, projectName):
                + projectDir + projectName + "-plot*.mp4" + projectDir
                + projectName + "-res*.txt" + projectDir
                + projectName + "-res*.out")
-    print(command)
+    logger.info(command)
     subprocess.call(command, shell=True)
 
     binFileList = getSortedDrawBinFileList(projectDir, projectName)
     plotValList = getPlotValList(binFileList)
-    # print(plotValList)
+    # logger.info(plotValList)
 
+    with open(modelParams) as f:
+        modelParams = eval(f.read())
+
+    # model.plots:
+    plotList = modelParams['plots']
+    plotCount = len(plotList)
+
+    # model.results:
+    resultList = modelParams['results']
+    resCount = len(resultList)
+    
+    # model.equation[0].system
+    namesEquations = modelParams['namesEquations']
+
+    '''    
     model = Model()
     model.loadFromFile(os.path.join(projectDir, projectName + '.json'))
     plotCount = len(model.plots)
     resultList = model.results
     namesEquations = model.equations[0].system
     resCount = len(model.results)
+    '''
+
     plotFileLists = getBinFilesByPlot(binFileList, plotValList,
                                       plotCount+resCount)
+
     for numitem, item in enumerate(namesEquations):
         namesEquations[numitem] = item[:item.find("'")]
-    # print(plotFileLists)
-    plotList = model.plots
-    print('plotplot', plotList)
+    # logger.info(plotFileLists)
+    # plotList = model.plots
+    logger.info('plotplot')
+    logger.info(plotList)
 
     for plotIdx, plot in enumerate(plotList):
         # t1 = time.time()
@@ -369,16 +413,18 @@ def createMovie(projectDir, projectName):
                                         offsetZ, offsetY, offsetX,
                                         cellSize)
         # t2 = time.time()
-        # print("Расчет минимума / максимума: ", t2 - t1)
+        # logger.info("Расчет минимума / максимума: ", t2 - t1)
         plotType = type(plot['Value'])
-        print('aaa', plot['Value'], type(plot['Value']))
+        logger.info('aaa')
+        logger.info(plot['Value'])
+        logger.info(type(plot['Value']))
         pool = mp.Pool(processes=16)
         saveResultFunc = savePlots1D
         if dimension == 1:
             saveResultFunc = savePlots1D
         if dimension == 2:
             saveResultFunc = saveResults2D
-        if plotType == unicode:
+        if plotType == str:
             arg_list = [(projectDir, projectName, binFile,
                          info, countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
@@ -389,7 +435,8 @@ def createMovie(projectDir, projectName):
 
             dataListMin = [min([min(i[1]) for i in logData])]
             dataListMax = [max([max(i[1]) for i in logData])]
-            print('min', dataListMin)
+            logger.info('min:')
+            logger.info(dataListMin)
             picCount = 1
             arg_list = [(projectDir, projectName,
                          [dataNum[1]], dataNum[0], countX,
@@ -400,7 +447,7 @@ def createMovie(projectDir, projectName):
             log = pool.map(saveResultFunc, arg_list)
 
         if plotType == list:
-            print('ЛИСТ! Ы')
+            logger.info('ЛИСТ! Ы')
             logData = []
             for elemPlot in plot["Value"]:
                 arg_list = [(projectDir, projectName, binFile, info,
@@ -410,6 +457,20 @@ def createMovie(projectDir, projectName):
                             for idx, binFile in enumerate(
                                     plotFileLists[plotIdx])]
                 dataAny = pool.map(getResults1D, arg_list)
+
+                logger.debug("plotFileLists")
+                logger.debug(plotFileLists)
+                for binFile in plotFileLists[plotIdx]:
+                    path = projectDir + "/" + binFile
+                    logger.info("path:")
+                    logger.info(path)
+                    data = readBinFile(path, info,
+                                       countZ, countY, countX,
+                                       offsetZ, offsetY, offsetX,
+                                       cellSize)
+                    logger.info("data:")
+                    logger.info(data)
+
                 dataNum = []
                 dataTime = []
                 for i in dataAny:
@@ -417,11 +478,18 @@ def createMovie(projectDir, projectName):
                     dataNum.append(i[1])
                 logData.append(np.array(dataNum))
             picCount = len(plot["Value"])
+            logger.info("logData:")
+            logger.info(logData)
+            logger.info("namesEquations:")
+            logger.info(namesEquations)
             dataListMin = [min([min(i) for i in j]) for j in logData]
             dataListMax = [max([max(i) for i in j]) for j in logData]
-            print(dataListMin, len(logData), dataTime)
+            logger.info(dataListMin)
+            logger.info(len(logData))
+            logger.info(dataTime)
+
             logDataNp = np.array(logData)
-            print(logDataNp[:, 0])
+            logger.info(logDataNp[:, 0])
             arg_list = [(projectDir, projectName, logDataNp[:, Idx],
                          dataTime[Idx], countX,
                          offsetZ, offsetY, offsetX,
@@ -430,14 +498,14 @@ def createMovie(projectDir, projectName):
                         for Idx, itemd in enumerate(logDataNp[0])]
             log = pool.map(saveResultFunc, arg_list)
         for element in log:
-            print(element)
+            logger.info(element)
 
         createVideoFile(projectDir, projectName, plotIdx)
 
     # U and V
     # TODO get result all list U or V
     resIdx = 0
-    # print('aaaa ', resultlistname)
+    # logger.info('aaaa ', resultlistname)
     for resultItem in resultList:
         pool = mp.Pool(processes=16)
         arg_list = [(projectDir, projectName, binFile, info,
@@ -447,10 +515,12 @@ def createMovie(projectDir, projectName):
                     for idx, binFile in enumerate(
                             plotFileLists[plotCount + resIdx])]
         resuls = pool.map(getResults1D, arg_list)
-        print('skks', projectDir, resultItem)
+        logger.info('skks:')
+        logger.info(projectDir)
+        logger.info(resultItem)
         createResultFile(projectDir, projectName, resIdx, resuls)
         resIdx += 1
-    print(namesEquations)
+    logger.info(namesEquations)
 
 
 if __name__ == "__main__":
@@ -466,10 +536,15 @@ if __name__ == "__main__":
     # mandatory argument, project name without extension:
     parser.add_argument('projectName', type=str,
                         help="project name without extension")
+
+    # model's params for postproc video:
+    parser.add_argument('modelParams', type=str,
+                        help="model's params for postproc video")
+
     args = parser.parse_args()
 
-    createMovie(args.projectDir, args.projectName)
+    createMovie(args.projectDir, args.projectName, args.modelParams)
 
     t2 = time.time()
 
-    print("Postprocessor running time: ", t2 - t1)
+    logger.info("Postprocessor running time: %s" % (t2 - t1))

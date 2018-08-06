@@ -1,5 +1,6 @@
 from gens.hs.gen_1d import GenD1
 from gens.hs.gen_sh import GenSH
+from gens.hs.gen_plot import GenPlot
 from gens.hs.fiocr.fiocr_main import Fiocr
 
 from envs.hs.model.model_main import ModelNet as Model
@@ -31,6 +32,8 @@ class Gen():
         # file io compilation routine:
         self.fiocr = Fiocr()
 
+        self.gen_plot = GenPlot(self)
+
     def gen_all(self):
         
         '''Generate cpp and dom files.'''
@@ -58,6 +61,9 @@ class Gen():
 
         # save dom bin:
         self.gen_dim.filler.save_bin(pathes['hd']['dom_bin'])
+
+        # save plot params:
+        self.gen_plot.save(pathes['hd']['plot'])
 
         # create sh file:
         self.gen_sh.set_params(self.settings.device_conf['default'])

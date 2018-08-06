@@ -175,5 +175,26 @@
             }
         ]
     }, 
-    "Plots": []
+    "Plots": [ {
+            "Title": "u(t,x)", 
+            "Period": 0.1,
+            "Value": ["U", "V"]
+        }],
+
+    "Results":[
+        {
+            "Name": "u", 
+            "Period": 0.1,
+            "Value": "U"
+        },
+        {
+            "Name": "u_max", 
+            "Period": 0.1,
+            "Value": "max(U)"
+        },
+        {
+            "Name": "u_min", 
+            "Period": 0.1,
+            "Value": "min(U)"
+        }]
 }
