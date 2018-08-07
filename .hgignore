@@ -23,4 +23,5 @@ ManualHeat/*
 *.so
 *tempFile
 *~
+*.zip
 TAGS
