@@ -95,7 +95,7 @@ class Settings():
         # dom file at server:
         pathes['hs']['dom_bin'] = (os.path
                                    .join(pathes['hs']['out_folder'],
-                                         pathes['model']['name'] + '_dom.bin'))
+                                         pathes['model']['name'] + '.dom'))
 
         pathes['hs']['postproc'] = os.path.join(tracerFolder,
                                                 'hybriddomain',
