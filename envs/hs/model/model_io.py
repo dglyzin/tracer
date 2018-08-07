@@ -64,7 +64,8 @@ class ModelIO():
         self.net.project_name = os.path.basename(self.net.project_path)
 
         # json file:
-        fileName = [f for f in os.listdir(project_folder) if '.json' in f][0]
+        fileName = [f for f in os.listdir(project_folder)
+                    if ('.json' in f) and (r'.json~' not in f)][0]
         fileName = os.path.join(project_folder, fileName)
         # END FOR
 
