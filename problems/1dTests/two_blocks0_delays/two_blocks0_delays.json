@@ -175,10 +175,16 @@
             }
         ]
     }, 
-    "Plots": [ {
+    "Plots": [ 
+	{
             "Title": "u(t,x)", 
             "Period": 0.1,
-            "Value": ["U", "V"]
+            "Value": "U"
+        },
+	{
+            "Title": "v(t,x)", 
+            "Period": 0.1,
+            "Value": "V"
         }],
 
     "Results":[
