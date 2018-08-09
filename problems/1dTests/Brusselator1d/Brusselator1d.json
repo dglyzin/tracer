@@ -197,6 +197,16 @@
                 "NodeIdx": 0, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
             }
         ]
     }, 
