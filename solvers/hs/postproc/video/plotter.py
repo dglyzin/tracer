@@ -93,17 +93,33 @@ def createPlots(dbin_pathNameExt, plot_code):
     saveText = 0
     for plotIdx in plot_nums:
         if dimension == 1:
-            savePlots1D([projectDir, projectName, dbinNameExt, info,
-                         countZ, countY, countX,
+            '''
+            arg_list = [(projectDir, projectName, binFile,
+                         info, countZ, countY, countX,
                          offsetZ, offsetY, offsetX, cellSize,
-                         maxValue, minValue, dx, dy,
-                         "-current-" + binTimeStr, plotIdx, saveText])
+                         namesEquations,
+                         plot['Value'], str(idx))
+                        for idx, binFile in enumerate(plotFileLists[plotIdx])]
+            logData = pool.map(getResults1D, arg_list)
+
+            arg_list = [(projectDir, projectName,
+                         [dataNum[1]], dataNum[0], countX,
+                         offsetZ, offsetY, offsetX,
+                         dataListMax, dataListMin, dx, dy,
+                         str(Idx), plotIdx, picCount)
+                        for Idx, dataNum in enumerate(logData)]
+            '''
+            savePlots1D(*[projectDir, projectName, dbinNameExt, info,
+                          countZ, countY, countX,
+                          offsetZ, offsetY, offsetX, cellSize,
+                          maxValue, minValue, dx, dy,
+                          "-current-" + binTimeStr, plotIdx, saveText])
         if dimension == 2:
-            saveResults2D([projectDir, projectName, dbinNameExt, info,
-                           countZ, countY, countX,
-                           offsetZ, offsetY, offsetX, cellSize,
-                           maxValue, minValue, dx, dy,
-                           "-current-" + binTimeStr, plotIdx, saveText])
+            saveResults2D(*[projectDir, projectName, dbinNameExt, info,
+                            countZ, countY, countX,
+                            offsetZ, offsetY, offsetX, cellSize,
+                            maxValue, minValue, dx, dy,
+                            "-current-" + binTimeStr, plotIdx, saveText])
     
     
 if __name__ == '__main__':

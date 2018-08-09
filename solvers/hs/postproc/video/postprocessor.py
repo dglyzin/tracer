@@ -10,6 +10,7 @@ import argparse
 import numpy as np
 import sys
 import subprocess
+import functools
 
 import getpass
 # import paramiko, socket
@@ -68,6 +69,15 @@ from utils.binaryFileReader import getDomainProperties
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
+
+class Params(dict):
+
+    def has_param(self, key, source):
+        try:
+            self[key]
+        except KeyError:
+            raise(KeyError('for term %s dont have %s param' % (source, key)))
+            
 
 def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
     figure = Figure()
@@ -343,6 +353,43 @@ def plot_contains(idx, val):
 def getBinFilesByPlot(binFileList, plotValList, plotCount):
 
     '''separate binFileList into sublists according to plotValList'''
+    '''binFileList - binary files names
+    plotValList - list of integers (62)
+                  whose binary representation (111110)
+                  contain info about data, that stored in
+                  given binary file (plot with indexes: 0, 1, 2, 3, 4
+                  because bin(2**(i+1)) & 111110 is true for i in [0-4]).'''
+    '''    
+    step 1):
+       transform all plotValList into binary
+       plotFileLists |-> [bin(plotVal) for plotVal in plotFileLists]
+       Ex: [9] |-> [101]
+
+    step 2):
+       transform range(plotCount) into binary
+       plotCount |-> [bin(plotVal) for plotVal in range(plotCount)]
+       Ex: [0, 1, 2] |-> [10, 100, 1000]
+
+    step 3): compare each bit of bin(plotVar) with corresponding bit from
+             step 1 (i.e. use bitwise and: &)
+       out(step 1) as os_1, out(step 2) as os_2 |->
+          [[bool(out_1 & out_2)
+            for out_2 in os_2] for out_1 in os_1]
+       Ex:
+          [101], [10, 100, 1000] |->
+            [[False, True, False]]
+
+    step 3): factorize images names into plotCount classes
+       binFileList, range(plotCount), out(step 3) as os_3|->
+          result[plotIdx] = [fileName
+                             for fileName in binFileList
+                              if os_3[plotVarIndex][plotIdx] == True]
+            where plotIdx from range(plotCount)
+                  plotVarIndex = index(plotFileLists) = index(binFileList)
+       Ex:
+          ['file_1'], [0, 1, 2], [[False, True, False]] |->
+             [0: [], 1: ['file_1'], 2: []]
+    '''
 
     result = []
     for _ in range(plotCount):
@@ -354,13 +401,29 @@ def getBinFilesByPlot(binFileList, plotValList, plotCount):
     return result
 
 
-def createMovie(projectDir, projectName, modelParams):
+def wGetResults1D(args):
+    return(getResults1D(*args))
+
+
+def wSavePlots1D(args):
+    return(savePlots1D(*args))
+
+
+def createMovie(projectDir, projectName, modelParamsPath):
+    '''
+    projectDir: ~/projects/lab/hybriddomain/problems/1dTests/
+                 two_blocks0_delays/out/
+    projectName: two_blocks0_delays
+    modelParamsPath: ~/projects/lab/hybriddomain/problems/1dTests/
+                      two_blocks0_delays/out/params_plot.txt
+    '''
     saveText = False
 
     path = os.path.join(projectDir, projectName + defaultGeomExt)
     info, cellSize, dx, dy, dz, dimension = readDomFile(path)
 
-    countZ, countY, countX, offsetZ, offsetY, offsetX = getDomainProperties(info)
+    out = getDomainProperties(info)
+    countZ, countY, countX, offsetZ, offsetY, offsetX = out
 
     command = ("rm " + projectDir + projectName + "-final-*.png "
                + projectDir + projectName + "-plot*.mp4" + projectDir
@@ -369,44 +432,34 @@ def createMovie(projectDir, projectName, modelParams):
     logger.info(command)
     subprocess.call(command, shell=True)
 
+    # list with file names:
     binFileList = getSortedDrawBinFileList(projectDir, projectName)
+
+    # list of valus each binary representation
+    # of which contain info about file content:
+    # (see getBinFilesByPlot)
     plotValList = getPlotValList(binFileList)
-    # logger.info(plotValList)
 
-    with open(modelParams) as f:
-        modelParams = eval(f.read())
+    # model params:
+    mParams = get_model_params(modelParamsPath)
 
-    # model.plots:
-    plotList = modelParams['plots']
-    plotCount = len(plotList)
+    # factorize images into pCount classes:
+    pCount = mParams['plotCount'] + mParams['resCount']
+    plotFileLists = getBinFilesByPlot(binFileList, plotValList, pCount)
+                                      
+    logger.debug('binFileList:')
+    logger.debug(binFileList)
+    logger.debug('plotValList:')
+    logger.debug(plotValList)
+    logger.debug("plotFileLists:")
+    logger.debug(plotFileLists)
 
-    # model.results:
-    resultList = modelParams['results']
-    resCount = len(resultList)
-    
-    # model.equation[0].system
-    namesEquations = modelParams['namesEquations']
-
-    '''    
-    model = Model()
-    model.loadFromFile(os.path.join(projectDir, projectName + '.json'))
-    plotCount = len(model.plots)
-    resultList = model.results
-    namesEquations = model.equations[0].system
-    resCount = len(model.results)
-    '''
-
-    plotFileLists = getBinFilesByPlot(binFileList, plotValList,
-                                      plotCount+resCount)
-
-    for numitem, item in enumerate(namesEquations):
-        namesEquations[numitem] = item[:item.find("'")]
+    for numitem, item in enumerate(mParams['namesEquations']):
+        mParams['namesEquations'][numitem] = item[:item.find("'")]
     # logger.info(plotFileLists)
     # plotList = model.plots
-    logger.info('plotplot')
-    logger.info(plotList)
 
-    for plotIdx, plot in enumerate(plotList):
+    for plotIdx, plot in enumerate(mParams['plotList']):
         # t1 = time.time()
         maxValue, minValue = calcMinMax(projectDir, plotFileLists[plotIdx],
                                         info, countZ, countY, countX,
@@ -415,23 +468,23 @@ def createMovie(projectDir, projectName, modelParams):
         # t2 = time.time()
         # logger.info("Расчет минимума / максимума: ", t2 - t1)
         plotType = type(plot['Value'])
-        logger.info('aaa')
+        logger.info('plot["Value"]')
         logger.info(plot['Value'])
         logger.info(type(plot['Value']))
         pool = mp.Pool(processes=16)
         saveResultFunc = savePlots1D
         if dimension == 1:
-            saveResultFunc = savePlots1D
+            saveResultFunc = wSavePlots1D  # savePlots1D
         if dimension == 2:
             saveResultFunc = saveResults2D
         if plotType == str:
             arg_list = [(projectDir, projectName, binFile,
                          info, countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
-                         cellSize, namesEquations,
+                         cellSize, mParams['namesEquations'],
                          plot['Value'], str(idx))
                         for idx, binFile in enumerate(plotFileLists[plotIdx])]
-            logData = pool.map(getResults1D, arg_list)
+            logData = pool.map(wGetResults1D, arg_list)
 
             dataListMin = [min([min(i[1]) for i in logData])]
             dataListMax = [max([max(i[1]) for i in logData])]
@@ -453,7 +506,7 @@ def createMovie(projectDir, projectName, modelParams):
                 arg_list = [(projectDir, projectName, binFile, info,
                              countZ, countY, countX,
                              offsetZ, offsetY, offsetX, cellSize,
-                             namesEquations, elemPlot, str(idx))
+                             mParams['namesEquations'], elemPlot, str(idx))
                             for idx, binFile in enumerate(
                                     plotFileLists[plotIdx])]
                 dataAny = pool.map(getResults1D, arg_list)
@@ -481,7 +534,7 @@ def createMovie(projectDir, projectName, modelParams):
             logger.info("logData:")
             logger.info(logData)
             logger.info("namesEquations:")
-            logger.info(namesEquations)
+            logger.info(mParams['namesEquations'])
             dataListMin = [min([min(i) for i in j]) for j in logData]
             dataListMax = [max([max(i) for i in j]) for j in logData]
             logger.info(dataListMin)
@@ -506,21 +559,42 @@ def createMovie(projectDir, projectName, modelParams):
     # TODO get result all list U or V
     resIdx = 0
     # logger.info('aaaa ', resultlistname)
-    for resultItem in resultList:
+    for resultItem in mParams['resultList']:
         pool = mp.Pool(processes=16)
         arg_list = [(projectDir, projectName, binFile, info,
                      countZ, countY, countX,
                      offsetZ, offsetY, offsetX, cellSize,
-                     namesEquations, resultItem['Value'], str(idx))
+                     mParams['namesEquations'],
+                     resultItem['Value'], str(idx))
                     for idx, binFile in enumerate(
-                            plotFileLists[plotCount + resIdx])]
-        resuls = pool.map(getResults1D, arg_list)
+                            plotFileLists[mParams['plotCount'] + resIdx])]
+        resuls = pool.map(wGetResults1D, arg_list)
         logger.info('skks:')
         logger.info(projectDir)
         logger.info(resultItem)
         createResultFile(projectDir, projectName, resIdx, resuls)
         resIdx += 1
-    logger.info(namesEquations)
+    logger.info(mParams['namesEquations'])
+
+
+def get_model_params(modelParamsPath):
+
+    with open(modelParamsPath) as f:
+        modelParams = eval(f.read())
+
+    params = Params()
+
+    # model.plots:
+    params['plotList'] = modelParams['plots']
+    params['plotCount'] = len(params['plotList'])
+
+    # model.results:
+    params['resultList'] = modelParams['results']
+    params['resCount'] = len(params['resultList'])
+    
+    # model.equation[0].system
+    params['namesEquations'] = modelParams['namesEquations']
+    return(params)
 
 
 if __name__ == "__main__":

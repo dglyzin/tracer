@@ -22,7 +22,14 @@ def getSortedFileList(projectDir, title, extension):
 def getPlotValList(fileList):
    
     '''get ints after - and before extension'''
-    
+
+    '''
+    getPlotValList:
+    If
+       fileList = ['two_blocks0_delays-0.00000000-62.dbin']
+    then
+       getPlotValList: fileList |-> 62'''
+
     return([int(f.split('-')[-1].split('.')[0]) for f in fileList])
 
   

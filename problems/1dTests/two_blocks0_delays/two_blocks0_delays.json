@@ -19,7 +19,7 @@
         {
             "Name": "MainBlock", 
             "Offset": {
-                "x": -5.0
+                "x": 5.0
             }, 
             "Size": {
                 "x": 9.0
