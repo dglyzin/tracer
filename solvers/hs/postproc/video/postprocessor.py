@@ -426,8 +426,8 @@ def createMovie(projectDir, projectName, modelParamsPath):
     countZ, countY, countX, offsetZ, offsetY, offsetX = out
 
     command = ("rm " + projectDir + projectName + "-final-*.png "
-               + projectDir + projectName + "-plot*.mp4" + projectDir
-               + projectName + "-res*.txt" + projectDir
+               + projectDir + projectName + "-plot*.mp4 " + projectDir
+               + projectName + "-res*.txt " + projectDir
                + projectName + "-res*.out")
     logger.info(command)
     subprocess.call(command, shell=True)

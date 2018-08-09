@@ -41,12 +41,18 @@ class ModelDevice():
         if no "any" node is present in json
         and empty string otherwise
         '''
-        paramLine = "-w"
-        for node in self.net.compnodes:            
+        paramLine = "-w "
+        
+        if len(self.net.compnodes) == 1:
+            node = self.net.compnodes[0]
             if node.name == "any":
                 return ""
             else:
-                paramLine = paramLine + " " + node.name
+                paramLine += node.name
+        else:
+            for node in self.net.compnodes:
+                paramLine += node.name + ","
+            paramLine = paramLine[:-1]
         return(paramLine)
     # END FOR
 

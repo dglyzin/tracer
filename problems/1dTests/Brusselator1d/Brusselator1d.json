@@ -172,20 +172,7 @@
     ], 
     "Hardware": [
         {
-            "Name": "cnode1", 
-            "CpuCount": 1, 
-            "CpuMemory": [
-                56
-            ], 
-            "GpuCount": 3, 
-            "GpuMemory": [
-                5, 
-                5, 
-                5
-            ]
-        }, 
-        {
-            "Name": "cnode2", 
+            "Name": "cnode7", 
             "CpuCount": 1, 
             "CpuMemory": [
                 56
@@ -210,18 +197,19 @@
                 "NodeIdx": 0, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
-            }, 
-            {
-                "NodeIdx": 1, 
-                "DeviceType": "cpu", 
-                "DeviceIdx": 0
-            }, 
-            {
-                "NodeIdx": 1, 
-                "DeviceType": "cpu", 
-                "DeviceIdx": 0
             }
         ]
     }, 
-    "Plots": []
+    "Plots": [
+	{
+            "Title": "u(t,x)", 
+            "Period": 0.1,
+            "Value": "U"
+        },
+	{
+            "Title": "v(t,x)", 
+            "Period": 0.1,
+            "Value": "V"
+        }
+    ]
 }

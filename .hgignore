@@ -24,4 +24,5 @@ ManualHeat/*
 *tempFile
 *~
 *.zip
+*.out
 TAGS
