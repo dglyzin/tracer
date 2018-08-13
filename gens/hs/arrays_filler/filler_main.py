@@ -6,6 +6,7 @@ from gens.hs.arrays_filler.filler_delays import Filler as DelaysFiller
 
 import numpy as np
 from pandas import DataFrame
+from collections import OrderedDict
 
 import logging
 
@@ -43,9 +44,12 @@ class Filler():
     def fill_arrays(self):
         logger.info("filling arrays...")
 
-        self.out_data = {}
+        self.out_data = OrderedDict()
         self.fArray.fillBinarySettings()
         self.fArray.show(gout=self.out_data)
+
+        self.fDelays.fill_delays()
+        self.fDelays.show(gout=self.out_data)
 
         # this will only work if saveFuncs was called
         # and self.functionMaps are filled
@@ -57,9 +61,6 @@ class Filler():
         
         self.fPlot.fillBinaryPlots()
         self.fPlot.show(gout=self.out_data)
-
-        self.fDelays.fill_delays()
-        self.fDelays.show(gout=self.out_data)
 
     def show(self):
 

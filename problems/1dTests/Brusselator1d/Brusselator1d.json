@@ -33,7 +33,7 @@
         {
             "Name": "SecBlock1", 
             "Offset": {
-                "x": 1.0
+                "x": 0.0
             }, 
             "Size": {
                 "x": 1.0
@@ -47,7 +47,7 @@
         {
             "Name": "SecBlock2", 
             "Offset": {
-                "x": 2.0
+                "x": 0.0
             }, 
             "Size": {
                 "x": 1.0
@@ -61,7 +61,7 @@
         {
             "Name": "SecBlock3", 
             "Offset": {
-                "x": 3.0
+                "x": 0.0
             }, 
             "Size": {
                 "x": 1.0
