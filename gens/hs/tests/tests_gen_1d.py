@@ -9,6 +9,12 @@ from tests.tests_common import to_file, test_cpp
 import os
 
 
+def get_gen_1d(model='problems/test1d_two_blocks0'):
+    settings = Settings()
+    gen = Gen(model, settings)
+    return(gen)
+
+
 def test_gen_1d(model='problems/test1d_two_blocks0'):
     settings = Settings()
     gen = Gen(model, settings)

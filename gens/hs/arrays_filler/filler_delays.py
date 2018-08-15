@@ -1,5 +1,6 @@
 import numpy as np
 from pandas import DataFrame
+from collections import OrderedDict
 
 
 class Filler():
@@ -39,7 +40,7 @@ class Filler():
                                               dtype=np.uint64)
 
     def show(self, gout={}):
-        out = {}
+        out = OrderedDict()
         out['problemTypeArr'] = {
             'array': self.problemTypeArr,
             'frame': DataFrame([self.problemTypeArr])}

@@ -1,5 +1,6 @@
 import numpy as np
 from pandas import DataFrame
+from collections import OrderedDict
 
 import logging
 
@@ -43,7 +44,7 @@ class Filler():
             self.plotAndResPeriodsArr[plotCount + resIdx] = period
         
     def show(self, gout={}):
-        out = {}
+        out = OrderedDict()
         out['plotAndResCountArr'] = {
             'array': self.plotAndResCountArr,
             'frame': DataFrame([self.plotAndResCountArr])}

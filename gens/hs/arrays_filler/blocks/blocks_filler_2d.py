@@ -5,16 +5,16 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('tests.tester.blocks_filler_2d')
+# logger = logging.getLogger('tests.tester.blocks_filler_2d')
 
 # if using directly uncoment that:
-'''
+
 # create logger
-log_level = logging.DEBUG  # logging.DEBUG
+log_level = logging.INFO  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('blocks_filler_2d')
 logger.setLevel(level=log_level)
-'''
+
 
 bdict = {"dirichlet": 0, "neumann": 1}
 

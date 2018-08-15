@@ -1,4 +1,5 @@
 from pandas import DataFrame
+from collections import OrderedDict
 
 
 class Plotter():
@@ -6,7 +7,7 @@ class Plotter():
         self.net = net
 
     def show(self, gout={}):
-        out = {}
+        out = OrderedDict()
         out['icCountArr'] = {
             'array': self.net.icCountArr,
             'frame': DataFrame([self.net.icCountArr])}

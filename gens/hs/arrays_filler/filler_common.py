@@ -1,5 +1,6 @@
 import numpy as np
 from pandas import DataFrame
+from collections import OrderedDict
 
 import logging
 
@@ -52,7 +53,7 @@ class Filler():
     def show(self, gout={}):
         
         '''Show all filled arrays in one place'''
-        out = {}
+        out = OrderedDict()
         out['versionArr'] = {
             'array': self.versionArr,
             'frame': DataFrame([self.versionArr])}

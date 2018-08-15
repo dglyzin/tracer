@@ -16,8 +16,6 @@ INPUTS:
       block.bounds
          bound.parsedValues
 	 bound.original
-      block.initialIndexes
-      block.fDirichletIndexes
    initials
       initial.parsedValues
       bound.original	
@@ -28,7 +26,7 @@ END COMMENT #}
 {% for blockNumber, block in enumerate(blocks) %}
 {% set bn = blockNumber %}
 {% for initialNumber, initial in enumerate(block.initials) %}
-void Initial_{{bn}}_{{ initialNumber }}(double* cellstart, double x, double y, double z){
+void Initial_{{bn}}_{{ initial.idx }}(double* cellstart, double x, double y, double z){
      {% for valueNumber, value in enumerate(initial.parsedValues) %}
 	cellstart[{{ valueNumber }}] = {{ value }};
      {% endfor %}
@@ -36,7 +34,7 @@ void Initial_{{bn}}_{{ initialNumber }}(double* cellstart, double x, double y, d
 {% endfor %}
 
 {% for boundNumber, bound in enumerate(block.bounds) %}
-void DirichletInitial_{{bn}}_{{ boundNumber }}(double* cellstart, double x, double y, double z){
+void DirichletInitial_{{bn}}_{{ bound.idx }}(double* cellstart, double x, double y, double z){
      double t = 0;
      {% for valueNumber, value in enumerate(bound.parsedValues) %}
 	cellstart[{{ valueNumber }}] = {{ value }};
@@ -44,18 +42,18 @@ void DirichletInitial_{{bn}}_{{ boundNumber }}(double* cellstart, double x, doub
 }
 {% endfor %}
 
-{% set initialCount = len(block.initialIndexes) %}
-{% set fDirichletCount = len(block.fDirichletIndexes) %}
+{% set initialCount = len(block.initials) %}
+{% set fDirichletCount = len(block.bounds) %}
 
 void Block{{ bn }}FillInitialValues(double* result, unsigned short int* initType){
 	initfunc_ptr_t initFuncArray[{{ initialCount + fDirichletCount }}];
 	
-    {% for initialNumber, initial in enumerate(block.initials) %}
-	initFuncArray[{{ initialNumber }}] = Initial_{{bn}}_{{ initialNumber }};
+    {% for initial in block.initials %}
+	initFuncArray[{{ initial.idx }}] = Initial_{{bn}}_{{ initial.idx }};
     {% endfor %}
 
-    {% for fDirichletNumber, bound in enumerate(block.bounds) %}				
-	initFuncArray[{{ fDirichletNumber }}] = DirichletInitial_{{bn}}_{{ fDirichletNumber }};
+    {% for bound in block.bounds  %}
+	initFuncArray[{{ bound.idx }}] = DirichletInitial_{{bn}}_{{ bound.idx }};
     {% endfor %}	
 
     {% if dim == 1 %}	

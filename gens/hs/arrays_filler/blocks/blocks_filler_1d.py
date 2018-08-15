@@ -1,3 +1,5 @@
+from gens.hs.common.init_funcs_nums import InitFuncsNums
+
 import numpy as np
 
 import logging
@@ -5,16 +7,16 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('tests.tester.blocks_filler_1d')
+# logger = logging.getLogger('tests.tester.blocks_filler_1d')
 
 # if using directly uncoment that:
-'''
+
 # create logger
 log_level = logging.DEBUG  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('blocks_filler_1d')
 logger.setLevel(level=log_level)
-'''
+
 
 bdict = {"dirichlet": 0, "neumann": 1}
 
@@ -26,33 +28,43 @@ class Filler():
     def fill1dInitFuncs(self, funcArr, block, blockSize):
         logger.info("Filling 1d initial function array.")
         xc = blockSize[0]
+        
+        ifn = InitFuncsNums(self.net.model, block)
 
+        # TODO: to common:
         logger.info("1 fill default conditions")
+        '''
         usedInitNums = [block.defaultInitial]
         initFuncNum = usedInitNums.index(block.defaultInitial)
         funcArr[:] = initFuncNum
-                
+        '''
+        initFuncNum = ifn.get_default_initial(block.defaultInitial)
+        funcArr[:] = initFuncNum
+
         logger.info("2 fill user-defined conditions:")
         
+        '''
         logger.info("2.1 collect user-defines initial conditions")
         # that are used in this block
         for initReg in block.initialRegions:
             if not (initReg.initialNumber in usedInitNums):
                 usedInitNums.append(initReg.initialNumber)
+        '''
+        # END OF TODO
 
-        logger.info("2.2 fill them")
-        for initReg in block.initialRegions:
-            initFuncNum = usedInitNums.index(initReg.initialNumber)
+        # logger.info("2.2 fill them")
+        for iRegion in block.initialRegions:
+            initFuncNum = ifn.get_initial_regions(iRegion.initialNumber)
+            # initFuncNum = usedInitNums.index(initReg.initialNumber)
             getXrange = self.net.model.grid.base.getXrange
-            xstart, xend = getXrange(initReg.xfrom, initReg.xto)
+            xstart, xend = getXrange(iRegion.xfrom, iRegion.xto)
             funcArr[xstart:xend] = initFuncNum
 
-        logger.debug("Used init nums:")
-        logger.debug(usedInitNums)
-        
         logger.info("3 overwrite with values that come from Dirichlet bounds")
         logger.info("3.1 collect dirichlet bound numbers"
                     + "that are used in this block")
+        # TODO: to common
+        '''
         usedIndices = len(usedInitNums)
         usedDirBoundNums = []
         for side_num in block.boundRegions:
@@ -64,9 +76,10 @@ class Filler():
                         usedDirBoundNums.append(boundNumber)
 
         usedDirBoundNums.sort()
-
+        # END OF TODO
         logger.debug("Used Dirichlet bound nums:")
         logger.debug(usedDirBoundNums)
+        '''
 
         logger.info("3.2 fill them")
         for side_num in block.boundRegions:
@@ -74,8 +87,12 @@ class Filler():
                 boundNumber = bound.boundNumber
                 bound_btype = self.net.model.bounds[boundNumber].btype
                 if (bound_btype == bdict["dirichlet"]):
-                    initFuncNum = (usedIndices
-                                   + usedDirBoundNums.index(boundNumber))
+
+                    # for initFuncArray indexes
+                    # factorization dirichlet/undirichlet:
+                    initFuncNum = ifn.get_dirichlet_bound_regions(boundNumber)
+                    # initFuncNum = (usedIndices
+                    #                + usedDirBoundNums.index(boundNumber))
                     # legacy form
                     # block.boundRegions[boundNumber].side_num
                     if side_num == 0:

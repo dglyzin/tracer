@@ -9,16 +9,16 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('tests.tester.blocks_filler_main')
+# logger = logging.getLogger('tests.tester.blocks_filler_main')
 
 # if using directly uncoment that:
-'''
+
 # create logger
 log_level = logging.DEBUG  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('blocks_filler_main')
 logger.setLevel(level=log_level)
-'''
+
 
 devType = {"cpu": 0, "gpu": 1}
 
