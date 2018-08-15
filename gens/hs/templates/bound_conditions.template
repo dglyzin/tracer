@@ -27,7 +27,8 @@ void {{bound.funcName}}(double* result, double** source, double t, int idxX, int
 	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;
      {% for i, value in enumerate(bound.parsedValues)%}
          // original: {{bound.original[i]}}
-	 result[idx + {{i}}] = {{value}};
+	 {# result[idx + {{i}}] = #}
+	 {{value}};
      {% endfor %}
 }
 //device side function pointer declaration and init:

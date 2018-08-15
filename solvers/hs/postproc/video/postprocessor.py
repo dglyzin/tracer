@@ -252,6 +252,7 @@ def getResults1D(projectDir, projectName, binFile, info,
                        cellSize)
 
     # xs = np.arange(0, countX)*dx
+    # U -> data
     dictfun = {}
     for numitem, item in enumerate(nameEquations):
         dictfun[item] = data[0, 0, :, numitem]

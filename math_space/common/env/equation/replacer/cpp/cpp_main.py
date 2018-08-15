@@ -1,5 +1,6 @@
 from env.equation.data.terms.output.cpp.replacer_cpp import CppGen
 from env.equation.replacer.cpp.cpp_editor import Editor
+from env.equation.data.terms.output.cpp.postproc import source_result_postproc
 
 
 class ReplCpp():
@@ -16,6 +17,10 @@ class ReplCpp():
         
     def make_cpp(self):
         self.map_cpp()
+
+        # replace source to result in lhs:
+        source_result_postproc(self.net.eq_tree)
+
         self.net.eq_cpp = self.net.tree.flatten('cpp')
         return(self.net.eq_cpp)
 

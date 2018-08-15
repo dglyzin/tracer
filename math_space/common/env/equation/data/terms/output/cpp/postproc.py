@@ -2,11 +2,30 @@
 import logging
 
 # create logger
-log_level = logging.INFO  # logging.DEBUG
+log_level = logging.DEBUG  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('postproc.py')
 logger.setLevel(level=log_level)
 
+
+def source_result_postproc(node):
+    
+    '''Replace source[delay] or source in eq.lhs to result.
+    Ex: source[delay][idx+0]|->result[idx+0]'''
+    
+    if node.name == '=':
+        try:
+            out = node[1].output.cpp.out
+        except AttributeError:
+            logger.debug("source_result_postproc eq has no cpp output")
+            return
+        if 'source[delay]' in out:
+            node[1].output.cpp.out = (node[1].output.cpp.out
+                                      .replace('source[delay]', 'result'))
+        elif 'source' in out:
+            node[1].output.cpp.out = (node[1].output.cpp.out
+                                      .replace('source', 'result'))
+        
 
 def delay_postproc(node):
 
