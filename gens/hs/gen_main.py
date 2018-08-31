@@ -3,24 +3,13 @@ from gens.hs.gen_sh import GenSH
 from gens.hs.gen_plot import GenPlot
 from gens.hs.fiocr.fiocr_main import Fiocr
 
-from envs.hs.model.model_main import ModelNet as Model
-
 
 class Gen():
     def __init__(self, model, settings):
         # model="tests/test1d_two_blocks0.json"
 
-        # model:
-        if type(model) == str:
-            oModel = Model()
-            oModel.io.loadFromFile(model)
-            self.model = oModel
-        else:
-            self.model = model
-
-        # settings:
+        self.model = model
         self.settings = settings
-        self.settings.make_all_pathes(self.model)
 
         # choice gen type:
         if self.model.dimension == 1:
@@ -66,5 +55,6 @@ class Gen():
         self.gen_plot.save(pathes['hd']['plot'])
 
         # create sh file:
-        self.gen_sh.set_params(self.settings.device_conf['default'])
+        device_conf_name = self.settings.device_conf_name
+        self.gen_sh.set_params(self.settings.device_conf[device_conf_name])
         self.gen_sh.gen_sh(self.settings.pathes['hd']['sh'])

@@ -2,6 +2,7 @@ import os
 import json
 import shutil
 
+from settings.settings_connection import Connection
 
 settings_folder = 'settings'
 conn_folder = os.path.join(settings_folder, 'conn')
@@ -10,22 +11,44 @@ pathes_folder = os.path.join(settings_folder, 'pathes')
 
 
 class Settings():
-    def __init__(self):
+    def __init__(self, hd_prefix=None):
+        if hd_prefix is not None:
+            self.hd_prefix = hd_prefix
 
+            global conn_folder
+            global device_conf_folder
+            global pathes_folder
+
+            conn_folder = os.path.join(hd_prefix, conn_folder)
+            device_conf_folder = os.path.join(hd_prefix, device_conf_folder)
+            pathes_folder = os.path.join(hd_prefix, pathes_folder)
+        else:
+            self.hd_prefix = ''
+
+        self.connection = Connection()
+
+        self.extract_all_settings()
+
+    def extract_all_settings(self):
         '''Extract all settings in:
         self.conn, self.device_conf, self.pathes
         
         Each file will be key in according settings:
            settings/conn/conn_base.json -> self.conn['conn_base']'''
-
-        def get_data(sfolder, sfile):
+            
+        def get_data(sfolder, sfile, hd_prefix=None):
             # print(sfile)
-            with open(os.path.join(sfolder, sfile)) as f:
+            if hd_prefix is None:
+                file_name = os.path.join(sfolder, sfile)
+            else:
+                file_name = os.path.join(hd_prefix, sfolder, sfile)
+
+            with open(file_name) as f:
                 data = json.loads(f.read())
             return(data)
 
         settings = [dict([(sfile.split('.')[0],
-                           get_data(sfolder, sfile))
+                           get_data(sfolder, sfile, self.hd_prefix))
                           for sfile in os.listdir(sfolder)
                           if sfile.split('.')[-1] == 'json'])
                     for sfolder in
@@ -33,24 +56,58 @@ class Settings():
 
         self.conn, self.device_conf, self.pathes = settings
 
-    def make_all_pathes(self, model):
+    def set_device_conf(self, name="default"):
+        self.device_conf_name = name
+
+    def make_connection(self, name="conn_base"):
+
+        '''Fill connection object.
+        name is name (without extension) of conn in settings/conn:
+        Ex: name = conn_base for file settings/conn/conn_base.json'''
+
+        self.connection.fromDict(self.conn[name])
+        self.connection.get_password()
+
+    def make_all_pathes(self, model, model_path=None):
 
         '''Creating all pathes for problem'''
 
-        hd_path = os.getcwd()
+        if self.hd_prefix is None:
+            hd_path = os.getcwd()
+        else:
+            hd_path = self.hd_prefix
+
+        if model_path is None:
+            model_path = model.project_path
+
         pathes = self.pathes
 
         # model pathes:
         pathes['model'] = {}
-        pathes['model']['path'] = model.project_path
+        pathes['model']['path'] = model_path
+
+        # name without extension:
         pathes['model']['name'] = model.project_name
+        pathes['model']['json'] = pathes['model']['name'] + '.json'
         pathes['model']['out_folder'] = 'out'
 
         # hd pathes:
         pathes['hd'] = {}
+
+        # path to hybriddomain:
+        pathes['hd']['hd'] = hd_path
+
+        # path to project folder at hd:
+        pathes['hd']['project_path'] = (os.path
+                                        .join(hd_path, 'problems',
+                                              pathes['model']['path']))
+        
+        pathes['hd']['json'] = (os.path
+                                .join(pathes['hd']['project_path'],
+                                      pathes['model']['json']))
+
         pathes['hd']['out_folder'] = (os.path
-                                      .join(hd_path, 'problems',
-                                            pathes['model']['path'],
+                                      .join(pathes['hd']['project_path'],
                                             pathes['model']['out_folder']))
         pathes['hd']['cpp'] = (os.path
                                .join(pathes['hd']['out_folder'],
@@ -71,6 +128,8 @@ class Settings():
         pathes['hd']['plot'] = os.path.join(pathes['hd']['out_folder'],
                                             'params_plot.txt')
 
+        pathes['hd']['device_conf'] = os.path.join(pathes['hd']['hd'],
+                                                   'settings', 'device_conf')
         # hs pathes:
         pathes['hs'] = {}
 
@@ -84,18 +143,39 @@ class Settings():
         pathes['hs']['solver'] = os.path.join(tracerFolder,
                                               "hybridsolver", "bin", "HS")
 
+        # path to hd at solver:
+        pathes['hs']['hd'] = os.path.join(tracerFolder,
+                                          "hybriddomain")
+
+        # hs device_conf:
+        pathes['hs']['device_conf'] = os.path.join(pathes['hs']['hd'],
+                                                   'settings', 'device_conf')
+
         # path to project folder at server:
         pathes['hs']['project_path'] = os.path.join(workspace,
                                                     pathes['model']['path'])
+        # path to json at server:
+        pathes['hs']['json'] = os.path.join(pathes['hs']['project_path'],
+                                            pathes['model']['json'])
+
         #  file at server:
         pathes['hs']['out_folder'] = (os.path
                                       .join(pathes['hs']['project_path'],
                                             pathes['model']['out_folder']))
 
+        # cpp file at server:
+        pathes['hs']['cpp'] = (os.path
+                               .join(pathes['hs']['out_folder'],
+                                    pathes['model']['name'] + '.cpp'))
+
         # dom file at server:
         pathes['hs']['dom_bin'] = (os.path
                                    .join(pathes['hs']['out_folder'],
                                          pathes['model']['name'] + '.dom'))
+        # sh file at server:
+        pathes['hs']['sh'] = (os.path
+                              .join(pathes['hs']['out_folder'],
+                                    pathes['model']['name'] + '.sh'))
 
         pathes['hs']['postproc'] = os.path.join(tracerFolder,
                                                 'hybriddomain',

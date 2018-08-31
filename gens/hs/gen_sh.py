@@ -1,3 +1,5 @@
+from solvers.hs.postproc.utils.fileUtils import getSortedLoadBinFileList
+
 import os
 
 import logging
@@ -37,7 +39,7 @@ class GenSH():
         # self.projectDir = (self.net.settings
         #                    .pathes['pathes_hs_base']['Workspace'])
 
-        # title for postprocessing:
+        # title for postprocessing and cont:
         self.title = self.net.settings.pathes['model']['name']
 
         # dom file at server:
@@ -90,6 +92,14 @@ class GenSH():
 
         if "cont" in params.keys():
             flag += 2
+            if params["cont"] == '/':
+                try:
+                    last = getSortedLoadBinFileList(self.projectDir,
+                                                    self.title)[-1]
+                    params["cont"] = os.path.join(self.projectDir, last)
+                except:
+                    raise(BaseException("No bin file to continue from!"))
+
             self.cont = params["cont"]
         else:
             params["cont"] = "n_a"
