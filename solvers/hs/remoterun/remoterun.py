@@ -306,7 +306,7 @@ def remoteProjectRun(settings, notebook=None):
                    + " pwd &&"
                    + " python3 " + "-m gens.hs.tests.tests_gen_1d"
                    + ' -t ' + project_name
-                   + ' -d ' + hs_dev_conf)
+                   + ' -d ' + settings.device_conf_name)
 
         # command = command + optionalArgs
         logger.info("command:")
@@ -333,6 +333,7 @@ def remoteProjectRun(settings, notebook=None):
             logger.info("Solver executable found.")
 
         # stdin, stdout, stderr = client.exec_command('sh ' + hs_sh, get_pty=True)
+        # redirect stderr to stdout (2>&1):
         stdin, stdout, stderr = client.exec_command('sh ' + hs_sh
                                                     + " 2>&1")
         progress = StdoutProgresses(notebook=notebook)
