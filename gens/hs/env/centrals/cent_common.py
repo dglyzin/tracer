@@ -31,14 +31,15 @@ class GenCommon(GenBaseCommon):
 
     def set_params_for_centrals(self, model, funcNamesStack):
         '''
-        DESCRIPTION:
-        Collect this parameters for template:
+        DESCRIPTION::
+
+        Collect this parameters for template::
         
-        equation.blockNumber
-        equation.eqautionNumber
-        equation.dim
-        equation.funcName
-        equation.parsedValues
+        ``equation.blockNumber``
+        ``equation.eqautionNumber``
+        ``equation.dim``
+        ``equation.funcName``
+        ``equation.parsedValues``
         '''
         dim = model.dimension
 
@@ -161,7 +162,8 @@ class GenCommon(GenBaseCommon):
 
     def _acc(self, dim, eRegion, reservedSpace):
         '''
-        DESCRIPTION:
+        DESCRIPTION::
+
         Accumulate equation regions area for checking
         either it enough or use default eqation.
         '''
@@ -174,7 +176,8 @@ class GenCommon(GenBaseCommon):
 
     def _do_generate_default(self, dim, reservedSpace, block):
         '''
-        DESCRIPTION:
+        DESCRIPTION::
+
         Check use default or not.
         '''
         if dim == 1:

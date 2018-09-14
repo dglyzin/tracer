@@ -135,7 +135,9 @@ class ModelBase(object):
         return(self.toDict())
 
     def to_frame(self):
-        
+
+        '''Make DataFrame with model params'''
+
         # ("Connection", self.connection.toDict()),
         print("ProjectName: %s" % self.projectName)
         print("\nSolver:")
@@ -191,6 +193,9 @@ class ModelBase(object):
         print(DataFrame(self.net.results))
         
     def toDict(self):
+
+        '''Save model params to OrderedDict'''
+
         modelDict = OrderedDict([
             # ("Connection", self.connection.toDict()),
             ("ProjectName", self.projectName),

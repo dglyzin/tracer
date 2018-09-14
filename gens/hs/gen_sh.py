@@ -67,14 +67,15 @@ class GenSH():
         '''
         Set user's params.
 
-        params can contain optional parameters:
-        params['finish']
-        params['cont']
-        params['nortpng']
-        params['partition']
-        params['nodes']
-        params['mpimap']
-        params['affinity']
+        params can contain optional parameters::
+
+           params['finish']
+           params['cont']
+           params['nortpng']
+           params['partition']
+           params['nodes']
+           params['mpimap']
+           params['affinity']
         
         if some missing, default values will be used.
         '''
@@ -142,7 +143,7 @@ class GenSH():
 
     def gen_sh(self, outputRunFile):
         '''
-        Create sh file in outputRunFile.
+        Create sh file in ``outputRunFile``.
 
         in this case we run only c mpi workers and then process results
         '''    

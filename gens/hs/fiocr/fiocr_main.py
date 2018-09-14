@@ -20,11 +20,23 @@ logger.setLevel(level=log_level)
 
 
 class Fiocr():
-    
+
+    '''File Input Output Compilation Routine'''
+
     def create_out(self, out_path, userfuncs, rm=True):
 
         '''Create folder for out. Cleare if exist.
-        Copy userfuncs.h here.'''
+        Copy userfuncs.h here.
+
+        INPUTS:
+
+        - ``out_path`` -- path out be generated to
+
+        :param str out_path: path out be generated to
+
+        :param str userfuncs: path to userfuncs.h
+        (default is ``hd/gens/hs/src``)
+        '''
 
         folder = out_path
         if not os.path.exists(folder):
@@ -42,7 +54,8 @@ class Fiocr():
     def to_file(self, out, fileName, ext='.cpp', rm=True):
 
         '''fileName Used to create folder in
-        tests/src folder and put output here
+        ``tests/src`` folder and put output here
+
         (ex: out.cpp)'''
 
         with open(fileName, 'w') as f:
@@ -50,9 +63,10 @@ class Fiocr():
 
     def make_gcc_so(self, cpp_file, so_file, _stderr=None):
         '''
-        DESCRIPTION:
-        Generate libuserfuncs.so file by gcc.
-        cpp and userfuncs.h files needed.
+        DESCRIPTION::
+
+            Generate ``libuserfuncs.so`` file by gcc.
+            cpp and ``userfuncs.h`` files needed.
         '''
         logger.debug("FROM make_gcc_so")
         # curDir = os.getcwd()
@@ -115,7 +129,8 @@ class Fiocr():
 
 class GccException(Exception):
     '''
-    DESCRIPTION:
+    DESCRIPTION::
+
     For cathing error of gcc.
     For tests cases in tester.py.
     '''

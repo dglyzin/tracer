@@ -30,11 +30,13 @@ class Settings():
         self.extract_all_settings()
 
     def extract_all_settings(self):
-        '''Extract all settings in:
-        self.conn, self.device_conf, self.pathes
+        '''Extract all settings in::
+
+        ``self.conn, self.device_conf, self.pathes``
         
-        Each file will be key in according settings:
-           settings/conn/conn_base.json -> self.conn['conn_base']'''
+        Each file will be key in according settings::
+
+           ``settings/conn/conn_base.json -> self.conn['conn_base']``'''
             
         def get_data(sfolder, sfile, hd_prefix=None):
             # print(sfile)
@@ -61,9 +63,15 @@ class Settings():
 
     def make_connection(self, name="conn_base"):
 
-        '''Fill connection object.
-        name is name (without extension) of conn in settings/conn:
-        Ex: name = conn_base for file settings/conn/conn_base.json'''
+        '''
+        DESCRIPTION:
+
+        Fill connection object.
+        
+        INPUTS:
+
+        - ``name`` - is name (without extension) of conn in ``settings/conn``::
+        Ex: name = conn_base for file ``settings/conn/conn_base.json``'''
 
         self.connection.fromDict(self.conn[name])
         self.connection.get_password()

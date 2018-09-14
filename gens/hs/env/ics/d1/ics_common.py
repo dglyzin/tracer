@@ -11,20 +11,21 @@ class GenCommon(GenBaseCommon):
 
     def set_params_for_interconnects(self, model, funcNamesStack):
         '''
-        DESCRIPTION:
-        Collect this parameters for template:
+        DESCRIPTION::
+
+        Collect this parameters for template::
         
-        ic.firstIndex
-        ic.secondIndex
-        ic.side
-        ic.ranges
-        ic.equationNumber
-        ic.equation
-        ic.funcName
-        ic.boundName
-        ic.blockNumber
-        ic.parsedValues
-        ic.original
+        ``ic.firstIndex``
+        ``ic.secondIndex``
+        ``ic.side``
+        ``ic.ranges``
+        ``ic.equationNumber``
+        ``ic.equation``
+        ``ic.funcName``
+        ``ic.boundName``
+        ``ic.blockNumber``
+        ``ic.parsedValues``
+        ``ic.original``
 
         '''
         # FOR FILL params.ics
@@ -222,7 +223,8 @@ class GenCommon(GenBaseCommon):
     
     def test(self, region, side_num, block):
         '''
-        DESCRIPTION:
+        DESCRIPTION::
+
         Test if region exist for this side.
         '''
         if side_num == 0:
@@ -234,8 +236,9 @@ class GenCommon(GenBaseCommon):
 
     def choice_equation_num(self, test, block):
         '''
-        DESCRIPTION:
-        Choice equation number from equationRegions
+        DESCRIPTION::
+
+        Choice equation number from ``equationRegions``
         if any satisfy the test, else choice default.
         '''
         for eRegion in block.equationRegions:

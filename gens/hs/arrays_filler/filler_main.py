@@ -29,7 +29,7 @@ class Filler():
     
     '''Transform envs to arrays.
     envs given by model
-    functionMaps from dom generator
+    ``functionMaps`` from dom generator
     delays.'''
     
     def __init__(self, model, functionMaps, delays=[]):
@@ -83,7 +83,7 @@ class Filler():
     def save_txt(self, fileName):
 
         '''only after
-        self.fill_arrays'''
+        ``self.fill_arrays``'''
 
         out = self.show()
 
@@ -93,7 +93,7 @@ class Filler():
     def save_bin(self, fileName, delays=[]):
 
         '''only after
-        self.fill_arrays'''
+        ``self.fill_arrays``'''
 
         logger.info("saving domain...")
 

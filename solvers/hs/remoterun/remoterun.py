@@ -77,7 +77,7 @@ def remoteProjectRun(settings, notebook=None):
 
     Inputs:
 
-    settings: Settings object, contained info about pathes
+    - ``settings`` - Settings object, contained info about pathes
               device_conf and connection in.
                 # make settings:
                 settings = Settings()
@@ -90,23 +90,23 @@ def remoteProjectRun(settings, notebook=None):
     params: # TODO: remove desc to other place
                     make settings file
 
-       continueEnabled: true if user wants to continue
+      :param continueEnabled: true if user wants to continue
           from computed file
 
-       continueFnameProvided: true if user wants to continue from
+      :param continueFnameProvided: true if user wants to continue from
           specific file,
           false if the last computed file to be used
 
-       continueFileName: ?
+      :param continueFileName: ?
        jobId: id of the task in the db
 
-       finishTimeProvided: true if user wants to override json value for
+      :param finishTimeProvided: true if user wants to override json value for
           finish time
-       finishTime:
-       debug: true if user wants to run small problem (10 min. max)
-       nortpng: ?
+      :param finishTime:
+      :param debug: true if user wants to run small problem (10 min. max)
+      :param nortpng: ?
     
-    device_conf_name: name of config file in settings/device_conf folder
+    :param device_conf_name: name of config file in settings/device_conf folder
     '''
     
     # prepare command line argumetnts for preprocessor

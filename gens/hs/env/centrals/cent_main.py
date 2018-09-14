@@ -6,11 +6,13 @@ from gens.hs.env.centrals.cent_dom import GenDom
 class Gen():
 
     '''
-    Fill self.params for centrals functions template:
-    (see self.set_params_for_centrals)
+    Fill self.params for centrals functions template::
 
-    Generate cpp:
-    (see get_out_for_centrals)
+    (see ``self.set_params_for_centrals``)
+
+    Generate cpp::
+
+    (see ``get_out_for_centrals``)
     '''
 
     def __init__(self):

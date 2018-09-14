@@ -10,24 +10,27 @@ class GenDom():
     def set_params_for_dom_centrals(self, model,
                                     namesAndNumbers, functionMaps):
         '''
-        DESCRIPTION:
-        DESCRIPTION:
-        Add bounds data for 1d dom to functionMaps dict.
+        DESCRIPTION::
+
+        Add bounds data for 1d dom to ``functionMaps`` dict.
         Mapping equations to block parts
         like
-         center: [  [ 1, xfrom, xto, yfrom, yto],
+         ``center: [  [ 1, xfrom, xto, yfrom, yto]``,
         means equation[1] for part
-         (xfrom, yfrom), (xto, yto)
+         ``(xfrom, yfrom), (xto, yto)``
 
         Inputs:
-        self.net.params from
-           bounds_common_1d.py: set_params_for_dom_bounds
 
-        namesAndNumbers from
-           array_common.py: set_params_for_array
-           cent_common.py: set_params_for_centrals
-           ics_common.py: set_params_for_interconnects
-           bounds_common.py: set_params_for_bounds
+        :param self.net.params: from::
+
+           ``bounds_common_1d.py: set_params_for_dom_bounds``
+
+        :param namesAndNumbers: from::
+
+           ``array_common.py: set_params_for_array``
+           ``cent_common.py: set_params_for_centrals``
+           ``ics_common.py: set_params_for_interconnects``
+           ``bounds_common.py: set_params_for_bounds``
 
         '''
         '''

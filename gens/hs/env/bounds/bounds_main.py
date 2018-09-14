@@ -5,11 +5,13 @@ from gens.hs.env.bounds.d1.bounds_d1_dom import GenDomD1
     
 class GenD1():
     '''
-    Fill self.params for bound 1d template:
-    (see self.set_params_for_bounds)
+    Fill ``self.params`` for bound 1d template::
 
-    Generate cpp:
-    (see get_out_for_bounds)
+    (see ``self.set_params_for_bounds``)
+
+    Generate cpp::
+
+    (see ``get_out_for_bounds``)
     '''
     def __init__(self):
         # common for cpp and dom:
@@ -23,11 +25,13 @@ class GenD1():
 
 class GenD2():
     '''
-    Fill self.params for bound 2d template:
+    Fill ``self.params`` for bound 2d template::
+
     (see self.set_params_for_bounds)
 
-    Generate cpp:
-    (see get_out_for_bounds)
+    Generate cpp::
+
+    (see ``get_out_for_bounds``)
     '''
     def __init__(self):
         # common for cpp and dom:

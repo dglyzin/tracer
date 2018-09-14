@@ -25,9 +25,8 @@ class Filler():
         
     def fillBinaryPlots(self):
         '''
-        Fill
-        self.plotAndResCountArr
-        self.plotAndResPeriodsArr
+        Fill ``self.plotAndResCountArr`` 
+        and ``self.plotAndResPeriodsArr``
         '''
         plotCount = len(self.model.plots)
         resCount = len(self.model.results)

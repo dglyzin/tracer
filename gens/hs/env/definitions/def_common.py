@@ -10,7 +10,8 @@ class GenCommon(GenBaseCommon):
 
     def set_params_for_definitions(self, model):
         '''
-        DESCRIPTION:
+        DESCRIPTION::
+
         Fill params for definitions 1d template.
         '''
         grid_cpp = model.grid.cpp

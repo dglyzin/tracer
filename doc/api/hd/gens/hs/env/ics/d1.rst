@@ -1,0 +1,36 @@
+d1 package
+==========
+
+.. automodule:: d1
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+d1\.ics\_common module
+----------------------
+
+.. automodule:: d1.ics_common
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+d1\.ics\_cpp\_rend module
+-------------------------
+
+.. automodule:: d1.ics_cpp_rend
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+d1\.ics\_dom module
+-------------------
+
+.. automodule:: d1.ics_dom
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+

@@ -4,11 +4,13 @@ from gens.hs.env.array.array_cpp_rend import GenCppRend
 
 class Gen():
     '''
-    Fill self.namesAndNumbers for array template:
-    (see self.set_params_for_array)
+    Fill ``self.namesAndNumbers`` for array template::
 
-    Generate cpp:
-    (see get_out_for_array)
+    (see ``self.set_params_for_array``)
+
+    Generate cpp::
+
+    (see ``get_out_for_array``)
     '''
 
     def __init__(self):

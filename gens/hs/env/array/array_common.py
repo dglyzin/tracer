@@ -10,12 +10,14 @@ class GenCommon(GenBaseCommon):
 
     def set_params_for_array(self, funcNamesStack):
         '''
-        DESCRIPTION:
-        factorize funcNames into blockNumber's classes
-        i.e. namesAndNumbers[blockNumber] = [names for blockNumber]
+        DESCRIPTION::
+
+        factorize ``funcNames`` into blockNumber's classes
+        i.e. ``namesAndNumbers[blockNumber] = [names for blockNumber]``
 
         Input:
-        funcNamesStack from all cpp func generators
+
+        :param funcNamesStack: from all cpp func generators
         (centrals, bounds, interconnects)
         '''
 
@@ -33,11 +35,13 @@ class GenCommon(GenBaseCommon):
 
     def get_number(self, funcName):
         '''
-        DESCRIPTION:
-        From funcName get blockNumber
+        DESCRIPTION::
 
-        EXAMPLE:
-        'Block0CentralFunction1' -> '0'
+        From ``funcName`` get ``blockNumber``
+
+        EXAMPLE::
+
+        ``'Block0CentralFunction1' -> '0'``
         '''
         # cut name Block from funcName
         tail = funcName[5:]

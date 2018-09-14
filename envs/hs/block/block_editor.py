@@ -71,7 +71,7 @@ class BlockEditor():
     def add_or_edit_side(self, side):
 
         '''Add or replace side in block.sides.
-        All block.boundRegions[side.side_num] will
+        All ``block.boundRegions[side.side_num]`` will
         be rewrited.'''
 
         index = self.edit_side(side)
@@ -83,7 +83,7 @@ class BlockEditor():
     def edit_side(self, side):
 
         '''Replace side to self.net.sides,
-        if side.side_num == self.net.sides[i] for
+        if ``side.side_num == self.net.sides[i]`` for
         some i. If side not found return None.'''
 
         # find side with side.side_num:
@@ -102,9 +102,9 @@ class BlockEditor():
 
     def add_side(self, side):
         
-        '''Add side to self.net.sides, if side whth
-        side.side_num not exist. If otherwise return
-        index of side in self.net.sizes.'''
+        '''Add ``side`` to ``self.net.sides``, if ``side``
+        whth ``side.side_num`` not exist. If otherwise return
+        index of side in ``self.net.sizes``.'''
         
         # if side exist:
         if side.side_num in self.net.sides.keys():
@@ -128,15 +128,15 @@ class BlockEditor():
 
     def replace_block_regions(self, side):
 
-        '''Add region pointer from side to
-        block.boundRegions[side_num]'''
+        '''Add region pointer from ``side`` to
+        ``block.boundRegions[side_num]``'''
 
         side_num = side.side_num
         self.net.boundRegions[side_num] = side.bRegions
         
     def sinch_side_regions_depricated(self, side):
 
-        '''Add regions from side to block and backward
+        '''Add regions from ``side`` to block and backward
         (if they not exist alredy)'''
 
         side_num = side.side_num
@@ -167,10 +167,10 @@ class BlockEditor():
         
     def add_bound_region(self, bRegion):
 
-        '''Add region to block.boundRegions[side_num]
+        '''Add region to ``block.boundRegions[side_num]``
         and to according side and vertex. Side must exist.
-        if dim == 1 Side not used (because side is only
-        one (side_num=2) and it's stores eRegions interval)'''
+        if ``dim == 1`` Side not used (because side is only
+        one (``side_num=2``) and it's stores eRegions interval)'''
         
         side_num = bRegion.side_num
 

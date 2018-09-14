@@ -21,10 +21,10 @@ class GenBaseDomCommon():
     def set_params_for_dom_common(self, dim, model):
         
         '''
-        Add bounds data for dom to functionMaps dict.
+        Add bounds data for dom to ``functionMaps`` dict::
 
-        self.net.params from
-        self.net.common.set_params_for_bounds'''
+        ``self.net.params from``
+        ``self.net.common.set_params_for_bounds``'''
 
         functionMaps = self.params.functionMaps
 

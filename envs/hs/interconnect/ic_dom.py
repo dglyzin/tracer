@@ -62,10 +62,10 @@ class icDom():
     def ic_2d_fill(self):
         
         '''Create interconnect data for dom file (icArr1, icArr2).
-        Add interconnect parameters to self:
-        N, M - axis of interconnect (ex: M = Y, M = Z)
-        icLenM, icLenN - count of cells in axis N, M.
-        b2xoff - begining of interconnect in block 2
+        Add interconnect parameters to ``self``:
+        ``N, M`` - axis of interconnect (ex: ``M = Y, M = Z``)
+        ``icLenM, icLenN`` - count of cells in axis N, M.
+        ``b2xoff`` - begining of interconnect in block 2
         
         '''
         

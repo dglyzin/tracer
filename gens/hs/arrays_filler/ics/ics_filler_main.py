@@ -36,10 +36,13 @@ class Filler():
 
     def fillBinaryInterconnects(self):
 
-        '''Fill
-        self.icCount
-        self.icCountArr
-        self.icList'''
+        '''
+        Fill::
+
+            ``self.icCount``
+            ``self.icCountArr``
+            ``self.icList``
+        '''
 
         self.icCount = len(self.model.interconnects)
         self.icCountArr = np.zeros(1, dtype=np.int32)

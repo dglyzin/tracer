@@ -41,7 +41,7 @@ from gens.hs.tests.tests_gen_1d import test_gen_1d
 # for logger
 from tests.tests_common import test_logger as test_logger_from_submodule
 
-from math_space.common.equation.tests import test_all as tests_equation
+from math_space.common.env.equation.tests import test_all as tests_equation
 
 import os
 import sys
@@ -53,7 +53,8 @@ from tests.HTMLTestRunner import HTMLTestRunner
 
 import traceback
 
-logFileName = 'tests/tester.log'
+hd_path = os.path.abspath('../..')
+logFileName = os.path.join(hd_path, 'tests/tester.log')
 loggerName = 'tests.tester'  # __name__
 
 # BUG: because of bug in logger this value has no effect:

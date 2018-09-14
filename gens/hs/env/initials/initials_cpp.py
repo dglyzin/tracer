@@ -22,17 +22,18 @@ class GenCpp():
 
     def set_params_for_initials(self, model):
         '''
-        DESCRIPTION:
+        DESCRIPTION::
         
-        Collecting this parameters:
+        Collecting this parameters::
 
-        self.net.params.dim
-        self.net.params.blocks
+            ``self.net.params.dim``
+            ``self.net.params.blocks``
 
-        USED PARAMETERS:
-        model.blocks
-        model.initials
-        model.bounds
+        USED PARAMETERS::
+
+            ``model.blocks``
+            ``model.initials``
+            ``model.bounds``
         '''
         # FOR FILL model.blocks
         for block in model.blocks:

@@ -8,10 +8,14 @@ def create_logger(logerName, logFileName, consoleLevel='None'):
     Create logger that use both steam and file.
     That settings will be irrelevant to modules structure.
     For example
-    in module:
+    in module::
+
      logger = logging.getLogger('parentName')
-    in submodule
+
+    in submodule::
+
      logger = logging.getLogger('parentName.submoduleName')
+
     then logger in submodule will use same settings as
     parent.
 

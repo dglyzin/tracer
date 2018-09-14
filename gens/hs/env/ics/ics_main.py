@@ -5,11 +5,13 @@ from gens.hs.env.ics.d1.ics_dom import GenDomD1
     
 class GenD1():
     '''
-    Fill self.params for ics template:
-    (see self.set_params_for_interconnects)
+    Fill ``self.params`` for ics template::
 
-    Generate cpp:
-    (see get_out_for_interconnects)
+    (see ``self.set_params_for_interconnects``)
+
+    Generate cpp::
+
+    (see ``get_out_for_interconnects``)
     '''
     def __init__(self):
         # common for cpp and dom:
@@ -23,11 +25,13 @@ class GenD1():
 
 class GenD2():
     '''
-    Fill self.params for ics template:
-    (see self.set_params_for_interconnects)
+    Fill ``self.params`` for ics template::
 
-    Generate cpp:
-    (see get_out_for_interconnects)
+    (see ``self.set_params_for_interconnects``)
+
+    Generate cpp::
+
+    (see ``get_out_for_interconnects``)
     '''
     def __init__(self):
         # common for cpp and dom:

@@ -26,18 +26,22 @@ class GenDomD1():
     def set_params_for_dom_interconnects(self, model,
                                          namesAndNumbers, functionMaps):
         '''
-        DESCRIPTION:
+        DESCRIPTION::
+
         Add ics data for 1d dom to functionMaps dict.
 
         Inputs:
-        self.net.params from
-           ics_common.py: set_params_for_dom_interconnects
 
-        namesAndNumbers from
-           array_common.py: set_params_for_array
-           cent_common.py: set_params_for_centrals
-           ics_common.py: set_params_for_interconnects
-           bounds_common.py: set_params_for_bounds
+        :param self.net.params:  from::
+
+           ``ics_common.py: set_params_for_dom_interconnects``
+
+        :param namesAndNumbers:  from::
+
+           ``array_common.py: set_params_for_array``
+           ``cent_common.py: set_params_for_centrals``
+           ``ics_common.py: set_params_for_interconnects``
+           ``bounds_common.py: set_params_for_bounds``
         '''
         # interconnect
         # logger.debug("namesAndNumbers = %s" % (namesAndNumbers[0]))

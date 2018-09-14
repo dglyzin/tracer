@@ -37,12 +37,14 @@ class Filler():
 
     def fillBinaryBlocks(self):
         '''
-        DESCRIPTION:
-        Fill
-        self.blockCountArr
-        self.blockPropArrList
-        self.blockInitFuncArrList
-        self.blockCompFuncArrList
+        DESCRIPTION::
+
+        Fill::
+
+            self.blockCountArr
+            self.blockPropArrList
+            self.blockInitFuncArrList
+            self.blockCompFuncArrList
         '''
         logger.info("Welcome to Blocks Data filler")
         model = self.model

@@ -40,16 +40,15 @@ class GenD1():
     def gen_cpp(self):
 
         '''
-        DESCRIPTION:
+        DESCRIPTION::
+
         Generate cpp for 1d.
 
-        Inputs:
-        model either fileName of model obj.
+        out will be in::
 
-        out will be in:
-           self.cpp_out
-           self.funcNamesStack
-           self.namesAndNumbers
+           ``self.cpp_out``
+           ``self.funcNamesStack``
+           ``self.namesAndNumbers``
         '''
         model = self.model
  
@@ -128,14 +127,13 @@ class GenD1():
 
     def gen_dom(self):
         '''
-        DESCRIPTION:
+        DESCRIPTION::
+
         Generate funcs indexes and regions
         for 1d env.
 
-        Inputs:
-        model either fileName of model obj.
-
         out will be in:
+
            self.functionMaps
         '''
         model = self.model

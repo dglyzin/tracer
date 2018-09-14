@@ -5,8 +5,8 @@ class GenBaseCommon():
     def fill_func_names_stack(self, funcNamesStack,
                               funcNamesStackLocal):
 
-        '''fill self.funcNamesStack that will be used
-        for funcNames in cpp templates and for indexes
+        '''fill ``self.funcNamesStack`` that will be used
+        for ``funcNames`` in cpp templates and for indexes
         in dom file'''
 
         # check if funcNamesStack alredy exist:
@@ -28,7 +28,8 @@ class GenBaseCommon():
 
 class Params:
     '''
-    DESCRIPTION:
+    DESCRIPTION::
+
     Represent param/s of some
     object.
     

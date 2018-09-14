@@ -10,13 +10,16 @@ class Filler():
 
     def fill_delays(self):
 
-        '''Fill
-        self.problemTypeArr
-        
-        if len(delays) > 0:
+        '''
+        Fill ``self.problemTypeArr``
+
+        if ``len(delays) > 0``:
+           
+           also fill:
            self.problemDelaysLen
            self.problemDelaysList
-           self.maxStatesCountArr'''
+           self.maxStatesCountArr
+        '''
 
         delays = self.delays
 

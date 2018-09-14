@@ -10,8 +10,9 @@ class GenCppRend(GenBaseRend):
 
     def get_out_for_array(self):
         '''
-        DESCRIPTION:
-        params.set_params_for_array must be called first.
+        DESCRIPTION::
+
+        ``params.set_params_for_array`` must be called first.
         '''
         template = self.env.get_template('array.template')
         params = self.net.params
