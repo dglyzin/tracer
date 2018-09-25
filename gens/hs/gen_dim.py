@@ -4,11 +4,13 @@ from gens.hs.env.definitions.def_main import Gen as GenDef
 from gens.hs.env.initials.initials_main import Gen as GenInit
 from gens.hs.env.params.params_main import Gen as GenParams
 from gens.hs.env.centrals.cent_main import Gen as GenCent
-from gens.hs.env.bounds.bounds_main import GenD1 as GenBounds
+from gens.hs.env.bounds.bounds_main import GenD1 as GenBoundsD1
+from gens.hs.env.bounds.bounds_main import GenD2 as GenBoundsD2
+
 from gens.hs.env.ics.ics_main import GenD1 as GenIcs
 from gens.hs.env.array.array_main import Gen as GenArr
 
-from gens.hs.arrays_filler.filler_main import Filler
+# from gens.hs.arrays_filler.filler_main import Filler
 
 import logging
 
@@ -26,14 +28,15 @@ logger.setLevel(level=log_level)
 '''
 
 
-class GenD1():
+class GenBase():
 
-    def __init__(self, net):
+    def __init__(self, net, dim):
 
         self.net = net
 
         self.postproc = Postproc(self)
 
+        self.dim = dim
         self.model = net.model
         self.delays = []
 
@@ -42,7 +45,7 @@ class GenD1():
         '''
         DESCRIPTION::
 
-        Generate cpp for 1d.
+        Generate cpp for 1d/2d.
 
         out will be in::
 
@@ -72,14 +75,20 @@ class GenD1():
         gen_cent = GenCent()
         gen_cent.common.set_params_for_centrals(model, funcNamesStack)
 
-        # out and funcNames for bounds:
-        gen_bounds = GenBounds()
-        gen_bounds.common.set_params_for_bounds(model, funcNamesStack)
-
         # out and funcNames for ics:
-        gen_ics = GenIcs()
-        gen_ics.common.set_params_for_interconnects(model, funcNamesStack)
+        if self.dim == 1:
+            gen_ics = GenIcs()
+            gen_ics.common.set_params_for_interconnects(model, funcNamesStack)
 
+        # out and funcNames for bounds:
+        if self.dim == 1:
+            gen_bounds = GenBoundsD1()
+        elif self.dim == 2:
+            gen_bounds = GenBoundsD2()
+
+        gen_bounds.common.set_params_for_bounds(model, funcNamesStack,
+                                                ics=gen_ics.params)
+        
         ### FOR remove duplicates:
         tmp = []
         for funcName in funcNamesStack:
@@ -99,8 +108,9 @@ class GenD1():
         namesAndNumbers = gen_arr.params.namesAndNumbers
 
         # for postproc:
-        delays = self.postproc.postporc_delays([gen_cent,
-                                                gen_bounds, gen_ics])
+        delays = self.postproc.postporc_delays([gen_cent.params,
+                                                gen_bounds.params.bounds,
+                                                gen_ics.params])
         logger.info("delays:")
         logger.info(delays)
         sizes_delays = dict([(len(delays[var]), delays[var])
@@ -118,7 +128,8 @@ class GenD1():
         out += gen_params.cpp_render.get_out_for_parameters()
         out += gen_cent.cpp_render.get_out_for_centrals()
         out += gen_bounds.cpp_render.get_out_for_bounds()
-        out += gen_ics.cpp_render.get_out_for_interconnects()
+        if self.dim == 1:
+            out += gen_ics.cpp_render.get_out_for_interconnects()
         out += gen_arr.cpp_render.get_out_for_array()
 
         self.cpp_out = out
@@ -130,17 +141,22 @@ class GenD1():
         DESCRIPTION::
 
         Generate funcs indexes and regions
-        for 1d env.
+        for 1d/2d env.
 
         out will be in:
 
-           self.functionMaps
+           ``self.functionMaps``
         '''
         model = self.model
 
         gen_cent = GenCent()
-        gen_bounds = GenBounds()
-        gen_ics = GenIcs()
+        if self.dim == 1:
+            gen_bounds = GenBoundsD1()
+            gen_ics = GenIcs()
+            
+        elif self.dim == 2:
+            gen_bounds = GenBoundsD2()
+            
         gen_array = GenArr()
 
         # FOR funcNameStack
@@ -150,9 +166,10 @@ class GenD1():
         logger.debug("funcNamesStack after cent:")
         logger.debug(funcNamesStack)
 
-        gen_ics.common.set_params_for_interconnects(model, funcNamesStack)
-        logger.debug("funcNamesStack after ics:")
-        logger.debug(funcNamesStack)
+        if self.dim == 1:
+            gen_ics.common.set_params_for_interconnects(model, funcNamesStack)
+            logger.debug("funcNamesStack after ics:")
+            logger.debug(funcNamesStack)
 
         (gen_bounds.common
          .set_params_for_bounds(model,
@@ -199,10 +216,20 @@ class GenD1():
         self.namesAndNumbers = namesAndNumbers
         self.functionMaps = functionMaps
 
+    '''
     def gen_arrays(self):
 
         self.gen_dom()
         self.filler = Filler(self.model, self.functionMaps, self.delays)
         self.filler.fill_arrays()
+    '''
         
-        
+
+class GenD1(GenBase):
+    def __init__(self, net):
+        GenBase.__init__(self, net, 1)
+
+
+class GenD2(GenBase):
+    def __init__(self, net):
+        GenBase.__init__(self, net, 2)

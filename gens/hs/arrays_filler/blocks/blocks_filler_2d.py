@@ -24,6 +24,18 @@ class Filler():
         self.net = net
 
     def fill2dInitFuncs(self, funcArr, block, blockSize):
+
+        '''Fill 2d initial function array.
+        
+        Inputs:
+        
+        - ``funcArr`` -- array to be filled in.
+
+        - ``block`` -- block to work with.
+
+        - ``blockSile`` -- list [xc: block width, yc: block heigth].
+        '''
+
         logger.info("Filling 2d initial function array.")
 
         model = self.net.model
@@ -39,6 +51,7 @@ class Filler():
 
         logger.info("2 fill user-defined conditions")
         logger.info("2.1 collect user-defines initial conditions")
+
         # that are used in this block
         usedInitNums = [block.defaultInitial]
         for initReg in block.initialRegions:
@@ -98,6 +111,21 @@ class Filler():
                     funcArr[idxY, xstart:xend] = initFuncNum
 
     def fill2dCompFuncs(self, funcArr, block, functionMap, blockSize):
+
+        '''Fill 2d main function array.
+
+        Inputs:
+
+        - ``funcArr`` -- array to be filled in.
+
+        - ``block`` -- block to work with.
+
+        - ``functionMap`` -- map from func type to index \
+        (in funcName list?).
+
+        - ``blockSile`` -- list [xc: block width, yc: block heigth].
+    
+        '''
         logger.info("Filling 2d main function array.")
         
         logger.debug("Function mapping for this block:")

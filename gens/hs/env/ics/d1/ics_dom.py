@@ -52,7 +52,7 @@ class GenDomD1():
         logger.debug("len(ics) = %s" % (len(ics)))
 
         for ic in ics:
-            sideName = "side"+str(ic.side)
+            sideName = "side"+str(ic.side_num)
             
             # count of interconnects for each block
             idx = namesAndNumbers[ic.blockNumber].index(ic.funcName)

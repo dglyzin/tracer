@@ -27,20 +27,22 @@ class GenDomD1(GenBaseDomCommon):
                                   namesAndNumbers, functionMaps):
         '''
         DESCRIPTION:
-        Add bounds data for 1d dom to functionMaps dict.
+
+        Add bounds data for 1d dom to ``functionMaps`` dict.
 
         Inputs:
-        self.net.params from
-           bounds_common_1d.py: set_params_for_dom_bounds
 
-        namesAndNumbers from
-           array_common.py: set_params_for_array
-           cent_common.py: set_params_for_centrals
-           ics_common.py: set_params_for_interconnects
-           bounds_common.py: set_params_for_bounds
+        - ``self.net.params`` -- from \
+        ``self.net.common.set_params_for_bounds``
 
-        namesAndNumbers is copy of pBoundFuncs of
-        getBlockBoundFuncArray function.
+        - ``namesAndNumbers`` -- from \
+           ``array_common.py: set_params_for_array``
+           ``cent_common.py: set_params_for_centrals``
+           ``ics_common.py: set_params_for_interconnects``
+           ``bounds_common.py: set_params_for_bounds``
+
+        ``namesAndNumbers`` is copy of ``pBoundFuncs`` of
+        ``getBlockBoundFuncArray`` function.
         It contain func names at according position
         and used for getting right number of equations in domain file.
         '''
@@ -49,18 +51,4 @@ class GenDomD1(GenBaseDomCommon):
         self.params.functionMaps = functionMaps
 
         self.set_params_for_dom_common(dim, model)
-
-    def _get_idx(self, model, bound):
-        '''
-        DESCRIPTION:
-        Get idx for bound.side. For 1d.
-
-        RETURN:
-        equation number
-        '''
-        namesAndNumbers = self.params.namesAndNumbers
-        eq_num = namesAndNumbers[bound.blockNumber].index(bound.funcName)
-
-        idx = eq_num
-        return(idx)
 

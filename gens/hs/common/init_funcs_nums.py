@@ -21,7 +21,6 @@ class InitFuncsNums():
         self.usedInitNums_di = usedInitNums[:]
         logger.debug("Used for init nums defaultInitial:")
         logger.debug(self.usedInitNums_di)
-
         # END FOR
 
         # FOR initialRegions:
@@ -33,7 +32,7 @@ class InitFuncsNums():
         self.usedInitNums_ir = usedInitNums[:]
         logger.debug("Used for init nums initial region:")
         logger.debug(self.usedInitNums_ir)
-        # END FOR        
+        # END FOR
 
         # FOR dirichlet boundRegions:
         self.usedIndices = len(usedInitNums)
@@ -59,7 +58,7 @@ class InitFuncsNums():
 
     def get_dirichlet_bound_regions(self, boundNumber):
         
-        '''for initFuncArray indexes
+        '''for ``initFuncArray`` indexes
         factorization dirichlet/undirichlet
         '''
         return((self.usedIndices + self.usedDirBoundNums.index(boundNumber)))

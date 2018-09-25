@@ -40,7 +40,8 @@ class ModelIO():
         '''project_folder is relative path to project folder where
         .json file located (including problems folder).
 
-        Ex: problems/1dTests/test1d_two_blocks0
+        Ex: ``problems/1dTests/test1d_two_blocks0``
+
            for
               problems/1dTests/test1d_two_blocks0/test1d_two_blocks0.json
            '''

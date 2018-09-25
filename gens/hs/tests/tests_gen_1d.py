@@ -1,4 +1,4 @@
-from gens.hs.gen_1d import GenD1
+from gens.hs.gen_dim import GenD1
 from gens.hs.gen_main import Gen
 
 from settings.settings_main import Settings
@@ -28,6 +28,9 @@ def test_gen_1d(model='problems/test1d_two_blocks0',
         model = oModel
     else:
         model = model
+
+    print("model:")
+    print(model.base.projectName)
 
     # settings:
     settings = Settings()

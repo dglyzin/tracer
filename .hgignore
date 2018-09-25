@@ -25,4 +25,5 @@ ManualHeat/*
 *~
 *.zip
 *.out
+doc/api/_build/*
 TAGS

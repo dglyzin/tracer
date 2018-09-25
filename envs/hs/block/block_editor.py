@@ -37,7 +37,9 @@ class BlockEditor():
 
         self.net.vertexs = {}
         self.net.sides = {}
-        
+        self.net.edges = self.net.sides
+        self.net.nodes = self.net.vertexs
+
     def fill_regions(self, bRegions, eRegions, iRegions):
 
         '''Fill all regions. All sides must exist.'''

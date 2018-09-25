@@ -5,14 +5,14 @@ class Postproc():
     def __init__(self, net):
         self.net = net
         
-    def postporc_delays(self, gens):
+    def postporc_delays(self, params_of_gens):
 
         '''Sinch delays in all equations in all systems.
         Change gen.params.parsedValues for gen in gens.
         Return delays data for each variable (U, V, ...)'''
 
-        all_params = reduce(lambda acc, x: acc+[param for param in x.params],
-                            gens, [])
+        all_params = reduce(lambda acc, x: acc+[param for param in x],
+                            params_of_gens, [])
 
         eSystems = [param.equation for param in all_params]
 

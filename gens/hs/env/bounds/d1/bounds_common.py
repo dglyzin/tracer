@@ -1,10 +1,27 @@
 from gens.hs.env.base.base_common import GenBaseCommon
+from gens.hs.env.bounds.common.bounds_common_cpp import GenCppCommon
+
 from gens.hs.env.base.base_common import Params
 from math_space.common.someFuncs import determineNameOfBoundary
-from math_space.common.env.equation.equation import Equation
+
+import logging
 
 
-class GenCommon(GenBaseCommon):
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+logger = logging.getLogger('bounds.bounds_common')
+
+# if using directly uncoment that:
+'''
+# create logger
+log_level = logging.DEBUG  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('ics_dom')
+logger.setLevel(level=log_level)
+'''
+
+
+class GenCommon(GenBaseCommon, GenCppCommon):
     
     def __init__(self, net):
         self.net = net
@@ -14,129 +31,171 @@ class GenCommon(GenBaseCommon):
                               ics=[]):
         '''
         DESCRIPTION:
-        Collect this parameters for template:
 
-            bound.blockNumber,
-            bound.boundName,
-            bound.funcName,
-            bound.parsedValues
+        Collect this parameters for template::
 
-        Collect this parameters for dom:
+            ``bound.blockNumber``,
+            ``bound.boundName``,
+            ``bound.funcName``,
+            ``bound.parsedValues``
+            ``bound.original``
 
-            bound.dim
-            bound.btype = btype
-            bound.side = side_num
-            bound.boundNumber = boundNumber
-            bound.equationNumber = equationNum
-            bound.equation = eSystem
-            bound.block = block
-            bound.blockNumber = blockNumber
+        Collect this parameters for dom::
+
+            ``bound.dim``
+            ``bound.btype = btype``
+            ``bound.side = side_num``
+            ``bound.boundNumber = boundNumber``
+            ``bound.equationNumber = equationNum``
+            ``bound.equation = eSystem``
+            ``bound.block = block``
+            ``bound.blockNumber = blockNumber``
 
         ics used for checking if interconnect for
         this side exist. So this function must be used
         after set_params_for_dom_interconnects.
+
+        # side: <0 -----side 2------ 1>
         '''
         # self.params = []
         self.net.params = Params()
+        self.net.params.bounds = Params()
+        self.net.params.bounds_edges = Params()
 
-        for blockNumber, block in enumerate(model.blocks):
-            # side: <0 -----side 2------ 1>
+        params = [self.make_bound_param(model, block.vertexs[vertex_num])
+                  for block in model.blocks
+                  for vertex_num in block.vertexs
+                  if not self.check_ic_exist((block.vertexs[vertex_num]
+                                              .sides_nums[0]),
+                                             block.blockNumber, ics)]
+        self.net.params.bounds.extend(params)
+        self.net.params.bounds_edges.extend(params)
+
+        logger.debug("bounds params:")
+        logger.debug(params)
+        
+        '''
+        # for blockNumber, block in enumerate(model.blocks):
+        for block in model.blocks:
+
+            blockNumber = block.blockNumber
 
             # sides_nums = [0, 1]
-            for side_num in [0, 1]:
+            # for side_num in [0, 1]:
+            for vertex_num in block.vertexs:
+                vertex = block.vertexs[vertex_num]
+
+                # for 1d there is only one side:
+                side_num = vertex.sides_nums[0]
                 # side = block.sides[2]
+                if self.check_ic_exist(side_num, blockNumber, ics):
+                    continue
 
-                # check if interconnect for this side exist
-                # if 'ics' in self.__dict__.keys():
-                if len(ics) > 0:
-                    icSides = [ic.side for ic in ics
-                               if ic.blockNumber == blockNumber]
-                    if side_num in icSides:
-                        # if exist then no boundary needed
-                        #logger.debug('icSides = %s' % str(icSides))
-                        #logger.debug('blockNumber = %s' % str(blockNumber))
-                        #logger.debug('side_num = %s' % str(side_num))
-                        continue
-
-                # find equation number for side or use default
-                regsEqNums = [eqReg.equationNumber
-                              for eqReg in block.equationRegions
-                              if self.test(block, eqReg, side_num)]
-                equationNum = (regsEqNums[0] if len(regsEqNums) > 0
-                               else block.defaultEquation)
-                eSystem = model.equations[equationNum].copy()
-
-                # find bound region for side or use default
-                regionsForSide = [bRegion
-                                  for k in block.boundRegions
-                                  for bRegion in block.boundRegions[k]
-                                  if bRegion.side_num == side_num]
-
-                # if exist special region for that side
-                if len(regionsForSide) > 0:
-                    region = regionsForSide[0]
-                    boundNumber = region.boundNumber
-                    bound = model.bounds[boundNumber]
-                    
-                    # for Dirichlet bound
-                    if bound.btype == 0:
-                        args = (model, blockNumber, side_num,
-                                boundNumber, equationNum)
-                        func = self._get_func_for_dirichlet(*args)
-                    
-                    # for Neumann bound
-                    elif bound.btype == 1:
-                        args = (model, blockNumber, side_num,
-                                boundNumber, equationNum)
-                        func = self._get_func_for_neumann(*args)
-
-                    funcName = func[0]
-                    border_values = list(func[1])
-                    btype = bound.btype
-                else:
-                    # if not, use default
-
-                    args = (eSystem, blockNumber, side_num,
-                            equationNum)
-                    func = self._get_func_default(*args)
-
-                    funcName = func[0]
-                    border_values = func[1]
-                    btype = 1
-                    boundNumber = -1
-
-                # set up equation:
-                self._set_eq_base_params(eSystem, model.dimension,
-                                         blockNumber)
-                self._set_eq_spec_params(model, block, eSystem, btype,
-                                         side_num, border_values)
-                parsed = self._get_eq_cpp(eSystem)
-
-                # FOR collect template data:
-                bParams = Params()
-                bParams.dim = model.dimension
-                bParams.values = border_values
-                bParams.btype = btype
-                bParams.side = side_num
-                bParams.boundNumber = boundNumber
-                bParams.equationNumber = equationNum
-                bParams.equation = eSystem
-                bParams.funcName = funcName
-                bParams.block = block
-                bParams.blockNumber = blockNumber
-
-                # in comment
-                bParams.boundName = determineNameOfBoundary(side_num)
-                bParams.parsedValues = parsed
-                bParams.original = [e.sent for e in eSystem.eqs]
+                bParams = self.make_bounds(model, vertex)
                 self.net.params.append(bParams)
-                # END FOR
-        
+        '''
+
         # FOR FuncArray
-        funcNamesStackLocal = [bound.funcName for bound in self.net.params]
+        funcNamesStackLocal = [bound.funcName
+                               for bound in self.net.params.bounds]
+
+        logger.debug("funcNamesStackLocal:")
+        logger.debug(funcNamesStackLocal)
+
         self.fill_func_names_stack(funcNamesStack, funcNamesStackLocal)
         # END FOR
 
+    def make_bound_param(self, model, vertex):
+
+        block = vertex.block
+        blockNumber = vertex.block.blockNumber
+
+        # for 1d there is only one side:
+        side_num = vertex.sides_nums[0]
+
+        # find equation number for side or use default
+        equationNum = vertex.equationNumber
+        '''
+        regsEqNums = [eqReg.equationNumber
+                      for eqReg in block.equationRegions
+                      if self.test(block, eqReg, side_num)]
+        equationNum = (regsEqNums[0] if len(regsEqNums) > 0
+                       else block.defaultEquation)
+        '''
+        eSystem = model.equations[equationNum].copy()
+
+        # find bound region for side or use default
+        boundNumber = vertex.boundNumber
+        '''
+        regionsForSide = [bRegion
+                          for k in block.boundRegions
+                          for bRegion in block.boundRegions[k]
+                          if bRegion.side_num == side_num]
+        '''
+
+        # if exist special region for that side
+        # if len(regionsForSide) > 0:
+        if boundNumber is not None:
+            # region = block.boundsRegions[boundNumber]
+            # region = regionsForSide[0]
+            # boundNumber = region.boundNumber
+
+            bound = model.bounds[boundNumber]
+
+            args = (model, blockNumber, side_num,
+                    boundNumber, equationNum)
+
+            # for Dirichlet bound
+            if bound.btype == 0:
+                func = self.get_func_for_dirichlet(*args)
+
+            # for Neumann bound
+            elif bound.btype == 1:
+                func = self.get_func_for_neumann(*args)
+
+            funcName = func[0]
+            border_values = list(func[1])
+            btype = bound.btype
+        else:
+            # if not, use default
+
+            args = (eSystem, blockNumber, side_num,
+                    equationNum)
+            func = self.get_func_default(*args)
+
+            funcName = func[0]
+            border_values = func[1]
+            btype = 1
+            boundNumber = -1
+
+        args = (eSystem, model, blockNumber, btype,
+                side_num, border_values)
+        parsed = self.parse_equations(*args)
+
+        # FOR collect template data:
+        bParams = Params()
+        bParams.dim = model.dimension
+        bParams.values = border_values
+        bParams.btype = btype
+        bParams.side_num = side_num
+        bParams.boundNumber = boundNumber
+        bParams.equationNumber = equationNum
+        bParams.equation = eSystem
+        bParams.funcName = funcName
+        bParams.block = block
+        bParams.blockNumber = blockNumber
+        logger.debug("bParams.funcName")
+        logger.debug(bParams.funcName)
+        logger.debug("bParams.side_num")
+        logger.debug(bParams.side_num)
+        # in comment
+        bParams.boundName = determineNameOfBoundary(side_num)
+        bParams.parsedValues = parsed
+        bParams.original = [e.sent for e in eSystem.eqs]
+        # END FOR
+
+        return(bParams)
+        
     def test(self, block, region, side_num):
         '''
         DESCRIPTION:
@@ -148,91 +207,3 @@ class GenCommon(GenBaseCommon):
         else:
             # test for right side
             return(region.xto == block.size.sizeX)
-
-    def _get_func_for_dirichlet(self, model, blockNumber, side_num,
-                                boundNumber, equationNumber):
-        
-        '''Generate func names and get values for Dirichlet'''
-
-        funcName = ("Block" + str(blockNumber)
-                    + "Dirichlet__side" + str(side_num)
-                    + "_bound" + str(boundNumber)
-                    + "__Eqn" + str(equationNumber))
-
-        outputValues = list(model.bounds[boundNumber].derivative)
-
-        return((funcName, outputValues))
-
-    def _get_func_for_neumann(self, model, blockNumber, side_num,
-                              boundNumber, equationNumber):
-
-        '''Generate func names and get values for Neumann'''
-
-        funcName = ("Block" + str(blockNumber)
-                    + "Neumann__side" + str(side_num)
-                    + "_bound" + str(boundNumber)
-                    + "__Eqn" + str(equationNumber))
-        outputValues = list(model.bounds[boundNumber].values)
-            
-        # special for Neumann bound
-        if side_num == 0 or side_num == 2:
-            for idx, value in enumerate(outputValues):
-                outputValues.pop(idx)
-                outputValues.insert(idx, '-(' + value + ')')
-
-        return((funcName, outputValues))
-
-    def _get_func_default(self, equation, blockNumber, side_num,
-                          equationNumber):
-
-        '''Generate func names and get values for default'''
-
-        funcName = ("Block" + str(blockNumber)
-                    + "DefaultNeumann__side"
-                    + str(side_num)
-                    + "__Eqn" + str(equationNumber))
-        values = len(equation.eqs) * ['0.0']
-        return((funcName, values))
-
-    def _set_eq_base_params(self, eSystem, dim, blockNumber):
-        eSystem.cpp.parse()
-        eSystem.cpp.set_default()
-        eSystem.cpp.set_dim(dim=dim)
-        eSystem.cpp.set_blockNumber(blockNumber)
-        
-    def _set_eq_spec_params(self, model, block, eSystem, btype,
-                            side_num, border_values):
-        '''parse border values:
-        for derivOrder = 1:
-           du/dx = bound.value[i]
-        for derivOrder = 2:
-           left border
-              ddu/ddx = 2*(u_{1}-u_{0}-dy*bound.value[i])/(dx^2)
-           right border
-              ddu/ddx = 2*(u_{n-1}-u_{n}-dy*bound.value[i])/(dx^2)
-        '''
-
-        cellsize = block.size.get_cell_size(model)
-        shape = [cellsize/float(model.grid.gridStepX),
-                 cellsize/float(model.grid.gridStepY),
-                 cellsize/float(model.grid.gridStepZ)]
-        dim = block.size.dimension
-        
-        # parse border values:
-        for i, bv in enumerate(border_values):
-            ebv = Equation(bv)
-            ebv.parser.parse()
-            ebv.replacer.cpp.editor.set_default()
-            ebv.replacer.cpp.editor.set_dim(dim=dim)
-            ebv.replacer.cpp.editor.set_shape(shape=shape)
-            
-            ebv_cpp = ebv.replacer.cpp.make_cpp()
-            editor = eSystem.eqs[i].replacer.cpp.editor
-            editor.set_diff_type(diffType='pure',
-                                 diffMethod='special',
-                                 btype=btype, side=side_num,
-                                 func=ebv_cpp)
-            
-    def _get_eq_cpp(self, eSystem):
-        return([eq.replacer.cpp.make_cpp() for eq in eSystem.eqs])
-        # return([eq.flatten('cpp') for eq in eSystem.eqs])

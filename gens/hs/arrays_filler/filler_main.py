@@ -32,8 +32,15 @@ class Filler():
     ``functionMaps`` from dom generator
     delays.'''
     
-    def __init__(self, model, functionMaps, delays=[]):
+    def __init__(self, model, functionMaps, funcNamesStack,
+                 namesAndNumbers, delays=[]):
+
         self.model = model
+
+        # for debug in dom.txt:
+        self.functionMaps = functionMaps
+        self.funcNamesStack = funcNamesStack
+        self.namesAndNumbers = namesAndNumbers
 
         self.fArray = CommonFiller(model)
         self.fBlocks = BlocksFiller(model, functionMaps)
@@ -86,6 +93,12 @@ class Filler():
         ``self.fill_arrays``'''
 
         out = self.show()
+        out += "\n\n functionMaps: \n"
+        out += str(self.functionMaps)
+        out += "\n\n funcNamesStack: \n"
+        out += str(self.funcNamesStack)
+        out += "\n\n namesAndNumbers: \n"
+        out += str(self.namesAndNumbers)
 
         with open(fileName, 'w') as f:
             f.write(out)

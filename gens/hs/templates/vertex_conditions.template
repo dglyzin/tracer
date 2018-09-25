@@ -20,11 +20,12 @@ END COMMENT #}
 {% for bound in bounds %}
 {% set bn = bound.blockNumber %}
 //=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER {{bn}}======================//
-//Vertex condition for boundary {{bound.sides}}
+//Vertex condition for boundary {{bound.sides_nums}}
 void {{bound.funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
 	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;
      {% for i, value in enumerate(bound.parsedValues)%}
-	 result[idx + {{i}}] = {{value}};
+     	 // original: {{bound.original[i]}}
+	 {{value}};
      {% endfor %}
 }
 //device side function pointer declaration and init:

@@ -1,7 +1,25 @@
 from gens.hs.env.bounds.d1.bounds_common import GenCommon as GenCommonD1
-from gens.hs.env.bounds.d1.bounds_cpp_rend import GenCppRend as GenCppRendD1
+from gens.hs.env.bounds.d2.bounds_2d import GenCommon as GenCommonD2
+
+from gens.hs.env.bounds.common.bounds_cpp_rend import GenCppRend
+
 from gens.hs.env.bounds.d1.bounds_d1_dom import GenDomD1
- 
+
+import logging
+
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+# logger = logging.getLogger('bounds.bounds_common')
+
+# if using directly uncoment that:
+
+# create logger
+log_level = logging.DEBUG  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('bounds.bounds_main')
+logger.setLevel(level=log_level)
+
     
 class GenD1():
     '''
@@ -18,7 +36,7 @@ class GenD1():
         self.common = GenCommonD1(self)
         
         # cpp template render:
-        self.cpp_render = GenCppRendD1(self)
+        self.cpp_render = GenCppRend(self)
 
         self.dom = GenDomD1(self)
 
@@ -38,6 +56,6 @@ class GenD2():
         self.common = GenCommonD2(self)
         
         # cpp template render:
-        self.cpp_render = GenCppRendD2(self)
+        self.cpp_render = GenCppRend(self)
 
-        self.dom = GenDomD2(self)
+        # self.dom = GenDomD2(self)

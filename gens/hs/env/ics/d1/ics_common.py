@@ -69,19 +69,19 @@ class GenCommon(GenBaseCommon):
         if (iconn.block1 == blockNumber
             and iconn.block2 != blockNumber):
             # case differ 1
-            side = iconn.block1Side
+            side_num = iconn.block1Side
         elif (iconn.block2 == blockNumber
               and iconn.block1 != blockNumber):
             # case differ 2
-            side = iconn.block2Side
+            side_num = iconn.block2Side
 
         # len(ics for block)
         firstIndex = len(ics)
 
         # FOR find equation for block
-        Range = (side == 1) * block.size.sizeX
-        coord = lambda region: ((side == 0) * region.xfrom
-                                + (side == 1) * region.xto)
+        Range = (side_num == 1) * block.size.sizeX
+        coord = lambda region: ((side_num == 0) * region.xfrom
+                                + (side_num == 1) * region.xto)
         side_test = lambda eRegion: coord(eRegion) == Range
         equationNum = self.choice_equation_num(side_test, block)
 
@@ -89,13 +89,13 @@ class GenCommon(GenBaseCommon):
         # END FOR
 
         funcName = ("Block" + str(blockNumber)
-                    + "Interconnect__Side" + str(side)
+                    + "Interconnect__Side" + str(side_num)
                     + "_Eqn" + str(equationNum))
 
         # generate equation:
         self._set_eq_base_params(equation,
                                  model.dimension, blockNumber)
-        self._set_eq_spec_params(equation, side,
+        self._set_eq_spec_params(equation, side_num,
                                  firstIndex, 0)
         parsedValues = self._get_eq_cpp(equation)
 
@@ -104,12 +104,12 @@ class GenCommon(GenBaseCommon):
         ic.name = "Connection"
         ic.firstIndex = firstIndex
         ic.secondIndex = '0'
-        ic.side = side
+        ic.side_num = side_num
         ic.ranges = []
         ic.equationNumber = equationNum
         ic.equation = equation
         ic.funcName = funcName
-        ic.boundName = determineNameOfBoundary(side)
+        ic.boundName = determineNameOfBoundary(side_num)
         ic.blockNumber = blockNumber
         ic.parsedValues = parsedValues
         ic.original = [e.sent for e in equation.eqs]
@@ -179,7 +179,7 @@ class GenCommon(GenBaseCommon):
         ic1.name = "Connection"
         ic1.firstIndex = 0
         ic1.secondIndex = '0'
-        ic1.side = iconn.block2Side
+        ic1.side_num = iconn.block2Side
         ic1.ranges = []
         ic1.equationNumber = equationNum2
         ic1.equation = equation2
@@ -193,7 +193,7 @@ class GenCommon(GenBaseCommon):
         ic2.name = "Connection"
         ic2.firstIndex = 1
         ic2.secondIndex = '0'
-        ic2.side = iconn.block1Side
+        ic2.side_num = iconn.block1Side
         ic2.ranges = []
         ic2.equationNumber = equationNum1
         ic2.equation = equation1

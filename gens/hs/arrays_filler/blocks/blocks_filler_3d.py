@@ -24,6 +24,19 @@ class Filler():
         self.net = net
 
     def fill3dInitFuncs(self, funcArr, block, blockSize):
+
+        '''Fill 3d initial function array.
+        
+        Inputs:
+        
+        - ``funcArr`` -- array to be filled in.
+
+        - ``block`` -- block to work with.
+
+        - ``blockSile`` -- list [xc: block deep, yc: block heigth, \
+        zc: block width].
+        '''
+
         logger.info("Filling 3d initial function array.")
         model = self.net.model
         getXrange = model.grid.base.getXrange
@@ -119,7 +132,23 @@ class Filler():
                     funcArr[idxZ, ystart:yend, xstart:xend] = initFuncNum
         
     def fill3dCompFuncs(self, funcArr, block, functionMap, blockSize):
-        logger.info("Filling 2d main function array.")
+
+        '''Fill 3d main function array.
+        
+        Inputs:
+        
+        - ``funcArr`` -- array to be filled in.
+
+        - ``block`` -- block to work with.
+
+        - ``functionMap`` -- map from func type to index \
+        (in funcName list?).
+
+        - ``blockSile`` -- list [xc: block deep, yc: block heigth, \
+        zc: block width].
+        '''
+
+        logger.info("Filling 3d main function array.")
         model = self.net.model
 
         logger.debug("Function mapping for this block:")
@@ -137,7 +166,8 @@ class Filler():
             funcArr[:] = functionMap["center_default"]
         logger.info("1.2 fill center funcs")
         for center_data in functionMap["center"]:
-            funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, zfromIdx, ztoIdx = center_data
+            funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, \
+                zfromIdx, ztoIdx = center_data
             funcArr[zfromIdx:ztoIdx, yfromIdx:ytoIdx,
                     xfromIdx:xtoIdx] = funcIdx
 
@@ -146,7 +176,8 @@ class Filler():
                  + functionMap["side2"] + functionMap["side3"]
                  + functionMap["side4"] + functionMap["side5"])
         for side_data in sides:
-            funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, zfromIdx, ztoIdx = side_data
+            funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, \
+                zfromIdx, ztoIdx = side_data
             funcArr[zfromIdx:ztoIdx, yfromIdx:ytoIdx,
                     xfromIdx:xtoIdx] = funcIdx
         logger.info("3 fill 1d edges")
@@ -157,7 +188,8 @@ class Filler():
                  + functionMap["edge24"] + functionMap["edge25"]
                  + functionMap["edge34"] + functionMap["edge35"])
         for edge_data in edges:
-            funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, zfromIdx, ztoIdx = edge_data
+            funcIdx, xfromIdx, xtoIdx, yfromIdx, ytoIdx, \
+                zfromIdx, ztoIdx = edge_data
             funcArr[zfromIdx:ztoIdx, yfromIdx:ytoIdx,
                     xfromIdx:xtoIdx] = funcIdx
         

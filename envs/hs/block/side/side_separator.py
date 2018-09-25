@@ -51,11 +51,13 @@ class SideSeparator():
     def _split_side(self):
         '''
         DESCRIPTION:
+
         Separate side at intervals according existing regions.
         This function using equationRegions and boundRegions
-        from self.net.block.
+        from ``self.net.block``.
 
-        Return
+        Return::
+
         [interval([from, to], name={e: eqNum, b: boundNum})
             | for each bRegion and eRegion from this side
                 where interval.name[e] will be equation number

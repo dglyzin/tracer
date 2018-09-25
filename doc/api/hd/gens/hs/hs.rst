@@ -9,10 +9,10 @@ hs package
 Submodules
 ----------
 
-hs\.gen\_1d module
+hs\.gen\_dim module
 ------------------
 
-.. automodule:: hs.gen_1d
+.. automodule:: hs.gen_dim
     :members:
     :undoc-members:
     :show-inheritance:

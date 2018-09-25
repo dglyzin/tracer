@@ -4,16 +4,22 @@ from gens.hs.env.base.base_render import GenBaseRend
 class GenCppRend(GenBaseRend):
     
     def __init__(self, net):
+
         GenBaseRend.__init__(self)
 
         self.net = net
 
-    def get_out_for_bounds(self):
-        template = self.env.get_template('bound_conditions.template')
-        params = self.net.params
+    def get_out_for_bounds(self, vertex=False):
+
+        if not vertex:
+            template = self.env.get_template('bound_conditions.template')
+            bounds = self.net.params.bounds_edges
+        else:
+            template = self.env.get_template('vertex_conditions.template')
+            bounds = self.net.params.bounds_vertex
 
         args = {
-            'bounds': self.make_bounds_unique(params),
+            'bounds': self.make_bounds_unique(bounds),
             'enumerate': enumerate,
             'len': len
         }
@@ -30,5 +36,3 @@ class GenCppRend(GenBaseRend):
                     unique.append(bound.funcName)
                     yield(bound)
         return([bound for bound in unique_generator(bounds)])
-
-                

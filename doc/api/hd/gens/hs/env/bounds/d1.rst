@@ -12,15 +12,7 @@ Submodules
 d1\.bounds\_common module
 -------------------------
 
-.. automodule:: d1.bounds_common
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-d1\.bounds\_cpp\_rend module
-----------------------------
-
-.. automodule:: d1.bounds_cpp_rend
+.. automodule:: bounds_common
     :members:
     :undoc-members:
     :show-inheritance:
@@ -28,7 +20,7 @@ d1\.bounds\_cpp\_rend module
 d1\.bounds\_d1\_dom module
 --------------------------
 
-.. automodule:: d1.bounds_d1_dom
+.. automodule:: bounds_d1_dom
     :members:
     :undoc-members:
     :show-inheritance:

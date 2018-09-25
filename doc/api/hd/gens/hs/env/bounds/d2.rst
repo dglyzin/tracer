@@ -12,7 +12,7 @@ Submodules
 d2\.bounds\_2d module
 ---------------------
 
-.. automodule:: d2.bounds_2d
+.. automodule:: bounds_2d
     :members:
     :undoc-members:
     :show-inheritance:
@@ -20,7 +20,15 @@ d2\.bounds\_2d module
 d2\.bounds\_d2\_dom module
 --------------------------
 
-.. automodule:: d2.bounds_d2_dom
+.. automodule:: bounds_d2_dom
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+d2\.tests module
+----------------
+
+.. automodule:: tests
     :members:
     :undoc-members:
     :show-inheritance:

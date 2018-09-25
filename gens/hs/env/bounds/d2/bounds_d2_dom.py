@@ -1,4 +1,4 @@
-from gens.hs.env.bouns.base.base_bounds_dom_common import GenBaseDomCommon
+from gens.hs.env.bounds.common.bounds_common_dom import GenBaseDomCommon
 from gens.hs.env.base.base_common import Params
 
 
@@ -8,7 +8,7 @@ class GenDomD2(GenBaseDomCommon):
         self.net = net
         self.net.params = Params()
 
-    def set_params_for_bounds(self, model):
+    def set_params_for_dom_bounds(self, model):
         dim = model.dimension
 
         self._set_params_for_vertex()
@@ -31,9 +31,11 @@ class GenDomD2(GenBaseDomCommon):
     def _get_idx(self, model, bound):
         '''
         DESCRIPTION:
+
         Get idx for bound.side. For 2d.
 
         RETURN:
+
         for 2d
         [equation number, xfrom, xto, yfrom, yto]
         '''

@@ -1,6 +1,6 @@
 from gens.hs.arrays_filler.blocks.blocks_filler_1d import Filler as FillerD1
 from gens.hs.arrays_filler.blocks.blocks_filler_2d import Filler as FillerD2
-from gens.hs.arrays_filler.blocks.blocks_filler_2d import Filler as FillerD3
+from gens.hs.arrays_filler.blocks.blocks_filler_3d import Filler as FillerD3
 from gens.hs.arrays_filler.blocks.blocks_filler_plot import Plotter
 import numpy as np
 
@@ -41,10 +41,10 @@ class Filler():
 
         Fill::
 
-            self.blockCountArr
-            self.blockPropArrList
-            self.blockInitFuncArrList
-            self.blockCompFuncArrList
+            ``self.blockCountArr``
+            ``self.blockPropArrList``
+            ``self.blockInitFuncArrList``
+            ``self.blockCompFuncArrList``
         '''
         logger.info("Welcome to Blocks Data filler")
         model = self.model
@@ -149,6 +149,9 @@ class Filler():
             self.blockCompFuncArrList.append(blockCompFuncArr)
 
     def save_bin(self, domfile):
+
+        '''Save arrays to ``domfile``'''
+
         self.blockCountArr.tofile(domfile)
         for blockIdx in range(self.blockCount):
             self.blockPropArrList[blockIdx].tofile(domfile)

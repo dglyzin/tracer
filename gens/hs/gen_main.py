@@ -1,7 +1,8 @@
-from gens.hs.gen_1d import GenD1
+from gens.hs.gen_dim import GenD1
 from gens.hs.gen_sh import GenSH
 from gens.hs.gen_plot import GenPlot
 from gens.hs.fiocr.fiocr_main import Fiocr
+from gens.hs.arrays_filler.filler_main import Filler
 
 
 class Gen():
@@ -25,14 +26,26 @@ class Gen():
 
     def gen_all(self):
         
-        '''Generate cpp and dom files.'''
+        '''Generate cpp and dom files.
+        Create ``self.filler``'''
 
         self.gen_dim.gen_cpp()
-        self.gen_dim.gen_arrays()
+        self.gen_dim.gen_dom()
+
+        # fill arrays:
+        self.filler = Filler(self.model,
+                             self.gen_dim.functionMaps,
+                             self.gen_dim.funcNamesStack,
+                             self.gen_dim.namesAndNumbers,
+                             self.gen_dim.delays)
+        self.filler.fill_arrays()
+
+        # self.gen_dim.gen_arrays()
 
     def save_all(self):
 
-        '''Save all files. Cleare all.'''
+        '''Save all files. Cleare all.
+        Only after ``self.gen_all``'''
 
         pathes = self.settings.pathes
 
@@ -46,10 +59,12 @@ class Gen():
         self.fiocr.make_gcc_so(pathes['hd']['cpp'], pathes['hd']['so'])
 
         # save dom txt:
-        self.gen_dim.filler.save_txt(pathes['hd']['dom_txt'])
+        self.filler.save_txt(pathes['hd']['dom_txt'])
+        # self.gen_dim.filler.save_txt(pathes['hd']['dom_txt'])
 
         # save dom bin:
-        self.gen_dim.filler.save_bin(pathes['hd']['dom_bin'])
+        self.filler.save_bin(pathes['hd']['dom_bin'])
+        # self.gen_dim.filler.save_bin(pathes['hd']['dom_bin'])
 
         # save plot params:
         self.gen_plot.save(pathes['hd']['plot'])
