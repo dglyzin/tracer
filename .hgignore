@@ -1,4 +1,7 @@
-syntax: glob
+syntax:glob
+doc/api/_build/
+doc/api/_build/*
+doc/api/_build/**
 *.pyc
 *.bin
 *.lbin
@@ -11,7 +14,6 @@ syntax: glob
 .hgempty
 .settings*
 config/*
-doc/api/_build/**
 tests/src/generated/*
 .project
 .pydevproject
