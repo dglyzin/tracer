@@ -23,17 +23,17 @@ class GenBaseDomCommon():
         '''
         Add bounds data for dom to ``functionMaps`` dict::
 
-        ``self.net.params from``
-        ``self.net.common.set_params_for_bounds``'''
+        - ``self.net.params.bounds_edges`` from \
+        self.net.common.set_params_for_bounds'''
 
         functionMaps = self.params.functionMaps
 
         # bounds sides
-        for bound in self.net.params.bounds:
+        for bound in self.net.params.bounds_edges:
             sideName = "side"+str(bound.side_num)
 
             # for setDomain
-            idx = self._get_idx(model, bound)
+            idx = self.get_idx(model, bound)
             logger.debug("funcName=%s " % str(bound.funcName))
             logger.debug("sideName, idx= %s, %s " % (str(sideName), str(idx)))
             
@@ -48,18 +48,3 @@ class GenBaseDomCommon():
                 elif dim == 2:
                     functionMaps[bound.blockNumber].update({sideName: [idx]})
 
-    def _get_idx(self, model, bound):
-        '''
-        DESCRIPTION:
-
-        Get ``idx`` for ``bound.side``. For 1d.
-
-        RETURN:
-
-        equation number
-        '''
-        namesAndNumbers = self.params.namesAndNumbers
-        eq_num = namesAndNumbers[bound.blockNumber].index(bound.funcName)
-
-        idx = eq_num
-        return(idx)

@@ -32,10 +32,11 @@ class GenDomD1(GenBaseDomCommon):
 
         Inputs:
 
-        - ``self.net.params`` -- from \
+        - ``self.net.params.bounds_edges`` -- from \
         ``self.net.common.set_params_for_bounds``
 
-        - ``namesAndNumbers`` -- from \
+        - ``namesAndNumbers`` -- from::
+
            ``array_common.py: set_params_for_array``
            ``cent_common.py: set_params_for_centrals``
            ``ics_common.py: set_params_for_interconnects``
@@ -52,3 +53,18 @@ class GenDomD1(GenBaseDomCommon):
 
         self.set_params_for_dom_common(dim, model)
 
+    def get_idx(self, model, bound):
+        '''
+        DESCRIPTION:
+
+        Get ``idx`` for ``bound.side``. For 1d.
+
+        RETURN:
+
+        equation number
+        '''
+        namesAndNumbers = self.params.namesAndNumbers
+        eq_num = namesAndNumbers[bound.blockNumber].index(bound.funcName)
+
+        idx = eq_num
+        return(idx)

@@ -7,18 +7,48 @@ from math_space.common.someFuncs import determineNameOfBoundary
 
 
 class GenCommon(GenBaseCommon, GenCppCommon):
-    
+    '''
+    :doc:` overview <overview>`
+   
+    ::
+
+              ***x->
+              *  
+              |  ---side 2---
+              y  |          |
+                 s          s
+                 i          i
+                 d          d
+                 e          e
+                 0          1
+                 |          |
+                 ---side 3---
+
+    '''
     def __init__(self, net):
         self.net = net
         self.net.params = Params()
 
-    def set_params_for_bounds(self, model, funcNamesStack):
+    def set_params_for_bounds(self, model, funcNamesStack,
+                              ics=[]):
         '''
         DESCRIPTION:
 
-        Fill params for bound 2d template.
-        '''
+        Collect bounds params for cpp template and dom files
+        for all 2d blocks:
 
+        - ``self.net.params.bounds`` -- all bounds
+        - ``self.net.params.bounds_edges`` -- bounds
+        for edges
+        - ``self.net.params.bounds_vertex`` -- bounds
+        for vertexs.
+
+        ics used for checking if interconnect for
+        this side exist. So this function must be used
+        after set_params_for_dom_interconnects.
+
+        Also add ``bound.funcName`` to ``funcNameStack``
+        '''
         # main code:
 
         # sides:
@@ -77,9 +107,29 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         '''
         DESCRIPTION:
 
-        Create ``funcName``, ``outputValues`` and
-        equation (for parser).
-        ``boundName`` used for comment.
+        Collect this parameters for template:
+        
+        - ``bParams.name``
+        - ``bParams.side_num``
+        - ``bParams.blockNumber``
+        - ``bParams.boundNumber``
+        - ``bParams.equationNumber``
+        
+        - ``bParams.funcName`` -- func name in cpp
+        - ``bParams.btype`` -- Dirichlet 0, Neumann 1
+        - ``bParams.equation`` -- system of equations
+        SysNet object
+        - ``bParams.parsedValues``
+        - ``bParams.original`` -- original for comment
+        - ``bParams.boundName`` -- bound name for comment
+
+        This parameters also collected for dom:
+        
+        - ``bParams.blockNumber``
+        - ``bParams.side_num``
+        - ``bParams.funcName`` -- for defining func index in
+        namesAndNumbers dict.
+        - ``bParams.region``
         
         Inputs:
 
@@ -158,35 +208,41 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         '''
         DESCRIPTION:
 
-        Create ``funcName``, ``outputValues`` and
-        ``equation`` (for parser)
-        ``boundName`` for comment.
+        Collect this parameters for template:
+
+        - ``vParams.name``
+        - ``vParams.sides_nums``
+        - ``vParams.blockNumber``
+        - ``vParams.boundNumber``
+        - ``vParams.equationNumber``
+
+        - ``vParams.funcName``
+        - ``vParams.bound_side``
+        - ``vParams.btype``
+        - ``vParams.equation`` -- equation from left
+        edge.
+
+        - ``vParams.parsedValues``
+        - ``vParams.original``
+
+        This parameters also collected for dom:
+        
+        - ``bParams.blockNumber``
+        - ``bParams.side_num``
+        - ``bParams.funcName`` -- for defining func index in
+        namesAndNumbers dict.
+        - ``bParams.region``
         
         Inputs:
 
-        - ``vertex`` -- is ``Vertex`` object:
-
-        vertex::
-
-        {'sides': [2, 1],
-         'blockNumber': block.blockNumber,
-         'vertex_data': vertex_data,
-         'side_left': side_left,
-         'side_right': side_right}
-
-        ::
-
-              ***x->
-              *  
-              |  ---side 2---
-              y  |          |
-                 s          s
-                 i          i
-                 d          d
-                 e          e
-                 0          1
-                 |          |
-                 ---side 3---
+        - ``vertex`` -- is ``Vertex`` object::
+            
+        vertex:
+        
+        - ``boundNumber`` -- of left edge (side)
+        - ``equationNumber`` -- of left edge (side)
+        - ``sides_nums`` -- like [0, 2]
+        - ``region`` -- of left edge (side)
 
         - ``params_edges`` -- out of make_bounds_for_edges.
         Used for side data for vertex.

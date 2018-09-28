@@ -11,6 +11,7 @@ syntax: glob
 .hgempty
 .settings*
 config/*
+doc/api/_build/**
 tests/src/generated/*
 .project
 .pydevproject
@@ -25,5 +26,5 @@ ManualHeat/*
 *~
 *.zip
 *.out
-doc/api/_build/*
+
 TAGS

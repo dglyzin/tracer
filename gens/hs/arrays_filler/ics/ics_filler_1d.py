@@ -62,12 +62,12 @@ class Filler():
         icPropArr1 = np.zeros(5+3*icDim, dtype=np.int32)
         icPropArr1[0] = icDim
         icPropArr1[1] = icLen
-        icPropArr1[2] = ic.block1
-        icPropArr1[3] = ic.block2
-        icPropArr1[4] = ic.block1Side
-        icPropArr1[5] = ic.block2Side
-        icPropArr1[6] = b1off
-        icPropArr1[7] = b2off
+        icPropArr1[2] = ic.block1  # source block
+        icPropArr1[3] = ic.block2  # distination block
+        icPropArr1[4] = ic.block1Side  # source side
+        icPropArr1[5] = ic.block2Side  # distination side
+        icPropArr1[6] = b1off  # source offset
+        icPropArr1[7] = b2off  # destination offset
         self.icList.append(icPropArr1)
         print icPropArr1
 
@@ -75,11 +75,11 @@ class Filler():
         icPropArr2 = np.zeros(5+3*icDim, dtype=np.int32)
         icPropArr2[0] = icDim
         icPropArr2[1] = icLen
-        icPropArr2[2] = ic.block2
-        icPropArr2[3] = ic.block1
-        icPropArr2[4] = ic.block2Side
-        icPropArr2[5] = ic.block1Side
-        icPropArr2[6] = b2off
-        icPropArr2[7] = b1off
+        icPropArr2[2] = ic.block2  # source block
+        icPropArr2[3] = ic.block1  # distination block
+        icPropArr2[4] = ic.block2Side  # source side
+        icPropArr2[5] = ic.block1Side  # distination side
+        icPropArr2[6] = b2off  # source offset
+        icPropArr2[7] = b1off  # destination offset
         self.icList.append(icPropArr2)
         print icPropArr2

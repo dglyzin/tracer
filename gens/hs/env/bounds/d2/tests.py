@@ -1,4 +1,7 @@
 from gens.hs.env.bounds.d2.bounds_2d import GenCommon
+from gens.hs.env.array.array_main import Gen as GenArr
+from gens.hs.env.bounds.d2.bounds_d2_dom import GenDomD2
+
 from envs.hs.model.model_main import ModelNet as Model
 
 
@@ -22,6 +25,19 @@ def test_gen_2d(model='problems/2dTests/test2d_for_intervals_single_delay'):
     gen.set_params_for_bounds(model, funcNamesStack)
     print("funcNamesStack")
     print(funcNamesStack)
+
+    gen_array = GenArr()
+    gen_array.common.set_params_for_array(funcNamesStack)
+    namesAndNumbers = gen_array.params.namesAndNumbers
+    print("namesAndNumbers:")
+    print(namesAndNumbers)
+    
+    gen_dom = GenDomD2(tmp_net)
+    functionMap = {0: {}, 1: {}}
+    gen_dom.set_params_for_dom_bounds(model, namesAndNumbers,
+                                      functionMap)
+    print("functionMap:")
+    print(functionMap)
     return(model)
 
 

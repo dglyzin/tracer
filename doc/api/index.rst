@@ -9,7 +9,8 @@ Welcome to Hybriddomain's documentation!
 Overview
 --------
 
-:doc:`Overview <overview>` 
+* :doc:`General <overview>`
+* :doc:`2d <overview_2d>` 
 
 Environments
 ------------

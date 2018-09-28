@@ -22,7 +22,9 @@ logger.setLevel(level=log_level)
 
 
 class GenCommon(GenBaseCommon, GenCppCommon):
-    
+    '''
+    # side: <0 -----side 2------ 1>
+    '''
     def __init__(self, net):
         self.net = net
         self.net.params = Params()
@@ -32,30 +34,18 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         '''
         DESCRIPTION:
 
-        Collect this parameters for template::
+        Collect bounds params for cpp template and dom files
+        for all 2d blocks:
 
-            ``bound.blockNumber``,
-            ``bound.boundName``,
-            ``bound.funcName``,
-            ``bound.parsedValues``
-            ``bound.original``
-
-        Collect this parameters for dom::
-
-            ``bound.dim``
-            ``bound.btype = btype``
-            ``bound.side = side_num``
-            ``bound.boundNumber = boundNumber``
-            ``bound.equationNumber = equationNum``
-            ``bound.equation = eSystem``
-            ``bound.block = block``
-            ``bound.blockNumber = blockNumber``
+        - ``self.net.params.bounds`` -- all bounds
+        - ``self.net.params.bounds_edges`` -- bounds
+        for edges.
 
         ics used for checking if interconnect for
         this side exist. So this function must be used
         after set_params_for_dom_interconnects.
 
-        # side: <0 -----side 2------ 1>
+        Also add ``bound.funcName`` to ``funcNameStack``
         '''
         # self.params = []
         self.net.params = Params()
@@ -107,6 +97,31 @@ class GenCommon(GenBaseCommon, GenCppCommon):
 
     def make_bound_param(self, model, vertex):
 
+        '''Fill this parameters for block bound border
+        (vertex in case of 1d)::
+
+        Collect this parameters for template:
+
+             - ``bParams.dim``
+             - ``bParams.values`` -- border_values
+             - ``bParams.btype``
+             - ``bParams.side_num``
+             - ``bParams.boundNumber``
+             - ``bParams.equationNumber``
+             - ``bParams.equation`` -- system of equations
+             - ``bParams.funcName``
+             - ``bParams.block``
+             - ``bParams.blockNumber``
+             - ``bParams.boundName`` -- for comment
+             - ``bParams.parsedValues``
+             - ``bParams.original`` -- for comment
+
+        This parameters also collected for dom:
+    
+             - ``bound.side``
+             - ``bound.blockNumber``
+             - ``bParams.funcName``
+        '''
         block = vertex.block
         blockNumber = vertex.block.blockNumber
 
@@ -199,6 +214,7 @@ class GenCommon(GenBaseCommon, GenCppCommon):
     def test(self, block, region, side_num):
         '''
         DESCRIPTION:
+
         Test if region exist for this side.
         '''
         if side_num == 0:

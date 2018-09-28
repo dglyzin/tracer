@@ -1,34 +1,65 @@
 from gens.hs.env.bounds.common.bounds_common_dom import GenBaseDomCommon
 from gens.hs.env.base.base_common import Params
+from math_space.common.someFuncs import getRangesInClosedInterval
 
 
 class GenDomD2(GenBaseDomCommon):
 
     def __init__(self, net):
         self.net = net
-        self.net.params = Params()
+        self.params = Params()
 
-    def set_params_for_dom_bounds(self, model):
+    def set_params_for_dom_bounds(self, model,
+                                  namesAndNumbers, functionMaps):
+        '''
+        DESCRIPTION:
+
+        Add bounds data for 2d dom to ``functionMaps`` dict.
+
+        Inputs:
+
+        - ``self.net.params.bounds_edges`` -- from \
+        ``self.net.common.set_params_for_bounds``
+
+        - ``self.net.params.bounds_vertex`` -- from \
+        ``self.net.common.set_params_for_bounds``
+
+        - ``namesAndNumbers`` -- from \
+           ``array_common.py: set_params_for_array``
+           ``cent_common.py: set_params_for_centrals``
+           ``ics_common.py: set_params_for_interconnects``
+           ``bounds_common.py: set_params_for_bounds``
+
+        ``namesAndNumbers`` is copy of ``pBoundFuncs`` of
+        ``getBlockBoundFuncArray`` function.
+        It contain func names at according position
+        and used for getting right number of equations in domain file.
+
+        '''
         dim = model.dimension
 
-        self._set_params_for_vertex()
-        self.set_params_for_dom_common(dim)
+        self.params.namesAndNumbers = namesAndNumbers
+        self.params.functionMaps = functionMaps
+
+        self.set_params_for_vertex()
+        self.set_params_for_dom_common(dim, model)
 
     # bounds vertex
-    def _set_params_for_vertex(self):
-        for bound in self.bounds_vertex:
+    def set_params_for_vertex(self):
+        for bound in self.net.params.bounds_vertex:
             # for compatibility with old version of saveDomain
-            if bound.sides in [[2, 1], [3, 0]]:
-                vertexName = 'v%d%d' % (bound.sides[1], bound.sides[0])
+            sides_nums = bound.sides_nums
+            if sides_nums in [[2, 1], [3, 0]]:
+                vertexName = 'v%d%d' % (sides_nums[1], sides_nums[0])
             else:
-                vertexName = 'v%d%d' % (bound.sides[0], bound.sides[1])
+                vertexName = 'v%d%d' % (sides_nums[0], sides_nums[1])
 
-            eq_num = (self.namesAndNumbers[bound.blockNumber]
+            eq_num = (self.params.namesAndNumbers[bound.blockNumber]
                       .index(bound.funcName))
-            (self.functionMaps[bound.blockNumber]
+            (self.params.functionMaps[bound.blockNumber]
              .update({vertexName: eq_num}))
 
-    def _get_idx(self, model, bound):
+    def get_idx(self, model, bound):
         '''
         DESCRIPTION:
 
@@ -39,10 +70,12 @@ class GenDomD2(GenBaseDomCommon):
         for 2d
         [equation number, xfrom, xto, yfrom, yto]
         '''
-        eq_num = self.namesAndNumbers[bound.blockNumber].index(bound.funcName)
+        eq_num = (self.params
+                  .namesAndNumbers[bound.blockNumber]
+                  .index(bound.funcName))
 
         block = model.blocks[bound.blockNumber]
-        if bound.side == 0:
+        if bound.side_num == 0:
             xfrom = 0
             xto = 0
             yfrom = bound.region[0]
@@ -57,9 +90,9 @@ class GenDomD2(GenBaseDomCommon):
             # make Im(xto) = 0 (==Im(xfrom))
             # ranges[1] = ranges[0]
 
-        elif(bound.side == 1):
-            xfrom = block.sizeX
-            xto = block.sizeX
+        elif(bound.side_num == 1):
+            xfrom = block.size.sizeX
+            xto = block.size.sizeX
             yfrom = bound.region[0]
             yto = bound.region[1]
 
@@ -72,7 +105,7 @@ class GenDomD2(GenBaseDomCommon):
             # make Im(xfrom) = Im(sizeX)+1 (==Im(xto))
             # ranges[0] = ranges[1]
 
-        elif(bound.side == 2):
+        elif(bound.side_num == 2):
             xfrom = bound.region[0]
             xto = bound.region[1]
             yfrom = 0
@@ -87,11 +120,11 @@ class GenDomD2(GenBaseDomCommon):
             # make Im(yto) = 0 (==Im(yfrom))
             # ranges[3] = ranges[2]
 
-        elif(bound.side == 3):
+        elif(bound.side_num == 3):
             xfrom = bound.region[0]
             xto = bound.region[1]
-            yfrom = block.sizeY
-            yto = block.sizeY
+            yfrom = block.size.sizeY
+            yto = block.size.sizeY
 
             intervalX = [xfrom, xto, model.grid.gridStepX]
             intervalY = [yfrom, yto, model.grid.gridStepY]

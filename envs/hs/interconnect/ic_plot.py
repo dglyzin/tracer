@@ -27,7 +27,7 @@ class icPlotter():
     
     def _plot_2d(self, model):
         
-        '''offsetX1 and offsetX2 must be either both 0,
+        '''``offsetX1`` and ``offsetX2`` must be either both 0,
         or some > 0  but not both > 0. Same for Y.'''
         
         # init plot
