@@ -5,7 +5,7 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('tests.tester.ics_dom')
+logger = logging.getLogger('ics_main.ics_dom')
 
 # if using directly uncoment that:
 '''

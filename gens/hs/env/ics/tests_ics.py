@@ -2,6 +2,7 @@
 from gens.hs.env.ics.ics_main import GenD2
 from envs.hs.model.model_main import ModelNet as Model
 from gens.hs.env.array.array_main import Gen as GenArr
+from gens.hs.env.common.d2.fm import GenFmD2
 
 
 def test_ics_gen_2d(model='problems/2dTests/tests_2d_two_blocks0'):
@@ -35,9 +36,13 @@ def test_ics_gen_2d(model='problems/2dTests/tests_2d_two_blocks0'):
     print(namesAndNumbers)
 
     functionMaps = {0: {}, 1: {}}
+    fm_gen = GenFmD2()
+    fm_gen.gen_fm(model, functionMaps, namesAndNumbers)
+
+    '''
     gen.dom.set_params_for_dom_interconnects(model, namesAndNumbers,
                                              functionMaps)
-    
+    '''
     print("\nfunctionMaps:")
     print(functionMaps)
 

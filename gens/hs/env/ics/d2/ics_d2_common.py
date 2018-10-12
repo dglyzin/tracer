@@ -23,20 +23,29 @@ class GenCommonD2(GenBaseCommon, GenCppCommon):
         ``ic.blockNumber``
         ``ic.parsedValues``
         ``ic.original``
-        
-        Collect this parameters for ``functionMaps``::
+        unique according to ``ic.funcName``
+
+        Collect this parameters for ``functionMaps``
+        (in block.sides ic intervals as 'fm' key)::
         
         ``ic.funcName``
         ``ic.side_num``
         ``ic.ranges``
         '''
         ics = self.net.params
-        
+
+        ics = [icr
+               for block in model.blocks
+               for side_num in block.sides
+               for icr in self.set_params_for_side(model,
+                                                   block.sides[side_num])]
+        '''
         ics = [icr
                for ic in model.interconnects
                for region_num in ic.regions
                for icr in self.set_params_for_block(model,
                                                     ic.regions[region_num])]
+        '''
 
         # remove duplicates according to
         # ic.funcName uniqueness:
@@ -59,14 +68,23 @@ class GenCommonD2(GenBaseCommon, GenCppCommon):
         self.fill_func_names_stack(funcNamesStack, funcNamesStackLocal)
         # END FOR
 
-    def set_params_for_block(self, model, icRegion):
+    def set_params_for_side(self, model, side):
         
         ics = []
 
-        for interval in icRegion.intervals:
+        for interval in side.intervals:
+            
+            # if no interconnect then continue:
+            try:
+                interval.name['i']
+            except KeyError:
+                continue
+
             equationNumber = interval.name['e']
             equation = model.equations[equationNumber].copy()
         
+            icRegion = interval.name['i']()
+
             blockNumber = icRegion.blockNumber
             side_num = icRegion.side_num
 
@@ -85,14 +103,16 @@ class GenCommonD2(GenBaseCommon, GenCppCommon):
             # ic.firstIndex = icRegion.firstIndex
             # ic.secondIndex = icRegion.secondIndex
             ic.side_num = side_num
-            ic.ranges = icRegion.ranges
+            # ic.ranges = icRegion.ranges
             # ic.equationNumber = equationNum
-            # ic.equation = equation
+            ic.equation = equation
             ic.funcName = funcName
             ic.boundName = determineNameOfBoundary(side_num)
             ic.blockNumber = blockNumber
             ic.parsedValues = parsedValues
             ic.original = [e.sent for e in equation.eqs]
+
+            interval.name['fm'] = ic
 
             # each block can connect to many other block
             # let other block discribe interconnect in

@@ -11,7 +11,7 @@ from copy import copy as weak_copy
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('tests.tester.cent_common')
+logger = logging.getLogger('cent_main.cent_common')
 
 # if using directly uncoment that:
 '''

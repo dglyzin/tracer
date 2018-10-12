@@ -76,7 +76,12 @@ class icRegions(dict):
         ic to be used. For interval it used ``Interval``
         object with bound and equation numbers set to
         ``None`` (i.e. ``name={'b': None, 'e': None}``).
-        
+
+        Change ``side.intervals`` to add ic intervals
+        to it (i.e. first split ic interval at bouds/eq
+        regions, then split all ``side.intervals`` at
+        that ic_interval).
+
         Also It create ranges that is rectangle
         ``[xfrom, xto, yfrom, yto]`` where all in cell sizes.
 
@@ -208,9 +213,9 @@ class icRegions(dict):
         out.icLen = lenOfConnection
 
         side = mainBlock.sides[mainBlockSide]
-        logger.debug("side.interval:")
-        logger.debug(side.interval)
-        logger.debug("icr.interval:")
+        logger.debug("side.intervals:")
+        logger.debug(side.intervals)
+        logger.debug("icr.intervals:")
         logger.debug(interval)
 
         # add default name:
@@ -224,20 +229,21 @@ class icRegions(dict):
         
         # split at equation and bounds regions:
         out.intervals = interval.split_all([copy(interval)
-                                            for interval in side.interval], [])
+                                            for interval in side.intervals],
+                                           [])
 
         # add ic info into block.side:
-        side.interval = sum([i.split_all(out.intervals, [])
-                             for i in side.interval], [])
+        side.intervals = sum([i.split_all(out.intervals, [])
+                              for i in side.intervals], [])
         out.xfrom = xfrom
         out.xto = xto
         out.yfrom = yfrom
         out.yto = yto
-
+        '''
         ranges = getRangesInClosedInterval([xfrom, xto, grid.gridStepX],
                                            [yfrom, yto, grid.gridStepY])
         out.ranges = ranges
-
+        '''
         out.blockNumber = mainBlock.blockNumber
         out.ic = self.net
         out.ic_regions = self

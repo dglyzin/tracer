@@ -5,14 +5,14 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-# logger = logging.getLogger('tests.tester.blocks_filler_1d')
-
+logger = logging.getLogger('initials_main.initials_cpp')
+'''
 # if using directly uncoment that:
-log_level = logging.DEBUG  # logging.DEBUG
+log_level = logging.INFO  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('initials_cpp.py')
 logger.setLevel(level=log_level)
-
+'''
 
 class GenCpp():
         

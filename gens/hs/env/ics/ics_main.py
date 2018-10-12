@@ -5,6 +5,22 @@ from gens.hs.env.ics.common.ics_cpp_rend import GenCppRend
  
 from gens.hs.env.ics.common.ics_dom import GenDomCommon
 
+
+import logging
+
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+# logger = logging.getLogger('tests.tester.ics_dom')
+
+# if using directly uncoment that:
+
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('ics_main')
+logger.setLevel(level=log_level)
+
     
 class GenD1():
     '''
@@ -47,6 +63,6 @@ class GenD2():
         self.cpp_render = GenCppRend(self)
 
         # fill functionMap:
-        self.dom = GenDomCommon(self)
+        # self.dom = GenDomCommon(self)
 
 

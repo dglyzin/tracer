@@ -5,7 +5,7 @@ import logging
 # logger = logging.getLogger('tests.tester.blocks_filler_1d')
 
 # if using directly uncoment that:
-log_level = logging.DEBUG  # logging.DEBUG
+log_level = logging.INFO  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('init_funcs_nums.py')
 logger.setLevel(level=log_level)

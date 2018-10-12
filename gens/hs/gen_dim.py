@@ -12,22 +12,23 @@ from gens.hs.env.ics.ics_main import GenD2 as GenIcsD2
 
 from gens.hs.env.array.array_main import Gen as GenArr
 
+from gens.hs.env.common.d2.fm import GenFmD2
+
 # from gens.hs.arrays_filler.filler_main import Filler
 
 import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('tests.tester.gen_1d')
+# logger = logging.getLogger('gen_1d')
 
 # if using directly uncoment that:
-'''
+
 # create logger
-log_level = logging.DEBUG  # logging.DEBUG
+log_level = logging.INFO  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('gen_1d')
 logger.setLevel(level=log_level)
-'''
 
 
 class GenBase():
@@ -399,13 +400,20 @@ class GenBase():
         (gen_cent.dom
          .set_params_for_dom_centrals(model,
                                       namesAndNumbers, functionMaps))
-        (gen_bounds.dom
-         .set_params_for_dom_bounds(model,
-                                    namesAndNumbers, functionMaps))
-        (gen_ics.dom
-         .set_params_for_dom_interconnects(model,
-                                           namesAndNumbers, functionMaps))
-        # functionMaps.extend(gen_bounds.params.functionMaps)
+        if self.dim == 1:
+            (gen_bounds.dom
+             .set_params_for_dom_bounds(model,
+                                        namesAndNumbers, functionMaps))
+            (gen_ics.dom
+             .set_params_for_dom_interconnects(model,
+                                               namesAndNumbers, functionMaps))
+            # functionMaps.extend(gen_bounds.params.functionMaps)
+        elif self.dim == 2:
+            fm_gen = GenFmD2()
+            fm_gen.gen_fm_for_edges(model, functionMaps, namesAndNumbers)
+            fm_gen.gen_fm_for_vertexs(gen_bounds.params.bounds_vertex,
+                                      functionMaps, namesAndNumbers)
+
         # END FOR
         
         self.funcNamesStack = funcNamesStack

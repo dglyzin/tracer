@@ -1,6 +1,20 @@
 from gens.hs.env.centrals.cent_common import GenCommon
 from gens.hs.env.centrals.cent_cpp_rend import GenCppRend
 from gens.hs.env.centrals.cent_dom import GenDom
+
+import logging
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+# logger = logging.getLogger('tests.tester.cent_common')
+
+# if using directly uncoment that:
+
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('cent_main')
+logger.setLevel(level=log_level)
  
 
 class Gen():

@@ -87,6 +87,8 @@ class GenCommon(GenBaseCommon, GenCppCommon):
                                                      params_edges)
                          for block in model.blocks
                          for k_vertex in block.vertexs]
+        params_vertex = [param for param in params_vertex
+                         if param is not None]
         # END FOR FILL
 
         self.net.params.bounds = Params()
@@ -149,21 +151,22 @@ class GenCommon(GenBaseCommon, GenCppCommon):
                  [Interval([x, y], name={'b': bval, 'e', eval})]
         '''
         bounds = []
-        for region in side.interval:
+        for interval in side.intervals:
             
             # if interconnect then continue:
             try:
-                region.name['i']
-            except KeyError:
+                interval.name['i']
                 continue
+            except KeyError:
+                pass
 
             bParams = Params()
             bParams.name = 'sides bound'
             bParams.side_num = side.side_num
             bParams.blockNumber = side.block.blockNumber
-            bParams.boundNumber = region.name['b']
-            bParams.equationNumber = region.name['e']
-            bParams.region = region
+            bParams.boundNumber = interval.name['b']
+            bParams.equationNumber = interval.name['e']
+            bParams.interval = interval
 
             eSystem = model.equations[bParams.equationNumber].copy()
 
@@ -210,7 +213,7 @@ class GenCommon(GenBaseCommon, GenCppCommon):
             bParams.boundName = determineNameOfBoundary(bParams.side_num)
 
             # collect for functionMaps:
-            region.name['fm'] = bParams
+            interval.name['fm'] = bParams
 
             bounds.append(bParams)
         return(bounds)
@@ -242,7 +245,7 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         - ``bParams.side_num``
         - ``bParams.funcName`` -- for defining func index in
         namesAndNumbers dict.
-        - ``bParams.region``
+        - ``bParams.interval``
         
         Inputs:
 
@@ -253,16 +256,32 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         - ``boundNumber`` -- of left edge (side)
         - ``equationNumber`` -- of left edge (side)
         - ``sides_nums`` -- like [0, 2]
-        - ``region`` -- of left edge (side)
+        - ``interval`` -- of left edge (side)
 
         - ``params_edges`` -- out of make_bounds_for_edges.
         Used for side data for vertex.
         '''
         # find bound for left edge:
-        left_edge = [bParams for bParams in params_edges
-                     if bParams.side_num == vertex.sides_nums[0]
-                     and bParams.blockNumber == vertex.block.blockNumber
-                     and bParams.region == vertex.region][0]
+        left_edges = [bParams for bParams in params_edges
+                      if bParams.side_num == vertex.sides_nums[0]
+                      and bParams.blockNumber == vertex.block.blockNumber
+                      and bParams.interval == vertex.left_interval]
+        # if interconnect exist for left edges
+        # use right:
+        try:
+            vertex_edge = left_edges[0]
+        except IndexError:
+            right_edges = [bParams for bParams in params_edges
+                           if bParams.side_num == vertex.sides_nums[1]
+                           and bParams.blockNumber == vertex.block.blockNumber
+                           and bParams.interval == vertex.right_interval]
+            # if interconnect exist for left and right
+            # 
+            try:
+                vertex_edge = right_edges[0]
+            except IndexError:
+                
+                return(None)
         # END FOR
 
         vParams = Params()
@@ -278,11 +297,11 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         funcName = self.get_vertex_funcName(vertex)
 
         vParams.funcName = funcName
-        vParams.bound_side = left_edge
-        vParams.btype = left_edge.btype
-        vParams.equation = left_edge.equation.copy()
-        vParams.parsedValues = left_edge.parsedValues
-        vParams.original = left_edge.original
+        vParams.bound_side = vertex_edge
+        vParams.btype = vertex_edge.btype
+        vParams.equation = vertex_edge.equation.copy()
+        vParams.parsedValues = vertex_edge.parsedValues
+        vParams.original = vertex_edge.original
 
         return(vParams)
 

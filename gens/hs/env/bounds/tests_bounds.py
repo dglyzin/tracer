@@ -2,6 +2,7 @@
 from gens.hs.env.bounds.bounds_main import GenD2
 from envs.hs.model.model_main import ModelNet as Model
 from gens.hs.env.array.array_main import Gen as GenArr
+from gens.hs.env.common.d2.fm import GenFmD2
 
 
 def test_gen_2d(model='problems/2dTests/test2d_for_intervals_single_delay'):
@@ -36,9 +37,14 @@ def test_gen_2d(model='problems/2dTests/test2d_for_intervals_single_delay'):
     print(namesAndNumbers)
 
     functionMaps = {0: {}, 1: {}}
+    fm_gen = GenFmD2()
+    fm_gen.gen_fm_for_edges(model, functionMaps, namesAndNumbers)
+    fm_gen.gen_fm_for_vertexs(gen.params.bounds_vertex, functionMaps,
+                              namesAndNumbers)
+    '''
     gen.dom.set_params_for_dom_bounds(model, namesAndNumbers,
                                       functionMaps)
-    
+    '''
     print("\nfunctionMaps:")
     print(functionMaps)
 

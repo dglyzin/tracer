@@ -4,7 +4,6 @@ from gens.hs.env.bounds.d2.bounds_2d import GenCommon as GenCommonD2
 from gens.hs.env.bounds.common.bounds_cpp_rend import GenCppRend
 
 from gens.hs.env.bounds.d1.bounds_d1_dom import GenDomD1
-from gens.hs.env.bounds.d2.bounds_d2_dom import GenDomD2
 
 import logging
 
@@ -59,4 +58,4 @@ class GenD2():
         # cpp template render:
         self.cpp_render = GenCppRend(self)
 
-        self.dom = GenDomD2(self)
+        # self.dom = GenDomD2(self)

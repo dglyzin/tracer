@@ -131,7 +131,7 @@ class SideSeparator():
         logger.debug("oIntervals")
         logger.debug(oIntervals)
 
-        self.net.interval = oIntervals
+        self.net.intervals = oIntervals
 
         new_side = {'side_num': side_num,
                     # 'blockNumber': block.blockNumber,
