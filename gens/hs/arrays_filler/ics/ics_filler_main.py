@@ -1,5 +1,5 @@
 from gens.hs.arrays_filler.ics.ics_filler_0d import Filler as FillerD0
-# from gens.hs.arrays_filler.ics.ics_filler_1d import Filler as FillerD1
+from gens.hs.arrays_filler.ics.ics_filler_1d import Filler as FillerD1
 # from gens.hs.arrays_filler.ics.ics_filler_2d import Filler as FillerD2
 from gens.hs.arrays_filler.ics.ics_filler_plot import Plotter
 
@@ -29,7 +29,7 @@ class Filler():
         self.model = model
         
         self.d0 = FillerD0(self)
-        # self.d1 = FillerD1(self)
+        self.d1 = FillerD1(self)
         # self.d2 = FillerD2(self)
 
         self.plotter = Plotter(self)

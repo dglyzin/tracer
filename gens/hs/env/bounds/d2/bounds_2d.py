@@ -1,7 +1,7 @@
 from gens.hs.env.base.base_common import GenBaseCommon
 from gens.hs.env.bounds.common.bounds_common_cpp import GenCppCommon
 
-from gens.hs.env.base.base_common import Params
+from math_space.common.someClasses import Params
 from math_space.common.someFuncs import determineNameOfBoundary
 # from math_space.common.env.equation.equation import Equation
 
@@ -67,6 +67,8 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         #                                             block.blockNumber)]
         '''
 
+        # TODO: unite side and params_edges
+        # or disunite them in bounds 1d.
         self.sides = sides
         
         # make bounds for side
@@ -148,6 +150,12 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         '''
         bounds = []
         for region in side.interval:
+            
+            # if interconnect then continue:
+            try:
+                region.name['i']
+            except KeyError:
+                continue
 
             bParams = Params()
             bParams.name = 'sides bound'
@@ -200,6 +208,9 @@ class GenCommon(GenBaseCommon, GenCppCommon):
 
             # for comment
             bParams.boundName = determineNameOfBoundary(bParams.side_num)
+
+            # collect for functionMaps:
+            region.name['fm'] = bParams
 
             bounds.append(bParams)
         return(bounds)

@@ -1,7 +1,7 @@
 from gens.hs.env.base.base_common import GenBaseCommon
 from gens.hs.env.bounds.common.bounds_common_cpp import GenCppCommon
 
-from gens.hs.env.base.base_common import Params
+from math_space.common.someClasses import Params
 from math_space.common.someFuncs import determineNameOfBoundary
 
 import logging

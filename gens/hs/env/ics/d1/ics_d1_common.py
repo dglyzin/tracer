@@ -1,9 +1,10 @@
 from gens.hs.env.base.base_common import GenBaseCommon
-from gens.hs.env.base.base_common import Params
+from gens.hs.env.ics.common.ics_common_cpp import GenCppCommon
+from math_space.common.someClasses import Params
 from math_space.common.someFuncs import determineNameOfBoundary
 
 
-class GenCommon(GenBaseCommon):
+class GenCommonD1(GenBaseCommon, GenCppCommon):
     
     def __init__(self, net):
         self.net = net
@@ -93,12 +94,9 @@ class GenCommon(GenBaseCommon):
                     + "_Eqn" + str(equationNum))
 
         # generate equation:
-        self._set_eq_base_params(equation,
-                                 model.dimension, blockNumber)
-        self._set_eq_spec_params(equation, side_num,
-                                 firstIndex, 0)
-        parsedValues = self._get_eq_cpp(equation)
-
+        parsedValues = self.parse_equations(equation, model.dimension,
+                                            blockNumber, side_num,
+                                            firstIndex, 0)
         # fill params:
         ic = Params()
         ic.name = "Connection"
@@ -161,18 +159,17 @@ class GenCommon(GenBaseCommon):
                      + str(iconn.block2Side)
                      + "_Eqn" + str(equationNum2))
 
-        # for equatioin cpp:
-        self._set_eq_base_params(equation1,
-                                 model.dimension, blockNumber)
-        self._set_eq_spec_params(equation1, iconn.block2Side,
-                                 0, 0)
-        parsedValues_1 = self._get_eq_cpp(equation1)
+        # FOR equatioin cpp:
+        # first equation:
+        parsedValues_1 = self.parse_equations(equation1, model.dimension,
+                                              blockNumber, iconn.block2Side,
+                                              0, 0)
 
-        self._set_eq_base_params(equation2,
-                                 model.dimension, blockNumber)
-        self._set_eq_spec_params(equation2, iconn.block1Side,
-                                 1, 0)
-        parsedValues_2 = self._get_eq_cpp(equation2)
+        # second equation:
+        parsedValues_2 = self.parse_equations(equation2, model.dimension,
+                                              blockNumber, iconn.block1Side,
+                                              1, 0)
+        # END FOR
 
         # fill params:
         ic1 = Params()
@@ -205,22 +202,6 @@ class GenCommon(GenBaseCommon):
 
         return((ic1, ic2))
 
-    def _set_eq_base_params(self, eSystem, dim, blockNumber):
-        eSystem.cpp.parse()
-        eSystem.cpp.set_default()
-        eSystem.cpp.set_dim(dim=dim)
-        eSystem.cpp.set_blockNumber(blockNumber)
-        
-    def _set_eq_spec_params(self, eSystem, side_num,
-                            firstIndex, secondIndex):
-        eSystem.cpp.set_diff_type_ic(side_num=side_num,
-                                     firstIndex=firstIndex,
-                                     secondIndex=secondIndex)
-
-    def _get_eq_cpp(self, eSystem):
-        return([eq.replacer.cpp.make_cpp() for eq in eSystem.eqs])
-        # return([eq.flatten('cpp') for eq in eSystem.eqs])
-    
     def test(self, region, side_num, block):
         '''
         DESCRIPTION::

@@ -116,12 +116,6 @@ class GenCppCommon():
                                 side_num, border_values)
         parsed = self.get_eq_cpp(eSystem)
         return(parsed)
-
-    def set_eq_base_params(self, eSystem, dim, blockNumber):
-        eSystem.cpp.parse()
-        eSystem.cpp.set_default()
-        eSystem.cpp.set_dim(dim=dim)
-        eSystem.cpp.set_blockNumber(blockNumber)
         
     def set_eq_spec_params(self, model, block, eSystem, btype,
                            side_num, border_values):
@@ -165,7 +159,3 @@ class GenCppCommon():
                                  diffMethod='special',
                                  btype=btype, side=side_num,
                                  func=ebv_cpp)
-            
-    def get_eq_cpp(self, eSystem):
-        return([eq.replacer.cpp.make_cpp() for eq in eSystem.eqs])
-        # return([eq.flatten('cpp') for eq in eSystem.eqs])

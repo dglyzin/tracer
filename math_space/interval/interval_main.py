@@ -17,6 +17,7 @@ class Dbg():
 class Property(object):
     '''
     DESCRIPTION:
+
     Descriptor for Interval.
     '''
     def __init__(self, attrName):
@@ -25,6 +26,7 @@ class Property(object):
     def __get__(self, instance, owner=None):
         '''
         DESCRIPTION:
+
         Instance is instance of UseProperty class.
         getattr get atrName of instance UseProperty class.
         '''
@@ -35,6 +37,7 @@ class Property(object):
     def __set__(self, instance, value):
         '''
         DESCRIPTION:
+
         If value is dict it update instance.attrName dict
            if self.attrName is not dict, it replace it
               by dict value
@@ -64,6 +67,17 @@ class Property(object):
 
 class Interval(list):
 
+    ''' Interval is open interval. So all it's
+    method (including ``split``) sugested. Except
+    ``contains_as_closed``.
+
+    Warning:
+    
+    Do not forget about bug with self.split_all.
+    Use it like ``k.split_all([i, j], [])``
+    instead of ``k.split_all([i, j])``
+    '''
+
     # descriptor at self._name
     name = Property("_name")
 
@@ -74,25 +88,52 @@ class Interval(list):
         list.__init__(self, _list)
                 
         self._name = name
-        
+
     def __contains__(self, x):
+        
+        '''Main. When self used as open intervals.'''
+
         if self[0] < x < self[1]:
             return(True)
         else:
             return(False)
 
-    def split_all(self, intervals_list, result=[]):
+    def contains_as_closed(self, x):
+
+        if type(x) is list:
+            if (self[0] <= x[0] <= self[1] and
+                self[0] <= x[1] <= self[1]):
+                return(True)
+        else:
+            if self[0] <= x <= self[1]:
+                return(True)
+            else:
+                return(False)
+                
+    def split_all(self, intervals_list, result):
         '''
         DESCRIPTION:
+
         Split self at regions with names interval.name
         where interval in intervals_list.
 
+        Warning:
+
+        Due to some python bug second argument
+        cannot be used with default ``[]`` value.
+        Because of that one need to write
+        ``k.split_all([i, j], [])`` instead of
+        ``k.split_all([i, j])``. (It Seems he remembering
+        data from previus usage of class Interval
+        (in ``self`` parameter of result (``res.split(first)``)))
+
         Example:
+
         >>> i, j, k = pms.Interval([1, 2], name='i'),\
         pms.Interval([2, 3], name='j'),\
-        pms.Interval([1.5, 2.5],name='k')
+        pms.Interval([1.5, 2.5], name='k')
         
-        >>> t = k.split_all([i, j])
+        >>> t = k.split_all([i, j], [])
 
         >>> t[0], t[0].name
         ([1.5, 2], 'i')
@@ -103,6 +144,9 @@ class Interval(list):
         '''
         self.debug.print_dbg("FROM Interval.split_all")
 
+        self.debug.print_dbg("self")
+        self.debug.print_dbg(self)
+        
         if len(result) == 0:
             result.append(self)
 
@@ -115,6 +159,10 @@ class Interval(list):
 
         new_res = []
         for res in result:
+            self.debug.print_dbg("res for 'self' check:")
+            self.debug.print_dbg("(problem here):")
+            self.debug.print_dbg(res)
+       
             new_res.extend(res.split(first))
                 
         return(self.split_all(rest, new_res))
@@ -122,13 +170,16 @@ class Interval(list):
     def split(self, interval):
         '''
         DESCRIPTION:
+
         Split self at regions with names from
         original and interval.name.
         
         RETURN:
+
         Never empty.
 
         Example:
+
         >>> a = Interval([1, 3], name='a')
         >>> b = Interval([1, 2], name='b')
         
@@ -141,6 +192,15 @@ class Interval(list):
         '''
         interval_from = self
 
+        self.debug.print_dbg("interval_from (equal self)")
+        self.debug.print_dbg(interval_from)
+
+        self.debug.print_dbg("self from split (problem here):")
+        self.debug.print_dbg(self)
+
+        self.debug.print_dbg("interval")
+        self.debug.print_dbg(interval)
+
         if (interval[0] not in interval_from and
             interval[1] not in interval_from):
             # if interval not in interval_from
@@ -149,7 +209,7 @@ class Interval(list):
             if (interval[1] <= interval_from[0] or
                 interval[0] >= interval_from[1]):
                 # do nothing
-                return([interval_from])            
+                return([interval_from])
             else:
                 # if interval_from in interval
                 

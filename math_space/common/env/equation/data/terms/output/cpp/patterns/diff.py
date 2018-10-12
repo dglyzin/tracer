@@ -163,6 +163,12 @@ class Diff(Base):
         diffGen = PureDerivGenerator(self.params)
         func = self.params['func']
         out = diffGen.special_diff(func)
+
+        logger.debug("\ndiff_pure_spec out:")
+        logger.debug(out)
+        logger.debug("\nparams:")
+        logger.debug(self.params)
+
         return(out)
 
     def diff_pure_ics(self):

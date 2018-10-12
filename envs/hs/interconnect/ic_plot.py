@@ -72,6 +72,7 @@ class icPlotter():
         offsetX2 = block_2.size.offsetX*scale
         offsetY2 = block_2.size.offsetY*scale
 
+        '''
         # either offsetX1!=0 or offsetX2!=0 or some = 0
         # but not both != 0:
         if offsetX1 > 0 and offsetX2 > 0:
@@ -81,47 +82,48 @@ class icPlotter():
         # but not both != 0:
         if offsetY1 > 0 and offsetY2 > 0:
             raise(BaseException("impasable cases for offsetY"))
+        '''
 
         # main block is always that which in 0
         if self.net.block1Side == 0 and self.net.block2Side == 1:
             print("case 0: block1Side 0, block2Side 1")
-            
+        
             # main in center:
-            orign_1 = [0, 0]  # -height_y_1
+            orign_1 = [0, -offsetY1]  # -height_y_1
 
             # other:
             common_orign_y = -height_y_2+height_y_1
-            orign_2 = [-width_x_2, common_orign_y+offsetY2-offsetY1]
+            orign_2 = [-width_x_2, common_orign_y-offsetY2]
 
         elif self.net.block1Side == 1 and self.net.block2Side == 0:
             print("case 1: block1Side 1, block2Side 0")
 
             # main in center:
-            orign_2 = [0, 0]
+            orign_2 = [0, -offsetY2]
             
             # other:
             common_orign_y = -height_y_1+height_y_2
-            orign_1 = [-width_x_1, common_orign_y+offsetY1-offsetY2]
+            orign_1 = [-width_x_1, common_orign_y-offsetY1]
 
         elif self.net.block1Side == 2 and self.net.block2Side == 3:
             print("case 2: block1Side 2, block2Side 3")
-            print("offset relative block 1")
+            # print("offset relative block 1")
 
             # main in center:
-            orign_1 = [0, -height_y_1]
+            orign_1 = [offsetX1, -height_y_1]
 
             # other:
-            orign_2 = [offsetX1-offsetX2, 0]
+            orign_2 = [offsetX2, 0]
 
         elif self.net.block1Side == 3 and self.net.block2Side == 2:
             print("case 3: block1Side 3, block2Side 2")
-            print("offset relative to block 2")
+            # print("offset relative to block 2")
 
             # main in center:
-            orign_2 = [0, -height_y_2]
+            orign_2 = [offsetX2, -height_y_2]
             
             # other:
-            orign_1 = [offsetX2-offsetX1, 0]
+            orign_1 = [offsetX1, 0]
        
         print("orign_1: %s" % str(orign_1))
         print("orign_2: %s" % str(orign_2))
@@ -151,3 +153,5 @@ class icPlotter():
         plt_2.annotate(info, xy=(-width_x_s, -height_y_s))
 
         return(plt_2)
+
+    

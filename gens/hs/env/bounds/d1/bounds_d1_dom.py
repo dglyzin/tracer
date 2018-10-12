@@ -1,5 +1,5 @@
 from gens.hs.env.bounds.common.bounds_common_dom import GenBaseDomCommon
-from gens.hs.env.base.base_common import Params
+from math_space.common.someClasses import Params
 
 import logging
 

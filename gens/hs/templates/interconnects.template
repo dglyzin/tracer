@@ -13,7 +13,7 @@
 INPUTS:
    ics interconnects list
    ic.blockNumber
-   ic.boundNumber
+   // ic.boundNumber
    ic.boundName
    ic.funcName
    ic.parsedValues

@@ -15,6 +15,7 @@ class BlockEditor():
 
         self.net.sides = dict([(side_num, Side(side_num, block=self.net))
                                for side_num in sides_nums])
+        self.net.edges = self.net.sides
 
         # sinch boundRegion dict:
         for side_num in self.net.sides:

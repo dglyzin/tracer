@@ -1,4 +1,4 @@
-from envs.hs.block.side.interval import Interval
+from math_space.interval.interval_main import Interval
 
 from copy import deepcopy as copy
 from copy import copy as weak_copy
@@ -8,7 +8,7 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tests.tester.loger
-logger = logging.getLogger('tests.tester.side_separator')
+logger = logging.getLogger('side_main.side_separator')
 
 # if using directly uncoment that:
 '''

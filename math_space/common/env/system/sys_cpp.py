@@ -26,7 +26,7 @@ class sysCpp():
             editor.set_coeffs_indexes(coeffs_to_indexes=coeffs_to_indexes)
 
             editor.set_diff_type(diffType='pure',
-                             diffMethod='common')
+                                 diffMethod='common')
             editor.set_shape(shape=[30, 31])
 
     def set_dim(self, dim):

@@ -32,9 +32,15 @@ def getRangesInHalfInterval(XData, YData = [], ZData = []):
             ranges += [firstCellIdxVar, lastCellIdxVar]
         return ranges
     
-def getRangesInClosedInterval(XData, YData = [], ZData = []):
-        #Диапазоны в кординатах преобразует в диапазоны в клетках
-        #XData = [xfrom, xto, stepX, xmax]
+
+def getRangesInClosedInterval(XData, YData=[], ZData=[]):
+
+        '''Диапазоны в кординатах преобразует в диапазоны в клетках
+        
+        Inputs:
+
+        :param XData: = [xfrom, xto, stepX, xmax]'''
+        
         allData = [XData]
         if len(YData) != 0:
             allData.append(YData)
@@ -172,10 +178,23 @@ def intersectionOfRects(rect1, rect2):
     else:
         return intersection
     
-def determineCellIndexOfStartOfConnection2D(icRegion):
-    #Если эта разность нулевая, то сединение находится в начале стороны блока, поэтому индекс = 0.
-    if icRegion.lenBetweenStartOfBlockSideAndStartOfConnection == 0:
+
+def determineCISC2D(lenBSBSSC, stepAlongSide):
+
+    '''Determine Cell Index of Start of Connection 2d.
+    
+    Input:
+
+    - ``lenBSBSSC`` -- len between start of block side
+    and start of connection.
+
+    - ``stepAlongSide`` -- step along side.
+    '''
+    if lenBSBSSC == 0:
+        # Если эта разность нулевая, то сединение находится
+        # в начале стороны блока, поэтому индекс = 0.
         return 0
     else:
-    #Найдем количество клеток между ними. Оно и будет индексом клетки, стоящей в начале соединения
-        return getCellIndex(icRegion.lenBetweenStartOfBlockSideAndStartOfConnection, icRegion.stepAlongSide)
+        # Найдем количество клеток между ними. Оно и будет
+        # индексом клетки, стоящей в начале соединения
+        return getCellIndex(lenBSBSSC, stepAlongSide)

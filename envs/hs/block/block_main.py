@@ -7,6 +7,22 @@ from envs.hs.block.block_cpp import BlockCpp
 
 from functools import reduce
 
+import logging
+
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+# logger = logging.getLogger('block_main.block_io')
+
+# if using directly uncoment that:
+
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('block_main')
+logger.setLevel(level=log_level)
+
+
 
 class BlockNet():
     '''Represent rectangle for model. Contain sides

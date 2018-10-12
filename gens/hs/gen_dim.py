@@ -7,7 +7,9 @@ from gens.hs.env.centrals.cent_main import Gen as GenCent
 from gens.hs.env.bounds.bounds_main import GenD1 as GenBoundsD1
 from gens.hs.env.bounds.bounds_main import GenD2 as GenBoundsD2
 
-from gens.hs.env.ics.ics_main import GenD1 as GenIcs
+from gens.hs.env.ics.ics_main import GenD1 as GenIcsD1
+from gens.hs.env.ics.ics_main import GenD2 as GenIcsD2
+
 from gens.hs.env.array.array_main import Gen as GenArr
 
 # from gens.hs.arrays_filler.filler_main import Filler
@@ -261,14 +263,21 @@ class GenBase():
 
         # out and funcNames for ics:
         if self.dim == 1:
-            gen_ics = GenIcs()
-            gen_ics.common.set_params_for_interconnects(model, funcNamesStack)
+            gen_ics = GenIcsD1()
+        elif self.dim == 2:
+            gen_ics = GenIcsD2()
+        else:
+            raise(BaseException("dim %s not support yet" % self.dim))
+
+        gen_ics.common.set_params_for_interconnects(model, funcNamesStack)
 
         # out and funcNames for bounds:
         if self.dim == 1:
             gen_bounds = GenBoundsD1()
         elif self.dim == 2:
             gen_bounds = GenBoundsD2()
+        else:
+            raise(BaseException("dim %s not support yet" % self.dim))
 
         gen_bounds.common.set_params_for_bounds(model, funcNamesStack,
                                                 ics=gen_ics.params)
@@ -334,13 +343,17 @@ class GenBase():
         model = self.model
 
         gen_cent = GenCent()
+
         if self.dim == 1:
             gen_bounds = GenBoundsD1()
-            gen_ics = GenIcs()
+            gen_ics = GenIcsD1()
             
         elif self.dim == 2:
             gen_bounds = GenBoundsD2()
-            
+            gen_ics = GenIcsD2()
+        else:
+            raise(BaseException("dim %s not support yet" % self.dim))
+
         gen_array = GenArr()
 
         # FOR funcNameStack
@@ -350,10 +363,9 @@ class GenBase():
         logger.debug("funcNamesStack after cent:")
         logger.debug(funcNamesStack)
 
-        if self.dim == 1:
-            gen_ics.common.set_params_for_interconnects(model, funcNamesStack)
-            logger.debug("funcNamesStack after ics:")
-            logger.debug(funcNamesStack)
+        gen_ics.common.set_params_for_interconnects(model, funcNamesStack)
+        logger.debug("funcNamesStack after ics:")
+        logger.debug(funcNamesStack)
 
         (gen_bounds.common
          .set_params_for_bounds(model,

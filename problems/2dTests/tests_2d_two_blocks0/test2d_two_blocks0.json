@@ -42,17 +42,25 @@
                 {
                     "EquationNumber": 0, 
                     "xfrom": 0.0, 
-                    "xto": 3.0, 
+                    "xto": 1.5, 
                     "yfrom": 0.0, 
                     "yto": 1.0
                 }, 
                 {
                     "EquationNumber": 1, 
-                    "xfrom": 0.0, 
-                    "xto": 3.0, 
-                    "yfrom": 1.0, 
+                    "xfrom": 1.5, 
+                    "xto": 2.0, 
+                    "yfrom": 0.0, 
                     "yto": 2.0
+                },
+		{
+                    "EquationNumber": 0, 
+                    "xfrom": 2.0, 
+                    "xto": 3.0, 
+                    "yfrom": 0.0, 
+                    "yto": 1.0
                 }
+
             ]
         }, 
         {
@@ -132,7 +140,7 @@
                 "y"
             ], 
             "System": [
-                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - d * D[U,{y,1}]"
+                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - r * D[U,{y,1}]"
             ]
         }
     ], 
@@ -141,14 +149,14 @@
             "a", 
             "b", 
             "c", 
-            "d"
+            "r"
         ], 
         "ParamValues": [
             {
                 "a": 2, 
                 "c": 0.1, 
                 "b": 3, 
-                "d": 100
+                "r": 100
             }
         ], 
         "DefaultParamsIndex": 0

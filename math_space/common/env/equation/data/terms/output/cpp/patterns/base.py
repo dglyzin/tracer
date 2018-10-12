@@ -127,14 +127,22 @@ class Base():
         pattern = self.net.get_term_pattern(node)
         # pattern = node.name.lex[1]
 
+        logger.debug("pattern.string:")
+        logger.debug(pattern.string)
+        logger.debug("pattern.groupdict():")
+        logger.debug(pattern.groupdict())
+
         for var in 'xyz':
             order = pattern.group('val_'+var)
             if order is not None:
+                self.params['indepVarList'] = [var]
+                '''
                 if 'indepVarList' in self.params:
                     self.params['indepVarList'].append(var)
                 else:
                     self.params['indepVarList'] = [var]
-                
+                '''
+                # do not refill orders if they alredy exist:
                 if 'indepVarOrders' in self.params:
                     self.params['indepVarOrders'][var] = float(order)
                 else:

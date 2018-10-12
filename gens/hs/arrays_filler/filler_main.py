@@ -87,11 +87,11 @@ class Filler():
         ### BEGINNING OF IC
         ##!  int32 dimension I_d (can be 0,1,2)
         ##!  I_d*int32 interconnect length
-        ##!  int32 source block 
+        ##!  int32 source block
         ##!  int32 destination block
         ##!  int32 source side (0-5)
         ##!  int32 destination side (0-5)
-        ##!  I_d*int32 source offset 
+        ##!  I_d*int32 source offset
         ##!  I_d*int32 destination offset
         ### END OF IC
 

@@ -413,6 +413,7 @@ class PureDerivGenerator(DerivGenerator):
     def special_diff(self, func='None'):
         '''
         DESCRIPTION:
+
         Generate derivative for border variable.
         
         for derivOrder = 1:
@@ -425,6 +426,7 @@ class PureDerivGenerator(DerivGenerator):
         ddu/ddx = 2*(u_{n-1}-u_{n}-dy*phi(t,y))/(dx^2)
 
         INPUT:
+
         leftOrRightBoundary --- это число либо 0 (если краевое условие наложено на левую границу)
                                 либо 1 (если краевое условие наложено на правую границу)
         leftOrRightBoundary = 0 - right border
@@ -432,6 +434,7 @@ class PureDerivGenerator(DerivGenerator):
         specialIncrement - sin(x)*specialIncrement
 
         USED FUNCTIONS:
+
         for self.userIndepVariables
         str self.blockNumber
         self.derivOrder
@@ -450,11 +453,17 @@ class PureDerivGenerator(DerivGenerator):
             
         except:
             raise(SyntaxError("use make_general_data first"))
-        # try:
-        leftOrRightBoundary = self.leftOrRightBoundary
-        #except:
-        #    raise(SyntaxError("for special_diff self.leftOrRightBoundary"
-        #                      + "should be initiated first"))
+
+        try:
+            # in case if variable direction ortogonal to
+            # special border (ex: for side 2, direction y):
+            leftOrRightBoundary = self.leftOrRightBoundary
+        except:
+            # in case if variable direction paralel to
+            # special border (ex: for side 2, direction
+            # x common_diff must be used):
+            return(self.common_diff())
+
         # for debug
         self.print_dbg("special used")
 
@@ -483,7 +492,7 @@ class PureDerivGenerator(DerivGenerator):
                      + str(self.blockNumber) + 'CELLSIZE + '
                      + str(self.unknownVarIndex) + ']')
             return('(2.0 * '+increment+' * '+'('+first+' - '
-                   + second+ m1 * ' - ' + m2 * ' + ' +
+                   + second + m1 * ' - ' + m2 * ' + ' +
                    '(' + boundaryValue + ') * '
                    + specialIncrement + '))')
         else:

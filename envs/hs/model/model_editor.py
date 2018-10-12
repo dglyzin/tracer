@@ -3,7 +3,7 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('tests.tester.model_editor')
+logger = logging.getLogger('model_main.model_editor')
 
 # if using directly uncoment that:
 '''

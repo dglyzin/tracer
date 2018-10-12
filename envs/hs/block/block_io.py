@@ -9,7 +9,7 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('tests.tester.block_io')
+logger = logging.getLogger('block_main.block_io')
 
 # if using directly uncoment that:
 '''
@@ -61,9 +61,19 @@ class BlockIO():
             self.net.editor.add_eq_region(EquationRegion(**equatDict))
             # self.net.equationRegions.append(EquationRegion(**equatDict))
 
-        # depricated
+
         # self.net.editor.set_sides_default()
-        # for side in self.net.sides:
+
+        # if there is no regions for side
+        # it must be separated again in order
+        # to replace default block size values
+        # (in interval). If regions exist
+        # this would done in add_eq_region or
+        # add_bound_region accordingly.
+        for side_num in self.net.sides:
+            side = self.net.sides[side_num]
+            if side.eRegions == side.bRegions == []:
+                side.separator.split_side(rewrite=True)
         #    self.net.editor.sinch_side_regions(side)
         #    # side.split_side(rewrite=True)
 

@@ -39,7 +39,7 @@ class GenBaseDomCommon():
             
             old = functionMaps[bound.blockNumber]
             if sideName in old.keys():
-                # if side exist
+                # if side exist. Not hapend for 1d:
                 functionMaps[bound.blockNumber][sideName].append(idx)
             else:
                 # because in 2d side will be list

@@ -1,5 +1,5 @@
 from gens.hs.env.base.base_common import GenBaseCommon
-from gens.hs.env.base.base_common import Params
+from math_space.common.someClasses import Params
 
 
 class GenCommon(GenBaseCommon):

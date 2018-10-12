@@ -1,3 +1,4 @@
+import numpy as np
 import logging
 
 # if using from tester.py uncoment that:
@@ -21,24 +22,39 @@ class Filler():
         self.net = net
 
     def interconnect1dFill(self, icIdx):
-        ic = self.dmodel.interconnects[icIdx]
-        icDim = self.dmodel.blocks[ic.block1].dimension - 1
+        
+        '''Fill arrays according to specification
+        (see filler_main.py)'''
 
-        block1 = self.dmodel.blocks[ic.block1]
-        block2 = self.dmodel.blocks[ic.block2]
-        [b1xc, b1yc, b1zc] = block1.getCellCount(self.dmodel.gridStepX,
-                                    self.dmodel.gridStepY, self.dmodel.gridStepZ)
-        [b2xc, b2yc, b2zc] = block2.getCellCount(self.dmodel.gridStepX,
-                                    self.dmodel.gridStepY, self.dmodel.gridStepZ)
-        [b1xoff, b1yoff, b1zoff] = block1.getCellOffset(self.dmodel.gridStepX,
-                                    self.dmodel.gridStepY, self.dmodel.gridStepZ)
-        [b2xoff, b2yoff, b2zoff] = block2.getCellOffset(self.dmodel.gridStepX,
-                                    self.dmodel.gridStepY, self.dmodel.gridStepZ)
+        model = self.net.model
+        grid = model.grid
+
+        ic = model.interconnects[icIdx]
+        icDim = model.blocks[ic.block1].dimension - 1
+
+        block1 = model.blocks[ic.block1]
+        block2 = model.blocks[ic.block2]
+        [b1xc, b1yc, b1zc] = (block1
+                              .getCellCount(grid.gridStepX, grid.gridStepY,
+                                            grid.gridStepZ))
+
+        [b2xc, b2yc, b2zc] = (block2
+                              .getCellCount(grid.gridStepX, grid.gridStepY,
+                                            grid.gridStepZ))
+        [b1xoff, b1yoff, b1zoff] = (block1
+                                    .getCellOffset(grid.gridStepX,
+                                                   grid.gridStepY,
+                                                   grid.gridStepZ))
+        [b2xoff, b2yoff, b2zoff] = (block2
+                                    .getCellOffset(grid.gridStepX,
+                                                   grid.gridStepY,
+                                                   grid.gridStepZ))
+        print("Filling interconnect", icIdx, ": block1 off:",
+              b1xoff, b1yoff, b1zoff, "; block2 off:",
+              b2xoff, b2yoff, b2zoff)
         
-        print "Filling interconnect", icIdx, ": block1 off:", b1xoff, b1yoff, b1zoff, "; block2 off:", b2xoff, b2yoff, b2zoff 
-        
-        if (ic.block1Side==0) or (ic.block1Side==1):
-            #x=const connection
+        if (ic.block1Side == 0) or (ic.block1Side == 1):
+            # x=const connection
             if b1yoff < b2yoff:
                 b1off = b2yoff - b1yoff
                 b2off = 0
@@ -48,7 +64,7 @@ class Filler():
                 b2off = b1yoff - b2yoff
                 icLen = min(b1yoff+b1yc, b2yoff+b2yc) - b1yoff
         else:
-            #y=const connection
+            # y=const connection
             if b1xoff < b2xoff:
                 b1off = b2xoff - b1xoff
                 b2off = 0
@@ -58,7 +74,7 @@ class Filler():
                 b2off = b1xoff - b2xoff
                 icLen = min(b1xoff+b1xc, b2xoff+b2xc) - b1xoff
 
-        print "Saving interconnect", icIdx, "part 1"
+        print("Saving interconnect", icIdx, "part 1")
         icPropArr1 = np.zeros(5+3*icDim, dtype=np.int32)
         icPropArr1[0] = icDim
         icPropArr1[1] = icLen
@@ -69,9 +85,9 @@ class Filler():
         icPropArr1[6] = b1off  # source offset
         icPropArr1[7] = b2off  # destination offset
         self.icList.append(icPropArr1)
-        print icPropArr1
+        print(icPropArr1)
 
-        print "Saving interconnect", icIdx, "part 2"
+        print("Saving interconnect", icIdx, "part 2")
         icPropArr2 = np.zeros(5+3*icDim, dtype=np.int32)
         icPropArr2[0] = icDim
         icPropArr2[1] = icLen
@@ -82,4 +98,4 @@ class Filler():
         icPropArr2[6] = b2off  # source offset
         icPropArr2[7] = b1off  # destination offset
         self.icList.append(icPropArr2)
-        print icPropArr2
+        print(icPropArr2)

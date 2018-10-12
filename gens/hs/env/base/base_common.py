@@ -1,6 +1,26 @@
+from math_space.common.someClasses import Params
+
+
 class GenBaseCommon():
 
     '''Base for all common objects methods'''
+
+    def set_eq_base_params(self, eSystem, dim, blockNumber):
+        eSystem.cpp.parse()
+
+        # print("eSystem:")
+        # print(eSystem)
+        # print("eSystem.eq_tree")
+        # for eq in eSystem.eqs:
+        #     print(eq.eq_tree)
+
+        eSystem.cpp.set_default()
+        eSystem.cpp.set_dim(dim=dim)
+        eSystem.cpp.set_blockNumber(blockNumber)
+
+    def get_eq_cpp(self, eSystem):
+        return([eq.replacer.cpp.make_cpp() for eq in eSystem.eqs])
+        # return([eq.flatten('cpp') for eq in eSystem.eqs])
 
     def fill_func_names_stack(self, funcNamesStack,
                               funcNamesStackLocal):
@@ -24,29 +44,3 @@ class GenBaseCommon():
         # remove duplicates:
         # self.net.params.funcNamesStack = list(set(self.funcNamesStack))
 
-
-class Params:
-    '''
-    DESCRIPTION::
-
-    Represent param/s of some
-    object.
-    
-    Can be used as list.
-    
-    '''
-    def __init__(self):
-        # in case when used as list
-        self.nodes = []
-    
-    def __getitem__(self, k):
-        return(self.nodes[k])
-
-    def append(self, v):
-        self.nodes.append(v)
-
-    def extend(self, vs):
-        self.nodes.extend(vs)
-
-    def __len__(self):
-        return(len(self.nodes))

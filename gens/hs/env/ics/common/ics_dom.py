@@ -1,4 +1,4 @@
-from gens.hs.env.base.base_common import Params
+from math_space.common.someClasses import Params
 
 import logging
 
@@ -17,7 +17,7 @@ logger.setLevel(level=log_level)
 '''
 
 
-class GenDomD1():
+class GenDomCommon():
     
     def __init__(self, net):
         self.net = net
@@ -28,7 +28,8 @@ class GenDomD1():
         '''
         DESCRIPTION::
 
-        Add ics data for 1d dom to functionMaps dict.
+        Add ics data for 1d, 2d dom to
+        ``functionMaps`` dict.
 
         Inputs:
 
@@ -58,7 +59,14 @@ class GenDomD1():
             idx = namesAndNumbers[ic.blockNumber].index(ic.funcName)
             logger.debug("funcName=%s " % str(ic.funcName))
             logger.debug("sideName, idx= %s, %s " % (str(sideName), str(idx)))
+            
+            if model.dimension == 1:
+                value_to_update = idx
+
+            elif model.dimension == 2:
+                value_to_update = [idx] + ic.ranges
 
             # update functionMaps:
             if sideName not in functionMaps[ic.blockNumber].keys():
-                functionMaps[ic.blockNumber].update({sideName: idx})
+                functionMaps[ic.blockNumber].update({sideName:
+                                                     value_to_update})

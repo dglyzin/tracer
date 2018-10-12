@@ -1,7 +1,10 @@
-from gens.hs.env.ics.d1.ics_common import GenCommon as GenCommonD1
-from gens.hs.env.ics.d1.ics_cpp_rend import GenCppRend as GenCppRendD1
-from gens.hs.env.ics.d1.ics_dom import GenDomD1
+from gens.hs.env.ics.d1.ics_d1_common import GenCommonD1
+from gens.hs.env.ics.d2.ics_d2_common import GenCommonD2
+
+from gens.hs.env.ics.common.ics_cpp_rend import GenCppRend
  
+from gens.hs.env.ics.common.ics_dom import GenDomCommon
+
     
 class GenD1():
     '''
@@ -15,12 +18,14 @@ class GenD1():
     '''
     def __init__(self):
         # common for cpp and dom:
+        # (parse equations, fill namesAndNumbers)
         self.common = GenCommonD1(self)
         
         # cpp template render:
-        self.cpp_render = GenCppRendD1(self)
+        self.cpp_render = GenCppRend(self)
 
-        self.dom = GenDomD1(self)
+        # fill functionMap:
+        self.dom = GenDomCommon(self)
 
 
 class GenD2():
@@ -35,9 +40,13 @@ class GenD2():
     '''
     def __init__(self):
         # common for cpp and dom:
+        # (parse equations, fill namesAndNumbers)
         self.common = GenCommonD2(self)
         
         # cpp template render:
-        self.cpp_render = GenCppRendD2(self)
+        self.cpp_render = GenCppRend(self)
 
-        self.dom = GenDomD2(self)
+        # fill functionMap:
+        self.dom = GenDomCommon(self)
+
+
