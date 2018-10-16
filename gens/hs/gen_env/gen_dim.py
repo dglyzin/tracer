@@ -303,18 +303,21 @@ class GenBase():
         gen_arr.common.set_params_for_array(funcNamesStack)
         namesAndNumbers = gen_arr.params.namesAndNumbers
 
+        '''
         for vertex in gen_bounds.params.bounds_vertex:
             print("vertex.parsedValues:")
             print(vertex.parsedValues)
+        '''
 
         # for postproc:
         delays = self.postproc.postporc_delays([gen_cent.params,
                                                 gen_bounds.params.bounds,
                                                 gen_ics.params.ics])
+        '''
         for vertex in gen_bounds.params.bounds_vertex:
             print("vertex.parsedValues:")
             print(vertex.parsedValues)
-
+        '''
         logger.info("delays:")
         logger.info(delays)
         sizes_delays = dict([(len(delays[var]), delays[var])
