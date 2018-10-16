@@ -61,7 +61,6 @@ class BlockIO():
             self.net.editor.add_eq_region(EquationRegion(**equatDict))
             # self.net.equationRegions.append(EquationRegion(**equatDict))
 
-
         # self.net.editor.set_sides_default()
 
         # if there is no regions for side
@@ -74,6 +73,10 @@ class BlockIO():
             side = self.net.sides[side_num]
             if side.eRegions == side.bRegions == []:
                 side.separator.split_side(rewrite=True)
+
+                # reset vertexs:
+                self.net.editor.set_vertexs()
+
         #    self.net.editor.sinch_side_regions(side)
         #    # side.split_side(rewrite=True)
 

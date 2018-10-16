@@ -13,16 +13,15 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('tests.tester.filler_main')
+# logger = logging.getLogger('filler_main')
 
 # if using directly uncoment that:
-'''
+
 # create logger
 log_level = logging.DEBUG  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('filler_main')
 logger.setLevel(level=log_level)
-'''
 
 
 class Filler():
@@ -357,7 +356,7 @@ class Filler():
         # this will only work if saveFuncs was called
         # and self.functionMaps are filled
         self.fBlocks.fillBinaryBlocks()
-        self.fBlocks.plotter.show(gout=self.out_data)
+        # self.fBlocks.plotter.show(gout=self.out_data)
 
         self.fIcs.fillBinaryInterconnects()
         self.fIcs.plotter.show(gout=self.out_data)

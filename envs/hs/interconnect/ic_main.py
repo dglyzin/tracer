@@ -21,7 +21,7 @@ import logging
 # if using directly uncoment that:
 
 # create logger
-log_level = logging.DEBUG  # logging.DEBUG
+log_level = logging.INFO  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('ic_main')
 logger.setLevel(level=log_level)

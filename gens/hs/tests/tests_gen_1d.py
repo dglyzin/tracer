@@ -1,4 +1,4 @@
-from gens.hs.gen_dim import GenD1
+from gens.hs.gen_env.gen_dim import GenD1
 from gens.hs.gen_main import Gen
 
 from settings.settings_main import Settings

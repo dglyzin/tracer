@@ -30,22 +30,22 @@ class Filler():
         grid = model.grid
 
         ic = model.interconnects[icIdx]
-        icDim = model.blocks[ic.block1].dimension - 1
+        icDim = model.dimension - 1
 
         block1 = model.blocks[ic.block1]
         block2 = model.blocks[ic.block2]
-        [b1xc, b1yc, b1zc] = (block1
+        [b1xc, b1yc, b1zc] = (block1.size
                               .getCellCount(grid.gridStepX, grid.gridStepY,
                                             grid.gridStepZ))
 
-        [b2xc, b2yc, b2zc] = (block2
+        [b2xc, b2yc, b2zc] = (block2.size
                               .getCellCount(grid.gridStepX, grid.gridStepY,
                                             grid.gridStepZ))
-        [b1xoff, b1yoff, b1zoff] = (block1
+        [b1xoff, b1yoff, b1zoff] = (block1.size
                                     .getCellOffset(grid.gridStepX,
                                                    grid.gridStepY,
                                                    grid.gridStepZ))
-        [b2xoff, b2yoff, b2zoff] = (block2
+        [b2xoff, b2yoff, b2zoff] = (block2.size
                                     .getCellOffset(grid.gridStepX,
                                                    grid.gridStepY,
                                                    grid.gridStepZ))
@@ -84,7 +84,7 @@ class Filler():
         icPropArr1[5] = ic.block2Side  # distination side
         icPropArr1[6] = b1off  # source offset
         icPropArr1[7] = b2off  # destination offset
-        self.icList.append(icPropArr1)
+        self.net.icList.append(icPropArr1)
         print(icPropArr1)
 
         print("Saving interconnect", icIdx, "part 2")
@@ -97,5 +97,5 @@ class Filler():
         icPropArr2[5] = ic.block1Side  # distination side
         icPropArr2[6] = b2off  # source offset
         icPropArr2[7] = b1off  # destination offset
-        self.icList.append(icPropArr2)
+        self.net.icList.append(icPropArr2)
         print(icPropArr2)

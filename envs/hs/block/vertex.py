@@ -75,7 +75,6 @@ class Vertex():
             # first interval of side 2
             right_interval = side_right.intervals[0]
             
-                
         if sides_nums == [2, 1]:
             # vertex in [x_max, 0]
             vertex_data = [side_left.intervals[-1].name,

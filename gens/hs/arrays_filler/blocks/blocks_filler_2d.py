@@ -5,16 +5,17 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-# logger = logging.getLogger('tests.tester.blocks_filler_2d')
+logger = logging.getLogger('filler_main.blocks_filler_2d')
 
 # if using directly uncoment that:
 
 # create logger
+'''
 log_level = logging.INFO  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('blocks_filler_2d')
 logger.setLevel(level=log_level)
-
+'''
 
 bdict = {"dirichlet": 0, "neumann": 1}
 
@@ -62,8 +63,8 @@ class Filler():
         for initReg in block.initialRegions:
             initFuncNum = (usedIndices
                            + usedInitNums.index(initReg.initialNumber))
-            xstart, xend = getXrange(block, initReg.xfrom, initReg.xto)
-            ystart, yend = getYrange(block, initReg.yfrom, initReg.yto)
+            xstart, xend = getXrange(initReg.xfrom, initReg.xto)
+            ystart, yend = getYrange(initReg.yfrom, initReg.yto)
             funcArr[ystart:yend, xstart:xend] = initFuncNum
                 
         logger.debug("Used init nums:")
@@ -74,41 +75,40 @@ class Filler():
         #  that are used in this block
         usedIndices += len(usedInitNums)
         usedDirBoundNums = []
-        for boundReg in block.boundRegions:
-            if not (boundReg.boundNumber in usedDirBoundNums):
-                bound_btype = model.bounds[boundReg.boundNumber].btype
-                if (bound_btype == bdict["dirichlet"]):
-                    usedDirBoundNums.append(boundReg.boundNumber)
+        for side_num in block.boundRegions:
+            for bRegion in block.boundRegions[side_num]:
+                if not (bRegion.boundNumber in usedDirBoundNums):
+                    bound_btype = model.bounds[bRegion.boundNumber].btype
+                    if (bound_btype == bdict["dirichlet"]):
+                        usedDirBoundNums.append(bRegion.boundNumber)
         usedDirBoundNums.sort()
         logger.debug("Used Dirichlet bound nums:")
         logger.debug(usedDirBoundNums)
         
         logger.info("3.2 fill them")
-        for boundReg in block.boundRegions:
-            bound_btype = self.dmodel.bounds[boundReg.boundNumber].btype
-            if (bound_btype == bdict["dirichlet"]):
-                initFuncNum = (usedIndices
-                               + usedDirBoundNums.index(boundReg.boundNumber))
-                if boundReg.side == 0:
-                    idxX = 0
-                    ystart, yend = getYrange(block,
-                                             boundReg.yfrom, boundReg.yto)
-                    funcArr[ystart:yend, idxX] = initFuncNum
-                elif boundReg.side == 1:
-                    idxX = xc - 1
-                    ystart, yend = getYrange(block,
-                                             boundReg.yfrom, boundReg.yto)
-                    funcArr[ystart:yend, idxX] = initFuncNum
-                elif boundReg.side == 2:
-                    idxY = 0
-                    xstart, xend = getXrange(block,
-                                             boundReg.xfrom, boundReg.xto)
-                    funcArr[idxY, xstart:xend] = initFuncNum
-                elif boundReg.side == 3:
-                    idxY = yc-1
-                    xstart, xend = getXrange(block,
-                                             boundReg.xfrom, boundReg.xto)
-                    funcArr[idxY, xstart:xend] = initFuncNum
+        for side_num in block.boundRegions:
+            for bRegion in block.boundRegions[side_num]:
+
+                bound_btype = self.dmodel.bounds[bRegion.boundNumber].btype
+                if (bound_btype == bdict["dirichlet"]):
+                    initFuncNum = (usedIndices
+                                   + usedDirBoundNums.index(bRegion.boundNumber))
+                    if bRegion.side == 0:
+                        idxX = 0
+                        ystart, yend = getYrange(bRegion.yfrom, bRegion.yto)
+                        funcArr[ystart:yend, idxX] = initFuncNum
+                    elif bRegion.side == 1:
+                        idxX = xc - 1
+                        ystart, yend = getYrange(bRegion.yfrom, bRegion.yto)
+                        funcArr[ystart:yend, idxX] = initFuncNum
+                    elif bRegion.side == 2:
+                        idxY = 0
+                        xstart, xend = getXrange(bRegion.xfrom, bRegion.xto)
+                        funcArr[idxY, xstart:xend] = initFuncNum
+                    elif bRegion.side == 3:
+                        idxY = yc-1
+                        xstart, xend = getXrange(bRegion.xfrom, bRegion.xto)
+                        funcArr[idxY, xstart:xend] = initFuncNum
 
     def fill2dCompFuncs(self, funcArr, block, functionMap, blockSize):
 
@@ -131,7 +131,8 @@ class Filler():
         logger.debug("Function mapping for this block:")
         logger.debug(functionMap)
 
-        model = self.model
+        model = self.net.model
+
         xc = blockSize[0]
         yc = blockSize[1]
 

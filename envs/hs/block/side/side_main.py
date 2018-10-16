@@ -18,7 +18,6 @@ logger = logging.getLogger('side_main')
 logger.setLevel(level=log_level)
 
 
-
 class SideNet():
     '''
     ***x->
@@ -73,8 +72,8 @@ class SideNet():
 
     def __repr__(self, notebook=False):
         try:
-            rs = [list(i) for i in self.interval]
-            ns = [(i.name['b'], i.name['e']) for i in self.interval]
+            rs = [list(i) for i in self.intervals]
+            ns = [(i.name['b'], i.name['e']) for i in self.intervals]
         except AttributeError:
             raise(BaseException("split_side firts"))
         

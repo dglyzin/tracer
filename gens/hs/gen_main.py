@@ -1,4 +1,5 @@
-from gens.hs.gen_dim import GenD1
+from gens.hs.gen_env.gen_dim import GenD1
+from gens.hs.gen_env.gen_dim import GenD2
 from gens.hs.gen_sh import GenSH
 from gens.hs.gen_plot import GenPlot
 from gens.hs.fiocr.fiocr_main import Fiocr
@@ -15,7 +16,9 @@ class Gen():
         # choice gen type:
         if self.model.dimension == 1:
             self.gen_dim = GenD1(self)
-        
+        elif self.model.dimension == 2:
+            self.gen_dim = GenD2(self)
+
         # sh gen:
         self.gen_sh = GenSH(self)
 

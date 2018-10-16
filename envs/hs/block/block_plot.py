@@ -29,7 +29,7 @@ class BlockPlotter():
         # range:
         side = list(self.net.sides.values())[0]
         rs = [0]
-        rs.extend([list(i) for i in side.interval])
+        rs.extend([list(i) for i in side.intervals])
         rs.append('sizeX')
 
         # bound/eq:
@@ -37,7 +37,7 @@ class BlockPlotter():
         r_vertex = self.net.vertexs['[1]']
         ns = [(l_vertex.boundNumber, l_vertex.equationNumber)]
         ns.extend([(i.name['b'], i.name['e'])
-                   for i in side.interval])
+                   for i in side.intervals])
         ns.append((r_vertex.boundNumber, r_vertex.equationNumber))
 
         columns = [i for i in range(len(rs))]
@@ -156,7 +156,7 @@ class BlockPlotter():
         # FOR draw sides
         for side_num in block.sides:
             side = block.sides[side_num]
-            for interval in side.interval:
+            for interval in side.intervals:
                 # default text
                 equation_text = str(interval.name)
 

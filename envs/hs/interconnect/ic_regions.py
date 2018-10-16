@@ -235,6 +235,9 @@ class icRegions(dict):
         # add ic info into block.side:
         side.intervals = sum([i.split_all(out.intervals, [])
                               for i in side.intervals], [])
+        # reset vertexs:
+        mainBlock.editor.set_vertexs()
+
         out.xfrom = xfrom
         out.xto = xto
         out.yfrom = yfrom

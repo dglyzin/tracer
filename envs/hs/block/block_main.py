@@ -23,7 +23,6 @@ logger = logging.getLogger('block_main')
 logger.setLevel(level=log_level)
 
 
-
 class BlockNet():
     '''Represent rectangle for model. Contain sides
     with boundRegions used for model bound conditions,
