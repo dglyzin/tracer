@@ -386,6 +386,8 @@ class Filler():
                     for block_num, block_array in enumerate(arrays):
                         xc, yc, zc = shapes[block_num]
                         img_name = "%s%s" % (p, block_num)
+                        if self.model.dimension == 1:
+                            block_array_r = block_array
                         if self.model.dimension == 2:
                             block_array_r = block_array.reshape([yc, xc])
                             if out_folder is not None:
