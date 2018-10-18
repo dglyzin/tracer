@@ -206,5 +206,10 @@
             }
         ]
     }, 
-    "Plots": []
+    "Plots": [	{
+            "Title": "u(t,x)", 
+            "Period": 0.1,
+            "Value": "U"
+        }
+       ]
 }

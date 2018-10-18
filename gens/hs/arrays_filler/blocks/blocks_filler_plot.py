@@ -35,13 +35,26 @@ class Plotter():
             'frame': DataFrame(self.net.blockPropArrList,
                                columns=columns)}
 
+        if domainDim == 1:
+            # TODO: wrong, fix needed:
+            initFuncFrame = DataFrame(self.net.blockInitFuncArrList)
+        elif domainDim == 2:
+            initFuncFrame = 'see img file'
         out['blockInitFuncArrList'] = {
-            'array': self.net.blockInitFuncArrList,
-            'frame': DataFrame(self.net.blockInitFuncArrList)}
+            'arrays': self.net.blockInitFuncArrList,
+            'frames': initFuncFrame,
+            'shapes': self.net.shapes}
+
+        if domainDim == 1:
+            # TODO: wrong, fix needed:
+            initFuncFrame = DataFrame(self.net.blockInitFuncArrList)
+        elif domainDim == 2:
+            initFuncFrame = 'see img file'
 
         out['blockCompFuncArrList'] = {
-            'array': self.net.blockCompFuncArrList,
-            'frame': DataFrame(self.net.blockCompFuncArrList)}
+            'arrays': self.net.blockCompFuncArrList,
+            'frames': initFuncFrame,
+            'shapes': self.net.shapes}
 
         gout['blocks'] = out
         return(gout)

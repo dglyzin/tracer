@@ -59,6 +59,7 @@ class Filler():
         self.blockPropArrList = []
         self.blockInitFuncArrList = []
         self.blockCompFuncArrList = []
+        self.shapes = []
 
         domainDim = model.dimension
 
@@ -147,6 +148,7 @@ class Filler():
 
             self.blockInitFuncArrList.append(blockInitFuncArr)
             self.blockCompFuncArrList.append(blockCompFuncArr)
+            self.shapes.append([xc, yc, zc])
 
     def save_bin(self, domfile):
 

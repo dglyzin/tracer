@@ -374,7 +374,8 @@ def remoteProjectRun(settings, notebook=None):
                                                  is_sleep=False)
                 else:
                     progress = None
-            
+                if not os.path.exists(hd_out_folder):
+                    os.makedirs(hd_out_folder)
                 cftp.get(filename, os.path.join(hd_out_folder, filename),
                          callback=progress)
             

@@ -62,7 +62,8 @@ class Gen():
         self.fiocr.make_gcc_so(pathes['hd']['cpp'], pathes['hd']['so'])
 
         # save dom txt:
-        self.filler.save_txt(pathes['hd']['dom_txt'])
+        self.filler.save_txt(pathes['hd']['dom_txt'],
+                             pathes['hd']['out_folder'])
         # self.gen_dim.filler.save_txt(pathes['hd']['dom_txt'])
 
         # save dom bin:

@@ -8,6 +8,9 @@ import numpy as np
 from pandas import DataFrame
 from collections import OrderedDict
 
+import os
+import matplotlib.pyplot as plt
+
 import logging
 
 
@@ -356,7 +359,7 @@ class Filler():
         # this will only work if saveFuncs was called
         # and self.functionMaps are filled
         self.fBlocks.fillBinaryBlocks()
-        # self.fBlocks.plotter.show(gout=self.out_data)
+        self.fBlocks.plotter.show(gout=self.out_data)
 
         self.fIcs.fillBinaryInterconnects()
         self.fIcs.plotter.show(gout=self.out_data)
@@ -364,10 +367,12 @@ class Filler():
         self.fPlot.fillBinaryPlots()
         self.fPlot.show(gout=self.out_data)
 
-    def show(self):
+    def show(self, out_folder=None):
 
-        '''only after
-        self.fill_arrays'''
+        '''Only after ``self.fill_arrays``.
+        If out_folder is not None it will be used
+        to write blocks idx arrays images (block{num}.png)
+        if ``self.model.dimension == 2``'''
 
         out = ""
         for e in self.out_data:
@@ -376,18 +381,39 @@ class Filler():
                 out += p + '\n'
                 if p in ('blockInitFuncArrList',
                          'blockCompFuncArrList'):
-                    for a in self.out_data[e][p]['array']:
-                        out += str(a) + '\n'
+                    shapes = self.out_data[e][p]['shapes']
+                    arrays = self.out_data[e][p]['arrays']
+                    for block_num, block_array in enumerate(arrays):
+                        xc, yc, zc = shapes[block_num]
+                        img_name = "%s%s" % (p, block_num)
+                        if self.model.dimension == 2:
+                            block_array_r = block_array.reshape([yc, xc])
+                            if out_folder is not None:
+                                # save image:
+
+                                img_file_name = '%s.png' % (img_name)
+                                img_path = os.path.join(out_folder,
+                                                        img_file_name)
+                                plt.imsave(img_path,
+                                           30*block_array_r.astype('int'))
+
+                        elif self.model.dimension == 3:
+                            block_array_r = block_array.reshape([zc, yc, xc])
+                        out += "\n%s\n" % (img_name)
+                        logger.debug("array to save %s" % img_name)
+                        logger.debug("shape: %s" % shapes[block_num])
+                        logger.debug(block_array_r)
+                        out += str(block_array_r) + '\n'
                 else:
                     out += str(self.out_data[e][p]['frame']) + '\n'
         return(out)
 
-    def save_txt(self, fileName):
+    def save_txt(self, fileName, out_folder=None):
 
         '''only after
         ``self.fill_arrays``'''
 
-        out = self.show()
+        out = self.show(out_folder)
         out += "\n\n functionMaps: \n"
         out += str(self.functionMaps)
         out += "\n\n funcNamesStack: \n"

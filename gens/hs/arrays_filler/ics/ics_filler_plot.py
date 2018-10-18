@@ -14,12 +14,21 @@ class Plotter():
 
         icsDim = self.net.model.dimension - 1
         if icsDim == 0:
-            columns = ["icDim", "block_2", "block_1",
-                       "block2Side", "block1Side"]
+            columns = ["icDim", "source block", "dist block",
+                       "source side", "dist side"]
             out['icList'] = {
                 'array': self.net.icList,
                 'frame': DataFrame(self.net.icList,
                                    columns=columns)}
+        elif icsDim == 1:
+            columns = ["icDim", "icLen", "source block",
+                       "dist_block", "source side", "dist side",
+                       "source offset", "dist offset"]
+            out['icList'] = {
+                'array': self.net.icList,
+                'frame': DataFrame(self.net.icList,
+                                   columns=columns)}
+
         gout['ics'] = out
         return(gout)
         
