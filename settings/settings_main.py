@@ -76,7 +76,7 @@ class Settings():
         self.connection.fromDict(self.conn[name])
         self.connection.get_password()
 
-    def make_all_pathes(self, model, model_path=None):
+    def make_all_pathes(self, model, model_path=None, use_workspace=False):
 
         '''Creating all pathes for problem'''
 
@@ -139,6 +139,10 @@ class Settings():
         pathes['hd']['device_conf'] = os.path.join(pathes['hd']['hd'],
                                                    'settings', 'device_conf')
         # hs pathes:
+        pathes['hd']['pathes'] = os.path.join(pathes['hd']['hd'],
+                                              'settings', 'pathes')
+
+        # hs pathes:
         pathes['hs'] = {}
 
         # projects folder at server:
@@ -158,6 +162,9 @@ class Settings():
         # hs device_conf:
         pathes['hs']['device_conf'] = os.path.join(pathes['hs']['hd'],
                                                    'settings', 'device_conf')
+        # hs pathes:
+        pathes['hs']['pathes'] = os.path.join(pathes['hs']['hd'],
+                                              'settings', 'pathes')
 
         # path to project folder at server:
         pathes['hs']['project_path'] = os.path.join(workspace,

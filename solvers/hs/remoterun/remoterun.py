@@ -64,6 +64,99 @@ logger.setLevel(level=log_level)
 # paramiko.util.log_to_file(os.path.join(os.getcwd(), "tests", "paramiko.log"))
 
 
+def fix_tilde_bug(connection, path, where, name):
+
+    # fix tilde bug:
+    path = path.replace("~", "/home/" + connection.username)
+    # logger.info("%s_%s fixed:" % (where, name))
+    # logger.info(path)
+    return(path)
+
+
+def create_folder(client, folder):
+
+    logger.info("Checking if folder "+folder+" exists...")
+    cmd = 'test -d ' + folder
+    stdin, stdout, stderr = client.exec_command(cmd)
+    if stdout.channel.recv_exit_status():
+
+        stdin, stdout, stderr = (client
+                                 .exec_command("mkdir %s"
+                                               % folder))
+        err = stderr.read()
+        if len(err) > 0:
+            logger.info(err)
+            raise(BaseException(err))
+        else:
+            logger.info("created folder %s" % folder)
+    else:
+        logger.info("folder %s alredy exist" % folder)
+
+
+def copy_files(client, connection, hd_path, hs_path, name):
+
+    # fix tilde bug:
+    hs_path = fix_tilde_bug(connection, hs_path, 'hs', name)
+    hd_path = fix_tilde_bug(connection, hd_path, 'hd', name)
+
+    cftp = client.open_sftp()
+    walk_gen = os.walk(hd_path)
+    logger.info("copy %s files:" % name)
+    for root, folders_names, file_names in walk_gen:
+        for file_name in file_names:
+            if file_name[-1] != '~':
+                hd_file_name_full = os.path.join(hd_path, file_name)
+                hs_file_name_full = os.path.join(hs_path, file_name)
+                logger.info("copy " + hd_file_name_full)
+                logger.info("to " + hs_file_name_full)
+                cftp.put(hd_file_name_full, hs_file_name_full)
+    cftp.close()
+    logger.info("finished copy %s files" % name)
+
+    
+def make_problems_as_workspace_link(client, hs_problems, workspace):
+    '''
+    command = (('file="%s" && [[ -d $file && -L $file ]]'
+                % hs_problems)
+               + ' && echo True || echo False')
+    logger.info("check link command:")
+    logger.info(command)
+    stdin, stdout, stderr = client.exec_command(command)
+
+    err = stderr.read()
+    out = stdout.read()
+    logger.info("finally")
+    logger.info(stdout.read())
+    logger.info("problems is link check stderr:")
+    logger.info(err)
+    logger.info("stderr END")
+
+    if len(err) > 0:
+        return()
+    else:
+        if not eval(out):
+    '''
+
+    # remove problems folder
+    command = 'rm -R %s' % hs_problems
+    stdin, stdout, stderr = client.exec_command(command)
+    err = stderr.read()
+    if len(err) > 0:
+        logger.error("rm err:")
+        logger.error(err)
+        raise(BaseException(err))
+
+    # make problems folder symbolic link:
+    command = 'ln -s %s %s' % (workspace, hs_problems)
+    stdin, stdout, stderr = client.exec_command(command)
+    err = stderr.read()
+    if len(err) > 0:
+        logger.error("ln err:")
+        logger.error(err)
+        raise(BaseException(err))
+    logger.info("link created")
+
+
 def remoteProjectRun(settings, notebook=None):
     '''
     Run hs with settings:
@@ -140,26 +233,58 @@ def remoteProjectRun(settings, notebook=None):
     pathes = settings.pathes
     connection = settings.connection
     workspace = pathes['pathes_hs_base']['Workspace']
+    workspace = fix_tilde_bug(connection, workspace,
+                              'hs', 'workspace')
+
     tracer_folder = pathes['pathes_hs_base']['TracerFolder']
+    tracer_folder = fix_tilde_bug(connection, tracer_folder,
+                                  'hs', 'tracer_folder')
 
     project_name = pathes['model']['name']
+    project_path = pathes['model']['path']
+    logger.info("project_path")
+    logger.info(project_path)
+    project_path_folders = project_path.split(os.path.sep)
 
     hs_hd = pathes['hs']['hd']
+    hs_hd = fix_tilde_bug(connection, hs_hd,
+                          'hs', 'hd')
+
     hs_solver = pathes['hs']['solver']
 
     hs_dev_conf = pathes['hs']['device_conf']
+    hs_dev_conf = fix_tilde_bug(connection, hs_dev_conf,
+                                'hs', 'dev_conf')
+
+    hs_pathes = pathes['hs']['pathes']
 
     hs_project_folder = pathes['hs']['project_path']
+    hs_project_folder = fix_tilde_bug(connection, hs_project_folder,
+                                      'hs', 'projects_folder')
+
     hs_out_folder = pathes['hs']['out_folder']
+    hs_out_folder = fix_tilde_bug(connection, hs_out_folder,
+                                  'hs', 'out_folder')
+
     hs_json = pathes['hs']['json']
+    hs_json = fix_tilde_bug(connection, hs_json, 'hs', 'json')
+
     hs_sh = pathes['hs']['sh']
+    hs_sh = fix_tilde_bug(connection, hs_sh, 'hs', 'sh')
+
     hs_cpp = pathes['hs']['cpp']
+    hs_cpp = fix_tilde_bug(connection, hs_cpp, 'hs', 'cpp')
 
     hd_dev_conf = pathes['hd']['device_conf']
+    hd_pathes = pathes['hd']['pathes']
 
     hd_out_folder = pathes['hd']['out_folder']
     hd_json = pathes['hd']['json']
+    hd_json = fix_tilde_bug(connection, hd_json, 'hd', 'json')
+
     hd_cpp = pathes['hd']['cpp']
+    hd_cpp = fix_tilde_bug(connection, hd_cpp, 'hd', 'cpp')
+
     # END FOR
 
     # FOR device_conf:
@@ -194,21 +319,21 @@ def remoteProjectRun(settings, notebook=None):
                                                     + hs_project_folder)
         if stdout.channel.recv_exit_status():
 
-            # create project folder:
-            stdin, stdout, stderr = client.exec_command('mkdir  '
-                                                        + hs_project_folder)
+            # create projects folder:
+            tmp_project_folder = workspace
+            for folder in project_path_folders:
+                tmp_project_folder = os.path.join(tmp_project_folder, folder)
+                create_folder(client, tmp_project_folder)
 
             # create out folder:
-            stdin, stdout, stderr = client.exec_command('mkdir  '
-                                                        + hs_out_folder)
+            create_folder(client, hs_out_folder)
             logger.info("Folders created.")
         else:
             stdin, stdout, stderr = client.exec_command('test -d  '
                                                         + hs_out_folder)
             if stdout.channel.recv_exit_status():
                 # create out folder:
-                stdin, stdout, stderr = client.exec_command('mkdir  '
-                                                            + hs_out_folder)
+                create_folder(client, hs_out_folder)
                 logger.info("out folder created inside project folder.")
             if ("cont" not in device_conf
                 or ("cont" in device_conf
@@ -236,41 +361,32 @@ def remoteProjectRun(settings, notebook=None):
                         logger.info("File OK.")
 
         # 1 copy json to hs:
-        # fix paramiko bug:
-        hs_json = hs_json.replace("~", "/home/" + connection.username)
-        logger.info("hs_json fixed:")
-        logger.info(hs_json)
 
         cftp = client.open_sftp()
         logger.info("hd_json:")
         logger.info(hd_json)
+        logger.info("hs_json:")
+        logger.info(hs_json)
 
         cftp.put(hd_json, hs_json)
         cftp.close()
+        logger.info("json copied")
 
         # 2 copy device_conf to hs:
-        # fix paramiko and walk bug:
-        hs_dev_conf = hs_dev_conf.replace("~", "/home/" + connection.username)
-        hd_dev_conf = hd_dev_conf.replace("~", "/home/" + connection.username)
-        logger.info("hs_dev_conf fixed:")
-        logger.info(hs_dev_conf)
-        logger.info("hd_dev_conf fixed:")
-        logger.info(hd_dev_conf)
+        copy_files(client, connection, hd_dev_conf, hs_dev_conf, 'dev_conf')
 
-        cftp = client.open_sftp()
-        walk_gen = os.walk(hd_dev_conf)
-        logger.info("copy device_conf files:")
-        for root, folders_names, file_names in walk_gen:
-            for file_name in file_names:
-                if file_name[-1] != '~':
-                    hd_file_name_full = os.path.join(hd_dev_conf, file_name)
-                    hs_file_name_full = os.path.join(hs_dev_conf, file_name)
-                    logger.info("copy " + hd_file_name_full)
-                    logger.info("to " + hs_file_name_full)
-                    cftp.put(hd_file_name_full, hs_file_name_full)
-        cftp.close()
-        logger.info("finished copy device_conf files")
-        
+        # 2.1 copy pathes to hs:
+        # copy_files(client, connection, hd_pathes, hs_pathes, 'pathes')
+
+        # 2.2 make problems folder link:
+        hs_problems = os.path.join(hs_hd, 'problems')
+        hs_problems = fix_tilde_bug(connection, hs_problems,
+                                    'hs', 'problems')
+        if not hs_problems == workspace:
+            make_problems_as_workspace_link(client, hs_problems, workspace)
+        else:
+            create_folder(client, hs_problems)
+
         #3 Run preprocessor on json
         logger.info('\nRunning preprocessor:')
         
@@ -284,15 +400,6 @@ def remoteProjectRun(settings, notebook=None):
             cftp.close()
         '''
 
-        # fix paramiko bug:
-        hs_hd = hs_hd.replace("~", "/home/" + connection.username)
-        logger.info("hs_hd fixed:")
-        logger.info(hs_hd)
-
-        # fix paramiko and walk bug:
-        hs_dev_conf = hs_dev_conf.replace("~", "/home/" + connection.username)
-        logger.info("hs_dev_conf fixed:")
-        logger.info(hs_dev_conf)
 
         '''
         # move current directly to hd:
@@ -358,11 +465,6 @@ def remoteProjectRun(settings, notebook=None):
         #get resulting files
         logger.info("Downloading results...")
 
-        # fix paramiko bug:
-        hs_out_folder = hs_out_folder.replace("~",
-                                              "/home/" + connection.username)
-        logger.info("hs_out_folder fixed:")
-        logger.info(hs_out_folder)
 
         cftp = client.open_sftp()
         cftp.chdir(hs_out_folder)
