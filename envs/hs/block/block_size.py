@@ -1,5 +1,5 @@
-from math_space.common.someFuncs import getCellCountInClosedInterval
-from math_space.common.someFuncs import getCellCountInHalfInterval
+from spaces.some_space.someFuncs import getCellCountInClosedInterval
+from spaces.some_space.someFuncs import getCellCountInHalfInterval
 
 
 class BlockSize():

@@ -4,6 +4,21 @@ import shutil
 
 from settings.settings_connection import Connection
 
+import logging
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+# logger = logging.getLogger('tests.tester.gen_1d')
+
+# if using directly uncoment that:
+
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('settings_main')
+logger.setLevel(level=log_level)
+
+
 settings_folder = 'settings'
 conn_folder = os.path.join(settings_folder, 'conn')
 device_conf_folder = os.path.join(settings_folder, 'device_conf')
@@ -11,7 +26,8 @@ pathes_folder = os.path.join(settings_folder, 'pathes')
 
 
 class Settings():
-    def __init__(self, hd_prefix=None):
+    def __init__(self, model, conn_name, device_conf_name,
+                 hd_prefix=None):
         if hd_prefix is not None:
             self.hd_prefix = hd_prefix
 
@@ -25,9 +41,13 @@ class Settings():
         else:
             self.hd_prefix = ''
 
-        self.connection = Connection()
-
         self.extract_all_settings()
+
+        if conn_name is not None:
+            self.make_connection(name=conn_name)
+
+        self.make_all_pathes(model)
+        self.set_device_conf(device_conf_name)
 
     def extract_all_settings(self):
         '''Extract all settings in::
@@ -73,6 +93,7 @@ class Settings():
         - ``name`` - is name (without extension) of conn in ``settings/conn``::
         Ex: name = conn_base for file ``settings/conn/conn_base.json``'''
 
+        self.connection = Connection()
         self.connection.fromDict(self.conn[name])
         self.connection.get_password()
 
@@ -84,9 +105,11 @@ class Settings():
             hd_path = os.getcwd()
         else:
             hd_path = self.hd_prefix
+        hd_path = self.fix_tilde_bug(hd_path, 'hd', 'path')
 
         if model_path is None:
             model_path = model.project_path
+        model_path = self.fix_tilde_bug(model_path, 'model', 'path')
 
         pathes = self.pathes
 
@@ -146,10 +169,15 @@ class Settings():
         pathes['hs'] = {}
 
         # projects folder at server:
+        
         workspace = pathes['pathes_hs_base']['Workspace']
+        workspace = self.fix_tilde_bug(workspace, 'workspace', 'path')
+        pathes['pathes_hs_base']['Workspace'] = workspace
 
         # traceFolder:
         tracerFolder = pathes['pathes_hs_base']['TracerFolder']
+        tracerFolder = self.fix_tilde_bug(tracerFolder, 'tracer', 'folder')
+        pathes['pathes_hs_base']['TracerFolder'] = tracerFolder
 
         # path to solver:
         pathes['hs']['solver'] = os.path.join(tracerFolder,
@@ -181,7 +209,7 @@ class Settings():
         # cpp file at server:
         pathes['hs']['cpp'] = (os.path
                                .join(pathes['hs']['out_folder'],
-                                    pathes['model']['name'] + '.cpp'))
+                                     pathes['model']['name'] + '.cpp'))
 
         # dom file at server:
         pathes['hs']['dom_bin'] = (os.path
@@ -200,6 +228,27 @@ class Settings():
 
         pathes['hs']['plot'] = os.path.join(pathes['hs']['out_folder'],
                                             'params_plot.txt')
+
+    def fix_tilde_bug(self, path, where, name):
+        
+        '''Replace ``~/`` with ``/home/username``
+        where ``username`` from self.connection.
+        If ``self.connection`` not setup yet, return
+        ``path`` (unchanged).'''
+        
+        try:
+            connection = self.connection
+        except AttributeError:
+            # do not fix if connection not set:
+            logger.debug("cannot fix tilde bug:"
+                         + " connection (username) not set")
+            return(path)
+
+        # fix tilde bug:
+        path = path.replace("~", "/home/" + connection.username)
+        # logger.info("%s_%s fixed:" % (where, name))
+        # logger.info(path)
+        return(path)
 
     def convert_problems(self):
 

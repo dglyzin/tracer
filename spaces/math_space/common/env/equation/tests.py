@@ -27,7 +27,7 @@ domain = model.gen_domain('hybridsolver')
 src = model.gen_cpp('hybridsolver')
 solver.run(domain, src)
 '''
-from math_space.common.env.equation.equation import Equation
+from spaces.math_space.common.env.equation.equation import Equation
 # from env.equation.equation import Equation
 
 import traceback

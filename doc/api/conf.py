@@ -23,7 +23,7 @@ import sys
 project_paths = []
 
 project_paths.append(os.path.abspath('../..'))
-project_paths.append(os.path.abspath('../../math_space/common'))
+project_paths.append(os.path.abspath('../../spaces/math_space/common'))
 
 project_paths.append(os.path.abspath('../../envs'))
 project_paths.append(os.path.abspath('../../envs/hs'))

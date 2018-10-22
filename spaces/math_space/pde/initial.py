@@ -6,7 +6,7 @@ Created on Mar 19, 2015
 '''
 from collections import OrderedDict
 
-from math_space.common.env.system.sys_main import sysNet as System
+from spaces.math_space.common.env.system.sys_main import sysNet as System
 
 
 class Initial(object):

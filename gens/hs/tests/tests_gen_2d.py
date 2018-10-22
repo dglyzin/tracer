@@ -27,9 +27,9 @@ def test_gen_2d(model='problems/2dTests/tests_2d_two_blocks0',
     print(model.base.projectName)
 
     # settings:
-    settings = Settings()
-    settings.make_all_pathes(model)
-    settings.set_device_conf(device_conf)
+    settings = Settings(model, None, device_conf)
+    # settings.make_all_pathes(model)
+    # settings.set_device_conf(device_conf)
 
     gen = Gen(model, settings)
     gen.gen_all()

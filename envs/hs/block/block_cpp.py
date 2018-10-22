@@ -1,4 +1,4 @@
-from math_space.common.someFuncs import getCellCountInClosedInterval
+from spaces.some_space.someFuncs import getCellCountInClosedInterval
 
 
 class BlockCpp():

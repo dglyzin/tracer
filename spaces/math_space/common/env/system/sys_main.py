@@ -12,8 +12,8 @@ Created on Mar 19, 2015
 #    from objectsTemplate import Object
 
 import sys
-if 'math_space/common' not in sys.path:
-    sys.path += ['math_space/common']
+if 'spaces/math_space/common' not in sys.path:
+    sys.path += ['spaces/math_space/common']
 
 from env.equation.equation import Equation
 from env.system.sys_base import sysBase

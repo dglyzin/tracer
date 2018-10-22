@@ -1,4 +1,4 @@
-from math_space.common.env.equation.equation import Equation
+from spaces.math_space.common.env.equation.equation import Equation
 
 import logging
 

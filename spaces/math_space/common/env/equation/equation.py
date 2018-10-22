@@ -56,8 +56,8 @@
 
 '''
 import sys
-if 'math_space/common' not in sys.path:
-    sys.path += ['math_space/common']
+if 'spaces/math_space/common' not in sys.path:
+    sys.path += ['spaces/math_space/common']
 
 '''
 from math_space.common.env.equation.parser.parser_main import EqParser

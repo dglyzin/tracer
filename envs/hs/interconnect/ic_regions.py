@@ -1,7 +1,7 @@
-from math_space.common.someFuncs import determineCISC2D
-from math_space.common.someFuncs import getRangesInClosedInterval
-from math_space.common.someClasses import Params
-from math_space.interval.interval_main import Interval
+from spaces.some_space.someFuncs import determineCISC2D
+from spaces.some_space.someFuncs import getRangesInClosedInterval
+from spaces.some_space.someClasses import Params
+from spaces.math_space.interval.interval_main import Interval
 
 from copy import deepcopy as copy
 

@@ -1,4 +1,4 @@
-from math_space.common.someClasses import Params
+from spaces.some_space.someClasses import Params
 from gens.hs.common.init_funcs_nums import InitFuncsNums
 
 import logging

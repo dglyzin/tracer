@@ -1,6 +1,6 @@
-from math_space.pde.regions import EquationRegion
-from math_space.pde.regions import BoundRegion
-from math_space.pde.regions import InitialRegion
+from spaces.math_space.pde.regions import EquationRegion
+from spaces.math_space.pde.regions import BoundRegion
+from spaces.math_space.pde.regions import InitialRegion
 
 from collections import OrderedDict
 

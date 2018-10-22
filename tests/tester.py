@@ -41,7 +41,7 @@ from gens.hs.tests.tests_gen_1d import test_gen_1d
 # for logger
 from tests.tests_common import test_logger as test_logger_from_submodule
 
-from math_space.common.env.equation.tests import test_all as tests_equation
+from spaces.math_space.common.env.equation.tests import test_all as tests_equation
 
 import os
 import sys

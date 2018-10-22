@@ -1,4 +1,4 @@
-from math_space.pde.regions import BoundRegion, EquationRegion
+from spaces.math_space.pde.regions import BoundRegion, EquationRegion
 from envs.hs.block.side.side_main import SideNet as Side
 from envs.hs.block.block_size import BlockSize
 from envs.hs.block.block_main import BlockNet as Block

@@ -1,4 +1,4 @@
-from math_space.common.someFuncs import getRangesInClosedInterval
+from spaces.some_space.someFuncs import getRangesInClosedInterval
 
 
 class GridBase():

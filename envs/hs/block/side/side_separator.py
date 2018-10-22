@@ -1,4 +1,4 @@
-from math_space.interval.interval_main import Interval
+from spaces.math_space.interval.interval_main import Interval
 
 from copy import deepcopy as copy
 from copy import copy as weak_copy

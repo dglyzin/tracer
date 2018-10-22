@@ -64,15 +64,6 @@ logger.setLevel(level=log_level)
 # paramiko.util.log_to_file(os.path.join(os.getcwd(), "tests", "paramiko.log"))
 
 
-def fix_tilde_bug(connection, path, where, name):
-
-    # fix tilde bug:
-    path = path.replace("~", "/home/" + connection.username)
-    # logger.info("%s_%s fixed:" % (where, name))
-    # logger.info(path)
-    return(path)
-
-
 def create_folder(client, folder):
 
     logger.info("Checking if folder "+folder+" exists...")
@@ -96,8 +87,8 @@ def create_folder(client, folder):
 def copy_files(client, connection, hd_path, hs_path, name):
 
     # fix tilde bug:
-    hs_path = fix_tilde_bug(connection, hs_path, 'hs', name)
-    hd_path = fix_tilde_bug(connection, hd_path, 'hd', name)
+    # hs_path = fix_tilde_bug(connection, hs_path, 'hs', name)
+    # hd_path = fix_tilde_bug(connection, hd_path, 'hd', name)
 
     cftp = client.open_sftp()
     walk_gen = os.walk(hd_path)
@@ -233,12 +224,12 @@ def remoteProjectRun(settings, notebook=None):
     pathes = settings.pathes
     connection = settings.connection
     workspace = pathes['pathes_hs_base']['Workspace']
-    workspace = fix_tilde_bug(connection, workspace,
-                              'hs', 'workspace')
+    # workspace = fix_tilde_bug(connection, workspace,
+    #                           'hs', 'workspace')
 
     tracer_folder = pathes['pathes_hs_base']['TracerFolder']
-    tracer_folder = fix_tilde_bug(connection, tracer_folder,
-                                  'hs', 'tracer_folder')
+    # tracer_folder = fix_tilde_bug(connection, tracer_folder,
+    #                               'hs', 'tracer_folder')
 
     project_name = pathes['model']['name']
     project_path = pathes['model']['path']
@@ -247,43 +238,43 @@ def remoteProjectRun(settings, notebook=None):
     project_path_folders = project_path.split(os.path.sep)
 
     hs_hd = pathes['hs']['hd']
-    hs_hd = fix_tilde_bug(connection, hs_hd,
-                          'hs', 'hd')
+    # hs_hd = fix_tilde_bug(connection, hs_hd,
+    #                       'hs', 'hd')
 
     hs_solver = pathes['hs']['solver']
 
     hs_dev_conf = pathes['hs']['device_conf']
-    hs_dev_conf = fix_tilde_bug(connection, hs_dev_conf,
-                                'hs', 'dev_conf')
+    # hs_dev_conf = fix_tilde_bug(connection, hs_dev_conf,
+    #                             'hs', 'dev_conf')
 
     hs_pathes = pathes['hs']['pathes']
 
     hs_project_folder = pathes['hs']['project_path']
-    hs_project_folder = fix_tilde_bug(connection, hs_project_folder,
-                                      'hs', 'projects_folder')
+    # hs_project_folder = fix_tilde_bug(connection, hs_project_folder,
+    #                                   'hs', 'projects_folder')
 
     hs_out_folder = pathes['hs']['out_folder']
-    hs_out_folder = fix_tilde_bug(connection, hs_out_folder,
-                                  'hs', 'out_folder')
+    # hs_out_folder = fix_tilde_bug(connection, hs_out_folder,
+    #                               'hs', 'out_folder')
 
     hs_json = pathes['hs']['json']
-    hs_json = fix_tilde_bug(connection, hs_json, 'hs', 'json')
+    # hs_json = fix_tilde_bug(connection, hs_json, 'hs', 'json')
 
     hs_sh = pathes['hs']['sh']
-    hs_sh = fix_tilde_bug(connection, hs_sh, 'hs', 'sh')
+    # hs_sh = fix_tilde_bug(connection, hs_sh, 'hs', 'sh')
 
     hs_cpp = pathes['hs']['cpp']
-    hs_cpp = fix_tilde_bug(connection, hs_cpp, 'hs', 'cpp')
+    # hs_cpp = fix_tilde_bug(connection, hs_cpp, 'hs', 'cpp')
 
     hd_dev_conf = pathes['hd']['device_conf']
     hd_pathes = pathes['hd']['pathes']
 
     hd_out_folder = pathes['hd']['out_folder']
     hd_json = pathes['hd']['json']
-    hd_json = fix_tilde_bug(connection, hd_json, 'hd', 'json')
+    # hd_json = fix_tilde_bug(connection, hd_json, 'hd', 'json')
 
     hd_cpp = pathes['hd']['cpp']
-    hd_cpp = fix_tilde_bug(connection, hd_cpp, 'hd', 'cpp')
+    # hd_cpp = fix_tilde_bug(connection, hd_cpp, 'hd', 'cpp')
 
     # END FOR
 
@@ -380,8 +371,8 @@ def remoteProjectRun(settings, notebook=None):
 
         # 2.2 make problems folder link:
         hs_problems = os.path.join(hs_hd, 'problems')
-        hs_problems = fix_tilde_bug(connection, hs_problems,
-                                    'hs', 'problems')
+        # hs_problems = fix_tilde_bug(connection, hs_problems,
+        #                             'hs', 'problems')
         if not hs_problems == workspace:
             make_problems_as_workspace_link(client, hs_problems, workspace)
         else:
@@ -595,11 +586,9 @@ if __name__ == '__main__':
     device_conf_name = args.device_conf_name
 
     # make settings:
-    settings = Settings()
     model = Model()
     model.io.loadFromFile(modelFileName)
-    settings.make_all_pathes(model)
-    settings.make_connection(name=conn_name)
-    settings.set_device_conf(device_conf_name)
+
+    settings = Settings(model, conn_name, device_conf_name)
 
     finalParseAndRun(settings)
