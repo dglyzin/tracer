@@ -30,7 +30,7 @@ HS
 ~~
 
 * :doc:`Gens general <hd/gens/hs/hs>`
-* :doc:`Gens env <hd/gens/hs/env/module>`
+* :doc:`Gens env <hd/gens/hs/gen_env/modules_main>`
 * :doc:`Arrays filler <hd/gens/hs/array_filler/modules>`
 * :doc:`fiocr <hd/gens/hs/fiocr/modules>`
 

@@ -6,5 +6,4 @@ centrals
 
    cent_common
    cent_cpp_rend
-   cent_dom
    cent_main

@@ -8,4 +8,4 @@ bounds
    common
    d1
    d2
-   tests
+   tests_bounds

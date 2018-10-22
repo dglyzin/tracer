@@ -9,18 +9,10 @@ d1 package
 Submodules
 ----------
 
-d1\.bounds\_common module
--------------------------
-
-.. automodule:: bounds_common
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-d1\.bounds\_d1\_dom module
+d1\.ics\_d1\_common module
 --------------------------
 
-.. automodule:: bounds_d1_dom
+.. automodule:: d1.ics_d1_common
     :members:
     :undoc-members:
     :show-inheritance:

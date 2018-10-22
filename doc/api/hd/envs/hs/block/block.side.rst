@@ -9,14 +9,6 @@ block\.side package
 Submodules
 ----------
 
-block\.side\.interval module
-----------------------------
-
-.. automodule:: block.side.interval
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 block\.side\.side\_editor module
 --------------------------------
 

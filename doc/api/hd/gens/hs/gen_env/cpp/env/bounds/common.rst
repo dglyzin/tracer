@@ -17,14 +17,6 @@ common\.bounds\_common\_cpp module
     :undoc-members:
     :show-inheritance:
 
-common\.bounds\_common\_dom module
-----------------------------------
-
-.. automodule:: common.bounds_common_dom
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 common\.bounds\_cpp\_rend module
 --------------------------------
 

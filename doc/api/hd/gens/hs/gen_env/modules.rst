@@ -1,8 +1,7 @@
-ics
-===
+gen_env
+=======
 
 .. toctree::
    :maxdepth: 4
 
-   d1
-   ics_main
+   gen_dim
