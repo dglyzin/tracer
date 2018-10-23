@@ -69,6 +69,21 @@ def test_gen_dim_2d(model=('problems/2dTests/tests_2d_two_blocks0')):
 
 
 if __name__ == '__main__':
+
+    if '-t' in sys.argv:
+        test_idx = sys.argv.index('-t') + 1
+        test_name = os.path.join('problems', '2dTests',
+                                 sys.argv[test_idx])
+    else:
+        test_name = 'problems/2dTests/tests_2d_two_blocks0'
+
+    if '-d' in sys.argv:
+        device_conf_idx = sys.argv.index('-d') + 1
+        device_conf = sys.argv[device_conf_idx]
+    else:
+        device_conf = "default"
+
+    test_gen_2d(test_name, device_conf)
     
-    test_gen_2d()
+    # test_gen_2d()
     # test_gen_dim_2d()

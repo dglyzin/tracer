@@ -1,0 +1,145 @@
+{
+    "ProjectName": "test2d_two_blocks0", 
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 0.01, 
+        "TimeStep": 1e-05, 
+        "SaveInterval": 0.001, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "Dimension": 2, 
+        "dx": 0.005, 
+        "dy": 0.005, 
+        "dz": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "MainBlock", 
+            "Offset": {
+                "x": 1.5, 
+                "y": 0.0
+            }, 
+            "Size": {
+                "x": 3.0, 
+                "y": 2.0
+            }, 
+            "DefaultEquation": 2, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 0.75, 
+                    "xto": 2.25, 
+                    "yfrom": 0.5, 
+                    "yto": 1.5
+                }
+            ], 
+            "EquationRegions": []
+        } 
+    ], 
+    "Interconnects": [], 
+    "Equations": [
+        {
+            "Name": "Heat 1", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
+            ]
+        }, 
+        {
+            "Name": "Heat 2", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=b*(D[U,{x,2}]+ D[U,{y,2}])"
+            ]
+        }, 
+        {
+            "Name": "Psevdo Heat", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - r * D[U,{y,1}]"
+            ]
+        }
+    ], 
+    "EquationParams": {
+        "Params": [
+            "a", 
+            "b", 
+            "c", 
+            "r"
+        ], 
+        "ParamValues": [
+            {
+                "a": 1, 
+                "c": 0.1, 
+                "b": 3, 
+                "r": 100
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
+    "Bounds": [], 
+    "Initials": [
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "0.0"
+            ]
+        }, 
+        {
+            "Name": "Initial values 1", 
+            "Values": [
+                "40.0"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode1", 
+            "CpuCount": 1, 
+            "CpuMemory": [
+                56
+            ], 
+            "GpuCount": 3, 
+            "GpuMemory": [
+                5, 
+                5, 
+                5
+            ]
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
+        ]
+    }, 
+    "Plots": [	{
+            "Title": "u(t,x)", 
+            "Period": 0.001,
+            "Value": "U"
+        }
+       ]
+}

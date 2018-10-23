@@ -148,7 +148,7 @@ def make_problems_as_workspace_link(client, hs_problems, workspace):
     logger.info("link created")
 
 
-def remoteProjectRun(settings, notebook=None):
+def remoteProjectRun(settings, dimention, notebook=None):
     '''
     Run hs with settings:
     1) Copy json files of model, device_conf to hs
@@ -391,7 +391,6 @@ def remoteProjectRun(settings, notebook=None):
             cftp.close()
         '''
 
-
         '''
         # move current directly to hd:
         command = "cd " + hs_hd
@@ -402,7 +401,9 @@ def remoteProjectRun(settings, notebook=None):
         # and run source generator:
         command = ("cd " + hs_hd + " &&"
                    + " pwd &&"
-                   + " python3 " + "-m gens.hs.tests.tests_gen_1d"
+                   + (" python3 "
+                      + ("-m gens.hs.tests.tests_gen_%dd"
+                         % dimention))
                    + ' -t ' + project_name
                    + ' -d ' + settings.device_conf_name)
 
@@ -496,7 +497,7 @@ def remoteProjectRun(settings, notebook=None):
         return()
 
 
-def finalParseAndRun(settings):
+def finalParseAndRun(settings, dimention):
     '''
     continueFileName = args.cont
     continueEnabled = not (continueFileName is None)
@@ -518,7 +519,7 @@ def finalParseAndRun(settings):
         "nocppgen": args.nocppgen
     }
     '''
-    remoteProjectRun(settings, notebook=None)
+    remoteProjectRun(settings, dimention, notebook=None)
     # remoteProjectRun(settings, params, notebook=None)
     # logger.clean()
 
@@ -591,4 +592,4 @@ if __name__ == '__main__':
 
     settings = Settings(model, conn_name, device_conf_name)
 
-    finalParseAndRun(settings)
+    finalParseAndRun(settings, model.dimension)
