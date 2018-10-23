@@ -367,7 +367,7 @@ def remoteProjectRun(settings, dimention, notebook=None):
         copy_files(client, connection, hd_dev_conf, hs_dev_conf, 'dev_conf')
 
         # 2.1 copy pathes to hs:
-        # copy_files(client, connection, hd_pathes, hs_pathes, 'pathes')
+        copy_files(client, connection, hd_pathes, hs_pathes, 'pathes')
 
         # 2.2 make problems folder link:
         hs_problems = os.path.join(hs_hd, 'problems')
