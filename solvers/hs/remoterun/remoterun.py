@@ -447,12 +447,18 @@ def remoteProjectRun(settings, dimention, notebook=None):
                         or 'errors' in line or 'Errors' in line)
                 if cond:
                     logger.info(line)
+                    break
                 else:
                     progress.show_stdout_progresses(line)
             except:
                 logger.info("Wrong symbol")
+                break
+
         logger.info(stdout.read())
+        logger.info("it was stdout")
+
         logger.info(stderr.read())
+        logger.info("it was stderr")
         
         #get resulting files
         logger.info("Downloading results...")
