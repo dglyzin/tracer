@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 0.01, 
+        "FinishTime": 0.1, 
         "TimeStep": 1e-05, 
         "SaveInterval": 0.001, 
         "AbsTolerance": 0.001, 
@@ -19,7 +19,7 @@
         {
             "Name": "MainBlock", 
             "Offset": {
-                "x": 1.5, 
+                "x": 0.0, 
                 "y": 0.0
             }, 
             "Size": {
