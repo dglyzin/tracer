@@ -34,8 +34,8 @@
                     "InitialNumber": 1, 
                     "xfrom": 0.75, 
                     "xto": 2.25, 
-                    "yfrom": 0.5, 
-                    "yto": 1.5
+                    "yfrom": 1.5, 
+                    "yto": 1.9
                 }
             ], 
             "EquationRegions": [
@@ -43,12 +43,20 @@
                     "EquationNumber": 3, 
                     "xfrom": 0.75, 
                     "xto": 2.25, 
-                    "yfrom": 0.5, 
-                    "yto": 1.5
+                    "yfrom": 1.5, 
+                    "yto": 1.9
                 }]
         } 
     ], 
-    "Interconnects": [], 
+    "Interconnects": [
+	{
+            "Name": "connection 1", 
+            "Block1": 0, 
+            "Block2": 0, 
+            "Block1Side": 3, 
+            "Block2Side": 2
+        }
+], 
     "Equations": [
         {
             "Name": "Heat 1", 

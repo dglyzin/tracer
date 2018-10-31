@@ -105,6 +105,23 @@ class GenCppCommon():
         elif(btype == 0):
             return("Dirichlet__side")
 
+    def parse_equations_vertex(self, vepv):
+        
+        '''
+        Always use::
+        
+           ``result[something] = source[0][something];``
+
+        - ``vepv`` -- is vertex_edge.parsedValues,
+        where vertex_edge is bParam from
+        bounds_2d.set_params_for_bounds'''
+
+        parsed = [(parsedValue.split('=')[0]+" = "
+                   + (parsedValue.split('=')[0]
+                      .replace("result", "source[0]")))
+                  for parsedValue in vepv]
+        return(parsed)
+
     def parse_equations(self, eSystem, model, blockNumber,
                         btype, side_num, border_values):
 

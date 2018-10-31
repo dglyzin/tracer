@@ -79,6 +79,46 @@ class Params(dict):
             raise(KeyError('for term %s dont have %s param' % (source, key)))
             
 
+def calcMinMax(projectDir, binFileList, info,
+               countZ, countY, countX,
+               offsetZ, offsetY, offsetX,
+               cellSize):
+    maxValue = []  # sys.float_info.min
+    minValue = []  # sys.float_info.max
+
+    for i in range(cellSize):
+        maxValue.append(sys.float_info.min)
+        minValue.append(sys.float_info.max)
+
+    for idx, binFile in enumerate(binFileList):
+        data = readBinFile(projectDir+"/"+binFile, info,
+                           countZ, countY, countX,
+                           offsetZ, offsetY, offsetX,
+                           cellSize)
+
+        for i in range(cellSize):
+            tmp = data[0, :, :, i]
+
+            tmpMaxValue = np.max(tmp)
+            tmpMinValue = np.min(tmp)
+
+            if tmpMaxValue > maxValue[i]:
+                maxValue[i] = tmpMaxValue
+
+            if tmpMinValue < minValue[i]:
+                minValue[i] = tmpMinValue
+
+    for i in range(cellSize):
+        if (maxValue[i] - minValue[i]) < 1e-300:
+            maxValue[i] = maxValue[i] + 1
+            minValue[i] = minValue[i] - 1
+
+    logger.info(maxValue)
+    logger.info(minValue)
+
+    return maxValue, minValue
+
+
 def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
     figure = Figure()
     canvas = FigureCanvas(figure)
@@ -139,7 +179,8 @@ def savePng2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
 
         cmap = cm.jet
 
-        layer = data[0, :, :, i]
+        layer = data[i]
+        # layer = data[0, :, :, i]
 
         cb = axes.pcolormesh(X, Y, layer, vmin=minValue[i], vmax=maxValue[i])
 
@@ -177,50 +218,11 @@ def saveTxt2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
     txtFile.close()
 
 
-def calcMinMax(projectDir, binFileList, info,
-               countZ, countY, countX,
-               offsetZ, offsetY, offsetX,
-               cellSize):
-    maxValue = []  # sys.float_info.min
-    minValue = []  # sys.float_info.max
-
-    for i in range(cellSize):
-        maxValue.append(sys.float_info.min)
-        minValue.append(sys.float_info.max)
-
-    for idx, binFile in enumerate(binFileList):
-        data = readBinFile(projectDir+"/"+binFile, info,
-                           countZ, countY, countX,
-                           offsetZ, offsetY, offsetX,
-                           cellSize)
-
-        for i in range(cellSize):
-            tmp = data[0, :, :, i]
-
-            tmpMaxValue = np.max(tmp)
-            tmpMinValue = np.min(tmp)
-
-            if tmpMaxValue > maxValue[i]:
-                maxValue[i] = tmpMaxValue
-
-            if tmpMinValue < minValue[i]:
-                minValue[i] = tmpMinValue
-
-    for i in range(cellSize):
-        if (maxValue[i] - minValue[i]) < 1e-300:
-            maxValue[i] = maxValue[i] + 1
-            minValue[i] = minValue[i] - 1
-
-    logger.info(maxValue)
-    logger.info(minValue)
-
-    return maxValue, minValue
-
-
-def savePlots1D(projectDir, projectName, data, t, countX,
+def savePlots1D(projectDir, projectName, data, t,
+                countZ, countY, countX,
                 offsetZ, offsetY, offsetX,
-                maxValue, minValue,
-                dx, dy, postfix, plotIdx, picCount):
+                cellSize, maxValue, minValue,
+                dx, dy, postfix, plotIdx):
     # for idx, binFile in enumerate(binFileList):
     # data = readBinFile(projectDir+"/"+binFile, info,
     #                    countZ, countY, countX,
@@ -233,15 +235,56 @@ def savePlots1D(projectDir, projectName, data, t, countX,
 
     filename = os.path.join(projectDir, (projectName+"-plot"
                                          + str(plotIdx) + postfix + ".png"))
-    savePng1D(filename, xs, data, maxValue, minValue, t, picCount)
+    savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
     # logger.info("produced png: "+ filename)
     return "produced png: " + filename
 
 
-def getResults1D(projectDir, projectName, binFile, info,
-                 countZ, countY, countX,
-                 offsetZ, offsetY, offsetX,
-                 cellSize, nameEquations, resultExpression, idx):
+def savePlots2D(projectDir, projectName, data, t,
+                countZ, countY, countX,
+                offsetZ, offsetY, offsetX,
+                cellSize, maxValue, minValue,
+                dx, dy, postfix, plotIdx):
+    '''
+    # for idx, binFile in enumerate(binFileList):
+    data = readBinFile(projectDir+"/"+binFile, info,
+                       countZ, countY, countX, offsetZ, offsetY, offsetX,
+                       cellSize)
+    '''
+    xs = np.arange(0, countX)*dx
+    ys = np.arange(0, countY)*dy
+
+    X, Y = np.meshgrid(xs, ys)
+
+    # plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
+    # plt.colorbar()
+
+    filename = os.path.join(projectDir, (projectName+"-plot"
+                                         + str(plotIdx)+postfix + ".png"))
+    # plt.savefig(filename, format='png')
+    # logger.info 'save #', idx, binFile, "->", filename
+    # plt.clf()
+
+    # t = binFile.split("-")[1]
+    # equal to
+    # t = binFile.split("-")[1]
+    # Ex (binFile): heat_block_0-0.05300000-2.dbin
+    t = t.split(drawExtension)[0]
+
+    savePng2D(filename, X, Y, data, maxValue, minValue, t, cellSize)
+    # if saveText:
+    #    filenameTxt = projectDir+projectName+"-txtFile-" + str(idx) + ".txt"
+    #    saveTxt2D(filenameTxt, X, Y, data, maxValue, minValue, t, cellSize)
+
+    # logger.info("produced png: "+ filename)
+    return "produced png: " + filename
+
+
+def getResults(projectDir, projectName, binFile,
+               info, dimension,
+               countZ, countY, countX,
+               offsetZ, offsetY, offsetX,
+               cellSize, nameEquations, resultExpression, idx):
     '''
         returns time and requested value from state file binfile
     '''
@@ -255,7 +298,10 @@ def getResults1D(projectDir, projectName, binFile, info,
     # U -> data
     dictfun = {}
     for numitem, item in enumerate(nameEquations):
-        dictfun[item] = data[0, 0, :, numitem]
+        if dimension == 1:
+            dictfun[item] = data[0, 0, :, numitem]
+        elif dimension == 2:
+            dictfun[item] = data[0, :, :, numitem]
     # if countfun in dictfunc:
     #    idx = dictfunc[countfun]
     # else:
@@ -276,6 +322,18 @@ def getResults1D(projectDir, projectName, binFile, info,
     return t, res  # "produced text result: "+ filename
 
 
+def wGetResults(args):
+    return(getResults(*args))
+
+
+def wSavePlots1D(args):
+    return(savePlots1D(*args))
+
+
+def wSavePlots2D(args):
+    return(savePlots2D(*args))
+
+
 def createResultFile(projectDir, projectName, resIdx, resLog):
     logger.info("Creating out file:")
 
@@ -294,42 +352,6 @@ def createResultFile(projectDir, projectName, resIdx, resLog):
     # proc.wait()
     # subprocess.call(command, shell=True)
     logger.info("Done")
-
-
-def saveResults2D(projectDir, projectName, binFile, info,
-                  countZ, countY, countX,
-                  offsetZ, offsetY, offsetX,
-                  cellSize, maxValue, minValue,
-                  dx, dy, postfix, plotIdx, saveText):
-    # for idx, binFile in enumerate(binFileList):
-    data = readBinFile(projectDir+"/"+binFile, info,
-                       countZ, countY, countX, offsetZ, offsetY, offsetX,
-                       cellSize)
-
-    xs = np.arange(0, countX)*dx
-    ys = np.arange(0, countY)*dy
-
-    X, Y = np.meshgrid(xs, ys)
-
-    # plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
-    # plt.colorbar()
-
-    filename = os.path.join(projectDir, (projectName+"-plot"
-                                         +str(plotIdx)+postfix + ".png"))
-    # plt.savefig(filename, format='png')
-    # logger.info 'save #', idx, binFile, "->", filename
-    # plt.clf()
-
-    t = binFile.split("-")[1]
-    t = t.split(drawExtension)[0]
-
-    savePng2D(filename, X, Y, data, maxValue, minValue, t, cellSize)
-    # if saveText:
-    #    filenameTxt = projectDir+projectName+"-txtFile-" + str(idx) + ".txt"
-    #    saveTxt2D(filenameTxt, X, Y, data, maxValue, minValue, t, cellSize)
-
-    # logger.info("produced png: "+ filename)
-    return "produced png: " + filename
 
 
 def createVideoFile(projectDir, projectName, plotIdx):
@@ -364,11 +386,11 @@ def getBinFilesByPlot(binFileList, plotValList, plotCount):
     step 1):
        transform all plotValList into binary
        plotFileLists |-> [bin(plotVal) for plotVal in plotFileLists]
-       Ex: [9] |-> [101]
+       Ex: [9] |-> [1001]
 
     step 2):
        transform range(plotCount) into binary
-       plotCount |-> [bin(plotVal) for plotVal in range(plotCount)]
+       plotCount |-> [bin(2**(plotVal+1)) for plotVal in range(plotCount)]
        Ex: [0, 1, 2] |-> [10, 100, 1000]
 
     step 3): compare each bit of bin(plotVar) with corresponding bit from
@@ -377,8 +399,8 @@ def getBinFilesByPlot(binFileList, plotValList, plotCount):
           [[bool(out_1 & out_2)
             for out_2 in os_2] for out_1 in os_1]
        Ex:
-          [101], [10, 100, 1000] |->
-            [[False, True, False]]
+          [1001], [10, 100, 1000] |->
+            [[False, False, True]]
 
     step 3): factorize images names into plotCount classes
        binFileList, range(plotCount), out(step 3) as os_3|->
@@ -389,7 +411,7 @@ def getBinFilesByPlot(binFileList, plotValList, plotCount):
                   plotVarIndex = index(plotFileLists) = index(binFileList)
        Ex:
           ['file_1'], [0, 1, 2], [[False, True, False]] |->
-             [0: [], 1: ['file_1'], 2: []]
+             [0: [], 1: [], 2: ['file_1']]
     '''
 
     result = []
@@ -400,14 +422,6 @@ def getBinFilesByPlot(binFileList, plotValList, plotCount):
             if plot_contains(plotIdx, plotVal):
                 result[plotIdx].append(fileName)
     return result
-
-
-def wGetResults1D(args):
-    return(getResults1D(*args))
-
-
-def wSavePlots1D(args):
-    return(savePlots1D(*args))
 
 
 def createMovie(projectDir, projectName, modelParamsPath):
@@ -473,30 +487,33 @@ def createMovie(projectDir, projectName, modelParamsPath):
         logger.info(plot['Value'])
         logger.info(type(plot['Value']))
         pool = mp.Pool(processes=16)
-        saveResultFunc = savePlots1D
+        # saveResultFunc = savePlots1D
         if dimension == 1:
             saveResultFunc = wSavePlots1D  # savePlots1D
         if dimension == 2:
-            saveResultFunc = saveResults2D
+            saveResultFunc = wSavePlots2D
         if plotType == str:
             arg_list = [(projectDir, projectName, binFile,
-                         info, countZ, countY, countX,
+                         info, dimension,
+                         countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
                          cellSize, mParams['namesEquations'],
                          plot['Value'], str(idx))
                         for idx, binFile in enumerate(plotFileLists[plotIdx])]
-            logData = pool.map(wGetResults1D, arg_list)
+            logData = pool.map(wGetResults, arg_list)
 
-            dataListMin = [min([min(i[1]) for i in logData])]
-            dataListMax = [max([max(i[1]) for i in logData])]
+            dataListMin = [min([i[1].min() for i in logData])]
+            dataListMax = [max([i[1].max() for i in logData])]
             logger.info('min:')
             logger.info(dataListMin)
             picCount = 1
             arg_list = [(projectDir, projectName,
-                         [dataNum[1]], dataNum[0], countX,
+                         [dataNum[1]], dataNum[0],
+                         countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
+                         cellSize,
                          dataListMax, dataListMin, dx, dy,
-                         str(Idx), plotIdx, picCount)
+                         str(Idx), plotIdx)
                         for Idx, dataNum in enumerate(logData)]
             log = pool.map(saveResultFunc, arg_list)
 
@@ -504,13 +521,14 @@ def createMovie(projectDir, projectName, modelParamsPath):
             logger.info('ЛИСТ! Ы')
             logData = []
             for elemPlot in plot["Value"]:
-                arg_list = [(projectDir, projectName, binFile, info,
+                arg_list = [(projectDir, projectName,
+                             binFile, info, dimension,
                              countZ, countY, countX,
                              offsetZ, offsetY, offsetX, cellSize,
                              mParams['namesEquations'], elemPlot, str(idx))
                             for idx, binFile in enumerate(
                                     plotFileLists[plotIdx])]
-                dataAny = pool.map(getResults1D, arg_list)
+                dataAny = pool.map(wGetResults, arg_list)
 
                 logger.debug("plotFileLists")
                 logger.debug(plotFileLists)
@@ -545,10 +563,12 @@ def createMovie(projectDir, projectName, modelParamsPath):
             logDataNp = np.array(logData)
             logger.info(logDataNp[:, 0])
             arg_list = [(projectDir, projectName, logDataNp[:, Idx],
-                         dataTime[Idx], countX,
+                         dataTime[Idx],
+                         countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
+                         cellSize,
                          dataListMax, dataListMin, dx, dy,
-                         str(Idx), plotIdx, picCount)
+                         str(Idx), plotIdx)
                         for Idx, itemd in enumerate(logDataNp[0])]
             log = pool.map(saveResultFunc, arg_list)
         for element in log:
@@ -562,14 +582,15 @@ def createMovie(projectDir, projectName, modelParamsPath):
     # logger.info('aaaa ', resultlistname)
     for resultItem in mParams['resultList']:
         pool = mp.Pool(processes=16)
-        arg_list = [(projectDir, projectName, binFile, info,
+        arg_list = [(projectDir, projectName,
+                     binFile, info, dimension,
                      countZ, countY, countX,
                      offsetZ, offsetY, offsetX, cellSize,
                      mParams['namesEquations'],
                      resultItem['Value'], str(idx))
                     for idx, binFile in enumerate(
                             plotFileLists[mParams['plotCount'] + resIdx])]
-        resuls = pool.map(wGetResults1D, arg_list)
+        resuls = pool.map(wGetResults, arg_list)
         logger.info('skks:')
         logger.info(projectDir)
         logger.info(resultItem)

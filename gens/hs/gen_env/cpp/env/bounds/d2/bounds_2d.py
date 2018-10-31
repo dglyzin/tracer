@@ -100,6 +100,9 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         self.net.params.bounds_edges.extend(params_edges)
         self.net.params.bounds_vertex.extend(params_vertex)
 
+        # print("params_vertex[0].parsedValues")
+        # print(self.net.params.bounds_vertex[0].parsedValues)
+
         # FOR FuncArray
         funcNamesStackLocal = [bound.funcName
                                for bound in self.net.params.bounds]
@@ -312,7 +315,12 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         vParams.bound_side = vertex_edge
         vParams.btype = vertex_edge.btype
         vParams.equation = vertex_edge.equation  # .copy()
-        vParams.parsedValues = vertex_edge.parsedValues
+
+        # use result[something] = source[0][something];
+        parsedValues = self.parse_equations_vertex(vertex_edge.parsedValues)
+        vParams.parsedValues = parsedValues
+        # vParams.parsedValues = vertex_edge.parsedValues
+
         # print("parsedValues")
         # print(vParams.parsedValues)
         vParams.original = vertex_edge.original

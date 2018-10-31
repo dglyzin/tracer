@@ -455,8 +455,8 @@ def remoteProjectRun(settings, dimention, notebook=None):
                 logger.info("Wrong symbol")
                 break
 
-        # logger.info(stdout.read())
-        # logger.info("it was stdout")
+        logger.info(stdout.read())
+        logger.info("it was stdout")
 
         logger.info(stderr.read())
         logger.info("it was stderr")
