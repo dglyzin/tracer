@@ -88,9 +88,11 @@ class Base():
 
     def set_vars_indexes(self, **kwargs):
         '''Input:
-        vars_to_indexes=[('U', 0), ('V', 1)]'''
-        # int: shift index for variable like
-        # like (U,V)-> (source[+0], source[+1])
+
+        - ``unknownVarIndex`` -- shift index for variable
+        (like (U, V)-> (source[+0], source[+1]))
+        (Ex: [('U', 0), ('V', 1)])
+        '''
 
         try:
             map_vti = dict(kwargs['vars_to_indexes'])

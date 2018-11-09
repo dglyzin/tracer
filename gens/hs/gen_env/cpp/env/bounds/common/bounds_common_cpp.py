@@ -4,16 +4,15 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('bounds.bounds_common_dom')
+# logger = logging.getLogger('bounds.bounds_common_cpp')
 
 # if using directly uncoment that:
-'''
+
 # create logger
 log_level = logging.DEBUG  # logging.DEBUG
 logging.basicConfig(level=log_level)
-logger = logging.getLogger('bounds_common_dom')
+logger = logging.getLogger('bounds_common_cpp')
 logger.setLevel(level=log_level)
-'''
 
 
 class GenCppCommon():
@@ -105,7 +104,7 @@ class GenCppCommon():
         elif(btype == 0):
             return("Dirichlet__side")
 
-    def parse_equations_vertex(self, vepv):
+    def parse_equations_vertex(self, vertex, vertex_edge):
         
         '''
         Always use::
@@ -115,12 +114,34 @@ class GenCppCommon():
         - ``vepv`` -- is vertex_edge.parsedValues,
         where vertex_edge is bParam from
         bounds_2d.set_params_for_bounds'''
-
+        '''
         parsed = [(parsedValue.split('=')[0]+" = "
                    + (parsedValue.split('=')[0]
                       .replace("result", "source[0]")))
                   for parsedValue in vepv]
-        return(parsed)
+        '''
+        eSystem = vertex_edge.equation.copy()
+        border_values_parsed = vertex_edge.border_values_parsed
+        btype = vertex_edge.btype
+        
+        vertex_sides = vertex.sides_nums
+
+        # print("border_values_parsed:")
+        # print(border_values_parsed)
+        
+        for i, ebv_cpp in enumerate(border_values_parsed):
+
+            # set eq parameters (including of border values):
+            editor = eSystem.eqs[i].replacer.cpp.editor
+            editor.set_diff_type(diffType='pure',
+                                 diffMethod='vertex',
+                                 btype=btype,
+                                 vertex_sides=vertex_sides,
+                                 func=ebv_cpp)
+
+        parsed = self.get_eq_cpp(eSystem)
+        
+        return((parsed, eSystem))
 
     def parse_equations(self, eSystem, model, blockNumber,
                         btype, side_num, border_values):
@@ -129,10 +150,10 @@ class GenCppCommon():
         self.set_eq_base_params(eSystem, model.dimension,
                                 blockNumber)
         block = model.blocks[blockNumber]
-        self.set_eq_spec_params(model, block, eSystem, btype,
-                                side_num, border_values)
+        bv_parsed = self.set_eq_spec_params(model, block, eSystem, btype,
+                                            side_num, border_values)
         parsed = self.get_eq_cpp(eSystem)
-        return(parsed)
+        return((parsed, bv_parsed))
         
     def set_eq_spec_params(self, model, block, eSystem, btype,
                            side_num, border_values):
@@ -158,7 +179,8 @@ class GenCppCommon():
                  cellsize/float(model.grid.gridStepY),
                  cellsize/float(model.grid.gridStepZ)]
         dim = block.size.dimension
-        
+
+        border_values_parsed = []
         # parse border values:
         for i, bv in enumerate(border_values):
             ebv = Equation(bv)
@@ -169,10 +191,12 @@ class GenCppCommon():
 
             # make cpp for border values:
             ebv_cpp = ebv.replacer.cpp.make_cpp()
+            border_values_parsed.append(ebv_cpp)
 
             # set eq parameters (including of border values):
             editor = eSystem.eqs[i].replacer.cpp.editor
             editor.set_diff_type(diffType='pure',
-                                 diffMethod='special',
+                                 diffMethod='borders',
                                  btype=btype, side=side_num,
                                  func=ebv_cpp)
+        return(border_values_parsed)

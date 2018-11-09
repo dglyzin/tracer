@@ -26,7 +26,20 @@ firstIndex
 secondIndexSTR
 
 '''
+
+import os
 import sys
+import inspect
+# insert env dir into sys
+# env must contain env folder:
+currentdir = os.path.dirname(os.path
+                             .abspath(inspect.getfile(inspect.currentframe())))
+env = currentdir.find("env")
+env_dir = currentdir[:env]
+print(env_dir)
+if env_dir not in sys.path:
+    sys.path.insert(0, env_dir)
+
 from env.equation.data.terms.output.cpp.additions.someFuncs import NewtonBinomCoefficient
 from env.equation.data.terms.output.cpp.additions.someFuncs import generateCodeForMathFunction
 
@@ -63,7 +76,6 @@ class DerivGenerator():
             for arg in args:
                 logger.debug(self.dbgInx*' '+str(arg))
             
-
 
 class PureDerivGenerator(DerivGenerator):
     '''

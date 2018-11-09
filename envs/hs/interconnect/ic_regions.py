@@ -192,13 +192,12 @@ class icRegions(dict):
             sideIndex = 'idxX'
             stepAlongSide = grid.gridStepX
 
-        self.net.model._ics_firstIndex += 1
-
         # FOR collect data:
         out = Params()
 
         out.firstIndex = self.net.model._ics_firstIndex
-        
+        self.net.model._ics_firstIndex += 1
+
         out.side_num = mainBlockSide
         # out.stepAlongSide = stepAlongSide
         # out.beforeStartLen = beforeStartLen

@@ -27,14 +27,30 @@ domain = model.gen_domain('hybridsolver')
 src = model.gen_cpp('hybridsolver')
 solver.run(domain, src)
 '''
-from spaces.math_space.common.env.equation.equation import Equation
-# from env.equation.equation import Equation
+import os
+import sys
+import inspect
+# insert env dir into sys
+# env must contain env folder:
+currentdir = os.path.dirname(os.path
+                             .abspath(inspect.getfile(inspect.currentframe())))
+env = currentdir.find("env")
+env_dir = currentdir[:env]
+print(env_dir)
+if env_dir not in sys.path:
+    sys.path.insert(0, env_dir)
+
+from translator.tokenizer.tokenizer_main import LexNetTokenizer
+from env.equation.data.terms.input.wolfram.lex_net_wolfram import LexNetW
+
+from env.equation.equation import Equation
 
 import traceback
 import sympy
 
 
-tests = ["a.t() = a",
+tests = ["U'=a*(D[U,{x,2}]+ D[U,{y,2}])",
+         "a.t() = a",
          "(U)^3",
          "(V(t-1.1, {x, 0.7}{y, 0.7}))^3",
          "(D[V(t-1.1), {x, 2}])^3",
@@ -243,8 +259,69 @@ def test_rand():
         print(var['variable'])
 
 
+def test_lex(sent='a*c + d*U+f(y)+sin(x)'):
+    
+    terms = LexNetW()
+    tokenizer = LexNetTokenizer(terms)
+
+    print("\n=== test: %s ===" % (sent))
+        
+    res = tokenizer.lex(sent)
+    
+    print("from lex:")
+    print(res)
+
+
+def test_term_cpp_diff(sent="U'=a*(D[U,{x,2}]+ D[U,{y,2}])"):
+    
+    eq = Equation(sent)
+
+    print("\n=== test: %s ===" % (sent))
+    
+    eq.parser.parse()
+
+    editor = eq.replacer.cpp.editor
+    editor.set_default()
+    
+    eq.replacer.cpp.make_cpp()
+
+    print('\noriginal:')
+    eq.show_original()
+        
+    print('\ndiff_common:')
+    eq.replacer.cpp.show_cpp()
+
+    print("\ndiff_special side 2, btype 1")
+    editor.set_diff_type(diffType='pure',
+                         diffMethod='special',
+                         btype=1, side=2,
+                         func="func")
+    eq.replacer.cpp.make_cpp()
+    eq.replacer.cpp.show_cpp()
+
+    print("\ndiff_special side 3, btype 1")
+    editor.set_diff_type(diffType='pure',
+                         diffMethod='special',
+                         btype=1, side=3,
+                         func="func")
+    eq.replacer.cpp.make_cpp()
+    eq.replacer.cpp.show_cpp()
+
+    print("\ndiff_interconnect side 2")
+    editor.set_diff_type(diffType="pure",
+                         diffMethod="interconnect",
+                         side=2,
+                         firstIndex="firstIndex",
+                         secondIndexSTR="secondIndex")
+    eq.replacer.cpp.make_cpp()
+    eq.replacer.cpp.show_cpp()
+
+
 if __name__ == '__main__':
+
+    # test_term_cpp_diff()
+    # test_lex()
     test_all()
     # test_lambda()
     # test_rand()
-    # test_one(57, sympy=True, verbose=True)
+    # test_one(0, sympy=True, verbose=True)

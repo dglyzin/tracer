@@ -11,9 +11,18 @@ Created on Mar 19, 2015
 # if sys.version_info[0] > 2:
 #    from objectsTemplate import Object
 
+import os
 import sys
-if 'spaces/math_space/common' not in sys.path:
-    sys.path += ['spaces/math_space/common']
+import inspect
+# insert env dir into sys
+# env must contain env folder:
+currentdir = os.path.dirname(os.path
+                             .abspath(inspect.getfile(inspect.currentframe())))
+env = currentdir.find("env")
+env_dir = currentdir[:env]
+print(env_dir)
+if env_dir not in sys.path:
+    sys.path.insert(0, env_dir)
 
 from env.equation.equation import Equation
 from env.system.sys_base import sysBase
@@ -65,10 +74,30 @@ class sysNet():
         return(len(self.eqs))
 
     def copy(self):
-        return(sysNet(name=self.base.name,
-                      system=[eq.sent for eq in self.eqs],
-                      vars=self.base.vars, cpp=self.base.cpp))
+        copied = sysNet(name=self.base.name,
+                        system=[eq.sent for eq in self.eqs],
+                        vars=self.base.vars, cpp=self.base.cpp)
+        copied.copy_params(self)
+        return(copied)
 
+    def copy_params(self, from_system):
+        
+        '''Copy ``system`` cpp params to self'''
+
+        if len(self.eqs) != len(from_system.eqs):
+            raise(BaseException("\nCount of equations in copied"
+                                + " systems must be same"))
+        for i, eq in enumerate(self.eqs):
+
+            gens_to = eq.replacer.cpp.gen.terms_gens
+            gens_from = from_system.eqs[i].replacer.cpp.gen.terms_gens
+
+            for term_name in gens_from:
+                params_to = gens_to[term_name].params
+                params_from = gens_from[term_name].params
+                for param_name in params_from:
+                    params_to[param_name] = params_from[param_name]
+                 
     def __repr__(self):
         
         return(str([eq.__repr__() for eq in self.eqs]))

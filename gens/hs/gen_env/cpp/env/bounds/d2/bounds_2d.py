@@ -5,6 +5,20 @@ from spaces.some_space.someClasses import Params
 from spaces.some_space.someFuncs import determineNameOfBoundary
 # from spaces.math_space.common.env.equation.equation import Equation
 
+import logging
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+# logger = logging.getLogger('bounds.bounds_2d')
+
+# if using directly uncoment that:
+
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('bounds_2d')
+logger.setLevel(level=log_level)
+
 
 class GenCommon(GenBaseCommon, GenCppCommon):
     '''
@@ -204,12 +218,13 @@ class GenCommon(GenBaseCommon, GenCppCommon):
 
             args = (eSystem, model, bParams.blockNumber, btype,
                     bParams.side_num, border_values)
-            parsed = self.parse_equations(*args)
+            parsed, bv_parsed = self.parse_equations(*args)
 
             bParams.funcName = funcName
             bParams.btype = btype
             bParams.equation = eSystem
             bParams.parsedValues = parsed
+            bParams.border_values_parsed = bv_parsed
             bParams.original = [e.sent for e in eSystem.eqs]
 
             # for comment
@@ -314,15 +329,15 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         vParams.funcName = funcName
         vParams.bound_side = vertex_edge
         vParams.btype = vertex_edge.btype
-        vParams.equation = vertex_edge.equation  # .copy()
 
-        # use result[something] = source[0][something];
-        parsedValues = self.parse_equations_vertex(vertex_edge.parsedValues)
+        parsedValues, eSystem = self.parse_equations_vertex(vertex, vertex_edge)
         vParams.parsedValues = parsedValues
         # vParams.parsedValues = vertex_edge.parsedValues
 
-        # print("parsedValues")
-        # print(vParams.parsedValues)
+        vParams.equation = eSystem
+
+        logger.debug("parsedValues:")
+        logger.debug(vParams.parsedValues)
         vParams.original = vertex_edge.original
 
         return(vParams)

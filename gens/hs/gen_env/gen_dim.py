@@ -310,10 +310,10 @@ class GenBase():
         '''
 
         # for postproc:
-        # use gen_bounds.params in order to replace
+        # use gen_bounds.params.bounds in order to replace
         # delays in both bounds_edges and bounds_vertex:
         delays = self.postproc.postporc_delays([gen_cent.params,
-                                                gen_bounds.params.bounds_edges,
+                                                gen_bounds.params.bounds,
                                                 gen_ics.params.ics])
         '''
         for vertex in gen_bounds.params.bounds_vertex:
