@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 0.9, 
+        "FinishTime": 0.1, 
         "TimeStep": 1e-05, 
         "SaveInterval": 0.001, 
         "AbsTolerance": 0.001, 
@@ -11,8 +11,8 @@
     }, 
     "Grid": {
         "Dimension": 2, 
-        "dx": 0.03, 
-        "dy": 0.02, 
+        "dx": 0.01, 
+        "dy": 0.01, 
         "dz": 1
     }, 
     "Blocks": [
@@ -23,8 +23,8 @@
                 "y": 0.0
             }, 
             "Size": {
-                "x": 3.0, 
-                "y": 2.0
+                "x": 1.0, 
+                "y": 1.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -32,19 +32,19 @@
             "InitialRegions": [
                 {
                     "InitialNumber": 1, 
-                    "xfrom": 0.75, 
-                    "xto": 2.25, 
-                    "yfrom": 1.5, 
-                    "yto": 1.9
+                    "xfrom": 0.1, 
+                    "xto": 0.9, 
+                    "yfrom": 0.7, 
+                    "yto": 0.9
                 }
             ], 
             "EquationRegions": [
 		{
                     "EquationNumber": 3, 
-                    "xfrom": 0.75, 
-                    "xto": 2.25, 
-                    "yfrom": 1.5, 
-                    "yto": 1.9
+                    "xfrom": 0.1, 
+                    "xto": 0.9, 
+                    "yfrom": 0.7, 
+                    "yto": 0.9
                 }]
         } 
     ], 

@@ -62,6 +62,7 @@ class GenSH():
         self.affinity = '0-15'
 
         self.nodeCount = str(self.net.model.device.getNodeCount())
+        self.taskCountPerNode = "1"
 
     def set_params(self, params):
         '''
@@ -71,6 +72,7 @@ class GenSH():
 
            params['finish']
            params['cont']
+           params['taskCountPerNode']
            params['nortpng']
            params['partition']
            params['nodes']
@@ -113,6 +115,11 @@ class GenSH():
         self.flag = str(flag)
 
         self.nodeCount = str(self.net.model.device.getNodeCount())
+        
+        if "taskCountPerNode" in params.keys():
+            self.taskCountPerNode = params["taskCountPerNode"]
+        else:
+            self.taskCountPerNode = "1"
 
         if "partition" in params.keys():
             if params["partition"] == '':
@@ -161,7 +168,7 @@ class GenSH():
                           + self.affinity + "'\n")
 
             runFile.write("salloc -N " + self.nodeCount
-                          + " -n " + self.nodeCount
+                          + " -n " + self.taskCountPerNode
                           + " " + self.nodes + self.partition
                           + " mpirun " + self.mpimap
                           + " " + self.solverExecutable

@@ -53,8 +53,8 @@
             "Name": "connection 1", 
             "Block1": 0, 
             "Block2": 0, 
-            "Block1Side": 3, 
-            "Block2Side": 2
+            "Block1Side": 2, 
+            "Block2Side": 3
         }
 ], 
     "Equations": [
@@ -166,5 +166,12 @@
             "Period": 0.001,
             "Value": "U"
         }
-       ]
+       ],
+    "Results":[
+        {
+            "Name": "u", 
+            "Period": 0.001,
+            "Value": "U"
+        }
+    ]
 }

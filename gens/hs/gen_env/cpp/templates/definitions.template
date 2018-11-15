@@ -22,6 +22,9 @@ END COMMENT #}
 //#include "prepr_folder_path/doc/userfuncs.h"
 #include "userfuncs.h"
 
+#include <iostream>
+using namespace std;
+
 {% for gridArg in gridArgs %}
 {% set ga = gridArg %}
 #define D{{ga.indepVar.upper()}} {{ga.d}}

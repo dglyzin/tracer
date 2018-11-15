@@ -80,6 +80,8 @@ class Settings():
 
     def set_device_conf(self, name="default"):
         self.device_conf_name = name
+        logger.info("device_conf_name")
+        logger.info(self.device_conf_name)
 
     def make_connection(self, name="conn_base"):
 

@@ -71,7 +71,15 @@
             "Block2": 1, 
             "Block1Side": 2, 
             "Block2Side": 3
+        },
+	{
+            "Name": "connection 1", 
+            "Block1": 1, 
+            "Block2": 0, 
+            "Block1Side": 2, 
+            "Block2Side": 3
         }
+
     ], 
     "Equations": [
         {
@@ -171,7 +179,7 @@
                 "DeviceIdx": 0
             }, 
             {
-                "NodeIdx": 0, 
+                "NodeIdx": 1, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
             }

@@ -26,26 +26,13 @@
                 "x": 3.0, 
                 "y": 2.0
             }, 
-            "DefaultEquation": 2, 
+            "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [], 
             "InitialRegions": [
-                {
-                    "InitialNumber": 1, 
-                    "xfrom": 0.75, 
-                    "xto": 2.25, 
-                    "yfrom": 1.5, 
-                    "yto": 1.9
-                }
             ], 
             "EquationRegions": [
-		{
-                    "EquationNumber": 3, 
-                    "xfrom": 0.75, 
-                    "xto": 2.25, 
-                    "yfrom": 1.5, 
-                    "yto": 1.9
-                }]
+		]
         },
 	{
             "Name": "OtherBlock", 
@@ -57,11 +44,24 @@
                 "x": 3.0, 
                 "y": 2.0
             }, 
-            "DefaultEquation": 2, 
+            "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [], 
-            "InitialRegions": [], 
-            "EquationRegions": []
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 2.25, 
+                    "xto": 2.9, 
+                    "yfrom": 1.5, 
+                    "yto": 1.9
+                }], 
+            "EquationRegions": [{
+                    "EquationNumber": 3, 
+                    "xfrom": 2.25, 
+                    "xto": 2.9, 
+                    "yfrom": 1.5, 
+                    "yto": 1.9
+                }]
         }
     ], 
     "Interconnects": [
@@ -69,8 +69,15 @@
             "Name": "connection 1", 
             "Block1": 0, 
             "Block2": 1, 
-            "Block1Side": 2, 
-            "Block2Side": 3
+            "Block1Side": 0, 
+            "Block2Side": 1
+        },
+	{
+            "Name": "connection 1", 
+            "Block1": 0, 
+            "Block2": 1, 
+            "Block1Side": 1, 
+            "Block2Side": 0
         }
     ], 
     "Equations": [
@@ -101,7 +108,7 @@
                 "y"
             ], 
             "System": [
-                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - r * D[U,{y,1}]"
+                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - r * D[U,{x,1}]"
             ]
         }, 
         {
@@ -171,7 +178,7 @@
                 "DeviceIdx": 0
             }, 
             {
-                "NodeIdx": 0, 
+                "NodeIdx": 1, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
             }
@@ -182,5 +189,14 @@
             "Period": 0.001,
             "Value": "U"
         }
-       ]
+       ],
+    "Results":[
+        {
+            "Name": "u", 
+            "Period": 0.001,
+            "Value": "U"
+        }
+
+    ]
+
 }
