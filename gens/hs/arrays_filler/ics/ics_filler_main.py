@@ -108,7 +108,7 @@ class Filler():
                 source_side = ic[4]
                 dist_side = ic[5]
 
-            data = ("src_b%s.src_s%s for dist_s%s"
+            data = ("src_b%s.src_s%s for dest_s%s"
                     % (str(source_block), str(source_side),
                        str(dist_side)))
 

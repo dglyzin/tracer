@@ -22,20 +22,20 @@ class Plotter():
                                    columns=columns)}
         elif icsDim == 1:
             columns = ["icDim", "icLen", "source block",
-                       "dist_block", "source side", "dist side",
-                       "source offset", "dist offset"]
+                       "dest_block", "source side", "dest side",
+                       "source offset", "dest offset"]
             out['icList'] = {
                 'array': self.net.icList,
                 'frame': DataFrame(self.net.icList,
                                    columns=columns)}
 
-        blocks_ics_idxs = [dist_block for dist_block in self.net.blocks_ics]
-        blocks_ics_table = [self.net.blocks_ics[dist_block]
-                            for dist_block in blocks_ics_idxs]
+        blocks_ics_idxs = [dest_block for dest_block in self.net.blocks_ics]
+        blocks_ics_table = [self.net.blocks_ics[dest_block]
+                            for dest_block in blocks_ics_idxs]
         out['blocks_ics'] = {
             'frame': DataFrame(blocks_ics_table,
-                               index=["dist_b%s" % str(dist_block)
-                                      for dist_block in blocks_ics_idxs])}
+                               index=["dest_b%s" % str(dest_block)
+                                      for dest_block in blocks_ics_idxs])}
         gout['ics'] = out
         return(gout)
         

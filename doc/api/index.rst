@@ -12,6 +12,7 @@ Overview
 * :doc:`General <overview>`
 * :doc:`2d <overview_2d>` 
 * :doc:`json plot and result settings <overview_plot>`
+* :doc:`json Hardware and Mapping settings, device_conf settings <overview_mapping>`
 
 Environments
 ------------
