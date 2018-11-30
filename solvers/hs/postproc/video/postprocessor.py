@@ -82,7 +82,7 @@ class Params(dict):
 def calcMinMax(projectDir, binFileList, info,
                countZ, countY, countX,
                offsetZ, offsetY, offsetX,
-               cellSize):
+               cellSize, block_idx):
     maxValue = []  # sys.float_info.min
     minValue = []  # sys.float_info.max
 
@@ -94,7 +94,7 @@ def calcMinMax(projectDir, binFileList, info,
         data = readBinFile(projectDir+"/"+binFile, info,
                            countZ, countY, countX,
                            offsetZ, offsetY, offsetX,
-                           cellSize)
+                           cellSize, block_idx)
 
         for i in range(cellSize):
             tmp = data[0, :, :, i]
@@ -120,6 +120,11 @@ def calcMinMax(projectDir, binFileList, info,
 
 
 def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
+
+    '''Will place several images for each
+    equation in system (cellSize) at same
+    figure (same .png file)'''
+
     figure = Figure()
     canvas = FigureCanvas(figure)
 
@@ -161,6 +166,11 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
 
 
 def savePng2D(filename, X, Y, data, maxValue, minValue, currentTime, cellSize):
+
+    '''Will place several images for each
+    equation in system (cellSize) at same
+    figure (same .png file)'''
+
     figure = Figure()
     canvas = FigureCanvas(figure)
 
@@ -259,6 +269,7 @@ def savePlots2D(projectDir, projectName, data, t,
     # plt.pcolormesh(X, Y, layer, vmin=minValue, vmax=maxValue)
     # plt.colorbar()
 
+    # TODO 1: separate plotIdx from postfix:
     filename = os.path.join(projectDir, (projectName+"-plot"
                                          + str(plotIdx)+postfix + ".png"))
     # plt.savefig(filename, format='png')
@@ -284,7 +295,8 @@ def getResults(projectDir, projectName, binFile,
                info, dimension,
                countZ, countY, countX,
                offsetZ, offsetY, offsetX,
-               cellSize, nameEquations, resultExpression, idx):
+               cellSize, nameEquations, resultExpression,
+               block_idx):
     '''
         returns time and requested value from state file binfile
     '''
@@ -292,7 +304,7 @@ def getResults(projectDir, projectName, binFile,
     data = readBinFile(projectDir + "/" + binFile, info,
                        countZ, countY, countX,
                        offsetZ, offsetY, offsetX,
-                       cellSize)
+                       cellSize, block_idx)
 
     # xs = np.arange(0, countX)*dx
     # U -> data
@@ -351,11 +363,12 @@ def createResultFile(projectDir, projectName, resIdx, resLog):
     #                         stdout=PIPE, stderr=subprocess.STDOUT)
     # proc.wait()
     # subprocess.call(command, shell=True)
-    logger.info("Done")
+    # logger.info("Done")
 
 
 def createVideoFile(projectDir, projectName, plotIdx):
     logger.info("Creating video file:")
+    # TODO 2: separate plotIdx from postfix:
     command = ("avconv -r 5 -loglevel panic -i "+projectDir+projectName
                + "-plot"+str(plotIdx)+"%d.png -b:v 1000k "
                + projectDir+projectName+"-plot"+str(plotIdx)+".mp4")
@@ -365,7 +378,7 @@ def createVideoFile(projectDir, projectName, plotIdx):
     #                         stdout=PIPE, stderr=subprocess.STDOUT)
     # proc.wait()
     subprocess.call(command, shell=True)
-    logger.info("Done")
+    # logger.info("Done")
 
 
 def plot_contains(idx, val):
@@ -435,22 +448,22 @@ def createMovie(projectDir, projectName, modelParamsPath):
     saveText = False
 
     path = os.path.join(projectDir, projectName + defaultGeomExt)
+    logger.info("path")
+    logger.info(path)
     info, cellSize, dx, dy, dz, dimension = readDomFile(path)
-
-    out = getDomainProperties(info)
-    countZ, countY, countX, offsetZ, offsetY, offsetX = out
 
     command = ("rm " + projectDir + projectName + "-final-*.png "
                + projectDir + projectName + "-plot*.mp4 " + projectDir
                + projectName + "-res*.txt " + projectDir
                + projectName + "-res*.out")
+    logger.info("command")
     logger.info(command)
     subprocess.call(command, shell=True)
 
     # list with file names:
     binFileList = getSortedDrawBinFileList(projectDir, projectName)
 
-    # list of valus each binary representation
+    # list of values each binary representation
     # of which contain info about file content:
     # (see getBinFilesByPlot)
     plotValList = getPlotValList(binFileList)
@@ -458,28 +471,42 @@ def createMovie(projectDir, projectName, modelParamsPath):
     # model params:
     mParams = get_model_params(modelParamsPath)
 
+    pCount = mParams['plotCount']
+    # pCount = len(info)
+    rCount = mParams['resCount']
+    oCount = pCount + rCount
+    # pCount = mParams['plotCount'] + mParams['resCount']
+
     # factorize images into pCount classes:
-    pCount = mParams['plotCount'] + mParams['resCount']
-    plotFileLists = getBinFilesByPlot(binFileList, plotValList, pCount)
+    plotFileLists = getBinFilesByPlot(binFileList, plotValList, oCount)
                                       
-    logger.debug('binFileList:')
-    logger.debug(binFileList)
-    logger.debug('plotValList:')
-    logger.debug(plotValList)
-    logger.debug("plotFileLists:")
-    logger.debug(plotFileLists)
+    logger.debug('len(binFileList):')
+    logger.debug(len(binFileList))
+    logger.debug('len(plotValList):')
+    logger.debug(len(plotValList))
+    logger.debug("len(plotFileLists):")
+    logger.debug(len(plotFileLists))
 
     for numitem, item in enumerate(mParams['namesEquations']):
         mParams['namesEquations'][numitem] = item[:item.find("'")]
     # logger.info(plotFileLists)
     # plotList = model.plots
 
-    for plotIdx, plot in enumerate(mParams['plotList']):
+    for plotIdx in range(pCount):
+        # for plotIdx, plot in enumerate(mParams['plotList']):
         # t1 = time.time()
+        block_idx = plotIdx
+
+        out = getDomainProperties(info, block_idx)
+        countZ, countY, countX, offsetZ, offsetY, offsetX = out
+        
+        plot = mParams['plotList'][plotIdx]
+        '''
         maxValue, minValue = calcMinMax(projectDir, plotFileLists[plotIdx],
                                         info, countZ, countY, countX,
                                         offsetZ, offsetY, offsetX,
-                                        cellSize)
+                                        cellSize, block_idx)
+        '''
         # t2 = time.time()
         # logger.info("Расчет минимума / максимума: ", t2 - t1)
         plotType = type(plot['Value'])
@@ -493,12 +520,14 @@ def createMovie(projectDir, projectName, modelParamsPath):
         if dimension == 2:
             saveResultFunc = wSavePlots2D
         if plotType == str:
+            # TODO: this code is particular case of plotType == list
+            # with plotList = ['U'] and can be removed
             arg_list = [(projectDir, projectName, binFile,
                          info, dimension,
                          countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
                          cellSize, mParams['namesEquations'],
-                         plot['Value'], str(idx))
+                         plot['Value'], block_idx)
                         for idx, binFile in enumerate(plotFileLists[plotIdx])]
             logData = pool.map(wGetResults, arg_list)
 
@@ -506,14 +535,14 @@ def createMovie(projectDir, projectName, modelParamsPath):
             dataListMax = [max([i[1].max() for i in logData])]
             logger.info('min:')
             logger.info(dataListMin)
-            picCount = 1
+            # picCount = 1
             arg_list = [(projectDir, projectName,
                          [dataNum[1]], dataNum[0],
                          countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
                          cellSize,
                          dataListMax, dataListMin, dx, dy,
-                         str(Idx), plotIdx)
+                         str(Idx), block_idx)
                         for Idx, dataNum in enumerate(logData)]
             log = pool.map(saveResultFunc, arg_list)
 
@@ -525,50 +554,62 @@ def createMovie(projectDir, projectName, modelParamsPath):
                              binFile, info, dimension,
                              countZ, countY, countX,
                              offsetZ, offsetY, offsetX, cellSize,
-                             mParams['namesEquations'], elemPlot, str(idx))
+                             mParams['namesEquations'], elemPlot, block_idx)
                             for idx, binFile in enumerate(
                                     plotFileLists[plotIdx])]
                 dataAny = pool.map(wGetResults, arg_list)
 
-                logger.debug("plotFileLists")
-                logger.debug(plotFileLists)
+                logger.debug("len(plotFileLists)")
+                logger.debug(len(plotFileLists))
+                '''
                 for binFile in plotFileLists[plotIdx]:
                     path = projectDir + "/" + binFile
-                    logger.info("path:")
-                    logger.info(path)
+                    # logger.info("path:")
+                    # logger.info(path)
                     data = readBinFile(path, info,
                                        countZ, countY, countX,
                                        offsetZ, offsetY, offsetX,
-                                       cellSize)
-                    logger.info("data:")
-                    logger.info(data)
-
+                                       cellSize, block_idx)
+                    # logger.info("data:")
+                    # logger.info(data)
+                '''
                 dataNum = []
                 dataTime = []
                 for i in dataAny:
                     dataTime.append(i[0])
                     dataNum.append(i[1])
                 logData.append(np.array(dataNum))
-            picCount = len(plot["Value"])
-            logger.info("logData:")
-            logger.info(logData)
+            # picCount = len(plot["Value"])
+            # logger.info("logData:")
+            # logger.info(logData)
             logger.info("namesEquations:")
             logger.info(mParams['namesEquations'])
-            dataListMin = [min([min(i) for i in j]) for j in logData]
-            dataListMax = [max([max(i) for i in j]) for j in logData]
+            dataListMin = [min([i.min() for i in j]) for j in logData]
+            dataListMax = [max([i.max() for i in j]) for j in logData]
             logger.info(dataListMin)
+            logger.info("len(logData):")
             logger.info(len(logData))
+            logger.info("len(dataTime):")
             logger.info(dataTime)
-
+            
+            # logDataNp[value{U,V}][time]
+            # logDataNp[value{U,V}, time ]
+            # logDataNp[:, Idx] gets data for all
+            # variables (U, V), for fixed time Idx
+            # saveResultFunc save all variables (U, V) data
+            # in some image for current time.
+            # pool.map means call saveResultFunc for all times
+            # that will generate images with variables (U, V)
+            # for all times in time interval
             logDataNp = np.array(logData)
-            logger.info(logDataNp[:, 0])
+            # logger.info(logDataNp[:, 0])
             arg_list = [(projectDir, projectName, logDataNp[:, Idx],
                          dataTime[Idx],
                          countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
                          cellSize,
                          dataListMax, dataListMin, dx, dy,
-                         str(Idx), plotIdx)
+                         str(Idx), block_idx)
                         for Idx, itemd in enumerate(logDataNp[0])]
             log = pool.map(saveResultFunc, arg_list)
         for element in log:
@@ -578,25 +619,37 @@ def createMovie(projectDir, projectName, modelParamsPath):
 
     # U and V
     # TODO get result all list U or V
-    resIdx = 0
+    # resIdx = 0
     # logger.info('aaaa ', resultlistname)
-    for resultItem in mParams['resultList']:
-        pool = mp.Pool(processes=16)
-        arg_list = [(projectDir, projectName,
-                     binFile, info, dimension,
-                     countZ, countY, countX,
-                     offsetZ, offsetY, offsetX, cellSize,
-                     mParams['namesEquations'],
-                     resultItem['Value'], str(idx))
-                    for idx, binFile in enumerate(
-                            plotFileLists[mParams['plotCount'] + resIdx])]
-        resuls = pool.map(wGetResults, arg_list)
-        logger.info('skks:')
-        logger.info(projectDir)
-        logger.info(resultItem)
-        createResultFile(projectDir, projectName, resIdx, resuls)
-        resIdx += 1
+    for result_idx in range(rCount):
+        block_idx = result_idx
+
+        out = getDomainProperties(info, block_idx)
+        countZ, countY, countX, offsetZ, offsetY, offsetX = out
+
+        resultItem = mParams['resultList'][result_idx]
+        for resultValue in resultItem["Value"]:
+
+            pool = mp.Pool(processes=16)
+            arg_list = [(projectDir, projectName,
+                         binFile, info, dimension,
+                         countZ, countY, countX,
+                         offsetZ, offsetY, offsetX, cellSize,
+                         mParams['namesEquations'],
+                         resultValue, block_idx)
+                        for idx, binFile in enumerate(
+                                plotFileLists[pCount + result_idx])]
+            resuls = pool.map(wGetResults, arg_list)
+            logger.info('skks:')
+            logger.info(projectDir)
+            logger.info(resultItem)
+            logger.info(resultValue)
+            createResultFile(projectDir, projectName,
+                             str(result_idx)+'-'+resultValue,
+                             resuls)
+        # resIdx += 1
     logger.info(mParams['namesEquations'])
+    logger.info("Done")
 
 
 def get_model_params(modelParamsPath):
@@ -617,6 +670,62 @@ def get_model_params(modelParamsPath):
     # model.equation[0].system
     params['namesEquations'] = modelParams['namesEquations']
     return(params)
+
+
+def test():
+    
+    '''
+    In [15]: import solvers.hs.postproc.video.postprocessor as ps
+    In [15]: data = ps.test()
+    In [15]: plt.imshow(data[0][0,:,:,0])
+    plt.show()
+    In [15]: plt.imshow(data[1][0,:,:,0])
+    plt.show()
+
+    '''
+    '''
+    pf = ("/home/valdecar/Documents/projects/projectsNew/"
+          + "lab/hybriddomain/problems/2dTests/"
+          + "heat_block_0_ics_other_offsets/out")
+    pn = "heat_block_0_ics_other_offsets"
+    '''
+    pf = ("/home/valdecar/Documents/projects/projectsNew/"
+          + "lab/hybriddomain/problems/1dTests/"
+          + "Brusselator1d/out")
+    pn = "Brusselator1d"
+
+    path = os.path.join(pf, pn + defaultGeomExt)
+
+    info, cellSize, dx, dy, dz, dimension = readDomFile(path)
+
+    binFileList = getSortedDrawBinFileList(pf, pn)
+    plotValList = getPlotValList(binFileList)
+    
+    mpp = ("/home/valdecar/Documents/projects/projectsNew"
+           + "/lab/hybriddomain/problems/2dTests/"
+           + "heat_block_0_ics_other_offsets/out/params_plot.txt")
+    mParams = get_model_params(mpp)
+    pCount = len(info)
+    plotFileLists = getBinFilesByPlot(binFileList, plotValList, pCount)
+    print("plotFileLists")
+    print(plotFileLists)
+    # get sizes from block 1
+    block_idx = 1
+    out = getDomainProperties(info, block_idx)
+    countZ, countY, countX, offsetZ, offsetY, offsetX = out
+    print("countZ, countY, countX")
+    print([countZ, countY, countX])
+    print("offsetZ, offsetY, offsetX")
+    print([offsetZ, offsetY, offsetX])
+
+    block_idx = -2
+    data = readBinFile(pf + "/" + plotFileLists[0][1], info,
+                       countZ, countY, countX,
+                       offsetZ, offsetY, offsetX,
+                       cellSize, block_idx)
+    
+    return(data)
+    # return(data[0, :, :, 0])
 
 
 if __name__ == "__main__":
@@ -644,3 +753,4 @@ if __name__ == "__main__":
     t2 = time.time()
 
     logger.info("Postprocessor running time: %s" % (t2 - t1))
+

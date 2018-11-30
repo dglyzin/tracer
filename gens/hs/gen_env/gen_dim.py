@@ -29,7 +29,7 @@ import logging
 # create logger
 log_level = logging.INFO  # logging.DEBUG
 logging.basicConfig(level=log_level)
-logger = logging.getLogger('gen_1d')
+logger = logging.getLogger('gen_dim')
 logger.setLevel(level=log_level)
 
 

@@ -26,60 +26,68 @@
                 "x": 3.0, 
                 "y": 2.0
             }, 
-            "DefaultEquation": 2, 
+            "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [], 
             "InitialRegions": [
-                {
+		{
                     "InitialNumber": 1, 
-                    "xfrom": 0.75, 
-                    "xto": 2.25, 
+                    "xfrom": 2.25, 
+                    "xto": 2.9, 
                     "yfrom": 1.5, 
                     "yto": 1.9
                 }
             ], 
             "EquationRegions": [
 		{
-                    "EquationNumber": 3, 
-                    "xfrom": 0.75, 
-                    "xto": 2.25, 
+		    "EquationNumber": 3, 
+                    "xfrom": 2.25, 
+                    "xto": 2.9, 
                     "yfrom": 1.5, 
                     "yto": 1.9
-                }]
+                }
+	    ]
         },
 	{
             "Name": "OtherBlock", 
             "Offset": {
-                "x": 1.1, 
-                "y": 0.0
+                "x": 0.0, 
+                "y": 0.3
             }, 
             "Size": {
-                "x": 3.0, 
-                "y": 2.0
+                "x": 1.0, 
+                "y": 1.0
             }, 
-            "DefaultEquation": 2, 
+            "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [], 
-            "InitialRegions": [], 
+            "InitialRegions": [
+                ], 
             "EquationRegions": []
         }
     ], 
     "Interconnects": [
 	{
-            "Name": "connection 1", 
+            "Name": "connection other", 
             "Block1": 0, 
             "Block2": 1, 
+            "Block1Side": 0, 
+            "Block2Side": 1
+        },
+	{
+            "Name": "connection self", 
+            "Block1": 0, 
+            "Block2": 0, 
             "Block1Side": 2, 
             "Block2Side": 3
         },
 	{
             "Name": "connection 1", 
-            "Block1": 1, 
-            "Block2": 0, 
-            "Block1Side": 2, 
-            "Block2Side": 3
+            "Block1": 0, 
+            "Block2": 1, 
+            "Block1Side": 1, 
+            "Block2Side": 0
         }
-
     ], 
     "Equations": [
         {
@@ -89,7 +97,8 @@
                 "y"
             ], 
             "System": [
-                "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
+                "U'=a*(D[U,{x,2}]+ D[U,{y,2}])",
+		"V'=c*(D[V,{x,2}]+ D[V,{y,2}])"
             ]
         }, 
         {
@@ -109,7 +118,7 @@
                 "y"
             ], 
             "System": [
-                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - r * D[U,{y,1}]"
+                "U'=c*(D[U,{x,2}]+ D[U,{y,2}]) - r * D[U,{x,1}]"
             ]
         }, 
         {
@@ -119,7 +128,8 @@
                 "y"
             ], 
             "System": [
-                "U'=0"
+                "U'=0",
+		"V'=0"
             ]
         }
     ], 
@@ -151,7 +161,8 @@
         {
             "Name": "Initial values 1", 
             "Values": [
-                "500.0"
+                "500.0",
+		"500.0"
             ]
         }
     ], 
@@ -186,9 +197,20 @@
         ]
     }, 
     "Plots": [	{
-            "Title": "u(t,x)", 
+            "Title": "block0 u,v", 
             "Period": 0.001,
-            "Value": "U"
+            "Value": ["U", "V"]
+        },
+	{
+            "Title": "block1 u,v", 
+            "Period": 0.001,
+            "Value": ["U", "V"]
         }
-       ]
+       ],
+    "Results":[
+        {
+            "Name": "uv", 
+            "Period": 0.001,
+            "Value": ["U", "V"]
+        }]
 }

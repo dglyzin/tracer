@@ -19,11 +19,15 @@ def getSortedFileList(projectDir, title, extension):
 
 
 def getPlotValList(fileList):
-    #get ints after - and before extension
-    return [int(f.split('-')[-1].split('.')[0])  for f in fileList]
+
+    '''get ints after - and before extension'''
+
+    return [int(f.split('-')[-1].split('.')[0]) for f in fileList]
   
+
 def getSortedDrawBinFileList(projectDir, title):
-    return getSortedFileList(projectDir, title, drawExtension )
+    return getSortedFileList(projectDir, title, drawExtension)
+
       
 def getSortedLoadBinFileList(projectDir, title):
-    return getSortedFileList(projectDir, title, loadExtension )
+    return getSortedFileList(projectDir, title, loadExtension)

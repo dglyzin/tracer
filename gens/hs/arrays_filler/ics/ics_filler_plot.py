@@ -29,6 +29,13 @@ class Plotter():
                 'frame': DataFrame(self.net.icList,
                                    columns=columns)}
 
+        blocks_ics_idxs = [dist_block for dist_block in self.net.blocks_ics]
+        blocks_ics_table = [self.net.blocks_ics[dist_block]
+                            for dist_block in blocks_ics_idxs]
+        out['blocks_ics'] = {
+            'frame': DataFrame(blocks_ics_table,
+                               index=["dist_b%s" % str(dist_block)
+                                      for dist_block in blocks_ics_idxs])}
         gout['ics'] = out
         return(gout)
         

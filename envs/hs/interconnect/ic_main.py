@@ -28,6 +28,11 @@ logger.setLevel(level=log_level)
 
 
 class icMain():
+    '''
+    Ics description:
+
+    
+    '''
     def __init__(self, name, model=None,
                  blockNumber1=0, blockNumber2=1,
                  block1Side=0, block2Side=1):

@@ -118,14 +118,19 @@ def combineBlocks(solution, info,
 def readBinFile(fileName, info,
                 countZ, countY, countX,
                 offsetZ, offsetY, offsetX,
-                cellSize):
+                cellSize, block_idx):
+    '''
+    if block_idx == -2 return empty list
+    if block_idx in [0, len(info)] return block[block_idx]
+    else return zeros array.
+    '''
     data = np.zeros((countZ, countY, countX, cellSize), dtype=np.float64)
     
     try:
         binF = open(fileName, 'rb')
     except:
         logger.error("Can not open file {}".format(fileName))
-        return 
+        return
     
     m253, = struct.unpack('b', binF.read(1))
     versionMajor, = struct.unpack('b', binF.read(1))
@@ -133,28 +138,41 @@ def readBinFile(fileName, info,
     time, = struct.unpack('d', binF.read(8))
     timeStep, = struct.unpack('d', binF.read(8))
 
+    data_tmp = []
+
     for j in range(len(info)):
+
         countZBlock = info[j][5]
         countYBlock = info[j][4]
         countXBlock = info[j][3]
-    
+
         coordZBlock = info[j][2] - offsetZ
         coordYBlock = info[j][1] - offsetY
         coordXBlock = info[j][0] - offsetX
-    
+
         total = countZBlock * countYBlock * countXBlock * cellSize
-    
+
         blockData = np.fromfile(binF, dtype=np.float64, count=total)
         blockData = blockData.reshape(countZBlock, countYBlock, countXBlock,
-                                      cellSize);
-        data[coordZBlock: coordZBlock + countZBlock,
-             coordYBlock: coordYBlock + countYBlock,
-             coordXBlock: coordXBlock + countXBlock, :] = blockData[:, :, :, :]
+                                      cellSize)
+        if j == block_idx:
+            data[coordZBlock: coordZBlock + countZBlock,
+                 coordYBlock: coordYBlock + countYBlock,
+                 coordXBlock: coordXBlock + countXBlock, :] = blockData[:, :, :, :]
+            break
+        
+        data_tmp.append(blockData[:, :, :, :])
+
     binF.close()
-    return data
+
+    if block_idx == -2:
+        return(data_tmp)
+    else:
+        return(data)
 
   
-def getDomainProperties(info):
+def getDomainProperties(info, block_idx):
+
     minZ = 0
     maxZ = 0
     
@@ -164,25 +182,30 @@ def getDomainProperties(info):
     minX = 0
     maxX = 0
     
-    for i in range(len(info)):
-        if info[i][2] < minZ:
-            minZ = info[i][2]
-    
-        if info[i][2] + info[i][5] > maxZ:
-            maxZ = info[i][2] + info[i][5]
-    
-        if info[i][1] < minY:
-            minY = info[i][1]
-    
-        if info[i][1] + info[i][4] > maxY:
-            maxY = info[i][1] + info[i][4]
-    
-        if info[i][0] < minX:
-            minX = info[i][2]
-    
-        if info[i][0] + info[i][3] > maxX:
-            maxX = info[i][0] + info[i][3]
-    
+    # for i in range(len(info)):
+    i = block_idx
+    if info[i][2] < minZ:
+        minZ = info[i][2]
+
+    if info[i][2] + info[i][5] > maxZ:
+        maxZ = info[i][2] + info[i][5]
+
+    if info[i][1] < minY:
+        minY = info[i][1]
+
+    if info[i][1] + info[i][4] > maxY:
+        maxY = info[i][1] + info[i][4]
+
+    if info[i][0] < minX:
+        minX = info[i][2]
+
+    if info[i][0] + info[i][3] > maxX:
+        maxX = info[i][0] + info[i][3]
+
+    # if i == block_idx:
+    #     break
+    # end for
+
     countZ = maxZ - minZ
     countY = maxY - minY
     countX = maxX - minX
@@ -194,12 +217,13 @@ def getDomainProperties(info):
     return countZ, countY, countX, offsetZ, offsetY, offsetX
   
              
-def getBinaryData(domFileName, lbinFileName):
+def getBinaryData(domFileName, lbinFileName, block_idx):
     '''
-      returns state from lbinFileName according to geometry from domFileName    
+    returns state from lbinFileName according to geometry from domFileName
     '''
     info, cellSize, dx, dy, dz, dimension = readDomFile(domFileName)
-    countZ, countY, countX, offsetZ, offsetY, offsetX = getDomainProperties(info)
+    out = getDomainProperties(info, block_idx)
+    countZ, countY, countX, offsetZ, offsetY, offsetX = out
     data = readBinFile(lbinFileName, info,
                        countZ, countY, countX,
                        offsetZ, offsetY, offsetX,

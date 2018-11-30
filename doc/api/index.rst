@@ -11,6 +11,7 @@ Overview
 
 * :doc:`General <overview>`
 * :doc:`2d <overview_2d>` 
+* :doc:`json plot and result settings <overview_plot>`
 
 Environments
 ------------

@@ -52,7 +52,7 @@ class BlockEditor():
         for eRegion in eRegions:
             self.add_eq_region(eRegion)
 
-        self.net.initialRegions = iRegions
+        self.net.initialRegions = iRegions[:]
 
     def set_regions_defaults(self, deRegion, dbRegion, diRegion):
 

@@ -227,7 +227,7 @@ class ModelIO():
         ic.io.fillProperties(idict)
         self.net.editor.add(ic, self.net.interconnects)
 
-        ic.regions.make_regions(reset_firstIdx=True)
+        ic.regions.make_regions()
 
     def interconnect_to_json(self, index):
         return self.net.interconnects[index].io.toJson()

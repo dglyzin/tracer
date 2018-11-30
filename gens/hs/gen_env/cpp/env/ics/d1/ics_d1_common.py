@@ -37,9 +37,16 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
             for iconn in model.interconnects:
                 # for closed block
                 if iconn.block1 == blockNumber and iconn.block2 == blockNumber:
-                    ic1, ic2 = self._set_params_for_closed_block(model, block,
-                                                                 iconn,
-                                                                 blockNumber)
+
+                    self.check_firstIndex(block)
+
+                    ic1, ic2 = (self
+                                ._set_params_for_closed_block(model, block,
+                                                              iconn, blockNumber,
+                                                              block.firstIndex+1,
+                                                              block.firstIndex))
+                    block.firstIndex += 2
+
                     # for functionMaps:
                     block.vertexs['[0]'] = ic1
                     block.vertexs['[1]'] = ic2
@@ -50,9 +57,14 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
 
                 # for differ blocks
                 elif blockNumber in [iconn.block1, iconn.block2]:
+                    self.check_firstIndex(block)
+
                     ic = self._set_params_for_two_blocks(model, block,
                                                          iconn, ics,
-                                                         blockNumber)
+                                                         blockNumber,
+                                                         block.firstIndex)
+                    block.firstIndex += 1
+
                     # for functionMaps:
                     block.vertexs['['+str(ic.side_num)+']'].fm = ic
 
@@ -73,7 +85,8 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
         # END FOR
 
     def _set_params_for_two_blocks(self, model, block, iconn, ics,
-                                   blockNumber):
+                                   blockNumber, firstIndex):
+        '''Only for one block in pair.'''
         # choice side:
         if (iconn.block1 == blockNumber
             and iconn.block2 != blockNumber):
@@ -85,7 +98,7 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
             side_num = iconn.block2Side
 
         # len(ics for block)
-        firstIndex = len(ics)
+        # firstIndex = len(ics)
 
         # FOR find equation for block
         Range = (side_num == 1) * block.size.sizeX
@@ -126,7 +139,11 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
         return(ic)
 
     def _set_params_for_closed_block(self, model, block, iconn,
-                                     blockNumber):
+                                     blockNumber, srcFirstIndex,
+                                     distFirstIndex):
+
+        '''srcFirstIndex and distFirstIndex is first indexes of
+        two interconects of same block'''
 
         # FOR finding equations:
         # choice left or right side of block
@@ -182,7 +199,7 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
         # fill params:
         ic1 = Params()
         ic1.name = "Connection"
-        ic1.firstIndex = 0
+        ic1.firstIndex = srcFirstIndex
         ic1.secondIndex = '0'
         ic1.side_num = iconn.block1Side
         ic1.ranges = []
@@ -196,7 +213,7 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
         
         ic2 = Params()
         ic2.name = "Connection"
-        ic2.firstIndex = 1
+        ic2.firstIndex = distFirstIndex
         ic2.secondIndex = '0'
         ic2.side_num = iconn.block2Side
         ic2.ranges = []
@@ -210,6 +227,13 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
 
         return((ic1, ic2))
 
+    def check_firstIndex(self, block):
+        
+        try:
+            block.firstIndex
+        except AttributeError:
+            block.firstIndex = 0
+    
     def test(self, region, side_num, block):
         '''
         DESCRIPTION::

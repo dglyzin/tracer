@@ -46,29 +46,56 @@ class icRegions(dict):
             # ic dimension 0) there is no regions.
             return()
 
-        if reset_firstIdx:
-            self.net.model._ics_firstIndex = 0
-        else:
-            try:
-                self.net.model._ics_firstIndex
-            except AttributeError:
-                self.net.model._ics_firstIndex = 0
-                logger.debug("model firstIndex reseted")
-
-        # firstIndex = self.net.model._ics_firstIndex
-
         block1 = self.net.model.blocks[self.net.block1]
         block1Side = self.net.block1Side
 
         block2 = self.net.model.blocks[self.net.block2]
         block2Side = self.net.block2Side
 
+        if reset_firstIdx:
+            block1.firstIndex = 0
+            block2.firstIndex = 0
+            # self.net.model._ics_firstIndex = 0
+        else:
+            try:
+                block1.firstIndex
+                
+                # self.net.model._ics_firstIndex
+            except AttributeError:
+                block1.firstIndex = 0
+                # self.net.model._ics_firstIndex = 0
+                logger.debug("block1 firstIndex reseted")
+
+            try:
+                block2.firstIndex
+            except AttributeError:
+                block2.firstIndex = 0
+                logger.debug("block2 firstIndex reseted")
+
         # it also work for closed block case:
-        self[1] = self.make_region(block1Side, block1, block2, 1)
-        self[2] = self.make_region(block2Side, block2, block1, 2)
+        if self.net.block1 != self.net.block2:
+            self[1] = self.make_region(block1Side, block1, block2,
+                                       1, block1.firstIndex)
+            self[2] = self.make_region(block2Side, block2, block1,
+                                       2, block2.firstIndex)
+            block1.firstIndex += 1
+            block2.firstIndex += 1
+        else:
+            # reflecting
+            # b0.src_side.ic_idx and b0.dst_side.ic_idx
+            # in case if
+            # block1.firstIndex == block2.firstIndex
+            self[1] = self.make_region(block1Side, block1, block2,
+                                       1, block1.firstIndex + 1)
+            self[2] = self.make_region(block2Side, block2, block1,
+                                       2, block1.firstIndex)
+            block1.firstIndex += 2
+
+        # self[1] = self.make_region(block1Side, block1, block2, 1)
+        # self[2] = self.make_region(block2Side, block2, block1, 2)
         
     def make_region(self, mainBlockSide, mainBlock, secondBlock,
-                    region_num):
+                    region_num, firstIndex):
         
         '''Make some data for each block in ic.
         
@@ -195,8 +222,9 @@ class icRegions(dict):
         # FOR collect data:
         out = Params()
 
-        out.firstIndex = self.net.model._ics_firstIndex
-        self.net.model._ics_firstIndex += 1
+        out.firstIndex = firstIndex
+        # out.firstIndex = self.net.model._ics_firstIndex
+        # self.net.model._ics_firstIndex += 1
 
         out.side_num = mainBlockSide
         # out.stepAlongSide = stepAlongSide

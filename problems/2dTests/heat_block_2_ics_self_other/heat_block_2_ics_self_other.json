@@ -30,47 +30,56 @@
             "DefaultInitial": 0, 
             "BoundRegions": [], 
             "InitialRegions": [
-            ], 
-            "EquationRegions": [
-		]
-        },
-	{
-            "Name": "OtherBlock", 
-            "Offset": {
-                "x": 0.0, 
-                "y": 0.0
-            }, 
-            "Size": {
-                "x": 3.0, 
-                "y": 2.0
-            }, 
-            "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
-            "BoundRegions": [], 
-            "InitialRegions": [
-                {
+		{
                     "InitialNumber": 1, 
                     "xfrom": 2.25, 
                     "xto": 2.9, 
                     "yfrom": 1.5, 
                     "yto": 1.9
-                }], 
-            "EquationRegions": [{
-                    "EquationNumber": 3, 
+                }
+            ], 
+            "EquationRegions": [
+		{
+		    "EquationNumber": 3, 
                     "xfrom": 2.25, 
                     "xto": 2.9, 
                     "yfrom": 1.5, 
                     "yto": 1.9
-                }]
+                }
+	    ]
+        },
+	{
+            "Name": "OtherBlock", 
+            "Offset": {
+                "x": 0.0, 
+                "y": 0.3
+            }, 
+            "Size": {
+                "x": 1.0, 
+                "y": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [
+                ], 
+            "EquationRegions": []
         }
     ], 
     "Interconnects": [
 	{
-            "Name": "connection 1", 
+            "Name": "connection other", 
             "Block1": 0, 
             "Block2": 1, 
             "Block1Side": 0, 
             "Block2Side": 1
+        },
+	{
+            "Name": "connection self", 
+            "Block1": 0, 
+            "Block2": 0, 
+            "Block1Side": 2, 
+            "Block2Side": 3
         },
 	{
             "Name": "connection 1", 
@@ -185,18 +194,15 @@
         ]
     }, 
     "Plots": [	{
-            "Title": "u(t,x)", 
+            "Title": "block0 u(t,x)", 
+            "Period": 0.001,
+            "Value": "U"
+        },
+	{
+            "Title": "block1 u(t,x)", 
             "Period": 0.001,
             "Value": "U"
         }
-       ],
-    "Results":[
-        {
-            "Name": "u", 
-            "Period": 0.001,
-            "Value": "U"
-        }
-
-    ]
+       ]
 
 }
