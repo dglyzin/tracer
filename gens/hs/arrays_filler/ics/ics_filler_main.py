@@ -62,8 +62,13 @@ class Filler():
                 self.d1.interconnect1dFill(icIdx)
             elif icDim == 2:
                 self.d2.interconnect2dFill(icIdx)
+        logger.info("self.icCount:")
+        logger.info(self.icCount)
 
-        self.blocks_ics = self.show_ics_for_each_block(icDim)
+        if self.icCount > 0:
+            self.blocks_ics = self.show_ics_for_each_block(icDim)
+        else:
+            self.blocks_ics = {}
 
     def show_ics_for_each_block(self, icDim):
         
