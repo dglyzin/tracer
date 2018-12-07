@@ -50,30 +50,29 @@ class Gen():
         '''Save all files. Cleare all.
         Only after ``self.gen_all``'''
 
-        pathes = self.settings.pathes
+        paths = self.settings.paths
 
-        self.fiocr.create_out(pathes['hd']['out_folder'],
-                              pathes['hd']['userfuncs'])
+        self.fiocr.create_out(paths['hd']['out_folder'],
+                              paths['hd']['userfuncs'])
 
         # save cpp:
-        self.fiocr.to_file(self.gen_dim.cpp_out, pathes['hd']['cpp'])
+        self.fiocr.to_file(self.gen_dim.cpp_out, paths['hd']['cpp'])
 
         # generage so:
-        self.fiocr.make_gcc_so(pathes['hd']['cpp'], pathes['hd']['so'])
+        self.fiocr.make_gcc_so(paths['hd']['cpp'], paths['hd']['so'])
 
         # save dom txt:
-        self.filler.save_txt(pathes['hd']['dom_txt'],
-                             pathes['hd']['out_folder'])
-        # self.gen_dim.filler.save_txt(pathes['hd']['dom_txt'])
+        self.filler.save_txt(paths['hd']['dom_txt'],
+                             paths['hd']['out_folder'])
+        # self.gen_dim.filler.save_txt(paths['hd']['dom_txt'])
 
         # save dom bin:
-        self.filler.save_bin(pathes['hd']['dom_bin'])
-        # self.gen_dim.filler.save_bin(pathes['hd']['dom_bin'])
+        self.filler.save_bin(paths['hd']['dom_bin'])
+        # self.gen_dim.filler.save_bin(paths['hd']['dom_bin'])
 
         # save plot params:
-        self.gen_plot.save(pathes['hd']['plot'])
+        self.gen_plot.save(paths['hd']['plot'])
 
         # create sh file:
-        device_conf_name = self.settings.device_conf_name
-        self.gen_sh.set_params(self.settings.device_conf[device_conf_name])
-        self.gen_sh.gen_sh(self.settings.pathes['hd']['sh'])
+        self.gen_sh.set_params(self.settings.device_conf)
+        self.gen_sh.gen_sh(self.settings.paths['hd']['sh'])

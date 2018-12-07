@@ -128,24 +128,14 @@
 	{
             "Title": "u(t,x)", 
             "Period": 0.1,
-            "Value": "U"
-        },
-	{
-            "Title": "v(t,x)", 
-            "Period": 0.1,
-            "Value": "V"
+            "Value": ["U", "V"]
         }
     ],
     "Results":[
         {
             "Name": "u", 
             "Period": 0.1,
-            "Value": "U"
-        },
-        {
-            "Name": "v", 
-            "Period": 0.1,
-            "Value": "V"
+            "Value": ["U", "V"]
         }
     ]
 }

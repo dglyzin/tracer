@@ -11,6 +11,21 @@ from envs.hs.model.compnode import Compnode
 
 from collections import OrderedDict
 
+import logging
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+logger = logging.getLogger('model_main.model_io')
+
+# if using directly uncoment that:
+'''
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('model_main')
+logger.setLevel(level=log_level)
+'''
+
 
 class ModelIO():
    
@@ -44,24 +59,38 @@ class ModelIO():
 
            for
               problems/1dTests/test1d_two_blocks0/test1d_two_blocks0.json
+        
+        or absolute path to project folder.
            '''
 
         # FOR pathes:
         if 'problems' not in project_folder:
+            
             raise(BaseException('path to folder with json must begin from'
                                 + ' problems folder \n'
                                 + ' like problems/1dTests/test1d_two_blocks0'))
+            
+            logger.info("project folder outside of problems folder")
+            logger.info(project_folder)
+
         elif len(project_folder.split('.')) == 2:
             raise(BaseException('project_folder is name of folder in with'
                                 + ' json file contained'
                                 + ' like problems/1dTests/test1d_two_blocks0'))
         elif (project_folder[0] == '/'):
+            '''
             raise(BaseException('project_folder is name of folder in with \n'
                                 + ' json file contained, relative to '
                                 + 'hybriddomain folder \n'
                                 + ' like problems/1dTests/test1d_two_blocks0'))
-        
-        self.net.project_path = project_folder.replace('problems/', "")
+            '''
+            logger.info("full path is given")
+            logger.info(project_folder)
+
+        self.net.project_path = project_folder.split('problems/')[-1]
+        logger.debug("project_path:")
+        logger.debug(self.net.project_path)
+        # self.net.project_path = project_folder.replace('problems/', "")
         self.net.project_name = os.path.basename(self.net.project_path)
 
         # json file:

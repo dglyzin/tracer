@@ -30,26 +30,25 @@ class GenSH():
         self.net = net
 
         # where hybridsolver at server:
-        self.tracerFolder = (net.settings
-                             .pathes['pathes_hs_base']['TracerFolder'])
+        self.tracerFolder = (net.settings.paths['TracerFolder'])
 
         # where projects stored at server:
         self.projectDir = (self.net.settings
-                           .pathes['hs']['out_folder'])
+                           .paths['hs']['out_folder'])
         # self.projectDir = (self.net.settings
-        #                    .pathes['pathes_hs_base']['Workspace'])
+        #                    .paths['Workspace'])
 
         # title for postprocessing and cont:
-        self.title = self.net.settings.pathes['model']['name']
+        self.title = self.net.settings.paths['model']['name']
 
         # dom file at server:
-        self.domFile = self.net.settings.pathes['hs']['dom_bin']
+        self.domFile = self.net.settings.paths['hs']['dom_bin']
 
-        self.solverExecutable = self.net.settings.pathes['hs']['solver']
+        self.solverExecutable = self.net.settings.paths['hs']['solver']
         
         # postproc:
-        self.postprocessor = self.net.settings.pathes['hs']['postproc']
-        self.plot_params = self.net.settings.pathes['hs']['plot']
+        self.postprocessor = self.net.settings.paths['hs']['postproc']
+        self.plot_params = self.net.settings.paths['hs']['plot']
 
     def set_params_default(self):
         self.flag = '0'
@@ -183,7 +182,7 @@ class GenSH():
                           + " " + str(finishTime)+" "+continueFileName+"\n")
             '''
 
-            runFile.write("srun -n1" + " " + self.nodes
+            runFile.write("srun -n 1" + " " + self.nodes
                           + " " + self.partition
                           + " python " + self.postprocessor
                           + " " + self.projectDir+"/"

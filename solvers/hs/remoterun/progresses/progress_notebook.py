@@ -14,9 +14,14 @@ class ProgressNotebook():
             bar_style='',  # 'success', 'info', 'warning', 'danger' or ''
             orientation='horizontal'
         )
+        self.set_prefix(prefix)
 
     def succ(self, val):
         self.progress.value = val
+
+    def set_prefix(self, prefix):
+        self.prefix = prefix
+        self.progress.description = prefix + ": "
 
 
 def test_notebook(interval=1):

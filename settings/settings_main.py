@@ -20,34 +20,76 @@ logger.setLevel(level=log_level)
 
 
 settings_folder = 'settings'
-conn_folder = os.path.join(settings_folder, 'conn')
-device_conf_folder = os.path.join(settings_folder, 'device_conf')
-pathes_folder = os.path.join(settings_folder, 'pathes')
 
 
 class Settings():
-    def __init__(self, model, conn_name, device_conf_name,
-                 hd_prefix=None):
-        if hd_prefix is not None:
-            self.hd_prefix = hd_prefix
+    def __init__(self, model, conn_name, device_conf_name, paths_name,
+                 hd_prefix=None, workspace=None, username=None):
+        '''
+        Client side uses ``hd/problems`` and ``hd/settings`` folders
+        for storing generated files and settings accordingly.
+        Server side uses ``workspace/problems`` and ``workspace/settings``
+        instead.
 
-            global conn_folder
-            global device_conf_folder
-            global pathes_folder
+        Inputs:
 
-            conn_folder = os.path.join(hd_prefix, conn_folder)
-            device_conf_folder = os.path.join(hd_prefix, device_conf_folder)
-            pathes_folder = os.path.join(hd_prefix, pathes_folder)
+        - ``conn_name`` -- if ``None``, connection settings will not be
+        used.
+
+        - ``hd_prefix`` -- if not ``None`` will be used for access to
+        hd.
+
+        - ``workspace`` -- if not ``None`` will be used for all files
+        generators and conf_files. Folders "settings" and "problems"
+        must exist with all needed inside. Only for solver side.
+
+        - ``username`` -- if ``conn_name`` is ``None`` or there is
+        no settings for connection then this name will be used for
+        fix tilde bug.
+        '''
+        if username is not None:
+            self.username = username
         else:
+            self.username = None
+
+        if workspace is not None:
+            workspace = self.fix_tilde_bug(workspace, 'workspace', 'path')
+            self.workspace = workspace
             self.hd_prefix = ''
+            self.settings_folder = os.path.join(workspace,
+                                                settings_folder)
+            self.use_workspace = True
+        else:
+            self.workspace = None
+            self.use_workspace = False
+
+            if hd_prefix is not None:
+                self.hd_prefix = hd_prefix
+            else:
+                self.hd_prefix = ''
+            self.settings_folder = os.path.join(self.hd_prefix,
+                                                settings_folder)
+
+        self.get_confs(self.settings_folder)
 
         self.extract_all_settings()
 
+        # choice current settings files:
         if conn_name is not None:
             self.make_connection(name=conn_name)
-
-        self.make_all_pathes(model)
+        self.set_path(paths_name)
         self.set_device_conf(device_conf_name)
+
+        self.make_all_paths(model)
+
+    def get_confs(self, settings_folder):
+
+        conns_folder = os.path.join(settings_folder, 'conn')
+        devices_conf_folder = os.path.join(settings_folder, 'device_conf')
+        paths_folder = os.path.join(settings_folder, 'paths')
+        self.folders = {"conn": conns_folder,
+                        "device_conf": devices_conf_folder,
+                        "paths": paths_folder}
 
     def extract_all_settings(self):
         '''Extract all settings in::
@@ -58,28 +100,42 @@ class Settings():
 
            ``settings/conn/conn_base.json -> self.conn['conn_base']``'''
             
-        def get_data(sfolder, sfile, hd_prefix=None):
+        def get_data(sfolder, sfile):
             # print(sfile)
+            file_name = os.path.join(sfolder, sfile)
+            '''
             if hd_prefix is None:
                 file_name = os.path.join(sfolder, sfile)
             else:
                 file_name = os.path.join(hd_prefix, sfolder, sfile)
-
+            '''
             with open(file_name) as f:
                 data = json.loads(f.read())
             return(data)
 
-        settings = [dict([(sfile.split('.')[0],
-                           get_data(sfolder, sfile, self.hd_prefix))
-                          for sfile in os.listdir(sfolder)
-                          if sfile.split('.')[-1] == 'json'])
-                    for sfolder in
-                    [conn_folder, device_conf_folder, pathes_folder]]
+        settings = dict([(settings_name,
+                          (dict([(sfile.split('.')[0],
+                                  get_data(self.folders[settings_name], sfile))
+                                 for sfile in os.listdir(self.folders[settings_name])
+                                 if sfile.split('.')[-1] == 'json'])
+                           if os.path.exists(self.folders[settings_name])
+                           else {}))
+                         for settings_name in self.folders])
+        self.settings = settings
 
-        self.conn, self.device_conf, self.pathes = settings
+        self.device_confs = self.settings["device_conf"]
+        self.paths_confs = self.settings["paths"]
+        self.conns = settings["conn"]
 
+    def set_path(self, name):
+        if name is None:
+            name = "paths_hs_base"
+        self.paths_name = name
+        self.paths = self.paths_confs[name]
+        
     def set_device_conf(self, name="default"):
         self.device_conf_name = name
+        self.device_conf = self.device_confs[name]
         logger.info("device_conf_name")
         logger.info(self.device_conf_name)
 
@@ -94,142 +150,172 @@ class Settings():
 
         - ``name`` - is name (without extension) of conn in ``settings/conn``::
         Ex: name = conn_base for file ``settings/conn/conn_base.json``'''
+        
+        if self.conns == {}:
+            raise(BaseException("connection folder not exist"))
+        else:
+            self.conn = self.conns[name]
 
         self.connection = Connection()
-        self.connection.fromDict(self.conn[name])
+        self.connection.fromDict(self.conn)
         self.connection.get_password()
 
-    def make_all_pathes(self, model, model_path=None, use_workspace=False):
+    def make_all_paths(self, model, model_path=None):
 
         '''Creating all pathes for problem'''
 
+        paths = self.paths
+
+        # projects folder at server:
+        if self.workspace is None:
+            workspace = paths['Workspace']
+        else:
+            workspace = self.workspace
+        workspace = self.fix_tilde_bug(workspace, 'workspace', 'path')
+        
         if self.hd_prefix is None:
             hd_path = os.getcwd()
         else:
             hd_path = self.hd_prefix
         hd_path = self.fix_tilde_bug(hd_path, 'hd', 'path')
 
+        if self.use_workspace:
+            hd_project_prefix = workspace
+        else:
+            hd_project_prefix = hd_path
+
         if model_path is None:
             model_path = model.project_path
         model_path = self.fix_tilde_bug(model_path, 'model', 'path')
 
-        pathes = self.pathes
-
         # model pathes:
-        pathes['model'] = {}
-        pathes['model']['path'] = model_path
+        paths['model'] = {}
+        paths['model']['path'] = model_path
 
         # name without extension:
-        pathes['model']['name'] = model.project_name
-        pathes['model']['json'] = pathes['model']['name'] + '.json'
-        pathes['model']['out_folder'] = 'out'
+        paths['model']['name'] = model.project_name
+        paths['model']['json'] = paths['model']['name'] + '.json'
+        paths['model']['out_folder'] = 'out'
 
-        # hd pathes:
-        pathes['hd'] = {}
+        # hd paths:
+        paths['hd'] = {}
 
         # path to hybriddomain:
-        pathes['hd']['hd'] = hd_path
+        paths['hd']['hd'] = hd_path
 
         # path to project folder at hd:
-        pathes['hd']['project_path'] = (os.path
-                                        .join(hd_path, 'problems',
-                                              pathes['model']['path']))
+        paths['hd']['project_path'] = (os.path
+                                       .join(hd_project_prefix, 'problems',
+                                             paths['model']['path']))
         
-        pathes['hd']['json'] = (os.path
-                                .join(pathes['hd']['project_path'],
-                                      pathes['model']['json']))
+        paths['hd']['json'] = (os.path
+                               .join(paths['hd']['project_path'],
+                                     paths['model']['json']))
 
-        pathes['hd']['out_folder'] = (os.path
-                                      .join(pathes['hd']['project_path'],
-                                            pathes['model']['out_folder']))
-        pathes['hd']['cpp'] = (os.path
-                               .join(pathes['hd']['out_folder'],
-                                     pathes['model']['name'] + '.cpp'))
-        pathes['hd']['dom_txt'] = (os.path
-                                   .join(pathes['hd']['out_folder'],
-                                         pathes['model']['name'] + '_dom.txt'))
-        pathes['hd']['dom_bin'] = (os.path
-                                   .join(pathes['hd']['out_folder'],
-                                         pathes['model']['name'] + '.dom'))
-        pathes['hd']['sh'] = os.path.join(pathes['hd']['out_folder'],
-                                          pathes['model']['name'] + '.sh')
-        pathes['hd']['so'] = os.path.join(pathes['hd']['out_folder'],
-                                          'libuserfuncs.so')
-        pathes['hd']['userfuncs'] = os.path.join(hd_path, 'gens', 'hs', 'src',
-                                                 'userfuncs.h')
+        paths['hd']['out_folder'] = (os.path
+                                     .join(paths['hd']['project_path'],
+                                           paths['model']['out_folder']))
+        paths['hd']['cpp'] = (os.path
+                               .join(paths['hd']['out_folder'],
+                                     paths['model']['name'] + '.cpp'))
+        paths['hd']['dom_txt'] = (os.path
+                                  .join(paths['hd']['out_folder'],
+                                        paths['model']['name'] + '_dom.txt'))
+        paths['hd']['dom_bin'] = (os.path
+                                  .join(paths['hd']['out_folder'],
+                                        paths['model']['name'] + '.dom'))
+        paths['hd']['sh'] = os.path.join(paths['hd']['out_folder'],
+                                         paths['model']['name'] + '.sh')
+        paths['hd']['so'] = os.path.join(paths['hd']['out_folder'],
+                                         'libuserfuncs.so')
+        paths['hd']['userfuncs'] = os.path.join(hd_path, 'gens', 'hs', 'src',
+                                                'userfuncs.h')
 
-        pathes['hd']['plot'] = os.path.join(pathes['hd']['out_folder'],
-                                            'params_plot.txt')
-
-        pathes['hd']['device_conf'] = os.path.join(pathes['hd']['hd'],
-                                                   'settings', 'device_conf')
-        # hs pathes:
-        pathes['hd']['pathes'] = os.path.join(pathes['hd']['hd'],
-                                              'settings', 'pathes')
-
-        # hs pathes:
-        pathes['hs'] = {}
-
-        # projects folder at server:
+        paths['hd']['plot'] = os.path.join(paths['hd']['out_folder'],
+                                           'params_plot.txt')
         
-        workspace = pathes['pathes_hs_base']['Workspace']
-        workspace = self.fix_tilde_bug(workspace, 'workspace', 'path')
-        pathes['pathes_hs_base']['Workspace'] = workspace
+        if self.use_workspace:
+            hd_settings_prefix = workspace
+        else:
+            hd_settings_prefix = paths['hd']['hd']
+
+        paths['hd']['device_conf'] = os.path.join(hd_settings_prefix,
+                                                  'settings', 'device_conf')
+        # hs paths:
+        paths['hd']['paths'] = os.path.join(hd_settings_prefix,
+                                            'settings', 'paths')
+
+        # hs paths:
+        paths['hs'] = {}
+
+        paths['Workspace'] = workspace
 
         # traceFolder:
-        tracerFolder = pathes['pathes_hs_base']['TracerFolder']
+        tracerFolder = paths['TracerFolder']
         tracerFolder = self.fix_tilde_bug(tracerFolder, 'tracer', 'folder')
-        pathes['pathes_hs_base']['TracerFolder'] = tracerFolder
+        paths['TracerFolder'] = tracerFolder
 
         # path to solver:
-        pathes['hs']['solver'] = os.path.join(tracerFolder,
-                                              "hybridsolver", "bin", "HS")
+        paths['hs']['solver'] = os.path.join(tracerFolder,
+                                             "hybridsolver", "bin", "HS")
 
         # path to hd at solver:
-        pathes['hs']['hd'] = os.path.join(tracerFolder,
-                                          "hybriddomain")
+        paths['hs']['hd'] = os.path.join(tracerFolder,
+                                         "hybriddomain")
 
+        # hs settings:
+        paths['hs']['settings'] = os.path.join(workspace, 'settings')
+        
         # hs device_conf:
-        pathes['hs']['device_conf'] = os.path.join(pathes['hs']['hd'],
-                                                   'settings', 'device_conf')
-        # hs pathes:
-        pathes['hs']['pathes'] = os.path.join(pathes['hs']['hd'],
-                                              'settings', 'pathes')
+        paths['hs']['device_conf'] = os.path.join(paths['hs']['settings'],
+                                                  'device_conf')
+        # paths['hs']['device_conf'] = os.path.join(paths['hs']['hd'],
+        #                                           'settings', 'device_conf')
+        # hs paths:
+        paths['hs']['paths'] = os.path.join(paths['hs']['settings'],
+                                            'paths')
+        # paths['hs']['paths'] = os.path.join(paths['hs']['hd'],
+        #                                     'settings', 'paths')
 
         # path to project folder at server:
-        pathes['hs']['project_path'] = os.path.join(workspace,
-                                                    pathes['model']['path'])
+        paths['hs']['project_path_relative'] = (os.path
+                                                .join('problems',
+                                                      paths['model']['path']))
+        paths['hs']['project_path_absolute'] = (os.path
+                                                .join(workspace,
+                                                      paths['hs']['project_path_relative']))
         # path to json at server:
-        pathes['hs']['json'] = os.path.join(pathes['hs']['project_path'],
-                                            pathes['model']['json'])
+        paths['hs']['json'] = (os.path
+                               .join(paths['hs']['project_path_absolute'],
+                                     paths['model']['json']))
 
         #  file at server:
-        pathes['hs']['out_folder'] = (os.path
-                                      .join(pathes['hs']['project_path'],
-                                            pathes['model']['out_folder']))
+        paths['hs']['out_folder'] = (os.path
+                                     .join(paths['hs']['project_path_absolute'],
+                                           paths['model']['out_folder']))
 
         # cpp file at server:
-        pathes['hs']['cpp'] = (os.path
-                               .join(pathes['hs']['out_folder'],
-                                     pathes['model']['name'] + '.cpp'))
+        paths['hs']['cpp'] = (os.path
+                              .join(paths['hs']['out_folder'],
+                                    paths['model']['name'] + '.cpp'))
 
         # dom file at server:
-        pathes['hs']['dom_bin'] = (os.path
-                                   .join(pathes['hs']['out_folder'],
-                                         pathes['model']['name'] + '.dom'))
+        paths['hs']['dom_bin'] = (os.path
+                                  .join(paths['hs']['out_folder'],
+                                        paths['model']['name'] + '.dom'))
         # sh file at server:
-        pathes['hs']['sh'] = (os.path
-                              .join(pathes['hs']['out_folder'],
-                                    pathes['model']['name'] + '.sh'))
+        paths['hs']['sh'] = (os.path
+                             .join(paths['hs']['out_folder'],
+                                   paths['model']['name'] + '.sh'))
 
-        pathes['hs']['postproc'] = os.path.join(tracerFolder,
-                                                'hybriddomain',
-                                                'solvers', 'hs',
-                                                'postproc', 'video',
-                                                'postprocessor.py')
+        paths['hs']['postproc'] = os.path.join(tracerFolder,
+                                               'hybriddomain',
+                                               'solvers', 'hs',
+                                               'postproc', 'video',
+                                               'postprocessor.py')
 
-        pathes['hs']['plot'] = os.path.join(pathes['hs']['out_folder'],
-                                            'params_plot.txt')
+        paths['hs']['plot'] = os.path.join(paths['hs']['out_folder'],
+                                           'params_plot.txt')
 
     def fix_tilde_bug(self, path, where, name):
         
@@ -240,14 +326,23 @@ class Settings():
         
         try:
             connection = self.connection
+            username = connection.username
         except AttributeError:
-            # do not fix if connection not set:
-            logger.debug("cannot fix tilde bug:"
-                         + " connection (username) not set")
-            return(path)
+            if self.username is None:
+                
+                raise(BaseException("cannot fix tilde bug:"
+                                    + " connection (username) not set"))
+                '''
+                # do not fix if connection (username) not set:
+                logger.debug("cannot fix tilde bug:"
+                             + " connection (username) not set")
+                return(path)
+                '''
+            else:
+                username = self.username
 
         # fix tilde bug:
-        path = path.replace("~", "/home/" + connection.username)
+        path = path.replace("~", "/home/" + username)
         # logger.info("%s_%s fixed:" % (where, name))
         # logger.info(path)
         return(path)

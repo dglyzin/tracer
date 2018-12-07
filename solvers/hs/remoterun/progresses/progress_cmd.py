@@ -1,3 +1,4 @@
+# python3 -m solvers.hs.remoterun.progresses.progress_cmd
 from time import sleep
 
 
@@ -5,15 +6,18 @@ class ProgressCmd():
     def __init__(self, STEPS, prefix="progress"):
         self.step_progress = 0
         self.steps_total = STEPS
-        self.prefix = prefix
+        self.set_prefix(prefix)
 
     def succ(self, value):
         self.step_progress = value
         progress_cmd(value, self.steps_total, is_sleep=False,
                      prefix=self.prefix)
 
+    def set_prefix(self, prefix):
+        self.prefix = prefix
 
-def progress_cmd(value, total, win_size=50, prefix="progress",
+
+def progress_cmd(value, total, win_size=10, prefix="progress",
                  is_sleep=True):
     
     procent_value = int(value*100 / (total))

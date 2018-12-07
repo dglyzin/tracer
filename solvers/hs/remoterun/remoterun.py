@@ -26,8 +26,36 @@
 
 model -> mapped model -> domain.dom+funcs.cpp+run.sh
 
-Ex (from hd):
-python3 -m solvers.hs.remoterun.remoterun conn_base default problems/1dTests/logistic_delays
+Command:
+
+hd$ python3 -m solvers.hs.remoterun.remoterun \
+conn_file_name device_conf_file_name paths_file_name \
+test_folder_relative_name
+
+where
+
+   conn_file_name is name of conn file in conn folder
+
+   paths_file_name is name of paths file in paths folder
+      deffault is ``paths_hs_base``
+
+   device_conf_file_name is name of device_conf file in
+      device_conf folder.
+
+   test_folder_relative_name relative to hd name of folder,
+      model .json file stored to.
+      (ex: ``problems/1dTests/test_folder``)
+      
+Ex (from hd)::
+
+ # 1d:
+ python3 -m solvers.hs.remoterun.remoterun conn_base default paths_hs_base problems/1dTests/logistic_delays
+
+ # 2d one block:
+ python3 -m solvers.hs.remoterun.remoterun conn_base default paths_hs_base problems/2dTests/heat_block_1
+
+ # 2d two blocks ics:
+ python3 -m solvers.hs.remoterun.remoterun conn_base ics_other paths_hs_base problems/2dTests/heat_block_2_ics_other
 
 '''
 #remoteRunScriptName='project.sh'
@@ -151,8 +179,8 @@ def make_problems_as_workspace_link(client, hs_problems, workspace):
 def remoteProjectRun(settings, dimention, notebook=None):
     '''
     Run hs with settings:
-    1) Copy json files of model, device_conf to hs
-    2) Create folders at hs for model
+    1) Create folders at hs/workspace for model and settings
+    2) Copy json files of model, device_conf, paths to hs
     3) Generate .sh, .cpp, .dom .so files for hs
     4) Run .sh
     5) Getting hs statuses and progress
@@ -161,15 +189,13 @@ def remoteProjectRun(settings, dimention, notebook=None):
 
     Inputs:
 
-    - ``settings`` - Settings object, contained info about pathes
+    - ``settings`` - Settings object, contained info about paths
               device_conf and connection in.
                 # make settings:
-                settings = Settings()
                 model = Model()
                 model.io.loadFromFile(modelFileName)
-                settings.make_all_pathes(model)
-                settings.make_connection(name=conn_name)
-                settings.set_device_conf(device_conf_name)
+                settings = Settings(model, conn_name, device_conf_name, paths_name)
+
 
     params: # TODO: remove desc to other place
                     make settings file
@@ -220,66 +246,69 @@ def remoteProjectRun(settings, dimention, notebook=None):
         optionalArgs += " -mpimap " + str(params["mpimap"])
     '''
 
-    # FOR pathes:
-    pathes = settings.pathes
+    # FOR paths:
+    paths = settings.paths
     connection = settings.connection
-    workspace = pathes['pathes_hs_base']['Workspace']
+    workspace = paths['Workspace']
     # workspace = fix_tilde_bug(connection, workspace,
     #                           'hs', 'workspace')
 
-    tracer_folder = pathes['pathes_hs_base']['TracerFolder']
+    tracer_folder = paths['TracerFolder']
     # tracer_folder = fix_tilde_bug(connection, tracer_folder,
     #                               'hs', 'tracer_folder')
 
-    project_name = pathes['model']['name']
-    project_path = pathes['model']['path']
+    project_name = paths['model']['name']
+    project_path = paths['model']['path']
     logger.info("project_path")
     logger.info(project_path)
-    project_path_folders = project_path.split(os.path.sep)
+    hs_project_path_relative = paths['hs']['project_path_relative']
+    project_path_folders = hs_project_path_relative.split(os.path.sep)
 
-    hs_hd = pathes['hs']['hd']
+    hs_hd = paths['hs']['hd']
     # hs_hd = fix_tilde_bug(connection, hs_hd,
     #                       'hs', 'hd')
 
-    hs_solver = pathes['hs']['solver']
+    hs_solver = paths['hs']['solver']
 
-    hs_dev_conf = pathes['hs']['device_conf']
+    hs_settings = paths['hs']['settings']
+    
+    hs_dev_conf = paths['hs']['device_conf']
     # hs_dev_conf = fix_tilde_bug(connection, hs_dev_conf,
     #                             'hs', 'dev_conf')
 
-    hs_pathes = pathes['hs']['pathes']
+    hs_paths = paths['hs']['paths']
 
-    hs_project_folder = pathes['hs']['project_path']
+    hs_project_folder = paths['hs']['project_path_absolute']
     # hs_project_folder = fix_tilde_bug(connection, hs_project_folder,
     #                                   'hs', 'projects_folder')
 
-    hs_out_folder = pathes['hs']['out_folder']
+    hs_out_folder = paths['hs']['out_folder']
     # hs_out_folder = fix_tilde_bug(connection, hs_out_folder,
     #                               'hs', 'out_folder')
 
-    hs_json = pathes['hs']['json']
+    hs_json = paths['hs']['json']
     # hs_json = fix_tilde_bug(connection, hs_json, 'hs', 'json')
 
-    hs_sh = pathes['hs']['sh']
+    hs_sh = paths['hs']['sh']
     # hs_sh = fix_tilde_bug(connection, hs_sh, 'hs', 'sh')
 
-    hs_cpp = pathes['hs']['cpp']
+    hs_cpp = paths['hs']['cpp']
     # hs_cpp = fix_tilde_bug(connection, hs_cpp, 'hs', 'cpp')
 
-    hd_dev_conf = pathes['hd']['device_conf']
-    hd_pathes = pathes['hd']['pathes']
+    hd_dev_conf = paths['hd']['device_conf']
+    hd_paths = paths['hd']['paths']
 
-    hd_out_folder = pathes['hd']['out_folder']
-    hd_json = pathes['hd']['json']
+    hd_out_folder = paths['hd']['out_folder']
+    hd_json = paths['hd']['json']
     # hd_json = fix_tilde_bug(connection, hd_json, 'hd', 'json')
 
-    hd_cpp = pathes['hd']['cpp']
+    hd_cpp = paths['hd']['cpp']
     # hd_cpp = fix_tilde_bug(connection, hd_cpp, 'hd', 'cpp')
 
     # END FOR
 
     # FOR device_conf:
-    device_conf = settings.device_conf[settings.device_conf_name]
+    device_conf = settings.device_conf
     # END FOR
 
     # get project file name without extension
@@ -305,6 +334,7 @@ def remoteProjectRun(settings, dimention, notebook=None):
         else:
             logger.info("Workspace OK.")
 
+        # FOR creating/cleaning project folder
         logger.info("Creating/cleaning project folder: ")
         stdin, stdout, stderr = client.exec_command('test -d  '
                                                     + hs_project_folder)
@@ -318,7 +348,8 @@ def remoteProjectRun(settings, dimention, notebook=None):
 
             # create out folder:
             create_folder(client, hs_out_folder)
-            logger.info("Folders created.")
+
+            logger.info("projects folders created.")
         else:
             stdin, stdout, stderr = client.exec_command('test -d  '
                                                         + hs_out_folder)
@@ -350,10 +381,21 @@ def remoteProjectRun(settings, dimention, notebook=None):
                         return
                     else:
                         logger.info("File OK.")
+        # END FOR
+
+        # FOR create settings folders:
+        # create settings folders:
+        logger.info("Creating settings folders: ")
+        create_folder(client, hs_settings)
+        create_folder(client, hs_paths)
+        create_folder(client, hs_dev_conf)
+        logger.info("settings folders created")
+        # END FOR
+
+        # FOR copy files:
+        cftp = client.open_sftp()
 
         # 1 copy json to hs:
-
-        cftp = client.open_sftp()
         logger.info("hd_json:")
         logger.info(hd_json)
         logger.info("hs_json:")
@@ -366,9 +408,11 @@ def remoteProjectRun(settings, dimention, notebook=None):
         # 2 copy device_conf to hs:
         copy_files(client, connection, hd_dev_conf, hs_dev_conf, 'dev_conf')
 
-        # 2.1 copy pathes to hs:
-        copy_files(client, connection, hd_pathes, hs_pathes, 'pathes')
+        # 2.1 copy paths to hs:
+        copy_files(client, connection, hd_paths, hs_paths, 'paths')
+        # END FOR
 
+        '''
         # 2.2 make problems folder link:
         hs_problems = os.path.join(hs_hd, 'problems')
         # hs_problems = fix_tilde_bug(connection, hs_problems,
@@ -377,6 +421,7 @@ def remoteProjectRun(settings, dimention, notebook=None):
             make_problems_as_workspace_link(client, hs_problems, workspace)
         else:
             create_folder(client, hs_problems)
+        '''
 
         #3 Run preprocessor on json
         logger.info('\nRunning preprocessor:')
@@ -396,7 +441,7 @@ def remoteProjectRun(settings, dimention, notebook=None):
         command = "cd " + hs_hd
         client.exec_command(command)
         '''
-
+        
         # go to hs_hd dirrectory, show it
         # and run source generator:
         command = ("cd " + hs_hd + " &&"
@@ -404,12 +449,25 @@ def remoteProjectRun(settings, dimention, notebook=None):
                    + (" python3 "
                       + ("-m gens.hs.tests.tests_gen_%dd"
                          % dimention))
+                   + ' -t ' + hs_project_folder
+                   + ' -d ' + settings.device_conf_name
+                   + ' -p ' + settings.paths_name
+                   + ' -w ' + workspace
+                   + ' -u ' + connection.username)
+
+        '''
+        command = ("cd " + hs_hd + " &&"
+                   + " pwd &&"
+                   + (" python3 "
+                      + ("-m gens.hs.tests.tests_gen_%dd"
+                         % dimention))
                    + ' -t ' + project_name
                    + ' -d ' + settings.device_conf_name)
-
+        '''
         # command = command + optionalArgs
         logger.info("command:")
         logger.info(command)
+
         stdin, stdout, stderr = client.exec_command(command)
         
         logger.info("finally")
@@ -436,6 +494,7 @@ def remoteProjectRun(settings, dimention, notebook=None):
         stdin, stdout, stderr = client.exec_command('sh ' + hs_sh
                                                     + " 2>&1")
         progress = StdoutProgresses(notebook=notebook)
+        success = False
         for line in iter(lambda: stdout.readline(2048), ""):
             try:
                 # show progress and key points:
@@ -447,6 +506,7 @@ def remoteProjectRun(settings, dimention, notebook=None):
                         or 'errors' in line or 'Errors' in line)
                 if cond:
                     logger.info(line)
+                    success = True
                     break
                 else:
                     # print(line)
@@ -455,6 +515,21 @@ def remoteProjectRun(settings, dimention, notebook=None):
                 logger.info("Wrong symbol")
                 break
 
+        if success:
+            # progress.re_pattern = "(?P<val>[\d]+)\.png"
+            progress.set_prefix("composing")
+            for line in iter(lambda: stdout.readline(2048), ""):
+                cond = ("Done" in line
+                        or 'error' in line or 'Error' in line
+                        or 'errors' in line or 'Errors' in line)
+                progress.show_stdout_progresses(line)
+
+                if "Creating" in line:
+                    logger.info(line)
+                
+                if cond:
+                    break
+                
         logger.info(stdout.read())
         logger.info("it was stdout")
 
@@ -463,7 +538,8 @@ def remoteProjectRun(settings, dimention, notebook=None):
         
         #get resulting files
         logger.info("Downloading results...")
-
+        logger.info("from:")
+        logger.info(hs_out_folder)
 
         cftp = client.open_sftp()
         cftp.chdir(hs_out_folder)
@@ -543,6 +619,10 @@ if __name__ == '__main__':
     parser.add_argument('device_conf_name', type=str,
                         help=("name of json file in"
                               + " settings/device_conf folder"))
+    # paths_name:
+    parser.add_argument('paths_name', type=str,
+                        help=("name of json file in"
+                              + " settings/paths folder"))
 
     # mandatory argument, json filename:
     parser.add_argument('projectFileName', type=str,
@@ -592,11 +672,12 @@ if __name__ == '__main__':
     conn_name = args.conn_name
     modelFileName = args.projectFileName
     device_conf_name = args.device_conf_name
+    paths_name = args.paths_name
 
     # make settings:
     model = Model()
     model.io.loadFromFile(modelFileName)
 
-    settings = Settings(model, conn_name, device_conf_name)
+    settings = Settings(model, conn_name, device_conf_name, paths_name)
 
     finalParseAndRun(settings, model.dimension)

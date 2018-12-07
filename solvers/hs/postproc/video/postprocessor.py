@@ -232,7 +232,7 @@ def savePlots1D(projectDir, projectName, data, t,
                 countZ, countY, countX,
                 offsetZ, offsetY, offsetX,
                 cellSize, maxValue, minValue,
-                dx, dy, postfix, plotIdx):
+                dx, dy, postfix, percent, plotIdx):
     # for idx, binFile in enumerate(binFileList):
     # data = readBinFile(projectDir+"/"+binFile, info,
     #                    countZ, countY, countX,
@@ -244,17 +244,18 @@ def savePlots1D(projectDir, projectName, data, t,
     #     dictfun[item] = data[0, 0, :, numitem]
 
     filename = os.path.join(projectDir, (projectName+"-plot"
-                                         + str(plotIdx) + postfix + ".png"))
+                                         + str(plotIdx) + str(postfix) + ".png"))
     savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
     # logger.info("produced png: "+ filename)
-    return "produced png: " + filename
+    # return "produced png: " + filename
+    return("produced png: " + percent)
 
 
 def savePlots2D(projectDir, projectName, data, t,
                 countZ, countY, countX,
                 offsetZ, offsetY, offsetX,
                 cellSize, maxValue, minValue,
-                dx, dy, postfix, plotIdx):
+                dx, dy, postfix, percent, plotIdx):
     '''
     # for idx, binFile in enumerate(binFileList):
     data = readBinFile(projectDir+"/"+binFile, info,
@@ -271,7 +272,7 @@ def savePlots2D(projectDir, projectName, data, t,
 
     # TODO 1: separate plotIdx from postfix:
     filename = os.path.join(projectDir, (projectName+"-plot"
-                                         + str(plotIdx)+postfix + ".png"))
+                                         + str(plotIdx)+str(postfix) + ".png"))
     # plt.savefig(filename, format='png')
     # logger.info 'save #', idx, binFile, "->", filename
     # plt.clf()
@@ -288,7 +289,8 @@ def savePlots2D(projectDir, projectName, data, t,
     #    saveTxt2D(filenameTxt, X, Y, data, maxValue, minValue, t, cellSize)
 
     # logger.info("produced png: "+ filename)
-    return "produced png: " + filename
+    return("produced png: " + percent)
+    # return "produced png: " + filename
 
 
 def getResults(projectDir, projectName, binFile,
@@ -347,7 +349,7 @@ def wSavePlots2D(args):
 
 
 def createResultFile(projectDir, projectName, resIdx, resLog):
-    logger.info("Creating out file:")
+    logger.info("Creating out file: %s" % (str(resIdx)))
 
     outfileNamePath = projectDir+projectName+"-res"+str(resIdx)+".out"
 
@@ -367,7 +369,7 @@ def createResultFile(projectDir, projectName, resIdx, resLog):
 
 
 def createVideoFile(projectDir, projectName, plotIdx):
-    logger.info("Creating video file:")
+    logger.info("Creating video file: %s" % (str(plotIdx)))
     # TODO 2: separate plotIdx from postfix:
     command = ("avconv -r 5 -loglevel panic -i "+projectDir+projectName
                + "-plot"+str(plotIdx)+"%d.png -b:v 1000k "
@@ -496,7 +498,7 @@ def createMovie(projectDir, projectName, modelParamsPath):
         # for plotIdx, plot in enumerate(mParams['plotList']):
         # t1 = time.time()
         block_idx = plotIdx
-
+        
         out = getDomainProperties(info, block_idx)
         countZ, countY, countX, offsetZ, offsetY, offsetX = out
         
@@ -520,6 +522,8 @@ def createMovie(projectDir, projectName, modelParamsPath):
         if dimension == 2:
             saveResultFunc = wSavePlots2D
         if plotType == str:
+            logger.info("Creating images for block %s value %s"
+                        % (str(block_idx), plot["Value"]))
             # TODO: this code is particular case of plotType == list
             # with plotList = ['U'] and can be removed
             arg_list = [(projectDir, projectName, binFile,
@@ -536,13 +540,19 @@ def createMovie(projectDir, projectName, modelParamsPath):
             logger.info('min:')
             logger.info(dataListMin)
             # picCount = 1
+            total_time = logData[-1][0]
+            logger.info("total_time:")
+            logger.info(total_time)
+
             arg_list = [(projectDir, projectName,
                          [dataNum[1]], dataNum[0],
                          countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
                          cellSize,
-                         dataListMax, dataListMin, dx, dy,
-                         str(Idx), block_idx)
+                         dataListMax, dataListMin, dx, dy, Idx,
+                         ("-"+str(int(float(dataNum[0])/float(total_time)*100))
+                          + "% "+str(dataNum[0])+" "+str(total_time)),
+                         block_idx)
                         for Idx, dataNum in enumerate(logData)]
             log = pool.map(saveResultFunc, arg_list)
 
@@ -550,6 +560,9 @@ def createMovie(projectDir, projectName, modelParamsPath):
             logger.info('ЛИСТ! Ы')
             logData = []
             for elemPlot in plot["Value"]:
+                logger.info("Creating images for block %s value %s"
+                            % (str(block_idx), elemPlot))
+
                 arg_list = [(projectDir, projectName,
                              binFile, info, dimension,
                              countZ, countY, countX,
@@ -590,7 +603,7 @@ def createMovie(projectDir, projectName, modelParamsPath):
             logger.info("len(logData):")
             logger.info(len(logData))
             logger.info("len(dataTime):")
-            logger.info(dataTime)
+            logger.info(len(dataTime))
             
             # logDataNp[value{U,V}][time]
             # logDataNp[value{U,V}, time ]
@@ -603,13 +616,21 @@ def createMovie(projectDir, projectName, modelParamsPath):
             # for all times in time interval
             logDataNp = np.array(logData)
             # logger.info(logDataNp[:, 0])
+            total_time = dataTime[-1]
+            logger.info("total_time:")
+            logger.info(total_time)
             arg_list = [(projectDir, projectName, logDataNp[:, Idx],
                          dataTime[Idx],
                          countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
                          cellSize,
                          dataListMax, dataListMin, dx, dy,
-                         str(Idx), block_idx)
+                         Idx,
+                         ("-"
+                          + str(int(float(dataTime[Idx])
+                                    / float(total_time)*100))
+                          + "% "+str(dataTime[Idx])+" "+str(total_time)),
+                         block_idx)
                         for Idx, itemd in enumerate(logDataNp[0])]
             log = pool.map(saveResultFunc, arg_list)
         for element in log:

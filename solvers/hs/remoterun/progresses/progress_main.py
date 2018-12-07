@@ -1,11 +1,14 @@
+# python3 -m solvers.hs.remoterun.progresses.progress_main
 import re
 from solvers.hs.remoterun.progresses.progress_cmd import ProgressCmd
 
 
 class StdoutProgresses():
-    def __init__(self, re_pattern="[\d]+\s?%", STEPS=100, notebook=None):
+    def __init__(self, re_pattern="(?P<val>[\d]+)\s?%",
+                 STEPS=100, notebook=None):
         self.re_pattern = re_pattern
         self.prefix = "solving"
+        self.steps = STEPS
 
         self.progresses = []
 
@@ -17,12 +20,21 @@ class StdoutProgresses():
         else:
             self.progresses.append(ProgressCmd(STEPS,
                                                prefix=self.prefix))
-            
+
+    def set_prefix(self, prefix):
+        self.prefix = prefix
+        for progress in self.progresses:
+            progress.set_prefix(prefix)
+
     def show_stdout_progresses(self, line):
         res = re.search(self.re_pattern, line)
         if res is not None:
-            res_str = res.group()
-            value = int(res_str[:-1])
+            res_str = res.group("val")
+            value = int(res_str)
+            # res_str = res.group()
+            # value = int(res_str[:-1])
+            if value > self.steps:
+                raise(BaseException("progress value more then total"))
             for progress in self.progresses:
                 progress.succ(value)
     
