@@ -169,11 +169,11 @@ class Handlers():
                 print(self.current_user)
                 try:
                     name = tornado.escape.xhtml_escape(self.current_user)
-                    self.render("index.html", title="", username=name)
+                    self.render("index.htm", title="", username=name)
                 except TypeError:
                     print("self.current_user is None")
                     # TODO: users methods
-                    self.render("index.html", username="default")
+                    self.render("index.htm", username="default")
                     # self.redirect("/login")
 
         self.MainHandler = MainHandler
