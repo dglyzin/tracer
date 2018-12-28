@@ -71,6 +71,23 @@ class DialectHandlers(Handlers):
 
         self.DialectTableHandler = DialectTableHandler
 
+        class NetHandler(self.BaseHandler):
+            # @tornado.web.authenticated
+            def get(self):
+                print("FROM NetHandler.get")
+                print("self.current_user")
+                print(self.current_user)
+                # try:
+                #     name = tornado.escape.xhtml_escape(self.current_user)
+                #     self.render("index_net.html", title="", username=name)
+                # except TypeError:
+                print("self.current_user is None")
+                # TODO: users methods
+                self.render("index_net.htm", username="default")
+                # self.redirect("/login")
+
+        self.NetHandler = NetHandler
+
     '''
     def create_dialect_login_handlers(self):
         

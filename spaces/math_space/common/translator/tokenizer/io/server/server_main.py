@@ -37,7 +37,7 @@ def make_app(handlers):
         #api
         # (r"/api/tree", TreeHandler),
         # (r"/api/editor", EditorHandler),
-        # (r"/api/net", NetHandler),
+        (r"/net", handlers.NetHandler),
         (r"/api/tables/path", handlers.PathHandler),
         (r"/api/tables/dialect", handlers.DialectTableHandler),
         (r"/api/tables/user", handlers.UsersTableHandler),
