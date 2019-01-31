@@ -13,8 +13,116 @@ Examples:
 '''
 import re
 from translator.tokenizer.words import Word
+from translator.tokenizer.tokenizers_types.tokenizer_mix import LexMixTokenizer
+from translator.tokenizer.patterns.patterns_list.patterns_list_main import Patterns
 
 
+class TokenizerNet():
+
+    '''Main class for lex anаlysis.
+    Transform sent into list, in which found
+    patterns replaced with ``WordDict`` objects
+    (see example). This list is input for
+    further analysis in cyk step.
+
+    Usage:
+
+    First setup ``grammar_parts`` with use of
+    ``self.set_grammar_parts``,
+    
+    then load patterns from list of patterns like:
+    [('if', r"${clauses}=>${clauses}",
+     ('br_mid', [False, True, False]),
+     ('txt',)),
+    ...]
+    (see ``parser/translator/tokenizer/tests/dialects``)
+
+    after that can run ``self.lex`` method for transforming
+    sent to list of objects, in which found patterns
+    replaced with ``WordDict`` objects.
+
+    Algorithm:
+
+    lex sent =
+      case find_pattern(sent, patterns) of
+           [left, pattern, right] -> lex(left)+Word(pattern)+lex(right)
+           [left, pattern] -> lex(left)+Word(pattern)
+           [pattern, right] -> Word(pattern)+lex(right)
+           otherwise -> list(sent)
+      where
+            -- return list of remained words:
+            find_pattern sent [] = [Word(char) for char in sent]
+
+            -- return res or try with others patterns:
+            find_pattern sent [x:xs] = if res=re.find(x, sent) then res
+                                          else find_pattern sent xs
+
+    Input: string without spaces.
+
+    Return: list[elms] where elems is WordDict
+            if pattern found then
+               elms.lex.keys = ["term_name", "lex_value",
+                                "lex_template", "term_type",
+                                "re_res"]
+            else then elms.lex = [elms.name] where name is original char.
+
+    Tests:
+
+    >>> t = lex("a+U*U*V+D[V,{y,1}]-c*D[U,{x,2}]");t
+    ['a', '+', 'a', '*', 'a', '*', 'a', '+', 'a', '-', 'a', '*', 'a']
+    >>> type(t[0])
+    WordDict
+    >>> t[8].lex['re_res'].group()
+    'D[V,{y,1}]'
+
+    Examples::
+    
+       sent:
+
+          "group(A) \\and abelian(A) => Eq(A = A_1 + ... + A_n)Eq"
+
+       will be replaced with:
+
+          ['f(', 'a', ')', 'm', 'f(', 'a', ')', 'm', 'a']
+
+       where ``grammar_parts`` represented with
+        ``WordDict`` objects:
+          
+         'f(' - br_left (pred: "group(arg)")
+         'a' - a (set: "A", eq: "Eq(A = A_1 + ... + A_n)Eq")
+         'm' br_mid (conj: "\\and", if: "=>")
+         all others ("(" in that case) remained type(str).
+
+    see more examples in::
+
+       ``parser/translator/tokenizer/tests/tests_list``
+
+    '''
+
+    def __init__(self):
+        
+        self.patterns = Patterns()
+        self.tokenizer_mix = LexMixTokenizer()
+
+    def set_grammar_parts(self, grammar_parts):
+        self.grammar_parts = grammar_parts
+
+    def load_patterns(self, dialect):
+        # self.patterns.io.load(db)
+        self.patterns.make_patterns(dialect)
+        self.patterns.compile_patterns(self.grammar_parts)
+        sorted = self.patterns.sorter.sort()
+        self.patterns_list_sorted = sorted
+
+    def lex(self, sent_list):
+        
+        patterns = [entry[1] for entry in self.patterns_list_sorted]
+        self.tokenizer_mix.set_patterns_list(patterns)
+        out = self.tokenizer_mix.lex_br(sent_list)
+        return(out)
+
+
+# depricated:
 class LexNetTokenizer():
     
     def __init__(self, lexNet):
