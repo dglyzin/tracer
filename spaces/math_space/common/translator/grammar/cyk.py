@@ -56,15 +56,24 @@ def init_P(grammar, length):
     return(P)
 
 
-def cyk(goal='(a+a)*a', grammar=grammar):
+def cyk(goal=["(", "a", "+", "a", ")", "*", "a"],
+        grammar=grammar, node_data=None):
 
     '''Cocke–Younger–Kasami algorithm.
-
+    
     Input:
-    goal: either string or list of string
-                 or list of Word's objects.
+    
+    - ``goal`` -- either list of string
+    or list of Word's objects.
+
+    - ``grammar`` -- grammar must be in Chomsky normal form (CNF)
+    so use ``grammars.gm_to_cnf`` first. See examples in ``grammars.py``.
+
+    - ``node_data`` -- dict, contained ops key (operators),
+    special for each dialect. (ex: ["+", "-", "*"]).
 
     Output:
+
     parse tree.'''
     
     if type(goal) == str:
@@ -75,23 +84,29 @@ def cyk(goal='(a+a)*a', grammar=grammar):
     N = len(words)
     rule_term = get_rules(grammar, term=True)
     rule_unterm = get_rules(grammar, term=False)
+    # print("rule_term")
+    # print(rule_term)
+    # print("rule_unterm")
+    # print(rule_unterm)
+
     P = init_P(grammar, N)
     Tree = {}
 
     for s in range(1, N+1):  # 1..N
         for parent, child in rule_term:
-            if child == words[s-1]:
+            if child[0] == words[s-1]:
                 P[(parent, s, 1)] = True
                 # Tree[(parent, s, 1)] = [parent, child]
-                # Tree[(parent, s, 1)] = Node(rule=(parent, child))
-                Tree[(parent, s, 1)] = Node(rule=(parent, words[s-1]))
+                # Tree[(parent, s, 1)] = Node(rule=(parent, child[0]))
+                Tree[(parent, s, 1)] = Node(rule=(parent, words[s-1]),
+                                            node_data=node_data)
 
     for l in range(2, N+1):  # 2..N
         for s in range(1, N-l+2):  # 1..N-l+1
             for p in range(1, l):  # 1..l-1
                 for parent, child in rule_unterm:
                     left, right = child
-
+                    # print("left, right: %s, %s" % (left, right))
                     '''
                     P[(parent, s, l)] = ((P[(left, s, p)]
                                           and P[(right, s+p, l-p)])
@@ -110,7 +125,8 @@ def cyk(goal='(a+a)*a', grammar=grammar):
                         nodes_children = [copy_node(Tree[(left, s, p)]),
                                           copy_node(Tree[(right, s+p, l-p)])]
                         node_parent = Node(rule=(parent, child),
-                                           children=nodes_children)
+                                           children=nodes_children,
+                                           node_data=node_data)
                         node_parent.add_parent()
                         Tree[(parent, s, l)] = node_parent
 
@@ -127,3 +143,21 @@ def cyk(goal='(a+a)*a', grammar=grammar):
         result = (P, Tree)
     return(result)
             
+
+def preproc(goal_sent_list):
+    
+    if type(goal_sent_list) != list:
+        raise(BaseException("preproc: type of "
+                            + "goal_sent_list must be a list"))
+
+    # remove all subsents like "*(", ")*":
+    s = sum([list(o) if type(o) == str else [o] for o in goal_sent_list], [])
+    print(s)
+    '''
+    for letter in s:
+        print("type of %s: %s" % (letter, type(letter)))
+    '''
+    result = [letter if type(letter) == str
+              else letter if letter != "m"
+              else letter.lex["term_name"] for letter in s]
+    return(result)

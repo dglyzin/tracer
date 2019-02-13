@@ -104,6 +104,16 @@ def test_one(tokenizer, tests_list, dialect="eqs", _id=0, verbose=False):
                                   ["if", "if_only", "if_def"],
                                   "clause_or", "conj"])
 
+    # choice ops for dialect:
+    if dialect == "eqs":
+        node_data = {"ops": ['add', 'sub', 'mul', 'div', 'eq', ]}
+        
+    elif dialect == "cs":
+        node_data = {"ops": ["clause_where", "clause_for", "clause_into",
+                             "def_0", "in_0",
+                             "if", "if_only", "if_def",
+                             "clause_or", "conj"]}
+
     if verbose:
         print("grammar_fmw:")
         for rule in grammar_fmw:
@@ -111,7 +121,8 @@ def test_one(tokenizer, tests_list, dialect="eqs", _id=0, verbose=False):
     
     try:
         # parse
-        p, t = cyk(goal=out, grammar=grammar_fmw)
+        p, t = cyk(goal=out, grammar=grammar_fmw,
+                   node_data=node_data)
         if type(p) == dict:
             print("fail test %s" % (_id))
             if verbose:
@@ -145,15 +156,17 @@ def test_one(tokenizer, tests_list, dialect="eqs", _id=0, verbose=False):
     if verbose:
         print("ot:")
         print(ot.__repr__(node_attr_to_show="name"))
-    
-    return(True)
+    if not verbose:
+        return(True)
+    else:
+        return(ot)
 
 
 if __name__ == '__main__':
 
     # test_all_cs()
     # test_all_eqs()
-    tokenizer = make_tokenizer(cs)
-    tests_list = tests_dict_cs
-    dialect = "cs"
-    test_one(tokenizer, tests_list, dialect=dialect, _id=19, verbose=True)
+    tokenizer = make_tokenizer(eqs)
+    tests_list = tests_dict_eqs
+    dialect = "eqs"
+    test_one(tokenizer, tests_list, dialect=dialect, _id=17, verbose=True)

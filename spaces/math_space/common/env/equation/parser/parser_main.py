@@ -13,16 +13,16 @@ import logging
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-logger = logging.getLogger('equation.eq_parser')
+# logger = logging.getLogger('equation.eq_parser')
 
 # if using directly uncoment that:
-'''
+
 # create logger
-log_level = logging.DEBUG  # logging.DEBUG
+log_level = logging.INFO  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('eq_parser')
 logger.setLevel(level=log_level)
-'''
+
 
 
 class EqParser():
@@ -207,6 +207,8 @@ class EqParser():
 
         # return(t)
         # convert parse tree to operator's tree:
+        logger.debug("from_cyk:")
+        logger.debug(t)
         ot = convert(t)
         self.operator_tree = ot
 

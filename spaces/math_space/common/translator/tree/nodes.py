@@ -31,7 +31,8 @@ class Node():
             child.add_parent()
 
     def __repr__(self, begin=0):
-        return(self.print_node(begin=begin))
+        out_gen = lambda _self: str(_self.name)+"->"+str(_self.rule)
+        return(self.print_node(begin=begin, out_gen=out_gen))
 
     def print_node(self, begin=0, out_gen=None):
 
@@ -59,11 +60,32 @@ class NodeR(Node):
     :atr name is either like 'a' or '+' or 'AB'.
     '''
     def __init__(self, rule, parent=None, children=[],
-                 visited=False):
+                 visited=False, node_data=None):
+
+        '''
+        Inputs:
+
+        - ``node_data`` -- dict, contained ops key (operators),
+        special for each dialect. (ex: ["+", "-", "*"]).
+        '''
         Node.__init__(self, rule, parent, children, visited)
 
         self.trs = ['a']
-        self.ops = ['+', '-', '*']
+        self.node_data = node_data
+
+        if node_data is not None:
+            self.ops = node_data["ops"]
+        else:
+            self.ops = ["+", "-", "*"]
+            '''
+            self.ops = ["clause_where", "clause_for", "clause_into",
+                        "def_0", "in_0",
+                        "if", "if_only", "if_def",
+                        "clause_or", "conj"]
+            self.ops = ['add', 'sub', 'mul', 'div', 'eq', ]
+            self.ops = ["+", "-", "*"]
+            '''
+
         self.brs = ['(', ')', 'w', 'f', 'i', ']']
         self.sps = [',']
         self.ars = ['arg', 'args']
@@ -262,9 +284,15 @@ class NodeR(Node):
             out.append(rightb)
             return(out)
 
-    def __repr__(self, begin=0):
+    def __repr__(self, begin=0, node_attr_to_show="rule"):
+        if node_attr_to_show == "rule":
+            out_gen = lambda _self: (str(_self.rule[0]) + "->"
+                                     + str(_self.rule[1]))
+        elif node_attr_to_show == "name":
+            out_gen = lambda _self: (str(_self.name))
+            
         return(self.print_node(begin=begin,
-                               out_gen=lambda _self: _self.name))
+                               out_gen=out_gen))
 
     def show_original(self):
         def gen(_self):
@@ -467,14 +495,15 @@ class NodeCommon(NodeR):
 
     ''' Node for Word' representation'''
 
-    def __init__(self, name, pattern=None):
+    def __init__(self, name, pattern=None, node_data=None):
         name = Word(name, [name, None, pattern])
-        NodeR.__init__(self, [None, name])
+        NodeR.__init__(self, [None, name], node_data=node_data)
 
 
 def copy_node(node: NodeR)->NodeR:
     new_node = NodeR(rule=node.rule,
                      parent=node.parent,
                      children=node.children,
-                     visited=node.visited)
+                     visited=node.visited,
+                     node_data=node.node_data)
     return(new_node)
