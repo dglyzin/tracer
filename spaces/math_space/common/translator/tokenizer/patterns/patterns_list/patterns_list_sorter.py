@@ -114,7 +114,13 @@ class Sorter():
         
         '''Both patterns contain part that is part
         of some part of other pattern.
-        (ex: ('in','which is:'), ('in:', 'which is'))'''
+        (ex: p0:('in','which is:'), p1:('in:', 'which is')
+        in sent0: "a, b in a+b=b+a which is: commutativety"
+        must use p0 first
+        but
+        in sent1: "a in: G(a) which is group(a)"
+        must use p1 first
+        so cannot decide which of pattern (p0 or p1) is first in queue)'''
         
         oPattern_0 = pattern_0[1]
         oPattern_1 = pattern_1[1]

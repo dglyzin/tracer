@@ -37,9 +37,22 @@ def test(dialect):
     # lambda idd: 1200/math.log2(len(idd))
         
     cy_out = ms.map_net_nx_to_cy(D)
-    print("map_net_id:")
+    print("\nmap_net_nx_to_cy:")
     print(cy_out)
     
+    nx_from_cy_out = ms.map_net_cy_to_nx(cy_out)
+    print("\nmap_net_cy_to_nx:")
+    print(nx_from_cy_out)
+
+    # work:
+    # cy_out = ms.map_net_nx_to_cy(nx_from_cy_out)
+    # print("\nmap_net_nx_to_cy:")
+    # print(cy_out)
+
+    id_to_names_out = ms.map_nx_id_to_names(nx_from_cy_out)
+    print("\nmap_nx_id_to_names:")
+    print(id_to_names_out)
+
     # work
     print("node_link_data:")
     # print(json_graph.node_link_data(D))

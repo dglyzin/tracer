@@ -202,6 +202,11 @@ def test_lambda():
     print('\noriginal:')
     e.show_original()
     print(e.eq_tree)
+
+    e.args_editor.get_args()
+    print("args:")
+    print(e.args)
+
     e.args_editor.get_vars()
 
     # x, y, z, U, f, d, c, a = sympy.symbols('x y z U f d c a')
@@ -225,6 +230,7 @@ def test_lambda():
     print("\nrand_sympy")
     print(e.tree.flatten('rand_sympy'))
     # print(e.tree.flatten('sympy'))
+    return(e)
 
 
 def test_rand():

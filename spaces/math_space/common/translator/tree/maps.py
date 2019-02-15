@@ -10,6 +10,7 @@ function lambda x:x[1] return original sent.
 
 '''
 import math
+from copy import deepcopy
 import networkx as nx
 from networkx.readwrite import json_graph
 
@@ -44,6 +45,67 @@ def replace(term, lex_replacer):
 '''
 
 
+def map_nx_id_to_names(net):
+    '''Map nodes from id (like "['s', 1, 0, 0, 0]")
+    to names (like set, br, if)'''
+    return()
+    H = nx.DiGraph()
+    edges = net.edges()
+    added_idd = []
+    for (snode, pnode) in edges:
+        if snode not in added_idd:
+            node = deepcopy(net.node[snode])
+            if node["data"] is None:
+                node_name = node["name"]
+            else:
+                node_name = node["data"]["term_name"]
+                
+            H.add_node()
+        
+
+
+def map_net_cy_to_nx(net_dict):
+
+    links = []
+    nodes = []
+
+    for elm in net_dict:
+        if elm["group"] == "nodes":
+            node = {"id": elm["data"]["nx_id"],
+                    "cy_id": elm["data"]["id"],
+                    "position": elm["position"].copy(),
+                    "coords": elm["coords"].copy()}
+
+            if elm["data"]["nx_data"] is not None:
+                node["data"] = elm["data"]["nx_data"].copy()
+            else:
+                node["data"] = None
+
+            # copy cy.data to nx:
+            for key in elm["data"]:
+                if key not in ("nx_id", "id", "nx_data"):
+                    if "copy" in dir(elm["data"][key]):
+                        node[key] = elm["data"][key].copy()
+                    else:
+                        node[key] = elm["data"][key]
+            nodes.append(node)
+
+        if elm["group"] == "edges":
+            
+            # "n1" to 1:
+            links.append({"source": int(elm["data"]["source"][1:]),
+                          "target": int(elm["data"]["target"][1:])})
+            
+    data = {'directed': True,
+            'graph': {},
+            'links': links,
+            'multigraph': False,
+            'nodes': nodes}
+    # print("data:")
+    # print(data)
+    return(json_graph.node_link_graph(data))
+
+
 def map_net_nx_to_cy(net):
     
     '''Transform networkx json data to cytoscape data.
@@ -51,10 +113,10 @@ def map_net_nx_to_cy(net):
    
     map node:
 
-    {'name': 'f'
+    {'name': 'f',
+     'position': {'alpha': 13.0, 'radius': 170, 'x': 372, 'y': 600},
      'coords': {'max_height': 0,
                 'max_width': 0,
-                'position': {'alpha': 13.0, 'radius': 170, 'x': 372, 'y': 600},
                 'width': 0},
      'data': {'lex_template': '(?P<obj>[a-z|A-Z|_|0-9]+)\\(',
               'lex_value': 'group(',
@@ -69,9 +131,10 @@ def map_net_nx_to_cy(net):
      'data': {'name': 'f',
               'idd': "['s', 1, 0, 0, 0]",
               'id': 'n17',
-              'main_data': {'re_res': None, 'term_name': 'pred',
+              'nx_data': {'re_res': None, 'term_name': 'pred',
                             'lex_template': '(?P<obj>[a-z|A-Z|_|0-9]+)\\(',
                             'lex_value': 'group(', 'term_type': 're'},
+              "coords": {'max_height': 0, 'max_width': 0, 'width': 0},
               'label': 'f|pred|group('}}
 
     map edge: {'source': 24, 'target': 8}
@@ -89,26 +152,31 @@ def map_net_nx_to_cy(net):
         cy_node_entry["group"] = "nodes"
         
         cy_node_entry["data"] = {}
-        cy_node_entry["data"]["idd"] = nx_node_entry["id"]
+        cy_node_entry["data"]["nx_id"] = nx_node_entry["id"]
         cy_node_entry["data"]["id"] = "n" + str(id)
         cy_node_entry["data"]["name"] = nx_node_entry["name"]
-        
-        if nx_node_entry["data"] is None:
-            label = ""
-            cy_node_entry["data"]["main_data"] = None
+
+        if "label" not in nx_node_entry:
+            if nx_node_entry["data"] is None:
+                label = ""
+                cy_node_entry["data"]["nx_data"] = None
+            else:
+                label = ("|" + nx_node_entry["data"]["term_name"]
+                         + "|" + nx_node_entry["data"]["lex_value"])
+
+                cy_node_entry["data"]["nx_data"] = nx_node_entry["data"].copy()
+
+                # remove unserialisable data:
+                cy_node_entry["data"]["nx_data"]["re_res"] = None
+
+            cy_node_entry["data"]["label"] = nx_node_entry["name"] + label
         else:
-            label = ("|" + nx_node_entry["data"]["term_name"]
-                     + "|" + nx_node_entry["data"]["lex_value"])
-
-            cy_node_entry["data"]["main_data"] = nx_node_entry["data"].copy()
-
-            # remove unserialisable data:
-            cy_node_entry["data"]["main_data"]["re_res"] = None
-
-        cy_node_entry["data"]["label"] = nx_node_entry["name"] + label
-      
+            cy_node_entry["data"]["label"] = nx_node_entry["label"]
+            
         # set position for each node:
-        cy_node_entry["position"] = nx_node_entry["coords"]["position"]
+        cy_node_entry["position"] = nx_node_entry["position"].copy()
+        cy_node_entry["coords"] = nx_node_entry["coords"].copy()
+
         cy_nodes.append(cy_node_entry)
 
     cy_edges = []
@@ -157,8 +225,8 @@ def set_position(net, nodes_ids, init_position, radius_scale, alpha_scale):
 
     Each node in returned net will have
     
-    ["coords"]["position"]{"x": int, "y": int,
-                           "radius": int, "alpha": alpha}
+    ["position"]{"x": int, "y": int,
+                 "radius": int, "alpha": alpha}
     (ex: 'position': {'alpha': 13.0, 'radius': 170, 'x': 372, 'y': 600})
 
     Examples:
@@ -182,9 +250,9 @@ def set_position(net, nodes_ids, init_position, radius_scale, alpha_scale):
         top_node = net.node[top_node_id]
         top_successors = net.successors(top_node_id)
         
-        top_node["coords"]["position"] = {"x": init_position["x"],
-                                          "y": init_position["y"],
-                                          "radius": 0}
+        top_node["position"] = {"x": init_position["x"],
+                                "y": init_position["y"],
+                                "radius": 0}
         if len(top_successors) != 0:
             nodes_ids.append(top_successors)
 
@@ -264,8 +332,8 @@ def set_position(net, nodes_ids, init_position, radius_scale, alpha_scale):
     # alphas_neg = list(map(lambda n: (sum(w_neg[:n])/sw_neg)*scale,
     #                       range(len(w_neg)+1)[1:]))
 
-    x0 = parent["coords"]["position"]["x"]
-    y0 = parent["coords"]["position"]["y"]
+    x0 = parent["position"]["x"]
+    y0 = parent["position"]["y"]
     xs_pos = [dx+x0 for dx in dxs_pos]
     # xs_pos = [radius*math.sin(alpha)+x0 for alpha in alphas_pos]
 
@@ -281,7 +349,7 @@ def set_position(net, nodes_ids, init_position, radius_scale, alpha_scale):
     # ys_neg = [radius*math.cos(alpha)+y0 for alpha in alphas_neg]
 
     for i, node_id in enumerate(snis_pos):
-        net.node[node_id]["coords"]["position"] = {"x": int(xs_pos[i]),
+        net.node[node_id]["position"] = {"x": int(xs_pos[i]),
                                                    "y": int(ys_pos[i]),
                                                    "radius": r_pos[i],
                                                    "alpha": dxs_pos[i]}
@@ -290,20 +358,20 @@ def set_position(net, nodes_ids, init_position, radius_scale, alpha_scale):
             nodes_ids.append(node_successors_ids)
 
     for i, node_id in enumerate(snis_neg):
-        net.node[node_id]["coords"]["position"] = {"x": int(xs_neg[i]),
-                                                   "y": int(ys_neg[i]),
-                                                   "radius": r_neg[i],
-                                                   "alpha": dxs_neg[i]}
+        net.node[node_id]["position"] = {"x": int(xs_neg[i]),
+                                         "y": int(ys_neg[i]),
+                                         "radius": r_neg[i],
+                                         "alpha": dxs_neg[i]}
         node_successors_ids = net.successors(node_id)
         if len(node_successors_ids) > 0:
             nodes_ids.append(node_successors_ids)
 
     if len(snis_zer) > 0:
         node_id = snis_zer[0]
-        net.node[node_id]["coords"]["position"] = {"x": x0,
-                                                   "y": radius_scale(0, level)+y0,
-                                                   "radius": radius_scale(0, level),
-                                                   "alpha": 0}
+        net.node[node_id]["position"] = {"x": x0,
+                                         "y": radius_scale(0, level)+y0,
+                                         "radius": radius_scale(0, level),
+                                         "alpha": 0}
 
         node_successors_ids = net.successors(node_id)
         if len(node_successors_ids) > 0:
