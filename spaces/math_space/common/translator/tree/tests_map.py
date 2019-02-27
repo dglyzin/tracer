@@ -4,7 +4,9 @@ import translator.tree.maps as ms
 import math
 import networkx as nx
 from networkx.readwrite import json_graph
-
+from translator.sampling.vars.vars_extractor import Extractor
+import translator.sampling.vars.vars_maps as vms
+ 
 
 def test(dialect):
 
@@ -43,6 +45,20 @@ def test(dialect):
     nx_from_cy_out = ms.map_net_cy_to_nx(cy_out)
     print("\nmap_net_cy_to_nx:")
     print(nx_from_cy_out)
+
+    vars_extractor = Extractor(dialect)
+    net_vars = vms.get_args(str(["s"]), D, vars_extractor)
+    
+    print("\nget_args:")
+    print(net_vars)
+    # print('D.node[str(["s"])]["vars"]')
+    # print(D.node[str(["s"])]["vars"])
+    if dialect == "eqs":
+        new_vars = vms.subs(D, net_vars, a=7, c=8)
+    elif dialect == "cs":
+        new_vars = vms.subs(D, net_vars, G="s(3)")
+    print("\nsubs:")
+    print(new_vars)
 
     # work:
     # cy_out = ms.map_net_nx_to_cy(nx_from_cy_out)
