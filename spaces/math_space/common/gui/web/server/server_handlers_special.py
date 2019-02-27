@@ -5,6 +5,8 @@ from translator.tokenizer.patterns.patterns_list.tests.dialects import cs, eqs
 
 from translator.grammar.grammars import get_fmw
 from translator.main.parser_general import ParserGeneral
+from translator.sampling.vars.vars_extractor import Extractor
+import translator.sampling.vars.vars_maps as vms
 
 from functools import reduce
 
@@ -155,14 +157,30 @@ class DialectHandlers(Handlers):
                                        node_data)
                 parser.parse(sent_list)
 
-                # print("\nparser.net_out:")
-                # print(parser.net_out)
+                vars_extractor = Extractor(dialect_name)
+                net_vars = vms.get_args(str(["s"]), parser.net_out,
+                                        vars_extractor)
+
+                print("\nget_args:")
+                print(net_vars)
+                # print('D.node[str(["s"])]["vars"]')
+                # print(D.node[str(["s"])]["vars"])
+                if dialect_name == "eqs":
+                    vms.subs(parser.net_out, net_vars, a=7, c=8)
+                elif dialect_name == "cs":
+                    vms.subs(parser.net_out, net_vars, G="s(3)")
+
+                # generate json out again:
+                json_out = parser.net_to_json(parser.net_out)
+                print("\nparser.json_out:")
+                print(parser.json_out)
 
                 # print("\nparser.json_out:")
                 # print(parser.json_out)
                 return({"lex": reduce(lambda acc, x: acc + " " + str(x),
                                       parser.lex_out, ""),
-                        "net": parser.json_out})
+                        "net": parser.json_out,
+                        "vars": net_vars})
 
         self.NetHandlerParsing = NetHandlerParsing
 

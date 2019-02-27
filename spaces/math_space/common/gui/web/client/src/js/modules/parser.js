@@ -1,8 +1,8 @@
 console.log("log parser.js");
 
 
-define(['jquery', 'modules/tnet'],
-       function($, tnet){
+define(['jquery', 'modules/tnet', 'modules/tnet_tabs'],
+       function($, tnet, tnet_tabs){
 	   return {
 	       Parser: function Parser(){
       		   /*
@@ -22,7 +22,7 @@ define(['jquery', 'modules/tnet'],
 		       //	   + " commutative(G)=>abelian(G),)"
 			 
 		       var str = ('<div id="to_parse_div" title="click to edit"'
-				  + ' class="style_editor_static">'
+				  + ' class="style_editor_static ">'
 				  + "U'=a*(sin(a+b)+U)+c*D[U,{x,2}]"
 				  + '</div>'+'<br>'
 				  + '<input id="button_parse" type="button"'
@@ -35,6 +35,7 @@ define(['jquery', 'modules/tnet'],
 				  +'</div>');
 
 		       $("#parser_div").html(str);
+		       $("#parser_div").addClass("above_net_left");
 		       $("#parser_div").tooltip();
 		       // $("#to_parse_div").css("width", "350");
 		       // $("#to_parse_div").css("height", "50");
@@ -111,12 +112,22 @@ define(['jquery', 'modules/tnet'],
 				       var objresponse = JSON.parse(jsonResponse);
 				       data_lex = objresponse['lex'];
 				       data_net = objresponse['net'];
+				       data_vars = objresponse["vars"];
+
 				       console.log("\ndata_lex");
 				       console.log(data_lex);
 				       console.log("\ndata_net");
 				       console.log(data_net);
+				       console.log("\ndata_vars");
+				       console.log(data_vars);
+
 				       $("#lex_out_div").text(data_lex);
 				       self.net.create_net(data_net);
+
+				       // FOR create tabs:
+				       tnet_tabs.create_tabs("#frame_after_parser", data_vars);
+				       // END FOR
+
 				       // copy data:
 				       // var data_local = data.slice();
 				       // $("#div_editor").text(data[0].kernel);

@@ -63,8 +63,8 @@ def get_args(node_name, net, vars_extractor):
         args_node_names.sort(key=lambda elm: eval(elm)[-1])
 
         right_node_name = node_successors_ids[-1]
-        print("left_node:")
-        print(left_node)
+        # print("left_node:")
+        # print(left_node)
 
         if ("data" in left_node) and (left_node["data"] is not None):
             term_name = left_node["data"]["term_name"]
