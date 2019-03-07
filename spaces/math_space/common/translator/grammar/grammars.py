@@ -152,10 +152,11 @@ def get_fmw(ms=["eq", ["add", "sub"], "div", "mul"]):
             grammar_fmw.append((m.upper(), (msimilar.lower(),)))
         # END FOR
 
+    '''
     print("grammar_fmw:")
     for rule in grammar_fmw:
         print(rule)
-
+    '''
     grammar_fmw = gm_to_cnf(grammar_fmw)
     return(grammar_fmw)
 

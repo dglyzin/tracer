@@ -41,7 +41,6 @@ class Bdp(Base):
         
         # add delays data for postproc:
         if delay_data is not None:
-            # node.output.cpp.global_data = data
             self.net.set_output_data(node, 'delay_data', delay_data)
 
     def set_node_data(self, **kwargs):

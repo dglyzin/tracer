@@ -49,6 +49,7 @@ def map_nx_id_to_names(net):
     '''Map nodes from id (like "['s', 1, 0, 0, 0]")
     to names (like set, br, if)'''
     return()
+
     H = nx.DiGraph()
     edges = net.edges()
     added_idd = []
@@ -62,7 +63,6 @@ def map_nx_id_to_names(net):
                 
             H.add_node()
         
-
 
 def map_net_cy_to_nx(net_dict):
 
@@ -176,7 +176,7 @@ def map_net_nx_to_cy(net):
         # set position for each node:
         cy_node_entry["position"] = nx_node_entry["position"].copy()
         cy_node_entry["coords"] = nx_node_entry["coords"].copy()
-
+        
         cy_nodes.append(cy_node_entry)
 
     cy_edges = []
@@ -537,11 +537,56 @@ def add_node(net, node):
     
     return(net)
 
-
-def map_tree(tree, node_editor):
+    
+def map_tree(node_idd, node_editor):
 
     '''Use node_raplacer for each node to add cpp
     output'''
+
+    if len(node_editor.get_successors(node_idd)) == 0:
+        # finish:
+        node_editor(node_idd)
+
+        # in case node_editor added new
+        # children:
+        new_successors = node_editor.get_successors(node_idd)
+        if len(new_successors) > 0:
+            for child_node_idd in new_successors:
+                map_tree(child_node_idd, node_editor)
+
+    elif node_editor.get_node_type(node_idd) != 'br':
+        # main:
+        successors = node_editor.get_successors(node_idd)
+
+        if len(successors) == 2:
+            map_tree(successors[1], node_editor)
+
+        node_editor(node_idd)
+        map_tree(successors[0], node_editor)
+
+    elif(node_editor.get_node_type(node_idd) == 'br'):
+        # if brackets:
+        
+        # work with brackets itself:
+        node_editor(node_idd)
+        
+        successors = node_editor.get_successors(node_idd)
+        node_args_idd = successors[1]
+        args_successors = node_editor.get_successors(node_args_idd)
+
+        # work with brackets args:
+        for _id, node_arg_idd in enumerate(args_successors):
+            map_tree(node_arg_idd, node_editor)
+
+    return(node_idd)
+
+
+'''
+old version, depricated:
+def map_tree(tree, node_editor):
+
+    ''Use node_raplacer for each node to add cpp
+    output''
 
     if len(tree.children) == 0:
         # finish:
@@ -571,8 +616,80 @@ def map_tree(tree, node_editor):
         for _id, arg in enumerate(tree.children[1].children):
             map_tree(arg, node_editor)
     return(tree)
-    
+'''    
+
 
 def map_tree_postproc(mapped_tree, node_editor):
     node_editor.postproc(mapped_tree)
     return(mapped_tree)
+
+
+def flatten(replacer, node_idd, attr_extractor, non_br_forward=False):
+
+        '''Collect all nodes attributes, extracted with
+        attr function, to list.
+
+        Example:
+        tree._flatten(lambda node: node.name)
+        return original string.
+
+        # TODO: fix non_br_forward in equation (tree_converter)
+        '''
+
+        successors = replacer.get_successors(node_idd)
+
+        if len(successors) == 0:
+            # finish:
+            X = attr_extractor(node_idd)
+            return([X])
+
+        elif replacer.get_node_type(node_idd) != 'br':
+            # main:
+            if len(successors) == 1:
+                arg = flatten(replacer, successors[0],
+                              attr_extractor, non_br_forward)
+                X = attr_extractor(node_idd)
+
+                if non_br_forward:
+                    return([X] + arg)
+                else:
+                    return(arg + [X])
+
+            elif len(successors) == 2:
+                if non_br_forward:
+                    left = flatten(replacer, successors[0],
+                                   attr_extractor, non_br_forward)
+                    X = attr_extractor(node_idd)
+                    right = flatten(replacer, successors[1],
+                                    attr_extractor, non_br_forward)
+                else:
+                    left = flatten(replacer, successors[1],
+                                   attr_extractor, non_br_forward)
+                    X = attr_extractor(node_idd)
+                    right = flatten(replacer, successors[0],
+                                    attr_extractor, non_br_forward)
+
+                return(left+[X]+right)
+
+        elif(replacer.get_node_type(node_idd) == 'br'):
+            # if brackets:
+
+            # work with brackets itself:
+            leftb = attr_extractor(successors[0])
+            arg_node_idd = successors[1]
+            rightb = attr_extractor(successors[-1])
+
+            # work with brackets args:
+            out = []
+            out.append(leftb)
+            arg_successors = replacer.get_successors(arg_node_idd)
+            for _id, arg_idd in enumerate(arg_successors):
+                # if more than one arg
+                # (for complex brackets):
+                if _id != 0:
+                    out.append(',')
+                X = flatten(replacer, arg_idd, attr_extractor,
+                            non_br_forward)
+                out.extend(X)
+            out.append(rightb)
+            return(out)

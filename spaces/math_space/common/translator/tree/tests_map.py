@@ -8,17 +8,17 @@ from translator.sampling.vars.vars_extractor import Extractor
 import translator.sampling.vars.vars_maps as vms
  
 
-def test(dialect):
+def test(dialect, _id):
 
     if dialect == "cs":
         tokenizer = ts.make_tokenizer(ts.cs)
         ot = ts.test_one(tokenizer, ts.tests_dict_cs,
-                         "cs", _id=19, verbose=True)
+                         "cs", _id=_id, verbose=True)
     
     elif dialect == "eqs":
         tokenizer = ts.make_tokenizer(ts.eqs)
         ot = ts.test_one(tokenizer, ts.tests_dict_eqs,
-                         "eqs", _id=11, verbose=True)
+                         "eqs", _id=_id, verbose=True)
 
     ms.map_tree_id(ot)
     D = nx.DiGraph()
@@ -46,6 +46,7 @@ def test(dialect):
     print("\nmap_net_cy_to_nx:")
     print(nx_from_cy_out)
 
+    # FOR test args
     vars_extractor = Extractor(dialect)
     net_vars = vms.get_args(str(["s"]), D, vars_extractor)
     
@@ -59,6 +60,33 @@ def test(dialect):
         new_vars = vms.subs(D, net_vars, G="s(3)")
     print("\nsubs:")
     print(new_vars)
+    # END FOR
+
+    if dialect == "eqs":
+        # FOR test map_net
+        class SimpleEditor():
+            def __call__(self, node_name):
+                self.parsed_net.node[node_name]["out"] = {}
+
+            def set_parsed_net(self, parsed_net):
+                self.parsed_net = parsed_net
+
+            def get_node(self, node_idd):
+                return(self.parsed_net.node[node_idd])
+
+            def get_successors(self, node_idd):
+                successors = self.parsed_net.successors(node_idd)
+                successors.sort(key=lambda elm: eval(elm)[-1])
+                return(successors)
+
+            def get_node_type(self, node_idd):
+                node = self.get_node(node_idd)
+                return(node["name"])
+
+        node_editor = SimpleEditor()
+        node_editor.set_parsed_net(D)
+        ms.map_tree(str(['s']), node_editor)
+        # END FOR
 
     # work:
     # cy_out = ms.map_net_nx_to_cy(nx_from_cy_out)
@@ -98,5 +126,6 @@ def test(dialect):
 
 if __name__ == "__main__":
     
-    # test("cs")
-    test("eqs")
+    # test("cs", 19)
+    test("eqs", 11)
+    # test("eqs", 25)

@@ -1,3 +1,5 @@
+# parser$ python3 -m env.system.tests_sys
+
 import os
 import sys
 import inspect
@@ -104,5 +106,5 @@ def test_sinch_sys():
 
 if __name__ == '__main__':
     # test_sys()
-    # test_sinch_sys()
-    test_copy()
+    test_sinch_sys()
+    # test_copy()

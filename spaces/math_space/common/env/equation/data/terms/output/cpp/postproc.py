@@ -8,24 +8,34 @@ logger = logging.getLogger('postproc.py')
 logger.setLevel(level=log_level)
 
 
-def source_result_postproc(node):
+def source_result_postproc(replacer_cpp, node, eq_terms_names=["=", "=-"]):
     
     '''Replace source[delay] or source in eq.lhs to result.
     Ex: source[delay][idx+0]|->result[idx+0]'''
     
-    if node.name == '=':
-        try:
-            out = node[1].output.cpp.out
-        except AttributeError:
+    if replacer_cpp.get_node_type(node) in eq_terms_names:
+        
+        successors = replacer_cpp.get_successors(node)
+
+        left_node = successors[1]
+        
+        left_node_out = replacer_cpp.get_output_out(left_node)
+        
+        if left_node_out is None:
             logger.debug("source_result_postproc eq has no cpp output")
             return
-        if 'source[delay]' in out:
-            node[1].output.cpp.out = (node[1].output.cpp.out
-                                      .replace('source[delay]', 'result'))
-        elif 'source' in out:
-            node[1].output.cpp.out = (node[1].output.cpp.out
-                                      .replace('source', 'result'))
-        
+        if 'source[delay]' in left_node_out:
+            new_out = (left_node_out
+                       .replace('source[delay]', 'result'))
+        elif 'source' in left_node_out:
+            new_out = (left_node_out
+                       .replace('source', 'result'))
+        else:
+            logger.debug("source_result_postproc eq has nothing for"
+                         + " source-result conversion")
+            return
+        replacer_cpp.set_output_out(left_node, new_out)
+
 
 def delay_postproc(node):
 

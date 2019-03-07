@@ -21,7 +21,7 @@ class Func():
         self.net = net
         self.gnet = self.net.net
 
-        # this meen left_term.name == 'f'
+        # this mean left_term.name == 'f'
         # right_node.name == ')'
         self.id = 'l:f|r:)'
 
@@ -29,10 +29,12 @@ class Func():
         
         '''Add cpp out to brackets'''
 
-        left_node = node_br[0]
-        right_node = node_br[-1]
+        successors = self.gnet.get_successors(node_br)
+        
+        left_node = successors[0]
+        right_node = successors[-1]
 
-        args_node = node_br[1]
+        args_node = successors[1]
 
         # get node data:
         self.get_node_data(left_node, right_node)

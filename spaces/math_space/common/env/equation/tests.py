@@ -1,5 +1,9 @@
 ''' python3 tests.py'''
 '''
+tests failed 4 from 62:
+[7, 9, 11, 13]
+'''
+'''
 eq1 = Eq("U'=a*(U(t-3.1)+U(t-1.1))")
 # ...
 ereg1 = eRegion(equation=eq1,
@@ -44,81 +48,14 @@ from translator.tokenizer.tokenizer_main import LexNetTokenizer
 from env.equation.data.terms.input.wolfram.lex_net_wolfram import LexNetW
 
 from env.equation.equation import Equation
-
+from env.equation.tests_lists import tests_list_main as tests
 import traceback
 import sympy
 
 
-tests = ["U'=a*(D[U,{x,2}]+ D[U,{y,2}])",
-         "a.t() = a",
-         "(U)^3",
-         "(V(t-1.1, {x, 0.7}{y, 0.7}))^3",
-         "(D[V(t-1.1), {x, 2}])^3",
-         '(U(t-1))^3',
-         "D[U(t-1.1), {x,2}]+D[U(t-5.1), {y,2}]+D[V(t-1.1), {x,1}]",
-         "-U(t,{x, a})",
-         "-U(t,{x, 0.7}{y, 0.7})",
-         "-V(t-1.1, {x, a}{y, 0.7})",
-         "-(V+U)",
-         "-W(t, {x, 0.7}{y, 0.3})",
-         "-U(t-1.1, {x, 0.7}{y, 0.3})",
-         "f(x, y)*t",
-
-         "U'=a+U+U*U*V-(b+1)*U+c*D[U,{x,2}]",
-         "U'=a+U*U*V-(b+1)*U+c*D[U,{x,2}]",
-         "U",
-         "U'=a+U*U*V-(b+1)*U+c*D[U,{x,2}]",
-         "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}]+D[U,{y,2}])",
-         "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}]+D[U,{y,2}])",
-         "U'= a * D[U,{x,2}]",
-         "U'= a * (D[U,{x,2}] + D[U,{y,2}])",
-         "U'= a * (D[U,{x,2}] + D[U,{y,2}])",
-         
-         "U'= a * (D[U,{x,2}] + D[U,{y,2}])",
-         "U'= a * (D[U,{x,2}] + D[U,{y,2}])",
-         "U'= 0",
-         "U'= b * (D[U,{x,2}] + D[U,{y,2}])",
-         "U'= a * (D[U,{x,2}] + D[U,{y,2}])",
-         "U'=a*(D[U,{x,2}] + D[U,{y,2}])",
-         "U'=a*(D[U,{x,2}] + D[U,{y,2}])",
-         "U'=a*(D[U,{x,2}] + D[U,{y,2}])",
-         "U'= D[U,{x,2}]",
-         "U'=a*D[U,{x,2}]+ r*U*(1-U(t-1))",
-         "U'=a*D[U,{x,2}]+ r*U*(1-U(t-1))",
-         "U'= D[U,{x,2}] + D[V,{x,2}]",
-         "U'=a*D[U,{x,2}] + d*U",
-         "U(t,{x,0.7}{y, 0.7})",
-         "U'=a*D[U,{x,2}]",
-         "U'=a*(D[U,{x,2}] + D[U,{y,2}])",
-         "U'=a*(D[U,{x,2}]+D[U,{y,2}])+U(t-3.1)+U(t-1.3)",
-         "U'= D[U,{x,2}]",
-         "U'=2.0 - V",
-         "(U(t-1.3,{x, 0.7}{y,0.3}))",
-         "U'=a*(D[U,{x,2}] + D[U,{y,2}])",
-         "U",
-         "U'=a * (D[U,{x,2}] + D[U,{y,2}])",
-         "U'=b * (D[U,{x,2}] + D[U,{y,2}])",
-         "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}]+D[U,{y,2}])",
-         "U'=a * (D[U,{x,2}] + D[U,{y,2}])",
-         "U'=2.0 - V",
-         "U'=a*(D[U,{x,2}] + D[U,{y,2}])",
-         "U'=a*(sin(a+b)+(U)^3)",
-         ("(V(t-3.1)*U(t-3.1)+V(t-1.1)*U(t-3.1)+U(t-1.1))^3"
-          + "+cos(U-c*D[U,{x,2}])"),
-         ("U'=(V(t-3.1)*U(t-3.1)+V(t-1.1)*U(t-3.1)+U(t-1.1))^3"
-          + "+cos(U-c*D[U,{x,2}])"),
-         "U'=U",
-         "U'=-U",
-         "U'=-(U+V)",
-         "U",
-         "-(U(t-1.1)+V)",
-         "U'=-(U(t-1.1)+V)",
-         "f(x, y,)+g(y,z,)+h(x,z,)",
-         "exp(t)"]
-
-
-def test_one(_id=0, sympy=False, verbose=False):
-    eq = Equation(tests[_id])
+def test_one(_id=0, sympy=False, verbose=False,
+             EqBilder=Equation, tests=tests):
+    eq = EqBilder(tests[_id])
     print("\n=== test %s: %s ===" % (_id, tests[_id]))
     try:
         try:
@@ -155,13 +92,13 @@ def test_one(_id=0, sympy=False, verbose=False):
         return(False)
 
 
-def test_all():
+def test_all(EqBilder=Equation, tests=tests):
 
     succesed = []
     failed = []
 
     for _id, test in enumerate(tests):
-        if test_one(_id):
+        if test_one(_id, EqBilder=EqBilder, tests=tests):
             succesed.append(_id)
         else:
             failed.append(_id)
@@ -330,4 +267,5 @@ if __name__ == '__main__':
     test_all()
     # test_lambda()
     # test_rand()
+    # test_one(1, verbose=True)
     # test_one(0, sympy=True, verbose=True)

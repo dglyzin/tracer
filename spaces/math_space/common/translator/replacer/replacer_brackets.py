@@ -31,8 +31,10 @@ class GenBrackets(dict):
 
         '''Find according term and add out to it'''
 
-        left_node = node_br[0]
-        right_node = node_br[-1]
+        successors = self.net.get_successors(node_br)
+
+        left_node = successors[0]
+        right_node = successors[-1]
 
         self.net.init_output((left_node, right_node))
 
@@ -50,5 +52,6 @@ class GenBrackets(dict):
 
         '''Default. Oweride if needed'''
 
-        term_id = 'l:'+left_node.name+'|r:'+right_node.name
+        term_id = ('l:'+self.net.get_node_type(left_node)
+                   + '|r:'+self.net.get_node_type(right_node))
         return(term_id)

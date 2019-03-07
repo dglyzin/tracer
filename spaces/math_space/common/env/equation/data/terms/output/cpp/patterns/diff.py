@@ -41,7 +41,6 @@ logger = logging.getLogger('diff.py')
 logger.setLevel(level=log_level)
 
 
-
 class Diff(Base):
 
     '''Generate cpp data for diff:

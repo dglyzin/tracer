@@ -35,7 +35,7 @@ class Base():
         
         # transform to cpp:
         out = self.print_out()
-        self.net.set_output_out(node, out)        
+        self.net.set_output_out(node, out)
         # node.output.cpp.out = self.print_out()
 
     @abc.abstractmethod

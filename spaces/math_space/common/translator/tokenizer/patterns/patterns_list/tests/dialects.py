@@ -135,19 +135,26 @@ eqs = [
      ('br_left', [True, False, False]),
      ('txt',)),
 
-    ('pow', r"${args}\^${args_degree}",
-     ('br_mid', [False, True, False]),
+    ('pow', r"${args}\)\^${{arg_float}}",
+     ('br_right', [False, False, True]),
      ('re', 10)),
+    # ('pow', r"${args}\^${args_degree}",
+    #  ('br_mid', [False, True, False]),
+    #  ('re', 10)),
 
     # sin, abelian, a:
     ('pred', r"(?P<obj>\w+)",
      ('part',), ('re',)),
 
-    ('bound', r"${{var_bdp}}\(${{arg_time}},${{arg_space_bound}}\)",
+    ('bdp', r"${{var_bdp}}\(${{arg_time}},${{arg_space_bound}}\)",
      ('a',), ('re', 1)),
 
-    ('arg_space_bound', r"(\{${{free_var}},${{arg_float}}\})+",
+    ('arg_space_bound', ("((\\{x,(?P<val_x>${{arg_float}})\\})?"
+                         + "(\\{y,(?P<val_y>${{arg_float}})\\})?"
+                         + "(\\{z,(?P<val_z>${{arg_float}})\\})?)"),
      ('part',), ('re',)),
+    # ('arg_space_bound', r"(\{${{free_var}},${{arg_float}}\})+",
+    # ('part',), ('re',)),
 
     ('var_bdp', r"(?P<val>[${{base_dep_vars}}])",
      ('part',), ('re',)),
@@ -155,11 +162,15 @@ eqs = [
     ('diff', r"D\[${{var}},${{arg_space_diff}}\]",
      ('a',), ('re', 0)),
 
-    ('arg_space_diff',
-     r"(?P<arg_space_diff>(\{${{free_var}},${{arg_int}}\})+)",
+    ('arg_space_diff', ("((\\{x,(?P<val_x>${{arg_int}})\\})?"
+                        + "(\\{y,(?P<val_y>${{arg_int}})\\})?"
+                        + "(\\{z,(?P<val_z>${{arg_int}})\\})?)"),
      ('part',), ('re',)),
+    # ('arg_space_diff',
+    #  r"(?P<arg_space_diff>(\{${{free_var}},${{arg_int}}\})+)",
+    #  ('part',), ('re',)),
 
-    ('diff_time_var',
+    ('diff_time',
      "(?P<val>[${{base_dep_vars}}](\(${{arg_time}}\))?)\'",
      ('a',), ('re', 5)),
 
@@ -172,7 +183,7 @@ eqs = [
     ('arg_delay', r"(?P<delay>${{arg_float}})",
      ('part',), ('re',)),
 
-    ('free_var', r"[${{base_indep_vars}}]",
+    ('free_var', r"(?P<free_var>[${{base_indep_vars}}])",
      ('a',), ('re', 7)),
 
     ('time', r"[${{base_time}}]", ('a',), ('re', 8)),

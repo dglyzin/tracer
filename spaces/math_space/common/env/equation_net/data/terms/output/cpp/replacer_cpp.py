@@ -5,12 +5,11 @@ from env.equation.data.terms.output.cpp.patterns.free_var import FreeVar
 from env.equation.data.terms.output.cpp.patterns.diff_time_var import DiffTimeVar
 from env.equation.data.terms.output.cpp.patterns.coeffs import Coeffs
 from env.equation.data.terms.output.cpp.patterns.float import Float
-from env.equation.data.terms.output.cpp.patterns.default import Default
+from env.equation_net.data.terms.output.cpp.patterns.default import Default
 from env.equation.data.terms.output.cpp.patterns.brackets.brackets_main import BracketsNet as BrTermsGens
-from copy import deepcopy
 
 # from translator.replacer.cpp.cpp_out import delay_postproc
-from translator.replacer.replacer import Gen
+from translator.replacer.net_replacer import NetGen
 
 
 import logging
@@ -33,11 +32,7 @@ terms_gens_cls = [Diff, Bdp, Var, FreeVar, DiffTimeVar,
                   Coeffs, Float, Default]
 
 
-class Out():
-    pass
-
-
-class CppGen(Gen):
+class CppGen(NetGen):
 
     '''Node translator implementation for cpp'''
 
@@ -49,7 +44,7 @@ class CppGen(Gen):
         Also extract some global data from all nodes in
         tree.
         '''
-        Gen.__init__(self)
+        NetGen.__init__(self)
 
         # some global data to extract from all
         # nodes in tree:
@@ -66,32 +61,80 @@ class CppGen(Gen):
         ###delay_postproc(node)
         pass
 
-    def init_output(self, nodes):
+    def init_output(self, nodes_idds):
 
         '''For add out to nodes'''
 
-        for node in nodes:
+        for node_idd in nodes_idds:
+            node = self.get_node(node_idd)
+                
+            if node["data"] is None:
+                node["data"] = {}
+                
             try:
-                node.output
-            except AttributeError:
-                node.output = Out()
-            node.output.cpp = Out()
-            node.output.cpp.global_data = {}
+                node["data"]["output"]
+            except KeyError:
+                node["data"]["output"] = {}
+                node["data"]["output"]["cpp"] = {}
+                node["data"]["output"]["cpp"]["global_data"] = {}
 
-    def get_output_out(self, node):
-        out = None
-        try:
-            out = node.output.cpp.out
-        except AttributeError:
-            out = None
-        return(out)
+    # FOR flatten
+    def get_extractor(self, key="original"):
+        if key == "cpp":
+            return(self.extractor_cpp)
+        return(NetGen.get_extractor(self, key))
 
-    def set_output_out(self, node, value):
+    def extractor_cpp(self, node_idd):
         
-        node.output.cpp.out = value
+        out = self.get_output_out(node_idd)
+        if out is None:
+            out = self.get_node_type(node_idd)
+        return(out)
+    # END FOR
 
-    def set_output_data(self, node, key, value):
-        node.output.cpp.global_data[key] = value
+    # FOR print_node
+    def show_cpp_data(self):
+        def gen(_self):
+            try:
+                out = _self.output.cpp.global_data
+            except:
+                out = None
+            return(out)
+
+        return(self.print_node(begin=0,
+                               out_gen=gen))
+    # END FOR
+
+    def get_output_out(self, node_idd):
+
+        node = self.get_node(node_idd)
+
+        try:
+            data = node["data"]["output"]["cpp"]["out"]
+        except (KeyError, TypeError):
+            return(None)
+        return(data)
+
+    def get_output_data(self, node_idd):
+
+        node = self.get_node(node_idd)
+
+        try:
+            data = node["data"]["output"]["cpp"]["global_data"]
+        except (KeyError, TypeError):
+            return(None)
+        return(data)
+
+    def set_output_out(self, node_idd, value):
+        node = self.get_node(node_idd)
+        # print("node:")
+        # print(node)
+        if value is not None:
+            node["data"]["output"]["cpp"]["out"] = value
+        
+    def set_output_data(self, node_idd, key, value):
+        node = self.get_node(node_idd)
+        node["data"]["output"]["cpp"]["global_data"][key] = value
 
     def get_params_field_name(self):
         return('term_print_cpp_params')

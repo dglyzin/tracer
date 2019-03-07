@@ -9,23 +9,23 @@ class Gen():
     metaclass = abc.ABCMeta
 
     '''Base class for tree's nodes translator
-    When it calling (self.__call__) for some node it choice
+    When it calling ``self.__call__`` for some node it choice
     node type (bracket or not) and add output
     to that according to terms generators id.
-    For that method self.tranlate and self.translate_brackets
+    For that method ``self.tranlate`` and ``self.translate_brackets``
     must exist. They default value implemented here but if more
     behavior is needed they must be owerided then.
     This methods should add some output to node. For that
-    self.set_output, self.set_output_out, self.set_output_data
+    ``self.set_output``, ``self.set_output_out``, ``self.set_output_data``
     must be implemented (distination to set data
-    ex: node.output.cpp.out)
+    ex: ``node.output.cpp.out``)
 
-    When it initiated (self.__init__) it set self.global_params
+    When it initiated (``self.__init__``) it set ``self.global_params``
     and terms generator from
-    self.get_terms_gen_cls and self.get_terms_br_gen_cls
+    ``self.get_terms_gen_cls`` and ``self.get_terms_br_gen_cls``
     so this method must be implimentend.
 
-    For extract term id for not brackets term self.get_term_id
+    For extract term id for not brackets term ``self.get_term_id``
     method default exist but if more behavior needed it must be owerided.
     For bracket term id see replacer_brackets.
 
@@ -36,7 +36,7 @@ class Gen():
     def __init__(self):
 
         '''set up terms generator from
-        self.get_terms_gen_cls and self.get_terms_br_gen_cls
+        ``self.get_terms_gen_cls`` and ``self.get_terms_br_gen_cls``
         that must be impolimented.'''
 
         # some global data to extract from all
@@ -74,7 +74,7 @@ class Gen():
 
     def __call__(self, node):
 
-        '''Check if node.name is Word and if it is, call
+        '''Check if ``node.name`` is Word and if it is, call
         tranlate method for simple nodes,
         translate_brackets for brackets (node.name == 'br').
 
@@ -83,18 +83,20 @@ class Gen():
         Return:
            add node.output data'''
 
-        if(node.name == 'br'):  # type(node.name) == Word and
+        node_type = self.get_node_type(node)
+
+        if(node_type == 'br'):  # type(node.name) == Word and
             # for branches (a+...)^3 or sin(a+...):
             self.translate_brackets(node)
             # leftb = node.children[0]
             # rightb = node.children[-1]
             # leftb, rightb = self.translate_brackets(leftb, rightb)
             # X = (leftb, rightb)
-        elif type(node.name) == str:
+        elif type(node_type) == str:
             # if node.name is not in lexem:
             pass
             # X = node
-        elif(node.name != 'br'):  # type(node.name) == Word and
+        elif(node_type != 'br'):  # type(node.name) == Word and
             # if node.name is type(Word)
             # it can be branch too
             # (in case of one argument
@@ -141,6 +143,16 @@ class Gen():
 
         # add out:
         self.terms_gens[term_id](node)
+
+    def get_successors(self, node):
+        successors = node.children
+        return(successors)
+
+    def get_node(self, node):
+        return(node)
+
+    def get_node_type(self, node):
+        return(node.name)
 
     def get_args(self, node):
 
@@ -210,3 +222,17 @@ class Gen():
 
     def get_term_pattern(self, node):
         return(node.name.lex[1])
+    
+    # FOR flatten:
+    def get_extractor(self, key="original"):
+        if key == "original":
+            return(self.extractor_original)
+
+    def extractor_original(self, node):
+        
+        try:
+            out = self.get_term_value(node)
+        except:
+            out = self.get_node_type(node)
+        return(out)
+    # END FOR
