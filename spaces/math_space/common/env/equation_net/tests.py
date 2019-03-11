@@ -25,8 +25,8 @@ if __name__ == '__main__':
     # test_lex()
     # test_one(11, verbose=True, EqBilder=Equation,
     #          tests=tests_list_main)
-    test_all(EqBilder=Equation, tests=tests_list_main)
+    # test_all(EqBilder=Equation, tests=tests_list_main)
     # test_lambda()
     # test_rand()
-    # test_one(0, tests=tests_list_main, sympy=True,
-    #          EqBilder=Equation, verbose=True)
+    test_one(-1, tests=tests_list_main, sympy=True,
+             EqBilder=Equation, verbose=True)

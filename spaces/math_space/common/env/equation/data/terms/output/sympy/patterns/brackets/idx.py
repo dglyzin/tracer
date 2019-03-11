@@ -32,11 +32,13 @@ class Idx():
     def __call__(self, node_br):
         
         '''Add cpp out to brackets'''
-        
-        left_node = node_br[0]
-        right_node = node_br[-1]
 
-        args_node = node_br[1]
+        successors = self.gnet.get_successors(node_br)
+        
+        left_node = successors[0]
+        right_node = successors[-1]
+
+        args_node = successors[1]
         
         # get node data:
         self.get_node_data(left_node, right_node)

@@ -56,7 +56,8 @@ def map_nx_id_to_names(net):
     for (snode, pnode) in edges:
         if snode not in added_idd:
             node = deepcopy(net.node[snode])
-            if node["data"] is None:
+            if (node["data"] is None
+                or "term_name" not in node["data"]):
                 node_name = node["name"]
             else:
                 node_name = node["data"]["term_name"]
@@ -157,7 +158,9 @@ def map_net_nx_to_cy(net):
         cy_node_entry["data"]["name"] = nx_node_entry["name"]
 
         if "label" not in nx_node_entry:
-            if nx_node_entry["data"] is None:
+            if (nx_node_entry["data"] is None
+                or "term_name" not in nx_node_entry["data"]):
+                
                 label = ""
                 cy_node_entry["data"]["nx_data"] = None
             else:

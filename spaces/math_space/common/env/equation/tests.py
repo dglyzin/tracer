@@ -267,5 +267,6 @@ if __name__ == '__main__':
     test_all()
     # test_lambda()
     # test_rand()
-    # test_one(1, verbose=True)
-    # test_one(0, sympy=True, verbose=True)
+    # test_one(8, verbose=True)
+    # test_one(12, verbose=True)
+    # test_one(-1, sympy=True, verbose=True)

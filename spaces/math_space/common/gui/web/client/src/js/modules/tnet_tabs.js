@@ -3,9 +3,9 @@ console.log("log tnet_tabs.js");
 define(['jquery'], function($){
 
     return {
-	create_tabs: function create_tabs(div_id, data_vars){
+	create_tabs: function create_tabs(div_id, data_vars, data_cpp, data_sympy){
 
-	    $(div_id).addClass("above_net_bottom style_editor_static");
+	    $(div_id).addClass("above_net_bottom style_editor_static style_replacer_frame");
 
 	    var board_str = 
 		('<h3>Output:</h3>'
@@ -41,9 +41,11 @@ define(['jquery'], function($){
 	    $("#vars_list").append(vars_to_add.join(""));
 	    // $("#fragment-1").text(data_vars);
 	    // END FOR
-
-	    $("#fragment-2").text("implementing now");
-	    $("#fragment-3").text("designing now");
+	    var replacer_data = "".concat("<h3>", "cpp:", "</h3>", "<br>",
+					  data_cpp, "<br>",
+					  "<h3>", "sympy:", "</h3>", "<br>", data_sympy);
+	    $("#fragment-2").html(replacer_data);
+	    $("#fragment-3").text("implementing now");
 	    
 	    $("#tabs").tabs();	    
 	}

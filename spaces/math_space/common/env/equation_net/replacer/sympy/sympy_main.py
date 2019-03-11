@@ -17,7 +17,7 @@ class ReplSympy():
         
         self.gen.set_parsed_net(self.net.net_out)
         self.gen.set_mid_replacers(self.net.parser.mid_replacers)
-
+        
         self.map_sympy()
         out = self.net.net_editor.flatten('sympy', self.gen)
         self.net.eq_sympy = "".join(out)

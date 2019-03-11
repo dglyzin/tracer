@@ -113,6 +113,8 @@ define(['jquery', 'modules/tnet', 'modules/tnet_tabs'],
 				       data_lex = objresponse['lex'];
 				       data_net = objresponse['net'];
 				       data_vars = objresponse["vars"];
+				       data_output_cpp = objresponse["eq_cpp"];
+				       data_output_sympy = objresponse["eq_sympy"];
 
 				       console.log("\ndata_lex");
 				       console.log(data_lex);
@@ -120,12 +122,17 @@ define(['jquery', 'modules/tnet', 'modules/tnet_tabs'],
 				       console.log(data_net);
 				       console.log("\ndata_vars");
 				       console.log(data_vars);
+				       console.log("\ndata_output_cpp");
+				       console.log(data_output_cpp);
+				       console.log("\ndata_output_sympy");
+				       console.log(data_output_sympy);
 
 				       $("#lex_out_div").text(data_lex);
 				       self.net.create_net(data_net);
 
 				       // FOR create tabs:
-				       tnet_tabs.create_tabs("#frame_after_parser", data_vars);
+				       tnet_tabs.create_tabs("#frame_after_parser", data_vars,
+							     data_output_cpp, data_output_sympy);
 				       // END FOR
 
 				       // copy data:

@@ -67,16 +67,18 @@ def get_args(node_name, net, vars_extractor):
         # print(left_node)
 
         if ("data" in left_node) and (left_node["data"] is not None):
-            term_name = left_node["data"]["term_name"]
-        
-            if term_name not in terms_spec:
+            if "term_name" in left_node["data"]:
+                
+                term_name = left_node["data"]["term_name"]
 
-                # if node alredy have vars:
-                if "vars" not in left_node["data"]:
+                if term_name not in terms_spec:
 
-                    target_node_name = left_node_name
-                    lex_value = left_node["data"]["lex_value"]
-                    var_or_val = vars_extractor.map_ltv(term_name, lex_value)
+                    # if node alredy have vars:
+                    if "vars" not in left_node["data"]:
+
+                        target_node_name = left_node_name
+                        lex_value = left_node["data"]["lex_value"]
+                        var_or_val = vars_extractor.map_ltv(term_name, lex_value)
 
         node_successors = args_node_names
 
