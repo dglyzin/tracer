@@ -26,11 +26,13 @@ class ReplCpp():
         source_result_postproc(self.gen, str(['s']),
                                eq_terms_names=["eq", "uneq"])
 
-        self.net.eq_cpp = self.net.net_editor.flatten("cpp")
+        out = self.net.net_editor.flatten("cpp")
+        self.net.eq_cpp = "".join(out)
         return(self.net.eq_cpp)
 
     def show_cpp(self):
-        print(self.net.net_editor.flatten("cpp"))
+        out = self.net.net_editor.flatten("cpp")
+        print("".join(out))
 
     def show_tree_cpp_out(self):
         print(self.net.eq_tree.show_cpp_out())

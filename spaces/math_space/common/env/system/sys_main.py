@@ -37,7 +37,10 @@ class sysNet():
     '''Represent system of equations.
     system can be either strings or Equation objects
     or both.
-    
+
+    TODO:
+    Equation as parameter for work with equation_net.
+
     Examples:
     >>> eq_0 = Equation("U'=D[U, {x, 1}]")
     >>> eq_1 = "V' = D[V, {y, 1}] + U"
@@ -45,14 +48,16 @@ class sysNet():
 
     '''
 
-    def __init__(self, name=None, system=[], vars="x", cpp=False):
+    def __init__(self, name=None, system=[], vars="x",
+                 cpp=False, EqBilder=Equation):
         self.base = sysBase(self, name, vars, cpp)
         self.io = sysIO(self)
         self.cpp = sysCpp(self)
         self.postproc = sysPostProc(self)
         self.plotter = sysPlotter(self)
+        self.EqBilder = EqBilder
 
-        self.eqs = [Equation(sent) if type(sent) == str else sent
+        self.eqs = [EqBilder(sent) if type(sent) == str else sent
                     for sent in system]
 
         for i, eq in enumerate(self.eqs):

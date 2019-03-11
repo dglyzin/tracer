@@ -90,6 +90,14 @@ class CppGen(Gen):
         
         node.output.cpp.out = value
 
+    def get_output_data(self, node):
+        out = None
+        try:
+            out = node.output.cpp.global_data
+        except AttributeError:
+            out = None
+        return(out)
+
     def set_output_data(self, node, key, value):
         node.output.cpp.global_data[key] = value
 

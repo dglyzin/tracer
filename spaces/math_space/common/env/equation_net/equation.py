@@ -52,6 +52,17 @@ class Equation():
         
         self.sent = sent
 
+    def get_all_nodes(self):
+        try:
+            # ask for networkx nodes names
+            nodes = self.net_out.node.keys()
+        except AttributeError:
+            print(("has no eq_net yiet,"
+                   + " use parser.parse first"))
+            nodes = None
+
+        return(nodes)
+
     def show_original(self):
         
         '''net_editor.flatten work only after parser.parse

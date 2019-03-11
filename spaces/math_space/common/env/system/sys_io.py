@@ -1,5 +1,6 @@
 from collections import OrderedDict
-from env.equation.equation import Equation
+# from math_space.common.equation.equation import Equation
+# from env.equation.equation import Equation
 
 
 class sysIO():
@@ -9,7 +10,7 @@ class sysIO():
     def fillProperties(self, edict):
         self.net.base.name = edict["Name"]
         self.net.base.vars = edict["Vars"]
-        self.net.eqs = [Equation(sent) for sent in edict["System"]]
+        self.net.eqs = [self.net.EqBilder(sent) for sent in edict["System"]]
         
         for i, eq in enumerate(self.net.eqs):
             try:

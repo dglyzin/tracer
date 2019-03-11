@@ -147,6 +147,16 @@ class Equation():
 
         # for debugging:
         self.trace = trace
+    
+    def get_all_nodes(self):
+        try:
+            eq_tree = self.eq_tree
+        except AttributeError:
+            print(("has no eq_tree yiet,"
+                   + " use parser.parse first"))
+            eq_tree = None
+
+        return(eq_tree)
 
     def show_original(self):
         print(self.tree.flatten("original"))

@@ -43,15 +43,20 @@ class sysPostProc():
         first
         '''
 
-        self.nodes = [node for eq in self.net.eqs
-                      for node in eq.eq_tree]
+        self.nodes = [[node for node in eq.get_all_nodes()]
+                      for eq in self.net.eqs]
+        # self.nodes = [node for eq in self.net.eqs
+        #               for node in eq.get_all_nodes()]
+
+        self.replacers = [eq.replacer.cpp.gen for eq in self.net.eqs]
+        # self.replacer = self.net.eqs[0].replacer.cpp.gen
     
     def postproc_delay_nodes(self):
 
         '''Postproc delays in all eqs.
         self.nodes must exist (from collect_nodes method)'''
 
-        delay_postproc(self.nodes)
+        delay_postproc(self.replacers, self.nodes)
 
     def postproc_delay_sys(self, systems):
 
@@ -59,41 +64,56 @@ class sysPostProc():
 
         # add self.nodes to global:
         common_nodes = self.nodes[:]
-        
+        common_replacers = self.replacers[:]
+
         # add other systems nodes to global:
+        common_nodes.extend([node for sys in systems
+                             for node in sys.postproc.nodes])
+        '''
         common_nodes.extend([node for sys in systems
                              for eq in sys.eqs
                              for node in eq.eq_tree])
+        '''
+        common_replacers.extend([replacer
+                                 for sys in systems
+                                 for replacer in sys.postproc.replacers])
 
         # sinch all:
-        delay_postproc(common_nodes)
+        delay_postproc(common_replacers, common_nodes)
 
-        delays_data = self._get_delays_data(common_nodes)
+        delays_data = self._get_delays_data(common_replacers, common_nodes)
         return(delays_data)
     
-    def _get_delays_data(self, nodes):
+    def _get_delays_data(self, replacers_list, nodes_lists):
 
         '''Extract delay data from all nodes'''
 
         delays_data = []
-        for node in nodes:
-            try:
-                data = node.output.cpp.global_data
+        for i, node_list in enumerate(nodes_lists):
+            for node in node_list:
                 try:
-                    delay_data = [data['converted_delay'],
-                                  data['delay_data']]
-                    delays_data.append(delay_data)
-                except KeyError:
+                    data = replacers_list[i].get_output_data(node)
+                    if data is not None:
+                        # data = node.output.cpp.global_data
+                        try:
+                            delay_data = [data['converted_delay'],
+                                          data['delay_data']]
+                            delays_data.append(delay_data)
+                        except KeyError:
+                            pass
+                except AttributeError:
                     pass
-            except AttributeError:
-                pass
-        
+
         return(delays_data)
-
+    
     def show_nodes_global_data(self):
-
-        for node in self.nodes:
-            try:
-                print(node.output.cpp.global_data)
-            except:
-                pass
+        
+        for i, nodes_list in enumerate(self.nodes):
+            for node in nodes_list:
+                try:
+                    data = self.replacers[i].get_output_data(node)
+                    if data is not None:
+                        print(data)
+                    # print(node.output.cpp.global_data)
+                except:
+                    pass

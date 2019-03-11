@@ -20,7 +20,7 @@ class EqTree():
     def __init__(self, net):
 
         self.net = net
-        
+
     def map_out(self, replacer):
 
         '''Add out to self.eq_tree (from self.parse)'''

@@ -37,7 +37,7 @@ def source_result_postproc(replacer_cpp, node, eq_terms_names=["=", "=-"]):
         replacer_cpp.set_output_out(left_node, new_out)
 
 
-def delay_postproc(node):
+def delay_postproc(replacers, nodes_lists):
 
     '''Convert delays for all term's that have it.
     node have or have not global_data['delay_data'] value.
@@ -83,7 +83,6 @@ def delay_postproc(node):
     It now use term instead of term_id for term identification
     in res[var][delay] = [term] and in map_td.
     '''
-    out = node
 
     def convert_delays(delays):
 
@@ -104,29 +103,36 @@ def delay_postproc(node):
     # FOR factorize terms delays for var:
     # res[val] = [(delay_0, term_id_0), ...]
     res = {}
-    for term in out:
-        '''
-        if type(term) == str:
-            continue
-        '''
-        try:
-            delay_data = term.output.cpp.global_data['delay_data']
-            term_id, var, delay = delay_data
-            # U(t-1.1)->U
-            var = var[0]
-            if var in res.keys():
-                if delay in res[var].keys():
-                    res[var][delay].append(term)  # term_id
+    for i, nodes_list in enumerate(nodes_lists):
+        for j, term in enumerate(nodes_list):
+            '''
+            if type(term) == str:
+                continue
+            '''
+            try:
+                term_data = replacers[i].get_output_data(term)
+                if term_data is None:
+                    continue
+
+                delay_data = term_data["delay_data"]
+                # delay_data = term.output.cpp.global_data['delay_data']
+                term_id, var, delay = delay_data
+                # U(t-1.1)->U
+                var = var[0]
+                replacer_node_id = (i, j)
+                if var in res.keys():
+                    if delay in res[var].keys():
+                        res[var][delay].append(replacer_node_id)  # term_id
+                    else:
+                        res[var][delay] = [replacer_node_id]  # term_id
                 else:
-                    res[var][delay] = [term]  # term_id
-            else:
-                res[var] = {delay: [term]}  # term_id
-        except KeyError:
-            pass
-        except AttributeError:
-            # if term not have out:
-            # (like +):
-            continue
+                    res[var] = {delay: [replacer_node_id]}  # term_id
+            except KeyError:
+                pass
+            except AttributeError:
+                # if term not have out:
+                # (like +):
+                continue
     logger.debug("res")
     logger.debug(res)
     # END FOR
@@ -145,35 +151,64 @@ def delay_postproc(node):
 
     # FOR find terms for converted delay:
     out_new = []
-    for term in out:
-        try:
-            '''
-            if type(term) == str:
-                out_new.append(term)
-                continue
-            '''
-            # if delay
-            # transform source[delay]->source[1]:
-            delay_data = term.output.cpp.global_data['delay_data']
-            term_id, var, delay = delay_data
-            sdelay = map_td[term]  # term_id
-            term.output.cpp.out = (term.output
-                                   .cpp.out.replace('delay', str(sdelay)))
-            term.output.cpp.global_data['converted_delay'] = sdelay
-            out_new.append(term)
-        except KeyError:
+    for i, nodes_list in enumerate(nodes_lists):
+        for j, term in enumerate(nodes_list):
             try:
-                # if no delay
-                # transform source[delay]->source[0]
-                term.output.cpp.out = (term.output.
-                                       cpp.out.replace('delay', str(0)))
+                '''
+                if type(term) == str:
+                    out_new.append(term)
+                    continue
+                '''
+                term_data = replacers[i].get_output_data(term)
+                if term_data is None:
+                    continue
+
+                delay_data = term_data["delay_data"]
+                # delay_data = term.output.cpp.global_data['delay_data']
+
+                # if delay
+                # transform source[delay]->source[1]:
+                term_id, var, delay = delay_data
+                sdelay = map_td[(i, j)]
+                # sdelay = map_td[term]  # term_id
+                term_out = replacers[i].get_output_out(term)
+                if term_out is None:
+                    continue
+                if 'delay' not in term_out:
+                    continue
+                replacers[i].set_output_out(term,
+                                            term_out.replace('delay',
+                                                             str(sdelay)))
+                replacers[i].set_output_data(term, 'converted_delay', sdelay)
+                '''
+                term.output.cpp.out = (term.output
+                                       .cpp.out.replace('delay', str(sdelay)))
+                term.output.cpp.global_data['converted_delay'] = sdelay
+                '''
                 out_new.append(term)
-            except:
-                pass
-        except AttributeError:
-            # if term not have out:
-            # (like +):
-            out_new.append(term)
+            except KeyError:
+                # in sdelay = map_td[term]
+                try:
+                    # if no delay
+                    # transform source[delay]->source[0]
+                    term_out = replacers[i].get_output_out(term)
+                    if term_out is None:
+                        continue
+                    if 'delay' not in term_out:
+                        continue
+                    replacers[i].set_output_out(term, term_out.replace('delay',
+                                                                       str(0)))
+                    '''
+                    term.output.cpp.out = (term.output.
+                                           cpp.out.replace('delay', str(0)))
+                    '''
+                    out_new.append(term)
+                except:
+                    pass
+            except AttributeError:
+                # if term not have out:
+                # (like +):
+                out_new.append(term)
     # logger.debug([o.out for o in out_new if type(o) != str])
     # return(out)  # out_new
 
