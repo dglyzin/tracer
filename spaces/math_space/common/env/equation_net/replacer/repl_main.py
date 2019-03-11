@@ -1,5 +1,5 @@
 from env.equation_net.replacer.cpp.cpp_main import ReplCpp
-# from env.equation_net.replacer.sympy.sympy_main import ReplSympy
+from env.equation_net.replacer.sympy.sympy_main import ReplSympy
 
 
 class EqReplacer():
@@ -9,7 +9,7 @@ class EqReplacer():
     def __init__(self, net):
         self.net = net
         self.cpp = ReplCpp(net)
-        # self.sympy = ReplSympy(net)
+        self.sympy = ReplSympy(net)
 
     def _init_node_content(self):
 

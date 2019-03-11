@@ -28,4 +28,5 @@ if __name__ == '__main__':
     test_all(EqBilder=Equation, tests=tests_list_main)
     # test_lambda()
     # test_rand()
-    # test_one(0, sympy=True, verbose=True)
+    # test_one(0, tests=tests_list_main, sympy=True,
+    #          EqBilder=Equation, verbose=True)

@@ -29,7 +29,9 @@ class NetEditor():
         _map_postproc = map_tree_postproc(_map, replacer)
         return(_map_postproc)
 
-    def flatten(self, key="original"):
-        replacer = self.net.replacer.cpp.gen
+    def flatten(self, key, replacer=None):
+        if replacer is None:
+            # use any available:
+            replacer = self.net.replacer.cpp.gen
         out = flatten(replacer, str(['s']), replacer.get_extractor(key))
         return(out)

@@ -11,11 +11,16 @@ class ReplSympy():
         self.gen = SympyGen()
 
     def map_sympy(self):
-        return(self.net.tree.map_out(self.gen))
+        return(self.net.net_editor.map_out(self.gen))
         
     def make_sympy(self):
+        
+        self.gen.set_parsed_net(self.net.net_out)
+        self.gen.set_mid_replacers(self.net.parser.mid_replacers)
+
         self.map_sympy()
-        self.net.eq_sympy = self.net.tree.flatten('sympy')
+        out = self.net.net_editor.flatten('sympy', self.gen)
+        self.net.eq_sympy = "".join(out)
         return(self.net.eq_sympy)
 
     def show_sympy(self):

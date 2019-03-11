@@ -1,11 +1,11 @@
-from translator.replacer.replacer import Gen
-from env.equation_net.data.terms.output.sympy.patterns \
+from translator.replacer.net_replacer import NetGen
+from env.equation.data.terms.output.sympy.patterns \
         .brackets.brackets_main import BracketsNet as BrTermsGens
 
-from env.equation_net.data.terms.output.sympy.patterns.diff import Diff
-from env.equation_net.data.terms.output.sympy \
+from env.equation.data.terms.output.sympy.patterns.diff import Diff
+from env.equation.data.terms.output.sympy \
         .patterns.diff_time_var import DiffTimeVar
-from env.equation_net.data.terms.output.sympy.patterns.var import Var
+from env.equation.data.terms.output.sympy.patterns.var import Var
 from env.equation_net.data.terms.output.sympy.patterns.default import Default
 
 
@@ -29,7 +29,7 @@ class Params():
     pass
 
 
-class SympyGen(Gen):
+class SympyGen(NetGen):
 
     '''Fill term.sympy with print_sympy,
     term.arg_rand (or term.arg_fix) with get_args_rand,
@@ -71,26 +71,69 @@ class SympyGen(Gen):
         # term = self.get_args_rand(term)
     '''
 
-    def init_output(self, nodes):
+    # FOR flatten
+    def get_extractor(self, key="original"):
+        if key == "sympy":
+            return(self.extractor_sympy)
+        return(NetGen.get_extractor(self, key))
+
+    def extractor_sympy(self, node_idd):
+        
+        out = self.get_output_out(node_idd)
+        if out is None:
+            out = self.get_node_type(node_idd)
+        return(out)
+    # END FOR
+
+    def init_output(self, nodes_idds):
 
         '''For add out to nodes'''
 
-        for node in nodes:
+        for node_idd in nodes_idds:
+            node = self.get_node(node_idd)
+                            
+            if node["data"] is None:
+                node["data"] = {}
             try:
-                node.output
-            except AttributeError:
-                node.output = Out()
-            node.output.sympy = Out()
-            node.output.sympy.global_data = {}
+                node["data"]["output"]
+            except KeyError:
+                node["data"]["output"] = {}
+            node["data"]["output"]["sympy"] = {}
+            node["data"]["output"]["sympy"]["global_data"] = {}
 
-    def set_output_lambda(self, node, value):
-        node.output.sympy.slambda = value
+    # def set_output_lambda(self, node, value):
+    #     node.output.sympy.slambda = value
 
-    def set_output_out(self, node, value):
-        node.output.sympy.out = value
+    def get_output_out(self, node_idd):
 
-    def set_output_data(self, node, key, value):
-        node.output.sympy.global_data[key] = value
+        node = self.get_node(node_idd)
+
+        try:
+            data = node["data"]["output"]["sympy"]["out"]
+        except (KeyError, TypeError):
+            return(None)
+        return(data)
+
+    def set_output_out(self, node_idd, value):
+        node = self.get_node(node_idd)
+        # print("node:")
+        # print(node)
+        if value is not None:
+            node["data"]["output"]["sympy"]["out"] = value
+
+    def get_output_data(self, node_idd):
+
+        node = self.get_node(node_idd)
+
+        try:
+            data = node["data"]["output"]["sympy"]["global_data"]
+        except (KeyError, TypeError):
+            return(None)
+        return(data)
+
+    def set_output_data(self, node_idd, key, value):
+        node = self.get_node(node_idd)
+        node["data"]["output"]["sympy"]["global_data"][key] = value
 
     def get_params_field_name(self):
         return('term_print_sympy_params')
