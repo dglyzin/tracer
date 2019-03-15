@@ -239,7 +239,7 @@ class DialectHandlers(Handlers):
                 # except TypeError:
                 print("self.current_user is None")
                 # TODO: users methods
-                self.render("index_net.html", username="default")
+                self.render("index_net.htm", username="default")
                 # self.redirect("/login")
 
         self.NetHandler = NetHandler

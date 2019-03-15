@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex,follow">
+
+  <link href="static/src/css/styles.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="static/src/js/libs/jquery-ui-custom/jquery-ui.css">
+  <style>
+    .ui-menu { width: 150px;}
+  </style>
+
+  <!--
+  <script src="static/src/js/jquery/jquery-3.2.1.js" type="text/javascript"></script>
+  <script src="static/src/js/jquery/jquery-ui-1.12.1.custom/jquery-ui.js"></script>
+  -->
+  <!--
+  <script src="static/src/js/jquery/jquery.js" type="text/javascript"></script>
+  <script src="static/src/js/jquery/jquery-ui.custom.js" type="text/javascript"></script>
+  <script src="static/src/js/jquery/jquery.cookie.js" type="text/javascript"></script>
+  -->
+  <!--
+  <link href="static/dtree/skin-vista/ui.dynatree.css" rel="stylesheet" type="text/css">
+  <script src="static/dtree/jquery.dynatree.js" type="text/javascript"></script>
+  <script src="static/src/js/flot/jquery.flot.js" type="text/javascript"></script>
+  -->
+  <!--
+  <script type="text/javascript" src="static/src/js/dynamic_table/dynamic-table.jquery.js"></script>
+  <script type="text/javascript" src="static/src/js/dynamic_table/dynamic-table-editor.jquery.js"></script>
+  -->
+
+  <link href="static/src/css/tabulator.min.css" rel="stylesheet">
+  <!--
+  <script type="text/javascript" src="static/src/js/tabulator/tabulator.min.js"></script>
+  
+  <script src="static/src/js/cytoscape/cytoscape.min.js"></script>
+  -->
+  <!--
+  <script src="static/src/js/cytoscape/cytoscape.min.js"></script>
+  -->
+  <!--
+  <script src="static/src/js/main.js" type="text/javascript"></script>
+  -->
+  <script data-main="static/src/js/main.js" src="static/src/js/libs/require.js"></script>
+
+  <!--<link rel="stylesheet" href="static/src/css/dynamic-table.jquery.css"/>
+  -->
+
+  <title>lex io interface</title>
+</head>
+
+<body>
+
+  <div id="top" class="style_top">
+    <h1> {{ username }}  <a href= logout> Logout! </a> </h1>
+  </div>
+
+  <div id="nav" class="style_nav">
+    <div id="tree"></div>
+    
+    <p id="json_out"></p>
+    <!--<input id="input_file" type="file" >
+    <input id="button_file" type="button" value="Choice json">-->
+  </div>
+  
+  <div id="main" class="style_main">
+
+    <div id="frame_scene">
+      <div id="div_scene"></div>
+    </div>
+
+    <div id="div_buttons" class="above_net_left">
+      <!--
+	  <input id="button_net" type="button" value="Test net"><br>
+	  -->
+      <a href="http://localhost:8888/">to tables</a>
+    </div>
+
+    <div id="frame_before_parser">
+    </div>
+
+    <div id="frame_parser" class="above_net_left" top>
+      <div id="parser_div">
+      </div>
+    </div>
+
+    <div id="frame_cy">
+      <div id="cy_scene_right"></div>
+      <div id="cy_scene_left"></div>
+
+      <div id="cy_div"></div>	    
+    </div>
+
+    <div id="frame_after_parser">
+    </div>
+
+    <div id="menu_div"></div> 
+    
+    
+    <!--<div id="cy">
+	hello</div>-->
+    <br>
+    
+  </div>
+  
+</body>
+</html>
