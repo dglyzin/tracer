@@ -49,6 +49,8 @@ from env.equation.data.terms.input.wolfram.lex_net_wolfram import LexNetW
 
 from env.equation.equation import Equation
 from env.equation.tests_lists import tests_list_main as tests
+from env.equation.data.terms.output.cpp.postproc import delay_postproc
+
 import traceback
 import sympy
 
@@ -215,9 +217,25 @@ def test_lex(sent='a*c + d*U+f(y)+sin(x)'):
     print(res)
 
 
-def test_term_cpp_diff(sent="U'=a*(D[U,{x,2}]+ D[U,{y,2}])"):
-    
-    eq = Equation(sent)
+def test_term_cpp_diff(EqBilder=Equation, sent="U'=a*(D[U,{x,2}]+ D[U,{y,2}])"):
+
+    '''
+    ::
+
+      ***x->
+      *  
+      |  ---side 2---
+      y  |          |
+         s          s
+         i          i
+         d          d
+         e          e
+         0          1
+         |          |
+         ---side 3---
+
+    '''
+    eq = EqBilder(sent)
 
     print("\n=== test: %s ===" % (sent))
     
@@ -230,24 +248,48 @@ def test_term_cpp_diff(sent="U'=a*(D[U,{x,2}]+ D[U,{y,2}])"):
 
     print('\noriginal:')
     eq.show_original()
-        
+
+    nodes = [[node for node in eq.get_all_nodes()]]
+    replacers = [eq.replacer.cpp.gen]
+    delay_postproc(replacers, nodes)
+
     print('\ndiff_common:')
     eq.replacer.cpp.show_cpp()
 
-    print("\ndiff_special side 2, btype 1")
+    print("\ndiff_borders side 0, btype 1")
     editor.set_diff_type(diffType='pure',
-                         diffMethod='special',
-                         btype=1, side=2,
+                         diffMethod='borders',
+                         btype=1, side=0,
                          func="func")
+    # import pdb; pdb.set_trace()
     eq.replacer.cpp.make_cpp()
+    nodes = [[node for node in eq.get_all_nodes()]]
+    replacers = [eq.replacer.cpp.gen]
+    delay_postproc(replacers, nodes)
     eq.replacer.cpp.show_cpp()
 
-    print("\ndiff_special side 3, btype 1")
+    print("\ndiff_borders side 3, btype 1")
     editor.set_diff_type(diffType='pure',
-                         diffMethod='special',
+                         diffMethod='borders',
                          btype=1, side=3,
                          func="func")
     eq.replacer.cpp.make_cpp()
+    nodes = [[node for node in eq.get_all_nodes()]]
+    replacers = [eq.replacer.cpp.gen]
+    delay_postproc(replacers, nodes)
+    eq.replacer.cpp.show_cpp()
+
+    print("\ndiff_vertex sides [3, 0], btype 1")
+
+    editor.set_diff_type(diffType='pure',
+                         diffMethod='vertex',
+                         btype=0,
+                         vertex_sides=[3, 0],
+                         func="sin(x)")
+    eq.replacer.cpp.make_cpp()
+    nodes = [[node for node in eq.get_all_nodes()]]
+    replacers = [eq.replacer.cpp.gen]
+    delay_postproc(replacers, nodes)
     eq.replacer.cpp.show_cpp()
 
     print("\ndiff_interconnect side 2")
@@ -257,14 +299,18 @@ def test_term_cpp_diff(sent="U'=a*(D[U,{x,2}]+ D[U,{y,2}])"):
                          firstIndex="firstIndex",
                          secondIndexSTR="secondIndex")
     eq.replacer.cpp.make_cpp()
+    nodes = [[node for node in eq.get_all_nodes()]]
+    replacers = [eq.replacer.cpp.gen]
+    delay_postproc(replacers, nodes)
     eq.replacer.cpp.show_cpp()
+    return(eq)
 
 
 if __name__ == '__main__':
 
-    # test_term_cpp_diff()
+    test_term_cpp_diff(EqBilder=Equation)
     # test_lex()
-    test_all()
+    # test_all()
     # test_lambda()
     # test_rand()
     # test_one(8, verbose=True)

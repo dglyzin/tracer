@@ -18,6 +18,14 @@
     z-index: 1;
 }
 
+.right_net_center {
+    position: absolute;
+    
+    top: 130px;
+    right: 0;
+    z-index: 1;
+}
+
 .style_editor_static {
     background-color: white;
     color: black;
@@ -40,6 +48,22 @@
     width: 550px;
 
 }
+
+
+.style_params_frame {
+    height: 300px;
+    width: 250px;
+    
+}
+
+.style_button_number{
+    width: 10px;
+}
+
+.style_button_word{
+    width: 70px;
+}
+
 
 .style_editor_dinamic {
     background-color: white;

@@ -6,6 +6,7 @@ from translator.grammar.grammars import get_fmw
 
 from translator.main.parser_general import ParserGeneral
 from env.equation_net.equation import Equation
+from env.equation.data.terms.output.cpp.postproc import delay_postproc
 
 from translator.sampling.vars.vars_extractor import Extractor
 import translator.sampling.vars.vars_maps as vms
@@ -100,7 +101,8 @@ class DialectHandlers(Handlers):
                 
                 # FOR data update:
 
-                data = self.parse(data_json["dialect"], [data_json["text"]])
+                data = self.parse(data_json["dialect"], [data_json["text"]],
+                                  data_json["params"])
                 print("\ndata_to_send:")
                 print(data)
 
@@ -111,7 +113,7 @@ class DialectHandlers(Handlers):
                 response = data  # {"": data_json}
                 self.write(json.dumps(response))
 
-            def parse(self, dialect_name, sent_list):
+            def parse(self, dialect_name, sent_list, params):
                 
                 '''Parse data from client with use of ParserGeneral.
                 
@@ -136,8 +138,34 @@ class DialectHandlers(Handlers):
                     eq = Equation(sent_list[0])
                     eq.parser.parse()
             
+                    # FOR params:
                     eq.replacer.cpp.editor.set_default()
+                    print("params")
+                    print(params)
+
+                    eq.replacer.cpp.editor.set_dim(dim=int(params["dim"]))
+                    eq.replacer.cpp.editor.set_blockNumber(blockNumber=int(params["blockNumber"]))
+
+                    vidxs = eval(params["vars_idxs"])
+                    eq.replacer.cpp.editor.set_vars_indexes(vars_to_indexes=vidxs)
+
+                    coeffs = eval(params["coeffs"])
+                    eq.replacer.cpp.editor.set_coeffs_indexes(coeffs_to_indexes=coeffs)
+
+                    params["btype"] = int(params["btype"])
+                    params["side"] = int(params["side"])
+                    params["vertex_sides"] = eval(params["vertex_sides"])
+                    params["firstIndex"] = int(params["firstIndex"])
+                    params["secondIndexSTR"] = int(params["secondIndexSTR"])
+                    eq.replacer.cpp.editor.set_diff_type(**params)
+                    shape = eval(params["shape"])
+                    eq.replacer.cpp.editor.set_shape(shape=shape)
+                    # END FOR
+
                     eq.replacer.cpp.make_cpp()
+                    nodes = [[node for node in eq.get_all_nodes()]]
+                    replacers = [eq.replacer.cpp.gen]
+                    delay_postproc(replacers, nodes)
 
                     eq.replacer.sympy.make_sympy()
 
@@ -193,7 +221,7 @@ class DialectHandlers(Handlers):
 
                 # add replacer data:
                 if dialect_name == "eqs":
-                    out["eq_cpp"] = eq.eq_cpp
+                    out["eq_cpp"] = eq.replacer.cpp.get_cpp()
                     out["eq_sympy"] = eq.eq_sympy
                 return(out)
 

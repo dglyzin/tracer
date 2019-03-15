@@ -33,7 +33,11 @@ class ReplCpp():
     def show_cpp(self):
         out = self.net.net_editor.flatten("cpp", self.gen)
         print("".join(out))
-
+    
+    def get_cpp(self):
+        out = self.net.net_editor.flatten("cpp", self.gen)
+        return("".join(out))
+    
     def show_tree_cpp_out(self):
         print(self.net.eq_tree.show_cpp_out())
         

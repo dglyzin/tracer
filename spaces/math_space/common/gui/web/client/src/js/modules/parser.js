@@ -1,8 +1,8 @@
 console.log("log parser.js");
 
 
-define(['jquery', 'modules/tnet', 'modules/tnet_tabs'],
-       function($, tnet, tnet_tabs){
+define(['jquery', 'modules/tnet', 'modules/tnet_tabs', 'modules/parser_params_tabs'],
+       function($, tnet, tnet_tabs, params_tabs){
 	   return {
 	       Parser: function Parser(){
       		   /*
@@ -12,7 +12,7 @@ define(['jquery', 'modules/tnet', 'modules/tnet_tabs'],
 		     Get lex step result to lex_out_div.
 		     Get net step result.
 		    */
-		   var self = this;
+ 		   var self = this;
 		   self.net = new tnet.Net();
 		   		   
 		   self.create_parser = function(){
@@ -20,10 +20,12 @@ define(['jquery', 'modules/tnet', 'modules/tnet_tabs'],
 		       // ui-widget ui-widget-content 
 		       //	  + "Let(G: group(G) in: abelian(G)=>commutative(G),"
 		       //	   + " commutative(G)=>abelian(G),)"
-			 
+
+		       params_tabs.create_parser("#frame_before_parser");
+
 		       var str = ('<div id="to_parse_div" title="click to edit"'
 				  + ' class="style_editor_static ">'
-				  + "U'=a*(sin(a+b)+U)+c*D[U,{x,2}]"
+				  + "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
 				  + '</div>'+'<br>'
 				  + '<input id="button_parse" type="button"'
 				  + ' value="parse" class="ui-button"><br>'
@@ -33,6 +35,7 @@ define(['jquery', 'modules/tnet', 'modules/tnet_tabs'],
 				  + '<div id="epi_editor" contenteditable="true"'
 				  + ' class=""></div>'
 				  +'</div>');
+		       // U'=a*(sin(a+b)+U)+c*D[U,{x,2}]
 
 		       $("#parser_div").html(str);
 		       $("#parser_div").addClass("above_net_left");
@@ -83,21 +86,38 @@ define(['jquery', 'modules/tnet', 'modules/tnet_tabs'],
 
 		       $("#button_parse").on("click", function(event){
 			   var text = $("#to_parse_div").text();
-			   
+			   var params = {};
+			   params["dim"] = $("#param_dim").val();
+			   params["blockNumber"] = $("#param_bn").val();
+			   params["vars_idxs"] = $("#param_vidxs").val();
+			   params["coeffs"] = $("#param_coeffs").val();
+			   params["diffType"] = "pure";
+			   params["diffMethod"] = $("#param_dm").val();
+			   params["btype"] = $("#param_btype").val();
+			   params["side"] = $("#param_side").val();
+			   params["vertex_sides"] = $("#param_sn").val();
+			   params["func"] = $("#param_func").val();
+			   params["firstIndex"] = $("#param_fi").val();
+			   params["secondIndexSTR"] = $("#param_si").val();
+			   params["shape"] = $("#param_shape").val();
 			   console.log("text for parsing:");
 			   console.log(text);
-			   self.parse("eqs", text);
+			   console.log("params for parsing:");
+			   console.log(params);
+			   
+			   self.parse("eqs", text, params);
 		       });
 
 
 		   };
 		   
-		   self.parse = function(dialect, text){
+		   self.parse = function(dialect, text, params){
 		       
 		       // FOR sending data to server:
 		       if(text.length){
 			   var to_send = JSON.stringify({dialect: dialect,
-							 text: text});
+							 text: text,
+							 params: params});
 			   // var to_send = data_to_send;
 			   console.log("\n sending");
 			   console.log(to_send);

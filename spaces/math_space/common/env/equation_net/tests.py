@@ -16,6 +16,7 @@ if env_dir not in sys.path:
 from env.equation_net.equation import Equation
 from env.equation.tests_lists import tests_list_main
 from env.equation.tests import test_one, test_all
+from env.equation.tests import test_term_cpp_diff
 import traceback
 
 
@@ -28,5 +29,6 @@ if __name__ == '__main__':
     # test_all(EqBilder=Equation, tests=tests_list_main)
     # test_lambda()
     # test_rand()
-    test_one(-1, tests=tests_list_main, sympy=True,
-             EqBilder=Equation, verbose=True)
+    # test_one(-1, tests=tests_list_main, sympy=True,
+    #          EqBilder=Equation, verbose=True)
+    eq = test_term_cpp_diff(EqBilder=Equation)

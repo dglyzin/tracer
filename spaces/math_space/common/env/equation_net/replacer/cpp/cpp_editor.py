@@ -52,11 +52,25 @@ class Editor():
         Inputs:
            diffType="pure", diffMethod="common"
 
-           diffType="pure", diffMethod="special",
+           diffType="pure", diffMethod="borders",
            side=0, func="sin(x)"
 
            diffType="pure", diffMethod="interconnect",
            side=0, firstIndex=0, secondIndexSTR=1
+
+        ::
+
+          ***x->
+          *  
+          |  ---side 2---
+          y  |          |
+             s          s
+             i          i
+             d          d
+             e          e
+             0          1
+             |          |
+             ---side 3---
         '''
 
         self.cpp_replacer.set_diff_type(**kwargs)
