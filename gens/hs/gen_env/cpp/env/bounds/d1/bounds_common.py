@@ -51,6 +51,10 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         self.net.params = Params()
         self.net.params.bounds = Params()
         self.net.params.bounds_edges = Params()
+        
+        print("vertexs[vertex_num].sides_nums[0]")
+        print(model.blocks[0].vertexs['[0]'])
+        print(model.blocks[0].vertexs['[0]'].sides_nums)
 
         params = [self.make_bound_param(model, block.vertexs[vertex_num])
                   for block in model.blocks

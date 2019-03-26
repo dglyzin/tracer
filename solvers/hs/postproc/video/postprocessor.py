@@ -353,6 +353,9 @@ def createResultFile(projectDir, projectName, resIdx, resLog):
 
     outfileNamePath = projectDir+projectName+"-res"+str(resIdx)+".out"
 
+    # for removing truncation (like: [1, ..., 3]):
+    np.set_printoptions(threshold=np.inf)
+
     with open(outfileNamePath, "w") as f:
         for _time, item in resLog:
             f.write(str(_time)+": " + str(item)+"\n")

@@ -469,12 +469,30 @@ def remoteProjectRun(settings, dimention, notebook=None):
         logger.info(command)
 
         stdin, stdout, stderr = client.exec_command(command)
+
+        stdout_out = stdout.read()
+        stderr_out = stderr.read()
         
-        logger.info("finally")
-        logger.info(stdout.read())
-        logger.info("jsontobin stderr:")
-        logger.info(stderr.read())
-        logger.info("stderr END")
+        if notebook is None:
+            logger.info("finally")
+
+            logger.info("jdontobin stdout:")
+
+            stdout_out = stdout_out.decode()
+
+            stdout_out = stdout_out.split("\n")
+            for line in stdout_out:
+                logger.info(line)
+            logger.info("stdout END")
+
+            logger.info("jsontobin stderr:")
+
+            stderr_out = stderr_out.decode()
+
+            stderr_out = stderr_out.split("\n")
+            for line in stderr_out:
+                logger.info(line)
+            logger.info("stderr END")
 
         #4 Run Solver binary on created files
         logger.info("Checking if solver executable at "
@@ -529,13 +547,43 @@ def remoteProjectRun(settings, dimention, notebook=None):
                 
                 if cond:
                     break
-                
-        logger.info(stdout.read())
-        logger.info("it was stdout")
 
-        logger.info(stderr.read())
-        logger.info("it was stderr")
+
+        stdout_out = stdout.read()
+        stderr_out = stderr.read()
         
+        if notebook is None:
+
+            logger.info("stdout:")
+            logger.info(stdout_out)
+
+            # because \n stand with each word
+            # in stdout, this code is not used:
+            '''
+            stdout_out = stdout.read()
+            stdout_out = stdout_out.decode()
+
+            stderr_out = stdout_out.split("\n")
+            for line in stdout_out:
+                logger.info(line)
+            '''
+            logger.info("stdout END")
+
+            logger.info("stderr:")
+            logger.info(stderr_out)
+
+            # because \n stand with each word
+            # in stdout, this code is not used:
+            '''
+            stderr_out = stderr.read()
+            stderr_out = stderr_out.decode()
+
+            stderr_out = stderr_out.split("\n")
+            for line in stderr_out:
+                logger.info(line)
+            '''
+            logger.info("stderr END")
+
         #get resulting files
         logger.info("Downloading results...")
         logger.info("from:")

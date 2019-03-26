@@ -48,8 +48,8 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
                     block.firstIndex += 2
 
                     # for functionMaps:
-                    block.vertexs['[0]'] = ic1
-                    block.vertexs['[1]'] = ic2
+                    block.vertexs['[0]'].fm = ic1
+                    block.vertexs['[1]'].fm = ic2
 
                     # for cpp:
                     ics.append(ic1)
@@ -187,13 +187,13 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
         # FOR equatioin cpp:
         # first equation:
         parsedValues_1 = self.parse_equations(equation1, model.dimension,
-                                              blockNumber, iconn.block2Side,
-                                              0, 0)
+                                              blockNumber, iconn.block1Side,
+                                              1, 0)
 
         # second equation:
         parsedValues_2 = self.parse_equations(equation2, model.dimension,
-                                              blockNumber, iconn.block1Side,
-                                              1, 0)
+                                              blockNumber, iconn.block2Side,
+                                              0, 0)
         # END FOR
 
         # fill params:
@@ -203,12 +203,12 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
         ic1.secondIndex = '0'
         ic1.side_num = iconn.block1Side
         ic1.ranges = []
-        ic1.equationNumber = equationNum2
-        ic1.equation = equation2
-        ic1.funcName = funcName2
+        ic1.equationNumber = equationNum1
+        ic1.equation = equation1
+        ic1.funcName = funcName1
         ic1.parsedValues = parsedValues_1
         ic1.original = [e.sent for e in equation1.eqs]
-        ic1.boundName = determineNameOfBoundary(iconn.block2Side)
+        ic1.boundName = determineNameOfBoundary(iconn.block1Side)
         ic1.blockNumber = blockNumber
         
         ic2 = Params()
@@ -217,12 +217,12 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
         ic2.secondIndex = '0'
         ic2.side_num = iconn.block2Side
         ic2.ranges = []
-        ic2.equationNumber = equationNum1
-        ic2.equation = equation1
-        ic2.funcName = funcName1
+        ic2.equationNumber = equationNum2
+        ic2.equation = equation2
+        ic2.funcName = funcName2
         ic2.parsedValues = parsedValues_2
         ic2.original = [e.sent for e in equation2.eqs]
-        ic2.boundName = determineNameOfBoundary(iconn.block1Side)
+        ic2.boundName = determineNameOfBoundary(iconn.block2Side)
         ic2.blockNumber = blockNumber
 
         return((ic1, ic2))

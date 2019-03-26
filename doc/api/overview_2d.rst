@@ -93,12 +93,12 @@ Say One have two blocks with ics:
 
 in dom file they will be converted in
 
-   icDim  icLen  source block  dist_block  source side  dist side  \
+   icDim  icLen  source block  dest_block  source side  dest side  \
 0      1     64             0           1            2          3   
 1      1     64             1           0            3          2   
 
 
-   source offset  dist offset  
+   source offset  dest offset  
 0             37            0  
 1              0           37  
 
@@ -114,7 +114,7 @@ For example
 in Block0Interconnect__Side2_Eqn2 from .cpp file
 ic[0] will be used.
 
-in Block1Interconnect__Side2_Eqn2 from .cpp file
+in Block1Interconnect__Side3_Eqn2 from .cpp file
 ic[0] will be used.
 
 
@@ -138,13 +138,13 @@ for example
             "Block2Side": 3
         }
 
-   icDim  icLen  source block  dist_block  source side  dist side  \
+   icDim  icLen  source block  dest_block  source side  dest side  \
 0      1     64             0           1            2          3   
 1      1     64             1           0            3          2   
 2      1     64             1           0            2          3   
 3      1     64             0           1            3          2   
 
-   source offset  dist offset  
+   source offset  dest offset  
 0             37            0  
 1              0           37  
 2              0           37  
@@ -165,11 +165,11 @@ in Block0Interconnect__Side3_Eqn2 from .cpp file
 ic[1] will be used.
 
 in Block1Interconnect__Side2_Eqn2 from .cpp file
-ic[0] will be used.
+ic[1] will be used.
 
 in Block1Interconnect__Side3_Eqn2 from .cpp file
-ic[1] will be used.
-(see problems/2dTests/heat_block_0_ics_other)
+ic[0] will be used.
+(see problems/2dTests/heat_block_2_ics_other_offsets)
 
 When there is only one block and ic looks like:
 
@@ -181,11 +181,11 @@ When there is only one block and ic looks like:
             "Block2Side": 3
         }
 
-   icDim  icLen  source block  dist_block  source side  dist side  \
+   icDim  icLen  source block  dest_block  source side  dest side  \
 0      1    101             0           0            2          3   
 1      1    101             0           0            3          2   
 
-   source offset  dist offset  
+   source offset  dest offset  
 0              0            0  
 1              0            0  
 
@@ -198,14 +198,14 @@ ic[1] will be used.
 
 in Block0Interconnect__Side3_Eqn0 from .cpp file
 ic[0] will be used.
-(see problems/2dTests/heat_block_0_ics_self)
+(see problems/2dTests/heat_block_1_ics_self)
 
 For that unreflectness of ic array (compare with ics for differ blocks)
-is due dist_block now is equal to src_block
+is due ``dest_block`` now is equal to ``src_block``
 an he copy sides direcly to same block (according ics table above)
-i.e.  externalBorder in hs for single block ics is
-interpreted as sourceBorder for same block.
-For this reason situation with many ics (both with self and other block)
+i.e.  ``externalBorder`` in hs for single block ics is
+interpreted as ``sourceBorder`` for same block.
+For this reason situation with many ics (both with ``self`` and ``other`` block)
 is complicated. For example:
 
 	{
@@ -230,7 +230,7 @@ is complicated. For example:
             "Block2Side": 0
         }
 
-   icDim  icLen  source block  dist_block  source side  dist side  \
+   icDim  icLen  source block  dest_block  source side  dest side  \
 0      1     51             0           1            0          1   
 1      1     51             1           0            1          0   
 2      1    101             0           0            2          3   
@@ -238,7 +238,7 @@ is complicated. For example:
 4      1     51             0           1            1          0   
 5      1     51             1           0            0          1   
 
-   source offset  dist offset  
+   source offset  dest offset  
 0             15            0  
 1              0           15  
 2              0            0  
@@ -266,7 +266,7 @@ ic[1] will be used.
 Block1Interconnect__Side1_Eqn0 from .cpp file
 ic[0] will be used.
 
-see problems/2dTests/heat_block_0_ics_self_other
+(see problems/2dTests/heat_block_2_ics_self_other)
 
 
 If order of ics was chenged in .json
@@ -333,7 +333,7 @@ ic[1] will be used.
 Block1Interconnect__Side1_Eqn0 from .cpp file
 ic[0] will be used.
 
-see problems/2dTests/heat_block_0_ics_self_other_order
+see problems/2dTests/heat_block_2_ics_self_other_order
 
 
 It worth to say this blocks  will represent some solutions (process,
