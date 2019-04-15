@@ -57,7 +57,8 @@ tests_dict_cs = {
     # tests for misunderstanding
     # ["\\in", "("] as ["\\", "f"]:
     20: ["y \\in (Y)"],
-    21: ["A \\and (B)"], }
+    21: ["A \\and (B)"],
+    22: ["abelian(G) \\and subgroup(H, G,) => abelian(H)"]}
 
 
 cs_asserted = {
@@ -122,7 +123,8 @@ cs_asserted = {
          'if', 'f(', 'a', ')', ',', 'f(', 'a', ')',
          'if', 'f(', 'a', ')', ',', ')'],
     20: ['a', 'in_0', '(', 'a', ')'],
-    21: ['a', 'conj', '(', 'a', ')']}
+    21: ['a', 'conj', '(', 'a', ')'],
+    22: []}
 
 
 tests_dict_eqs = {

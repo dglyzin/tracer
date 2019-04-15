@@ -1,4 +1,4 @@
-# parser$ python3 -m translator.tree.tests_map
+# parser$ ~/anaconda3/bin/./python3 -m translator.tree.tests_map
 import translator.grammar.tests_cyk as ts
 import translator.tree.maps as ms
 import math
@@ -7,6 +7,15 @@ from networkx.readwrite import json_graph
 from translator.sampling.vars.vars_extractor import Extractor
 import translator.sampling.vars.vars_maps as vms
  
+
+def search(net, lex_value):
+    for node_key in net.node:
+        if ("data" in net.node[node_key]):
+            if net.node[node_key]["data"] is not None:
+                if "lex_value" in net.node[node_key]["data"]:
+                    if net.node[node_key]["data"]["lex_value"] == lex_value:
+                        print(node_key)
+
 
 def test(dialect, _id):
 
@@ -126,6 +135,6 @@ def test(dialect, _id):
 
 if __name__ == "__main__":
     
-    # test("cs", 19)
-    test("eqs", 11)
+    test("cs", 22)
+    # test("eqs", 11)
     # test("eqs", 25)
