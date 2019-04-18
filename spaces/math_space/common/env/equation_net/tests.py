@@ -9,7 +9,7 @@ currentdir = os.path.dirname(os.path
                              .abspath(inspect.getfile(inspect.currentframe())))
 env = currentdir.find("env")
 env_dir = currentdir[:env]
-print(env_dir)
+# print(env_dir)
 if env_dir not in sys.path:
     sys.path.insert(0, env_dir)
 
