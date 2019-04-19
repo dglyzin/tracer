@@ -64,6 +64,7 @@ class ModelIO():
            '''
 
         # FOR pathes:
+        '''
         if 'problems' not in project_folder:
             
             raise(BaseException('path to folder with json must begin from'
@@ -77,7 +78,8 @@ class ModelIO():
             raise(BaseException('project_folder is name of folder in with'
                                 + ' json file contained'
                                 + ' like problems/1dTests/test1d_two_blocks0'))
-        elif (project_folder[0] == '/'):
+        '''
+        if (project_folder[0] == '/'):
             '''
             raise(BaseException('project_folder is name of folder in with \n'
                                 + ' json file contained, relative to '

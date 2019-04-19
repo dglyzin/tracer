@@ -113,6 +113,8 @@ def create_folder(client, folder):
 
 
 def copy_files(client, connection, hd_path, hs_path, name):
+    
+    '''To server'''
 
     # fix tilde bug:
     # hs_path = fix_tilde_bug(connection, hs_path, 'hs', name)
@@ -132,7 +134,34 @@ def copy_files(client, connection, hd_path, hs_path, name):
     cftp.close()
     logger.info("finished copy %s files" % name)
 
+
+def copy_file_to_folder(client, hd_file_name_full, hs_path, name):
     
+    '''To server'''
+
+    # fix tilde bug:
+    # hs_path = fix_tilde_bug(connection, hs_path, 'hs', name)
+    # hd_path = fix_tilde_bug(connection, hd_path, 'hd', name)
+
+    file_name = os.path.basename(hd_file_name_full)
+    hs_file_name_full = os.path.join(hs_path, file_name)
+    logger.info("copy " + hd_file_name_full)
+    logger.info("to " + hs_file_name_full)
+    cftp = client.open_sftp()
+    cftp.put(hd_file_name_full, hs_file_name_full)
+    cftp.close()
+    logger.info("finished copy %s files" % name)
+
+
+def copy_file(client, hd_file_name_full, hs_file_name_full):
+    '''To server'''
+    cftp = client.open_sftp()
+    # 1 copy json to hs:
+    cftp.put(hd_file_name_full, hs_file_name_full)
+    cftp.close()
+    logger.info("file copied")
+
+
 def make_problems_as_workspace_link(client, hs_problems, workspace):
     '''
     command = (('file="%s" && [[ -d $file && -L $file ]]'
@@ -393,23 +422,27 @@ def remoteProjectRun(settings, dimention, notebook=None):
         # END FOR
 
         # FOR copy files:
-        cftp = client.open_sftp()
-
+        
         # 1 copy json to hs:
         logger.info("hd_json:")
         logger.info(hd_json)
         logger.info("hs_json:")
         logger.info(hs_json)
-
-        cftp.put(hd_json, hs_json)
-        cftp.close()
-        logger.info("json copied")
-
+        copy_file(client, hd_json, hs_json)
+        
         # 2 copy device_conf to hs:
-        copy_files(client, connection, hd_dev_conf, hs_dev_conf, 'dev_conf')
+        if settings.use_pf_prefix:
+            copy_file_to_folder(client, hd_dev_conf, hs_dev_conf,
+                                "dev_conf")
+        else:
+            copy_files(client, connection, hd_dev_conf, hs_dev_conf,
+                       'dev_conf')
 
         # 2.1 copy paths to hs:
-        copy_files(client, connection, hd_paths, hs_paths, 'paths')
+        if settings.use_pf_prefix:
+            copy_file_to_folder(client, hd_paths, hs_paths, "paths")
+        else:
+            copy_files(client, connection, hd_paths, hs_paths, 'paths')
         # END FOR
 
         '''
