@@ -19,18 +19,15 @@
         {
             "Name": "MainBlock", 
             "Offset": {
-                "x": 0.1
+                "x": 0
             }, 
             "Size": {
-                "x": 3.5
+                "x": 1
             }, 
             "DefaultEquation": 0, 
-            "DefaultInitial": 1, 
+            "DefaultInitial": 0, 
             "BoundRegions": [
-                {
-                    "BoundNumber": 0, 
-                    "Side": 0
-                }
+                
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
@@ -77,14 +74,6 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "1.0", 
-                "1.0"
-            ]
-        }, 
-        {
-            "Name": "Initial values 1", 
-            "Values": [
-                "1.0", 
                 "1.0"
             ]
         }
