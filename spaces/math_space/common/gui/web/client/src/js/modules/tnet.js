@@ -10,7 +10,7 @@ define(['jquery', 'cytoscape/cytoscape.min', "modules/tmenu"],
 		   // FOR global variables:
 		   
 		   var self = this;
-		   
+
 		   // FOR menu:
 		   self.menu_status = 0;
 		   menu_items = ["add term to db", ""];
@@ -120,7 +120,29 @@ define(['jquery', 'cytoscape/cytoscape.min', "modules/tmenu"],
 				   elm = event.target;
 				   
 				   console.log(elm.data());
-				   $("#node_data").text(JSON.stringify(elm.data()));
+				   console.log("slambda_only:");
+				   console.log($("#slambda_only").is(":checked"));
+				   // console.log($("#slambda_only").data());
+
+				   data = JSON.stringify(elm.data());
+				   console.log("data[slambda]:");
+				   console.log((data));
+				   
+				   if ($("#slambda_only").is(":checked")){
+				       if ("nx_data" in elm.data() && elm.data()["nx_data"]){
+					   console.log(elm.data()["nx_data"]);
+					   if ("slambda" in elm.data()["nx_data"]){
+					       console.log(JSON.stringify(elm.data()["nx_data"]["slambda"]));
+					       $("#node_data").text(JSON.stringify(elm.data()["nx_data"]["slambda"]));
+					   }else{
+					       $("#node_data").text("no slambda for node");
+					   }
+				       }else{
+					   $("#node_data").text("no nx_data for node");
+				       }
+				   }else{
+				       $("#node_data").text(data);
+				   }
 				   console.log("selected:");
 				   console.log(self.cy.$(":selected"));
 				   

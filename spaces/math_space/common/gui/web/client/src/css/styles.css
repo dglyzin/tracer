@@ -26,6 +26,12 @@
     z-index: 1;
 }
 
+.style_table {
+    
+    border: 3px;
+    bordercolor: black;
+}
+
 .style_editor_static {
     background-color: white;
     color: black;

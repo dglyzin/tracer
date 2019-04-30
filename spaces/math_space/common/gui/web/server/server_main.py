@@ -39,14 +39,17 @@ def make_app(handlers):
     return tornado.web.Application([
         #html
         (r"/", handlers.MainHandler),
+        (r"/net", handlers.NetHandler),
+        (r"/sampling", handlers.SamplingHandler),
+        (r"/sampling_desk", handlers.SamplingDeskHandler),
         (r"/login", handlers.SignInHandler),
         (r"/logout", handlers.LogoutHandler),
         (r"/signup", handlers.SignUpHandler),
-
+        
         #api
         # (r"/api/tree", TreeHandler),
         # (r"/api/editor", EditorHandler),
-        (r"/net", handlers.NetHandler),
+        
         (r"/api/net_parsing", handlers.NetHandlerParsing),
         (r"/api/tables/path", handlers.PathHandler),
         (r"/api/tables/dialect", handlers.DialectTableHandler),

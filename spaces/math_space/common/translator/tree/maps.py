@@ -107,7 +107,61 @@ def map_net_cy_to_nx(net_dict):
     return(json_graph.node_link_graph(data))
 
 
-def map_net_nx_to_cy(net):
+def convert_node_data_parser(_id, nx_node_entry):
+
+    cy_node_entry = {}
+    cy_node_entry["group"] = "nodes"
+
+    cy_node_entry["data"] = {}
+
+    cy_node_entry["data"]["nx_id"] = nx_node_entry["id"]
+    cy_node_entry["data"]["id"] = "n" + str(_id)
+    cy_node_entry["data"]["name"] = nx_node_entry["name"]
+
+    if "label" not in nx_node_entry:
+        if (nx_node_entry["data"] is None
+            or "term_name" not in nx_node_entry["data"]):
+
+            label = ""
+            cy_node_entry["data"]["nx_data"] = None
+        else:
+            label = ("|" + nx_node_entry["data"]["term_name"]
+                     + "|" + nx_node_entry["data"]["lex_value"])
+
+            cy_node_entry["data"]["nx_data"] = nx_node_entry["data"].copy()
+
+            # remove unserialisable data:
+            cy_node_entry["data"]["nx_data"]["re_res"] = None
+
+        cy_node_entry["data"]["label"] = nx_node_entry["name"] + label
+    else:
+        cy_node_entry["data"]["label"] = nx_node_entry["label"]
+    return(cy_node_entry)
+
+
+def convert_node_data_slambda(_id, nx_node_entry):
+
+    cy_node_entry = {}
+    cy_node_entry["group"] = "nodes"
+
+    cy_node_entry["data"] = {}
+
+    cy_node_entry["data"]["nx_id"] = nx_node_entry["id"]
+    cy_node_entry["data"]["id"] = "n" + str(_id)
+
+    if (nx_node_entry["data"] is None):
+        label = ""
+        cy_node_entry["data"]["nx_data"] = None
+    else:
+        label = (nx_node_entry["data"]["idd"])
+
+        cy_node_entry["data"]["nx_data"] = nx_node_entry["data"].copy()
+
+    cy_node_entry["data"]["label"] = label
+    return(cy_node_entry)
+
+
+def map_net_nx_to_cy(net, node_data_converter=convert_node_data_parser):
     
     '''Transform networkx json data to cytoscape data.
     Remove unserialisable regexp data from node data.
@@ -147,35 +201,8 @@ def map_net_nx_to_cy(net):
     nx_data = json_graph.node_link_data(net)
     cy_nodes = []
 
-    for id, nx_node_entry in enumerate(nx_data["nodes"]):
-
-        cy_node_entry = {}
-        cy_node_entry["group"] = "nodes"
-        
-        cy_node_entry["data"] = {}
-        cy_node_entry["data"]["nx_id"] = nx_node_entry["id"]
-        cy_node_entry["data"]["id"] = "n" + str(id)
-        cy_node_entry["data"]["name"] = nx_node_entry["name"]
-
-        if "label" not in nx_node_entry:
-            if (nx_node_entry["data"] is None
-                or "term_name" not in nx_node_entry["data"]):
-                
-                label = ""
-                cy_node_entry["data"]["nx_data"] = None
-            else:
-                label = ("|" + nx_node_entry["data"]["term_name"]
-                         + "|" + nx_node_entry["data"]["lex_value"])
-
-                cy_node_entry["data"]["nx_data"] = nx_node_entry["data"].copy()
-
-                # remove unserialisable data:
-                cy_node_entry["data"]["nx_data"]["re_res"] = None
-
-            cy_node_entry["data"]["label"] = nx_node_entry["name"] + label
-        else:
-            cy_node_entry["data"]["label"] = nx_node_entry["label"]
-            
+    for _id, nx_node_entry in enumerate(nx_data["nodes"]):
+        cy_node_entry = node_data_converter(_id, nx_node_entry)
         # set position for each node:
         cy_node_entry["position"] = nx_node_entry["position"].copy()
         cy_node_entry["coords"] = nx_node_entry["coords"].copy()

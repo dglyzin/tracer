@@ -15,8 +15,8 @@ requirejs.config({
 // 
 requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/scene',
 	   'modules/tables', 'modules/path', 'modules/net',
-	   'modules/parser'],
-	  function($, ui, scene, tables, path, net, tparser){
+	   'modules/parser', 'modules/ttree'],
+	  function($, ui, scene, tables, path, net, tparser, tree){
 	     
 	      console.log("all files loaded");
 	      console.log(path);
@@ -27,6 +27,8 @@ requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/scene',
 		  console.log(ui);
 		  console.log("scene:");
 		  console.log(scene);
+		  
+		  tree.create_tree();
 		  
 		  // FOR path
 		  path.init_path();

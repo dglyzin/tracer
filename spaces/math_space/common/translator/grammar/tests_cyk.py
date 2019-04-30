@@ -19,13 +19,27 @@ import sys
 import inspect
 import traceback
 
+import logging
+
+# if using from tester.py uncoment that:
+# create logger that child of tester loger
+# logger = logging.getLogger('tests.tester.gen_1d')
+
+# if using directly uncoment that:
+
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('tests_map')
+logger.setLevel(level=log_level)
+
 # insert env dir into sys
 # env must contain env folder:
 currentdir = os.path.dirname(os.path
                              .abspath(inspect.getfile(inspect.currentframe())))
 env = currentdir.find("env")
 env_dir = currentdir[:env]
-# print(env_dir)
+logger.debug(env_dir)
 if env_dir not in sys.path:
     sys.path.insert(0, env_dir)
 
@@ -156,10 +170,13 @@ def test_one(tokenizer, tests_list, dialect="eqs", _id=0, verbose=False):
     if verbose:
         print("ot:")
         print(ot.__repr__(node_attr_to_show="name"))
+    return(ot)
+    '''
     if not verbose:
         return(True)
     else:
         return(ot)
+    '''
 
 
 if __name__ == '__main__':

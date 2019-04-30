@@ -11,6 +11,10 @@ from env.equation.data.terms.output.cpp.postproc import delay_postproc
 from translator.sampling.vars.vars_extractor import Extractor
 import translator.sampling.vars.vars_maps as vms
 
+from translator.sampling.slambda import slambda_main as sm
+from translator.sampling.slambda.data.stable import stable_fixed
+from translator.sampling.slambda.data.stable import stable
+
 from functools import reduce
 
 
@@ -27,6 +31,17 @@ class DialectHandlers(Handlers):
         
         TableHandler = self.TableHandler
         model = self.model
+        global_self = self
+
+        mid_terms = ["clause_where", "clause_for", "clause_into",
+                     "def_0", "in_0",
+                     "if", "if_only", "if_def",
+                     "clause_or", "conj"]
+        vars_terms = ["set", "var"]
+
+        self.sampler = sm.ValTableSampling(None, None,
+                                           stable, stable_fixed,
+                                           mid_terms, vars_terms)
 
         class DialectTableHandler(TableHandler):
 
@@ -189,6 +204,9 @@ class DialectHandlers(Handlers):
                                            node_data)
                     parser.parse(sent_list)
                     net_out = parser.net_out
+                    global_self.sampler.set_parsed_net(net_out)
+                    net_out, nodes_idds = global_self.sampler.editor_step()
+                    vtable_skeleton = global_self.sampler.get_vtable_skeleton(nodes_idds)
                     lex_out = parser.lex_out
 
                 vars_extractor = Extractor(dialect_name)
@@ -223,6 +241,11 @@ class DialectHandlers(Handlers):
                 if dialect_name == "eqs":
                     out["eq_cpp"] = eq.replacer.cpp.get_cpp()
                     out["eq_sympy"] = eq.eq_sympy
+                
+                out["slambda"] = {}
+                # add slambda data:
+                if dialect_name == "cs":
+                    out["slambda"]["vtable_skeleton"] = vtable_skeleton
                 return(out)
 
         self.NetHandlerParsing = NetHandlerParsing
@@ -243,6 +266,40 @@ class DialectHandlers(Handlers):
                 # self.redirect("/login")
 
         self.NetHandler = NetHandler
+
+        class SamplingHandler(self.BaseHandler):
+            # @tornado.web.authenticated
+            def get(self):
+                print("FROM NetHandler.get")
+                print("self.current_user")
+                print(self.current_user)
+                # try:
+                #     name = tornado.escape.xhtml_escape(self.current_user)
+                #     self.render("index_net.html", title="", username=name)
+                # except TypeError:
+                print("self.current_user is None")
+                # TODO: users methods
+                self.render("index_sampling.htm", username="default")
+                # self.redirect("/login")
+
+        self.SamplingHandler = SamplingHandler
+
+        class SamplingDeskHandler(self.BaseHandler):
+            # @tornado.web.authenticated
+            def get(self):
+                print("FROM NetHandler.get")
+                print("self.current_user")
+                print(self.current_user)
+                # try:
+                #     name = tornado.escape.xhtml_escape(self.current_user)
+                #     self.render("index_net.html", title="", username=name)
+                # except TypeError:
+                print("self.current_user is None")
+                # TODO: users methods
+                self.render("index_sampling_desk.htm", username="default")
+                # self.redirect("/login")
+
+        self.SamplingDeskHandler = SamplingDeskHandler
 
     '''
     def create_dialect_login_handlers(self):
