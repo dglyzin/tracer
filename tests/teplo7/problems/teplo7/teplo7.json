@@ -3,9 +3,9 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 10.0, 
-        "TimeStep": 0.000001, 
-        "SaveInterval": 0.01, 
+        "FinishTime": 10, 
+        "TimeStep": 0.00001, 
+        "SaveInterval": 0.1, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
@@ -31,10 +31,12 @@
                     "BoundNumber": 0, 
                     "Side": 0
                 },
-            {
-                    "BoundNumber": 0, 
+		{
+                    "BoundNumber": 1, 
                     "Side": 1
                 }
+
+
 
             ], 
             "InitialRegions": [], 
@@ -68,27 +70,40 @@
     }, 
     "Bounds": [
         {
-            "Name": "Dirichlet1111", 
+            "Name": "Dirichlet 1", 
             "Type": 0, 
             "Values": [
-                "0.0"
+                "10.0*sin(3.0*t)"
             ], 
             "Derivative": [
-                "0.0"
+                "30.0*cos(3.0*t)"
             ]
+
+        },
+	{
+            "Name": "Dirichlet 1", 
+            "Type": 0, 
+            "Values": [
+                "-10.0*sin(3.0*t)"
+            ], 
+            "Derivative": [
+                "-30.0*cos(3.0*t)"
+            ]
+ 
         }
+
     ], 
     "Initials": [
         {
             "Name": "Initial values 0", 
             "Values": [
-                "sin(x)*sin(x)*sin(x)"
+                "0.0"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "cnode3", 
+            "Name": "cnode4", 
             "CpuCount": 1, 
             "CpuMemory": [
                 56
