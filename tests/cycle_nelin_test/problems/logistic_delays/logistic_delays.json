@@ -4,8 +4,8 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 10, 
-        "TimeStep": 0.01, 
-        "SaveInterval": 0.1, 
+        "TimeStep": 0.001, 
+        "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
@@ -41,8 +41,8 @@
                 "x"
             ], 
             "System": [
-                "U'= a*a*V",
-                "V'= -b*b*U"
+                "U'= (V-U*U*U+U)*20",
+                "V'= -U"
             ]
         }
     ], 
@@ -75,7 +75,7 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "2.0",
+                "3.0",
                 "0"
             ]
         }
@@ -116,7 +116,7 @@
     "Results":[
         {
             "Name": "u", 
-            "Period": 0.1,
+            "Period": 0.01,
             "Value": ["U","V"]
         }
     ]

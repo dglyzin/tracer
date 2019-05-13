@@ -4,7 +4,7 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 10, 
-        "TimeStep": 0.01, 
+        "TimeStep": 0.00001, 
         "SaveInterval": 0.1, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
@@ -19,15 +19,16 @@
         {
             "Name": "MainBlock", 
             "Offset": {
-                "x": 0
+                "x": 0.0
             }, 
             "Size": {
-                "x": 1
+                "x": 3.1415926
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [
                 
+
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
@@ -41,8 +42,7 @@
                 "x"
             ], 
             "System": [
-                "U'= a*a*V",
-                "V'= -b*b*U"
+                "U'=D[U,{x,2}]"
             ]
         }
     ], 
@@ -62,11 +62,8 @@
     "Bounds": [
         {
             "Name": "Dirichlet 1", 
-            "Type": 0, 
+            "Type": 1, 
             "Values": [
-                "0.0"
-            ], 
-            "Derivative": [
                 "0.0"
             ]
         }
@@ -75,14 +72,13 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "2.0",
-                "0"
+                "sin(x)*sin(x)*sin(x)"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "cnode5", 
+            "Name": "cnode4", 
             "CpuCount": 1, 
             "CpuMemory": [
                 56
@@ -109,7 +105,7 @@
 	{
             "Title": "u(t,x)", 
             "Period": 0.1,
-            "Value": ["U","V"]
+            "Value": "U"
         }
     ],
 
@@ -117,7 +113,7 @@
         {
             "Name": "u", 
             "Period": 0.1,
-            "Value": ["U","V"]
+            "Value": "U"
         }
     ]
 }

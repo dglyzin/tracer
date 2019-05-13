@@ -4,7 +4,7 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 10, 
-        "TimeStep": 0.01, 
+        "TimeStep": 0.001, 
         "SaveInterval": 0.1, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
@@ -41,20 +41,20 @@
                 "x"
             ], 
             "System": [
-                "U'= a*a*V",
-                "V'= -b*b*U"
+                "U'= 2.0*(V-U)",
+                "V'= 1.0*(U-V(t-1))"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
-            "a", 
-            "b"
+            "a1",
+            "a2"
         ], 
         "ParamValues": [
             {
-                "a": 1, 
-                "b": 1
+                "a1": 2,
+                "a2": 3
             }
         ], 
         "DefaultParamsIndex": 0
@@ -75,8 +75,8 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "2.0",
-                "0"
+                "100.0",
+                "20.0"
             ]
         }
     ], 
