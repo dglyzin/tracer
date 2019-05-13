@@ -309,7 +309,8 @@ class GenBase():
             print(vertex.parsedValues)
         '''
 
-        # for postproc:
+        # FOR postproc:
+        ### FOR delays:
         # use gen_bounds.params.bounds in order to replace
         # delays in both bounds_edges and bounds_vertex:
         delays = self.postproc.postporc_delays([gen_cent.params,
@@ -331,7 +332,12 @@ class GenBase():
             logger.info(max_delays_seq)
         except ValueError:
             self.delays = []
-
+        ### END FOR
+        
+        ### FOR Dirichlet:
+        self.postproc.postproc_dirichlet([gen_bounds.params.bounds])
+        ### END FOR
+        # END FOR
         out += gen_def.cpp_render.get_out_for_definitions()
         out += gen_init.cpp_render.get_out_for_initials()
         out += gen_params.cpp_render.get_out_for_parameters()

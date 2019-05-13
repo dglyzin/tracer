@@ -104,7 +104,7 @@ class GenCppCommon():
         elif(btype == 0):
             return("Dirichlet__side")
 
-    def parse_equations_vertex(self, vertex, vertex_edge):
+    def parse_equations_vertex(self, vertex, vertex_edge, eSystem):
         
         '''
         Always use::
@@ -120,8 +120,9 @@ class GenCppCommon():
                       .replace("result", "source[0]")))
                   for parsedValue in vepv]
         '''
-        eSystem = vertex_edge.equation.copy()
+        # alredy parsed in make_bounds_for_edges:
         border_values_parsed = vertex_edge.border_values_parsed
+
         btype = vertex_edge.btype
         
         vertex_sides = vertex.sides_nums
@@ -141,7 +142,7 @@ class GenCppCommon():
 
         parsed = self.get_eq_cpp(eSystem)
         
-        return((parsed, eSystem))
+        return((parsed, border_values_parsed))
 
     def parse_equations(self, eSystem, model, blockNumber,
                         btype, side_num, border_values):
