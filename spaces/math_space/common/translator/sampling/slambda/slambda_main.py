@@ -71,6 +71,7 @@ class ValTableSampling():
             nodes_net, nodes_idds = self.editor_step()
         else:
             nodes_net, nodes_idds = editor_out
+        self.nodes_idds = nodes_idds
 
         successes, vesnet = self.synch_step(nodes_net, nodes_idds)
         json_out = self.net_to_json(vesnet)

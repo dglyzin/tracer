@@ -9,7 +9,8 @@ define(['jquery'], function($){
 	    $(div_id).addClass("above_net_bottom style_editor_static style_replacer_frame");
 
 	    var board_str = 
-		('<h3>Output:</h3>'
+		('<p class="ui-widget-header">header</p>'
+		 + '<h3>Output:</h3>'
 		 + '<div id="tabs">'
 		 + '<ul>'
 		 + '<li><a href="#fragment-1">Vars</a></li>'
@@ -78,6 +79,7 @@ define(['jquery'], function($){
 	    // END FOR
 
 	    $("#tabs").tabs();
+	    $(div_id).draggable({handle: "p.ui-widget-header"});
 	    // $("#slambda_only").checkboxradio();
 	    console.log("input value");
 	    console.log($("#slambda_only"));

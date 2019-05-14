@@ -188,21 +188,7 @@ class DialectHandlers(Handlers):
                     lex_out = eq.parser.parsers["wolfram"].lex_out
 
                 elif dialect_name == "cs":
-                    grammar_fmw = get_fmw(ms=[["clause_where", "clause_for",
-                                               "clause_into"],
-                                              "def_0", "in_0",
-                                              ["if", "if_only", "if_def"],
-                                              "clause_or", "conj"])
-                    dialect_patterns = cs
-                    node_data = {"ops": ["clause_where", "clause_for",
-                                         "clause_into",
-                                         "def_0", "in_0",
-                                         "if", "if_only", "if_def",
-                                         "clause_or", "conj"]}
-
-                    parser = ParserGeneral(dialect_patterns, grammar_fmw,
-                                           node_data)
-                    parser.parse(sent_list)
+                    parser = self.parse_cs(sent_list)
                     net_out = parser.net_out
                     global_self.sampler.set_parsed_net(net_out)
                     net_out, nodes_idds = global_self.sampler.editor_step()
@@ -248,6 +234,24 @@ class DialectHandlers(Handlers):
                     out["slambda"]["vtable_skeleton"] = vtable_skeleton
                 return(out)
 
+            def parse_cs(self, sent_list):
+                grammar_fmw = get_fmw(ms=[["clause_where", "clause_for",
+                                           "clause_into"],
+                                          "def_0", "in_0",
+                                          ["if", "if_only", "if_def"],
+                                          "clause_or", "conj"])
+                dialect_patterns = cs
+                node_data = {"ops": ["clause_where", "clause_for",
+                                     "clause_into",
+                                     "def_0", "in_0",
+                                     "if", "if_only", "if_def",
+                                     "clause_or", "conj"]}
+
+                parser = ParserGeneral(dialect_patterns, grammar_fmw,
+                                       node_data)
+                parser.parse(sent_list)
+                return(parser)
+
         self.NetHandlerParsing = NetHandlerParsing
 
         class NetHandler(self.BaseHandler):
@@ -267,10 +271,81 @@ class DialectHandlers(Handlers):
 
         self.NetHandler = NetHandler
 
-        class SamplingHandler(self.BaseHandler):
+        class SamplingHandler(self.NetHandlerParsing):
+
+            # @tornado.web.authenticated
+            def post(self):
+                # data = self.get_argument('proposals', 'No data received')
+                data_body = self.request.body
+                data_json = json.loads(data_body)
+           
+                print("\nFROM SamplingHandler.post")
+                print("\ndata_json_recived:")
+                print(data_json)
+                
+                # FOR data update:
+                mode = data_json["mode"]
+                if mode == "parse":
+                    global_self.sent_list = [data_json["text"]]
+                    data = self.parse(data_json["dialect"], [data_json["text"]],
+                                      data_json["params"])
+                    
+                    stable = global_self.sampler.stable
+                    stable_send = {}
+                    for entry_key in stable:
+                        stable_send[entry_key] = [str(sign)
+                                                  for sign in stable[entry_key]]
+                    data["slambda"]["stable"] = stable_send
+                    
+                elif mode == "sampling":
+                    print("data_json")
+                    print(data_json)
+
+                    # FOR reinit net_out and nodes_idds:
+                    parser = self.parse_cs(global_self.sent_list)
+                    net_out = parser.net_out
+                    global_self.sampler.set_parsed_net(net_out)
+                    net_out, nodes_idds = global_self.sampler.editor_step()
+                    # END FOR
+
+                    # data = self.run_sampling(data_json[""])
+                    vtnames = data_json["vtnames"]
+                    vtvalues = data_json["vtvalues"]
+                    init_ventry = dict([(vtnames[idx], eval(vtvalues[idx]))
+                                        if vtvalues[idx] != ""
+                                        else (vtnames[idx], None)
+                                        for idx in range(len(vtnames))])
+                    print("init_ventry:")
+                    print(init_ventry)
+                    global_self.sampler.set_init_ventry(init_ventry)
+                    out = global_self.sampler.run()
+                    # print("\nsampling json (for cy) result:")
+                    # print(out)
+    
+                    print("\nsampling successors:")
+                    print(global_self.sampler.successes)
+
+                    data = {}
+                    # transform values to str:
+                    successors = [dict([(idx, str(successor[idx]))
+                                        for idx in successor])
+                                  for successor in global_self.sampler.successes]
+                    data["successors"] = successors
+                    data["vesnet"] = out
+                else:
+                    print("unknown mode")
+                # END FOR
+
+                # send back new data:
+                # print("\ndata_to_send:")
+                # print(data)
+                response = data  # {"": data_json}
+                self.write(json.dumps(response))
+
             # @tornado.web.authenticated
             def get(self):
-                print("FROM NetHandler.get")
+
+                print("FROM SamplingHandler.get")
                 print("self.current_user")
                 print(self.current_user)
                 # try:
@@ -281,7 +356,7 @@ class DialectHandlers(Handlers):
                 # TODO: users methods
                 self.render("index_sampling.htm", username="default")
                 # self.redirect("/login")
-
+                
         self.SamplingHandler = SamplingHandler
 
         class SamplingDeskHandler(self.BaseHandler):

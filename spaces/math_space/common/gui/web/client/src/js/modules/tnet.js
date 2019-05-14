@@ -247,14 +247,16 @@ define(['jquery', 'cytoscape/cytoscape.min', "modules/tmenu"],
 				   self.net_from_server();
 			       });	    
 			       // 
-			       var src = ('<div id="node_data"' 
+			       var src = ('<div id="node_data_wrap"' 
 					  + ' class="style_editor_static editor_overflow">'
+					  + '<div id="node_data">'
 					  + 'click on node for data'
+					  + '</div>'
 					  + '</div>');
 
 			       var text_node_data = $(src);
 			       $("#cy_scene_right").append(text_node_data);
-
+			       $("#node_data_wrap").resizable();
 
 			       //var last_top = $(".editors_above_net_left").last().css("top")
 			       // buttons.addClass(".editors_above_net_left");

@@ -274,8 +274,14 @@ def abelian_X_out(args, previus_states):
 
 
 def abelian_x_Out(args):
-    x, _ = args
-    return((x, x in abelian))
+    x, out = args
+
+    if out and (x in abelian):
+        return((x, x in abelian))
+    elif not out and (x not in abelian):
+        return((x, x not in abelian))
+    else:
+        return(None)
 
 
 if __name__ == "__main__":

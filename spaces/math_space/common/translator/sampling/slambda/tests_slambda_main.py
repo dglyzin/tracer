@@ -1,4 +1,4 @@
-# parser$ python3 -m translator.sampling.slambda.tests_slambda_synch
+# parser$ python3 -m translator.sampling.slambda.tests_slambda_main
 from translator.sampling.slambda import slambda_main as sm
 
 from translator.sampling.slambda.data.stable import stable_fixed
@@ -35,7 +35,11 @@ test_ventries = [
      "idd": str(["s"]), "successors_count": 0},
     {"G": ("(1,4)(2,3)", "(1,3)(2,4)"),
      abelian_idd: True, subgroup_idd: True,
-     "idd": str(["s"]), "successors_count": 0}]
+     "idd": str(["s"]), "successors_count": 0},
+    
+    {abelian_idd: True, subgroup_idd: True,
+     "idd": str(["s"]), "successors_count": 0}
+]
 
 
 def test_slambda_main(proposal_id=22, init_ventry_id=3):
@@ -62,4 +66,4 @@ if __name__ == "__main__":
 
     print("target proposal:")
     print("abelian(G) \\and subgroup(H, G,) => abelian(H)")
-    test_slambda_main(proposal_id=22, init_ventry_id=3)
+    test_slambda_main(proposal_id=22, init_ventry_id=4)

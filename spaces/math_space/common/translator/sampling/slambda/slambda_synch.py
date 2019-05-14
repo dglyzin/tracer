@@ -11,7 +11,7 @@ import logging
 # if using directly uncoment that:
 
 # create logger
-log_level = logging.INFO  # logging.DEBUG
+log_level = logging.DEBUG  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('slambda_synch')
 logger.setLevel(level=log_level)
@@ -42,7 +42,7 @@ class ValTableSynch():
             ventry["failure_statuses"] = {}
 
         if "idd" not in ventry:
-            ventry["idd"] = str(["se"])
+            ventry["idd"] = str(["s"])
 
         if "parent_idd" not in ventry:
             ventry["parent_idd"] = None
@@ -189,7 +189,11 @@ class ValTableSynch():
             logger.debug("\n"+str(idd))
             logger.debug(state1[idd])
 
-        if state1 == {} or len(successes) > 0:
+        if len(successes) > 0:
+            self.results = (successes, failures, state1)
+            return(self.results)
+        elif state1 == {}:
+            print("exit because state1 == {}")
             self.results = (successes, failures, state1)
             return(self.results)
         else:
