@@ -24,6 +24,7 @@ env_dir = currentdir[:env]
 if env_dir not in sys.path:
     sys.path.insert(0, env_dir)
 
+# todo eq -> eq_net
 from env.equation.equation import Equation
 from env.system.sys_base import sysBase
 from env.system.sys_io import sysIO

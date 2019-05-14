@@ -134,15 +134,64 @@ class ModelIO():
                                          ("DeviceType", block["DeviceType"]),
                                          ("DeviceIdx", block["DeviceIdx"])])
                             for block in projectDict["Mapping"]["BlockMapping"]]
+
+        self.net.plots = []
+        if "Plots" in projectDict:
+            for plot in projectDict["Plots"]:
+                plot_entry = OrderedDict()
+
+                if "Title" in plot:
+                    plot_entry["Title"] = plot["Title"]
+                else:
+                    plot_entry["Title"] = "no_title"
+
+                if "Period" in plot:
+                    plot_entry["Period"] = plot["Period"]
+                else:
+                    # use saveInterval:
+                    plot_entry["Period"] = self.net.solver.saveInterval
+
+                if "Value" in plot:
+                    plot_entry["Value"] = plot["Value"]
+                else:
+                    # extract from equations:
+                    values = [eq.sent[0] for eq in self.net.equations[0].eqs]
+                    plot_entry["Value"] = values
+                self.net.plots.append(plot_entry)
+        '''
         try:
-           
             self.net.plots = [OrderedDict([("Title", plot["Title"]),
                                            ("Period", plot["Period"]),
                                            ("Value", plot["Value"])])
                               for plot in projectDict["Plots"]]
         except:
             self.net.plots = []
+        '''
 
+        self.net.results = []
+        if "Results" in projectDict:
+            for res in projectDict["Results"]:
+                res_entry = OrderedDict()
+
+                if "Name" in res:
+                    res_entry["Name"] = res["Name"]
+                else:
+                    res_entry["Name"] = "no_name"
+
+                if "Period" in res:
+                    res_entry["Period"] = res["Period"]
+                else:
+                    # use saveInterval:
+                    res_entry["Period"] = self.net.solver.saveInterval
+
+                if "Value" in res:
+                    res_entry["Value"] = res["Value"]
+                else:
+                    # extract from equations:
+                    values = [eq.sent[0] for eq in self.net.equations[0].eqs]
+                    res_entry["Value"] = values
+                self.net.results.append(res_entry)
+        '''
         try:
             self.net.results = [OrderedDict([("Name", result["Name"]),
                                              ("Period", result["Period"]),
@@ -150,6 +199,7 @@ class ModelIO():
                                 for result in projectDict["Results"]]
         except:
             self.net.results = []
+        '''
 
         self.initSessionSettings()
         self.projectFileAssigned = True

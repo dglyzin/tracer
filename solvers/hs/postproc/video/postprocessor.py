@@ -281,7 +281,7 @@ def savePlots2D(projectDir, projectName, data, t,
     # equal to
     # t = binFile.split("-")[1]
     # Ex (binFile): heat_block_0-0.05300000-2.dbin
-    t = t.split(drawExtension)[0]
+    # t = t.split(drawExtension)[0]
 
     savePng2D(filename, X, Y, data, maxValue, minValue, t, cellSize)
     # if saveText:
@@ -492,6 +492,11 @@ def createMovie(projectDir, projectName, modelParamsPath):
     logger.debug("len(plotFileLists):")
     logger.debug(len(plotFileLists))
 
+    equations_str = ("\n".join(mParams["namesEquations"])
+                     if len(mParams["nameEquations"]) <= 3
+                     else ("system with %s equations"
+                           % (str(len(mParams["nameEquations"])))))
+
     for numitem, item in enumerate(mParams['namesEquations']):
         mParams['namesEquations'][numitem] = item[:item.find("'")]
     # logger.info(plotFileLists)
@@ -548,7 +553,12 @@ def createMovie(projectDir, projectName, modelParamsPath):
             logger.info(total_time)
 
             arg_list = [(projectDir, projectName,
-                         [dataNum[1]], dataNum[0],
+                         [dataNum[1]],
+                         
+                         # title:
+                         (equations_str+"\n"+plot["Value"]
+                          + " "+str(dataNum[0])),
+
                          countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
                          cellSize,
@@ -623,7 +633,12 @@ def createMovie(projectDir, projectName, modelParamsPath):
             logger.info("total_time:")
             logger.info(total_time)
             arg_list = [(projectDir, projectName, logDataNp[:, Idx],
-                         dataTime[Idx],
+
+                         # title:
+                         (equations_str + "\n"
+                          + " ".join(plot["Value"])
+                          + " " + str(dataTime[Idx])),
+
                          countZ, countY, countX,
                          offsetZ, offsetY, offsetX,
                          cellSize,
