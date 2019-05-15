@@ -1,9 +1,0 @@
-{
-    "_comment:": "nortpng:, nodes:, continueFileName:",
-    "flag": "0",
-    "finishTime": "-1.1",
-    "cont": "n_a",
-    "partition": "exp",
-    "mpimap": "",
-    "affinity": "0-15"
-}
