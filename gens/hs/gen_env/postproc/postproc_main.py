@@ -61,7 +61,7 @@ class Postproc():
         # print("all parsedValues:")
         # change parsed values:
         for i, param in enumerate(all_params):
-            param.parsedValues = [eq.tree.flatten('cpp')
+            param.parsedValues = [eq.show_cpp()
                                   for eq in eSystems[i].eqs]
             # print(param.parsedValues)
 

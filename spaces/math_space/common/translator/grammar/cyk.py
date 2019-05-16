@@ -151,8 +151,11 @@ def preproc(goal_sent_list):
                             + "goal_sent_list must be a list"))
 
     # remove all subsents like "*(", ")*":
+    # (cannot use just [o] because str separation is needed
+    # (like: "*("|->["*","("]
+    #  and ")*"|-> [")", "*"]))
     s = sum([list(o) if type(o) == str else [o] for o in goal_sent_list], [])
-    print(s)
+    # print(s)
     '''
     for letter in s:
         print("type of %s: %s" % (letter, type(letter)))

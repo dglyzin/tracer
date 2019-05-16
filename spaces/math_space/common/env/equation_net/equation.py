@@ -63,6 +63,9 @@ class Equation():
 
         return(nodes)
 
+    def show_cpp(self):
+        return("".join(self.net_editor.flatten('cpp')))
+
     def show_original(self):
         
         '''net_editor.flatten work only after parser.parse
@@ -89,3 +92,18 @@ class Equation():
         print(self.net_out.node)
     
     
+if __name__ == "__main__":
+
+    sent = "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
+    print("\noriginal:")
+    print(sent)
+    
+    eq = Equation(sent)
+    eq.parser.parse()
+    eq.replacer.cpp.editor.set_default()
+    eq.replacer.cpp.make_cpp()
+    eq.show_cpp()
+
+    print("\nresult:")
+    print(eq.show_cpp())
+

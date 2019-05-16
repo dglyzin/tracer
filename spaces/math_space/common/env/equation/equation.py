@@ -158,6 +158,9 @@ class Equation():
 
         return(eq_tree)
 
+    def show_cpp(self):
+        return("".join(self.tree.flatten('cpp')))
+
     def show_original(self):
         print(self.tree.flatten("original"))
     
@@ -167,5 +170,18 @@ class Equation():
 
     def show_tree_original(self):
         print(self.eq_tree.show_original())
+
+
+if __name__ == "__main__":
     
-    
+    sent = "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
+    print("\noriginal:")
+    print(sent)
+
+    eq = Equation(sent)
+    eq.parser.parse()
+    eq.replacer.cpp.editor.set_default()
+    eq.replacer.cpp.make_cpp()
+
+    print("\nresult:")
+    print(eq.show_cpp())
