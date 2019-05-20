@@ -82,7 +82,7 @@
     ], 
     "Hardware": [
         {
-            "Name": "cnode5", 
+            "Name": "cnode3", 
             "CpuCount": 1, 
             "CpuMemory": [
                 56

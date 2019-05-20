@@ -1,13 +1,13 @@
 {
     "ProjectName": "Heat_test", 
     "Solver": {
-        "SolverIdx": 1, 
+        "SolverIdx": 2, 
         "StartTime": 0.0, 
         "FinishTime": 10, 
-        "TimeStep": 0.001, 
+        "TimeStep": 0.01, 
         "SaveInterval": 0.1, 
-        "AbsTolerance": 0.001, 
-        "RelTolerance": 0.001
+        "AbsTolerance": 0.00001, 
+        "RelTolerance": 0.00001
     }, 
     "Grid": {
         "Dimension": 1, 
@@ -41,8 +41,7 @@
                 "x"
             ], 
             "System": [
-                "U'= U*(U*U+V*V)-V",
-                "V'= V*(U*U+V*V)+U"
+                "U'= a*(b-U(t-1))*U"
             ]
         }
     ], 
@@ -54,7 +53,7 @@
         "ParamValues": [
             {
                 "a": 1, 
-                "b": 1
+                "b": 2
             }
         ], 
         "DefaultParamsIndex": 0
@@ -75,17 +74,16 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "0.05",
-                "0.05"
+                "1.0"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "cnode7", 
+            "Name": "cnode3", 
             "CpuCount": 1, 
             "CpuMemory": [
-                56
+                1
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
@@ -109,7 +107,7 @@
 	{
             "Title": "u(t,x)", 
             "Period": 0.1,
-            "Value": ["U","V"]
+            "Value": "U"
         }
     ],
 
@@ -117,7 +115,7 @@
         {
             "Name": "u", 
             "Period": 0.1,
-            "Value": ["U","V"]
+            "Value": "U"
         }
     ]
 }

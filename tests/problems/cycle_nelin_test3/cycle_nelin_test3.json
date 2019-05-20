@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 1, 
         "StartTime": 0.0, 
-        "FinishTime": 10, 
+        "FinishTime": 40, 
         "TimeStep": 0.001, 
         "SaveInterval": 0.1, 
         "AbsTolerance": 0.001, 
@@ -41,8 +41,8 @@
                 "x"
             ], 
             "System": [
-                "U'= U*(U*U+V*V)-V",
-                "V'= V*(U*U+V*V)+U"
+                "U'= -U*(U*U+V*V)-V+U",
+                "V'= -V*(U*U+V*V)+U+V"
             ]
         }
     ], 
@@ -76,7 +76,7 @@
             "Name": "Initial values 0", 
             "Values": [
                 "0.05",
-                "0.05"
+                "0.0"
             ]
         }
     ], 
