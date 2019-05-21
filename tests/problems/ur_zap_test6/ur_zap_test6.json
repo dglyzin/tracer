@@ -4,7 +4,7 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 10, 
-        "TimeStep": 0.1, 
+        "TimeStep": 0.001, 
         "SaveInterval": 0.1, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
@@ -75,14 +75,14 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "10",
-                "10"
+                "0.5",
+                "1"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "cnode5", 
+            "Name": "cnode3", 
             "CpuCount": 1, 
             "CpuMemory": [
                 56

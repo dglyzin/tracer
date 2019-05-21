@@ -41,20 +41,32 @@
                 "x"
             ], 
             "System": [
-                "U'= 2.0*(V-U)",
-                "V'= 1.0*(U-V(t-1))"
+                "U'= 3.0/(1.0+2.0)*(1-U(t-1.0)*0.01)*U",
+                "V'= V"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
-            "a1",
-            "a2"
+            "r",
+            "a",
+            "k",
+            "h",
+            "rz",
+            "az",
+            "kz",
+            "hz"
         ], 
         "ParamValues": [
             {
-                "a1": 2,
-                "a2": 3
+                "r": 3,
+                "a": 0.7,
+                "k": 100,
+                "h": 0.5,
+                "rz": 2,
+                "az": 0.8,
+                "kz": 200,
+                "hz": 0.6
             }
         ], 
         "DefaultParamsIndex": 0
@@ -75,14 +87,14 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "100.0",
-                "20.0"
+                "24.0",
+                "35.0"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "cnode3", 
+            "Name": "cnode4", 
             "CpuCount": 1, 
             "CpuMemory": [
                 56
