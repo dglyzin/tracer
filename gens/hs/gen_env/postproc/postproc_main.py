@@ -4,7 +4,24 @@ from functools import reduce
 class Postproc():
     def __init__(self, net):
         self.net = net
-        
+
+    def postproc_dirichlet(self, params_of_gens):
+
+        '''If btype is 0 use Dirichlet
+        i.e. bound values for whole equation's right side's'''
+
+        all_params = reduce(lambda acc, x: acc+[param for param in x],
+                            params_of_gens, [])
+        for i, param in enumerate(all_params):
+            if param.btype == 0:
+                
+                # replace right side with border_values:
+                prefixs = [pv[:pv.find("=")+1]
+                           for pv in param.parsedValues]
+                param.parsedValues = [prefix+param.border_values_parsed[idx]
+                                      for idx, prefix in enumerate(prefixs)]
+            # print(param.parsedValues)
+
     def postporc_delays(self, params_of_gens):
 
         '''Sinch delays in all equations in all systems.

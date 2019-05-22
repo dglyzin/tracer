@@ -330,8 +330,10 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         vParams.bound_side = vertex_edge
         vParams.btype = vertex_edge.btype
 
-        parsedValues, eSystem = self.parse_equations_vertex(vertex, vertex_edge)
+        eSystem = vertex_edge.equation.copy()
+        parsedValues, bv_parsed = self.parse_equations_vertex(vertex, vertex_edge, eSystem)
         vParams.parsedValues = parsedValues
+        vParams.border_values_parsed = bv_parsed
         # vParams.parsedValues = vertex_edge.parsedValues
 
         vParams.equation = eSystem

@@ -29,6 +29,9 @@ if __name__ == '__main__':
     # test_all(EqBilder=Equation, tests=tests_list_main)
     # test_lambda()
     # test_rand()
-    # test_one(-1, tests=tests_list_main, sympy=True,
+    test_one(-1, tests=tests_list_main,
+             EqBilder=Equation, verbose=True)
+
+    # test_one(-2, tests=tests_list_main, sympy=True,
     #          EqBilder=Equation, verbose=True)
-    eq = test_term_cpp_diff(EqBilder=Equation)
+    # eq = test_term_cpp_diff(EqBilder=Equation)

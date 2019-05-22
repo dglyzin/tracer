@@ -15,8 +15,8 @@ requirejs.config({
 // 
 requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/scene',
 	   'modules/tables', 'modules/path', 'modules/net',
-	   'modules/parser'],
-	  function($, ui, scene, tables, path, net, tparser){
+	   'modules/parser', 'modules/ttree', 'modules/sampler'],
+	  function($, ui, scene, tables, path, net, tparser, tree, sampler){
 	     
 	      console.log("all files loaded");
 	      console.log(path);
@@ -28,14 +28,29 @@ requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/scene',
 		  console.log("scene:");
 		  console.log(scene);
 		  
+		  tree.create_tree();
+		  
 		  // FOR path
 		  path.init_path();
 		  // END FOR
 		  
-		  // FOR parser
-		  parser = new tparser.Parser();
-		  parser.create_parser();
-		  // END FOR
+		  // for checking what to write: sampling or parse pages:
+		  var checker = $("#frame_sampling").val() != undefined;
+		  console.log("checker:");
+		  console.log(checker);
+		  
+		  if(checker){
+		      // FOR sampler    
+		      sampler = new sampler.Sampler();
+		      sampler.create_sampler();
+		      // END FOR    
+		  }else{
+		      // FOR parser
+		      parser = new tparser.Parser();
+		      parser.create_parser();
+		      // END FOR
+		  };
+		  
 		  
 		  // FOR net:
 		  // net.loop_net();

@@ -209,7 +209,8 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         logger.debug(bParams.side_num)
         # in comment
         bParams.boundName = determineNameOfBoundary(side_num)
-        bParams.parsedValues = parsed
+        bParams.parsedValues = parsed[0]
+        bParams.border_values_parsed = parsed[1]
         bParams.original = [e.sent for e in eSystem.eqs]
         # END FOR
 

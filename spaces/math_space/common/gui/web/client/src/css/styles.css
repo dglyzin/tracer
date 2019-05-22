@@ -10,6 +10,14 @@
     z-index: 1;
 }
 
+.frame_sampling {
+    position: absolute;
+    
+    top: 350px;
+    left: 0;
+    z-index: 1;
+}
+
 .above_net_left {
     position: absolute;
     
@@ -25,6 +33,17 @@
     right: 0;
     z-index: 1;
 }
+
+.style_table {
+    
+    border: 1px solid;
+    border-color: black;
+}
+
+.style_table_input {
+    width: 70px;
+}
+
 
 .style_editor_static {
     background-color: white;

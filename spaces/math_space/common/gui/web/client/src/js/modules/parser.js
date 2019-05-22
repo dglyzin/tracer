@@ -1,8 +1,9 @@
 console.log("log parser.js");
 
 
-define(['jquery', 'modules/tnet', 'modules/tnet_tabs', 'modules/parser_params_tabs'],
-       function($, tnet, tnet_tabs, params_tabs){
+define(['jquery', 'modules/parser_base', 'modules/tnet',
+	'modules/tnet_tabs', 'modules/parser_params_tabs'],
+       function($, parser_base, tnet, tnet_tabs, params_tabs){
 	   return {
 	       Parser: function Parser(){
       		   /*
@@ -13,6 +14,7 @@ define(['jquery', 'modules/tnet', 'modules/tnet_tabs', 'modules/parser_params_ta
 		     Get net step result.
 		    */
  		   var self = this;
+		   self.pbase = new parser_base.ParserBase();
 		   self.net = new tnet.Net();
 		   		   
 		   self.create_parser = function(){
@@ -23,95 +25,66 @@ define(['jquery', 'modules/tnet', 'modules/tnet_tabs', 'modules/parser_params_ta
 
 		       params_tabs.create_parser("#frame_before_parser");
 
-		       var str = ('<div id="to_parse_div" title="click to edit"'
-				  + ' class="style_editor_static ">'
-				  + "U'=a*(D[U,{x,2}]+ D[U,{y,2}])"
-				  + '</div>'+'<br>'
-				  + '<input id="button_parse" type="button"'
-				  + ' value="parse" class="ui-button"><br>'
-				  + '<div id="lex_out_div" class="style_editor_static" title="lex out"> </div>'+'<br>'
+		       // FOR input tabs:
 
-				  + '<div id="edit_parser_input" class="">'
-				  + '<div id="epi_editor" contenteditable="true"'
-				  + ' class=""></div>'
-				  +'</div>');
-		       // U'=a*(sin(a+b)+U)+c*D[U,{x,2}]
-
-		       $("#parser_div").html(str);
-		       $("#parser_div").addClass("above_net_left");
-		       $("#parser_div").tooltip();
-		       // $("#to_parse_div").css("width", "350");
-		       // $("#to_parse_div").css("height", "50");
-		       
-		       $("#to_parse_div").on("click", function(event){
-			   // create dialog
-			   console.log("create dialog");
-			   console.log("dialog created");
-			   $("#edit_parser_input").dialog({
-			       resizable: true,
-			       height: "auto",
-			       width: 400,
-			       modal: true,
-			       open: function(event, ui){
-				   console.log("dialog opend");
-				   $("#edit_parser_input").toggleClass("ui-widget ui-corner-all ui-widget-shadow style_editor_dinamic");
-				   $("#epi_editor").toggleClass("ui-widget-content ui-corner-all");
-
-			       },
-			       close: function(event, ui){
-				   console.log("dialog closed");
-				   $("#edit_parser_input").toggleClass("ui-widget ui-corner-all ui-widget-shadow style_editor_dinamic");
-				   $("#epi_editor").toggleClass("ui-widget-content ui-corner-all");
-
-			       },
-			       buttons: {
-				   "Edit": function() {
-				       console.log("dialog text");
-				       var text = $("#epi_editor").text();
-				       console.log(text);
-				       $("#to_parse_div").text(text);
-				       $( this ).dialog( "close" );
-				   },
-				   Cancel: function() {
-				       $( this ).dialog( "close" );
-				   }
-			       }
-			   });
-			   // $("#to_parse_div").toggleClass("ui-widget ui-corner-all ui-widget-shadow");
-			   // $("#epi_editor").toggleClass("ui-widget-content ui-corner-all");
-
-			   $("#epi_editor").text($("#to_parse_div").text());
-			   console.log("dialog created");
-		       });
-
-		       $("#button_parse").on("click", function(event){
-			   var text = $("#to_parse_div").text();
-			   var params = {};
-			   params["dim"] = $("#param_dim").val();
-			   params["blockNumber"] = $("#param_bn").val();
-			   params["vars_idxs"] = $("#param_vidxs").val();
-			   params["coeffs"] = $("#param_coeffs").val();
-			   params["diffType"] = "pure";
-			   params["diffMethod"] = $("#param_dm").val();
-			   params["btype"] = $("#param_btype").val();
-			   params["side"] = $("#param_side").val();
-			   params["vertex_sides"] = $("#param_sn").val();
-			   params["func"] = $("#param_func").val();
-			   params["firstIndex"] = $("#param_fi").val();
-			   params["secondIndexSTR"] = $("#param_si").val();
-			   params["shape"] = $("#param_shape").val();
-			   console.log("text for parsing:");
-			   console.log(text);
-			   console.log("params for parsing:");
-			   console.log(params);
-			   
-			   self.parse("eqs", text, params);
-		       });
-
-
+		       var input_names = ["lex", "cs_0"];
+		       var input_default_contents = ["U'=a*(D[U,{x,2}]+ D[U,{y,2}])",
+						     "abelian(G) \\and subgroup(H, G,) => abelian(H)"];
+		       var input_buttons_callbacks = [self.get_button_parse_callback_eqs,
+						      self.get_button_parse_callback_cs];
+		       self.pbase.create_input_field("#parser_div", "parser",
+						     input_names, input_default_contents,
+						     input_buttons_callbacks);
+		       // END FOR
 		   };
+
+		   
+		   self.get_button_parse_callback_eqs = function(to_parse_div_id){
+			   return(function(event){
+			       var text = $(to_parse_div_id).text();
+			       var params = {};
+			       
+			       params["dim"] = $("#param_dim").val();
+			       params["blockNumber"] = $("#param_bn").val();
+			       params["vars_idxs"] = $("#param_vidxs").val();
+			       params["coeffs"] = $("#param_coeffs").val();
+			       params["diffType"] = "pure";
+			       params["diffMethod"] = $("#param_dm").val();
+			       params["btype"] = $("#param_btype").val();
+			       params["side"] = $("#param_side").val();
+			       params["vertex_sides"] = $("#param_sn").val();
+			       params["func"] = $("#param_func").val();
+			       params["firstIndex"] = $("#param_fi").val();
+			       params["secondIndexSTR"] = $("#param_si").val();
+			       params["shape"] = $("#param_shape").val();
+			       console.log("text for parsing:");
+			       console.log(text);
+			       console.log("params for parsing:");
+			       console.log(params);
+			          
+			       self.parse("eqs", text, params);
+			       // self.parse("eqs", text, params);
+			   });
+		       };
+
+
+		   self.get_button_parse_callback_cs = function(to_parse_div_id){
+			   return(function(event){
+			       var text = $(to_parse_div_id).text();
+			       var params = {};   
+			       self.parse("cs", text, params);
+			       // self.parse("eqs", text, params);
+			   });
+		   };
+
 		   
 		   self.parse = function(dialect, text, params){
+		       
+		       /*parse text with dialect parser
+			 and print parsed cytoscape net
+			 and set result to "#frame_after_parser"
+			 result will be: lex out, cpp/sympy out
+		         vars, slambda out*/
 		       
 		       // FOR sending data to server:
 		       if(text.length){
@@ -135,6 +108,7 @@ define(['jquery', 'modules/tnet', 'modules/tnet_tabs', 'modules/parser_params_ta
 				       data_vars = objresponse["vars"];
 				       data_output_cpp = objresponse["eq_cpp"];
 				       data_output_sympy = objresponse["eq_sympy"];
+				       data_output_slambda = objresponse["slambda"];
 
 				       console.log("\ndata_lex");
 				       console.log(data_lex);
@@ -146,13 +120,16 @@ define(['jquery', 'modules/tnet', 'modules/tnet_tabs', 'modules/parser_params_ta
 				       console.log(data_output_cpp);
 				       console.log("\ndata_output_sympy");
 				       console.log(data_output_sympy);
+				       console.log("\ndata_output_slambda");
+				       console.log(data_output_slambda);
 
 				       $("#lex_out_div").text(data_lex);
 				       self.net.create_net(data_net);
 
 				       // FOR create tabs:
 				       tnet_tabs.create_tabs("#frame_after_parser", data_vars,
-							     data_output_cpp, data_output_sympy);
+							     data_output_cpp, data_output_sympy,
+							     data_output_slambda);
 				       // END FOR
 
 				       // copy data:
