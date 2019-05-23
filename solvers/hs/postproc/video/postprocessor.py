@@ -134,6 +134,13 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
     column = math.ceil(cellSize / row)
 
     figure.suptitle(t)
+    print("cellSize:")
+    print(cellSize)
+    print("maxValue:")
+    print(maxValue)
+    print("minValue:")
+    print(minValue)
+
     for i in range(cellSize):
         m = 100 * row + 10 * column + i + 1
         axes = figure.add_subplot(m)
@@ -142,6 +149,7 @@ def savePng1D(filename, X, data, maxValue, minValue, currentTime, cellSize):
 
         cmap = cm.jet
 
+        
         amp = maxValue[i] - minValue[i]
 
         minV = minValue[i] - amp/10
@@ -493,9 +501,9 @@ def createMovie(projectDir, projectName, modelParamsPath):
     logger.debug(len(plotFileLists))
 
     equations_str = ("\n".join(mParams["namesEquations"])
-                     if len(mParams["nameEquations"]) <= 3
+                     if len(mParams["namesEquations"]) <= 3
                      else ("system with %s equations"
-                           % (str(len(mParams["nameEquations"])))))
+                           % (str(len(mParams["namesEquations"])))))
 
     for numitem, item in enumerate(mParams['namesEquations']):
         mParams['namesEquations'][numitem] = item[:item.find("'")]
@@ -572,6 +580,8 @@ def createMovie(projectDir, projectName, modelParamsPath):
         if plotType == list:
             logger.info('ЛИСТ! Ы')
             logData = []
+            logger.info("plot[value]:")
+            logger.info(plot["Value"])
             for elemPlot in plot["Value"]:
                 logger.info("Creating images for block %s value %s"
                             % (str(block_idx), elemPlot))
@@ -606,12 +616,13 @@ def createMovie(projectDir, projectName, modelParamsPath):
                     dataNum.append(i[1])
                 logData.append(np.array(dataNum))
             # picCount = len(plot["Value"])
-            # logger.info("logData:")
-            # logger.info(logData)
+            logger.info("logData:")
+            logger.info(len(logData))
             logger.info("namesEquations:")
             logger.info(mParams['namesEquations'])
             dataListMin = [min([i.min() for i in j]) for j in logData]
             dataListMax = [max([i.max() for i in j]) for j in logData]
+            logger.info("dataListMin:")
             logger.info(dataListMin)
             logger.info("len(logData):")
             logger.info(len(logData))
