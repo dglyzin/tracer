@@ -1,0 +1,156 @@
+{
+    "ProjectName": "Ginzburg_Landau",
+    "Solver": {
+        "SolverIdx": 0,
+        "StartTime": 0.0,
+        "FinishTime": 3.0,
+        "TimeStep": 1e-05,
+        "SaveInterval": 0.1,
+        "AbsTolerance": 0.001,
+        "RelTolerance": 0.001
+    },
+    "Grid": {
+        "Dimension": 1,
+        "dx": 0.001,
+        "dy": 1,
+        "dz": 1
+    },
+    "Blocks": [
+        {
+            "Name": "MainBlock",
+            "Offset": {
+                "x": 0.0
+            },
+            "Size": {
+                "x": 6.28
+            },
+            "DefaultEquation": 0,
+            "DefaultInitial": 0,
+            "DefaultBound": 0,
+            "BoundRegions": [],
+            "InitialRegions": [],
+            "EquationRegions": []
+        }
+    ],
+    "Interconnects": [
+        {
+            "Name": "connection",
+            "Block1": 0,
+            "Block2": 0,
+            "Block1Side": 0,
+            "Block2Side": 1
+        }
+    ],
+    "Equations": [
+        {
+            "Name": "Ginzburg_Landau",
+            "Vars": [
+                "x"
+            ],
+            "System": [
+                "U'=a*U+b*U*((U)^2+(V)^2)+c*D[U,{x,2}]",
+                "V'=a*V+b*V*((U)^2+(V)^2)+c*D[V,{x,2}]"
+            ]
+        }
+    ],
+    "EquationParams": {
+        "Params": [
+            "a",
+            "b",
+            "c"
+        ],
+        "ParamValues": [
+            {
+                "b": 0.0001,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": -0.0001,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": 1e-05,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": -1e-05,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": 3e-05,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": -3e-05,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": 3e-05,
+                "c": -0.001,
+                "a": 0.01
+            }
+        ],
+        "DefaultParamsIndex": 1
+    },
+    "Bounds": [],
+    "Initials": [
+        {
+            "Name": "Initial values 0",
+            "Values": [
+                "7.0*sin(x)",
+                "10.0 * sin(x)"
+            ]
+        }
+    ],
+    "Hardware": [
+        {
+            "Name": "cnode4",
+            "CpuCount": 1,
+            "CpuMemory": [
+                56
+            ],
+            "GpuCount": 3,
+            "GpuMemory": [
+                5,
+                5,
+                5
+            ]
+        }
+    ],
+    "Mapping": {
+        "IsMapped": true,
+        "BlockMapping": [
+            {
+                "NodeIdx": 0,
+                "DeviceType": "cpu",
+                "DeviceIdx": 0
+            }
+        ]
+    },
+    "Plots": [
+        {
+            "Title": "u(t,x)",
+            "Period": 0.1,
+            "Value": [
+                "U",
+                "V"
+            ]
+        }
+    ],
+    "Results": [
+        {
+            "Name": "u",
+            "Period": 0.1,
+            "Value": [
+                "U",
+                "V"
+            ]
+        }
+    ]
+}

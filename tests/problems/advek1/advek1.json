@@ -83,7 +83,7 @@
             "Name": "Neuman 2",
             "Type": 1,
             "Values": [ 
-                "(0-1.0)"
+                "(0-0)"
             ], 
             "Derivative": [
                 "0.0"
@@ -96,7 +96,7 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "11-x"
+                "10-x"
             ]
         }
     ], 

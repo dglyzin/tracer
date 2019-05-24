@@ -3,31 +3,48 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 30, 
-        "TimeStep": 0.001, 
+        "FinishTime": 10.0, 
+        "TimeStep": 0.000001, 
         "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
         "Dimension": 1, 
-        "dx": 0.1, 
-        "dy": 1, 
+        "dx": 0.01, 
+        "dy": 0.01, 
         "dz": 1
     }, 
     "Blocks": [
         {
             "Name": "MainBlock", 
             "Offset": {
-                "x": 0
+                "x": 0.0,
+                "y": 0.0
             }, 
             "Size": {
-                "x": 1
+                "x": 3.1415926,
+                "y": 3.1415926
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [
-                 
+                {
+                    "BoundNumber": 0, 
+                    "Side": 0
+                },
+                {
+                    "BoundNumber": 0, 
+                    "Side": 1
+                },
+                {
+                    "BoundNumber": 0,
+                    "Side": 2
+                },
+                {
+                    "BoundNumber": 0,
+                    "Side": 3
+                }
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
@@ -38,31 +55,30 @@
         {
             "Name": "1D heat 1", 
             "Vars": [
-                "x"
+                "x",
+                "y"
             ], 
             "System": [
-                "U'= r*(1-a*(1-U(t-1))-U(t-0.3))*U"
+                "U'=D[U,{x,2}]+D[U,{y,2}]"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
-            "a",
-            "r",
-            "h"
+            "a", 
+            "b"
         ], 
         "ParamValues": [
             {
-                "a": 0.9,
-                "r": 3.0,
-                "h": 0.3
+                "a": 1, 
+                "b": 1
             }
         ], 
         "DefaultParamsIndex": 0
     }, 
     "Bounds": [
         {
-            "Name": "Dirichlet 1", 
+            "Name": "Dirichlet1111", 
             "Type": 0, 
             "Values": [
                 "0.0"
@@ -76,16 +92,16 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "0.9"
+                "sin(x)*sin(x)*sin(x)"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "cnode2", 
+            "Name": "cnode3", 
             "CpuCount": 1, 
             "CpuMemory": [
-                1
+                56
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
@@ -108,7 +124,7 @@
     "Plots": [ 
 	{
             "Title": "u(t,x)", 
-            "Period": 0.01,
+            "Period": 0.1,
             "Value": "U"
         }
     ],
@@ -116,7 +132,7 @@
     "Results":[
         {
             "Name": "u", 
-            "Period": 0.01,
+            "Period": 0.1,
             "Value": "U"
         }
     ]
