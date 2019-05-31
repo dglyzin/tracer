@@ -94,4 +94,13 @@ class Editor():
         '''
         self.cpp_replacer.set_coeffs_indexes(**kwargs)
 
+    def set_free_var_prefix(self, **kwargs):
+
+        ''' x |-> params["free_var_prefix"](x, self)
+
+        Input:
+        free_var_prefix = lambda val, state: "idx"+val.upper()
+        '''
+        self.cpp_replacer.set_free_var_prefix(**kwargs)
+
     # END FOR

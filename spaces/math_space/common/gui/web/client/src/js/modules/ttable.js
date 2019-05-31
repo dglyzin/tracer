@@ -219,6 +219,9 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 			   action = "update";
 			   if(self.data_add_storage.length > 0){
 			       self.send_data_to_server(self.data_add_storage, succ, action);
+			   }else{
+			       var table_data = $("#div_table").tabulator("getData");
+			       self.send_data_to_server(table_data, succ, action);
 			   }
 			   // END FOR
 			   
@@ -341,6 +344,7 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 				       
 				       entry.title = index;
 				       entry.field = index;
+				       entry.editor = true;
 				       
 				       entry_columns_add.title = index;
 				       entry_columns_add.field = index;
@@ -382,7 +386,7 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 					       
 					       // deselect all rows:
 					       $("#div_table").tabulator("deselectRow");
-					       
+ 					       
 					       // select selected row:
 					       // $("#div_table").tabulator("selectRow", self.s_index);
 					       row.select();

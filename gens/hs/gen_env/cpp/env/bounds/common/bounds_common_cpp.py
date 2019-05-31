@@ -1,4 +1,4 @@
-from spaces.math_space.common.env.equation.equation import Equation
+from spaces.math_space.common.env.equation_net.equation import Equation
 
 import logging
 
@@ -61,13 +61,13 @@ class GenCppCommon():
         funcName = self.get_func_name(btype, blockNumber, side_num,
                                       boundNumber, equationNumber)
         outputValues = list(model.bounds[boundNumber].values)
-            
+        
         # special for Neumann bound
         if side_num == 0 or side_num == 2:
             for idx, value in enumerate(outputValues):
                 outputValues.pop(idx)
                 outputValues.insert(idx, '-(' + value + ')')
-
+      
         return((funcName, outputValues))
 
     def get_func_default(self, equation, blockNumber, side_num,
@@ -184,6 +184,8 @@ class GenCppCommon():
         border_values_parsed = []
         # parse border values:
         for i, bv in enumerate(border_values):
+            # print("bound bug debug:")
+            # print(bv)
             ebv = Equation(bv)
             ebv.parser.parse()
             ebv.replacer.cpp.editor.set_default()

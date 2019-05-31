@@ -114,6 +114,11 @@ class TokenizerNet():
         sorted = self.patterns.sorter.sort()
         self.patterns_list_sorted = sorted
 
+    def show_patterns(self):
+        print("\nlex patterns (sorted):")
+        print([(pattern[0], pattern[1].template, pattern[1].type)
+               for pattern in self.patterns_list_sorted])
+
     def lex(self, sent_list):
         
         patterns = [entry[1] for entry in self.patterns_list_sorted]

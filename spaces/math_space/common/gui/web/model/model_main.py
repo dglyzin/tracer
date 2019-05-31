@@ -56,9 +56,9 @@ class TokenizerDB(BaseDB):
         ('eq', "Eq(${eqs})Eq",
         ('a',), ('ex',)),
     '''
-    def __init__(self, path="gui/web/model/demo_dialect.db"):
+    def __init__(self, dialect_name="eqs"):
         
-        BaseDB.__init__(self, path)
+        BaseDB.__init__(self, dialect_name)
 
     def create_dialect_db(self):
         BaseDB.create_db(self, create_dialect_table,
@@ -89,9 +89,46 @@ class TokenizerDB(BaseDB):
         BaseDB.load_tables(self, create_dialect_table,
                            create_users_table)
 
-    def show_all_entries(self, table_name="dialect"):
+    def clear_all_entries_dialect(self):
+        self.clear_all_entries(self.tables_dict["dialect"])
 
-        out = BaseDB.show_all_entries(self, table_name=table_name)
+    def set_entries_from_list(self, input_list):
+        table = self.tables_dict["dialect"]
+        self.clear_all_entries(table)
+    
+        for entry in input_list:
+            self.add_pattern({"term_name": entry[0],
+                              "template": entry[1],
+                              "grammar_type": entry[2],
+                              "pattern_type": entry[3]})
+
+    def get_entries_to_list(self, silent=True):
+
+        '''Extract all entries in list,
+        acceptable by ``parser_general``'''
+
+        entries = self.show_all_entries(silent=True)
+        # (idx, term_name, template, grammar_type,
+        #                 pattern_type, created_date)
+        out_list = []
+        for entry in entries:
+            if not silent:
+                print(entry)
+            out_list.append((entry["term_name"], entry["template"],
+                             eval(entry["grammar_type"]),
+                             eval(entry["pattern_type"])))
+        
+        '''
+        out_list = [(entry["term_name"], entry["template"],
+                     eval(entry["grammar_type"]), eval(entry["pattern_type"]))
+                    for entry in entries]
+        '''
+        return(out_list)
+
+    def show_all_entries(self, table_name="dialect", silent=False):
+
+        out = BaseDB.show_all_entries(self, table_name=table_name,
+                                      silent=silent)
         return(out)
 
     def fill_dialect_db(self):
@@ -152,7 +189,7 @@ class TokenizerDB(BaseDB):
 
         self.edit_table_entry(table, 'term_name', term_name,
                               props)
-        
+
     def del_pattern(self, term_name):
         '''
         Delete pattern with term_name.
@@ -202,6 +239,55 @@ def test_load():
     return(agent)
 
 
+def test_change_path():
+
+    print("\ndialect_name = eqs:")
+    dialect_name = "eqs"
+    agent = TokenizerDB(dialect_name)
+    agent.show_all_entries()
+    print("\ncurrent dialect path:")
+    print(agent.get_path_of_dialect_db(dialect_name))
+
+    print("\ndialect_name changed to cs:")
+    dialect_name = "cs"
+    agent.change_dialect_db(dialect_name)
+    agent.show_all_entries()    
+    print("\ncurrent dialect path:")
+    print(agent.get_path_of_dialect_db(dialect_name))
+
+
+def test_from_list(dialect_name):
+
+    '''Cleare all entries and fill them from tables'''
+
+    agent = TokenizerDB(dialect_name=dialect_name)
+    agent.load_all_tables()
+    
+    if dialect_name == "eqs":
+        from translator.tokenizer.patterns.patterns_list\
+                            .tests.dialects import eqs as dialect
+    elif dialect_name == "cs":
+        from translator.tokenizer.patterns.patterns_list\
+                            .tests.dialects import cs as dialect
+    else:
+        raise(BaseException("no such dialect"))
+
+    agent.set_entries_from_list(dialect)
+    agent.show_all_entries()
+
+
+def test_to_list(dialect_name):
+
+    '''Transform to list for ``parser_general``'''
+    agent = TokenizerDB(dialect_name=dialect_name)
+    agent.load_all_tables()
+    
+    out_list = agent.get_entries_to_list()
+    print("\nout_list:")
+    print(out_list)
+    return(out_list)
+
+
 def test_select():
 
     print("\ntest select:")
@@ -244,8 +330,15 @@ def test_show_all_entries_user():
 
 if __name__ == '__main__':
 
+    # path = "env/equation_net/data/terms/input/demo_dialect.db"
+    # path = "env/clause/data/terms/input/demo_dialect.db"
+    dialect_name = "eqs"
     # test_create()
     # test_create_user_table()
-    test_load()
-    test_select()
-    test_show_all_entries_user()
+    ### test_load()
+    ### test_select()
+    ### test_show_all_entries_user()
+    test_change_path()
+
+    ### test_to_list(dialect_name)
+    # test_from_list(path, "cs")

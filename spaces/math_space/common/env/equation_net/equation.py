@@ -42,7 +42,20 @@ logger.debug(sys.path[0])
 
 class Equation():
     
-    def __init__(self, sent, trace=0):
+    def __init__(self, sent, db=None, trace=0):
+
+        '''db had been initiated with path and ``load_all_tables``
+        had been used (see also ``parser_main.EqParser.__init__``
+        where it used)'''
+
+        if db is not None:
+            self.db = db
+        else:
+            from gui.web.model.model_main import TokenizerDB
+            self.db = TokenizerDB()
+            # self.path_db = "env/equation_net/data/terms/input/demo_dialect.db"
+            self.db.change_dialect_db("eqs")
+
         self.parser = EqParser(self)
         self.net_editor = NetEditor(self)
         self.replacer = EqReplacer(self)
@@ -88,8 +101,23 @@ class Equation():
         out = self.sent
         return(out)
 
+    def show_lex_out(self):
+        print(self.lex_out)
+        # print(self.eq_tree.show_original())
+    
+    def show_cyk_out(self):
+        print(self.cyk_out)
+        # print(self.eq_tree.show_original())
+        
     def show_tree_original(self):
         print(self.net_out.node)
+        # print(self.eq_tree.show_original())
+
+    def show_net_original(self):
+        print(self.net_out.node)
+
+    def show_net_json_original(self):
+        print(self.json_out)
     
     
 if __name__ == "__main__":

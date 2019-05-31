@@ -19,6 +19,7 @@ class Handlers():
 
         BaseHandler = self.BaseHandler
         model = self.model
+        global_self = self
 
         class PathHandler(BaseHandler):
             # @tornado.web.authenticated
@@ -28,8 +29,12 @@ class Handlers():
 
                 # response = model.getUsers()
                 print("FROM PathHandler.get")
-                response = model.get_path()
-                response = {"path": response}
+                path_eqs = model.get_path_of_dialect_db("eqs")
+                path_cs = model.get_path_of_dialect_db("cs")
+                listdir_eqs = os.listdir(os.path.dirname(path_eqs))
+                listdir_cs = os.listdir(os.path.dirname(path_cs))
+                response = {"eqs": {"path": path_eqs, "listdir": listdir_eqs},
+                            "cs": {"path": path_cs, "listdir": listdir_cs}}
                 print(response)
 
                 self.write(json.dumps(response))
@@ -38,7 +43,8 @@ class Handlers():
             def post(self):
                 
                 '''Set path to model, then get it from model
-                back.'''
+                back.
+                ``self.equation`` must be implemented in ancestors'''
 
                 data_body = self.request.body
                 data_json = json.loads(data_body)
@@ -46,14 +52,22 @@ class Handlers():
                 print(data_json)
 
                 # FOR data update:
-                if len(data_json["path"]) == 0:
-                    path = model.set_path_default()
-                else:
-                    path = model.set_path(data_json["path"])
+                # TODO: set ``self.path_cs``, ``self.path_eqs``
+                # with use of dialect key from ``data_json``?
+                if "file_name" in data_json:
+                    dirname = (os.path
+                               .dirname(model
+                                        .get_path_of_dialect_db(data_json["dialect_name"])))
+                    path = os.path.join(dirname, data_json["file_name"])
+                    model.change_path_of_dialect_db(data_json["dialect_name"],
+                                                    path)
+
+                    # show patterns:
+                    global_self.get_parser_data(data_json["dialect_name"])
                 # END FOR
 
                 # send back new data:
-                response = {"path": path}
+                response = {"path": model.path}
                 self.write(json.dumps(response))
         self.PathHandler = PathHandler
 

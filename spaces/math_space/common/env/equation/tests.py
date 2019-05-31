@@ -310,9 +310,9 @@ if __name__ == '__main__':
 
     # test_term_cpp_diff(EqBilder=Equation)
     # test_lex()
-    # test_all()
+    test_all()
     # test_lambda()
     # test_rand()
-    test_one(-1, verbose=True)
+    # test_one(-2, verbose=True)
     # test_one(12, verbose=True)
     # test_one(-1, sympy=True, verbose=True)

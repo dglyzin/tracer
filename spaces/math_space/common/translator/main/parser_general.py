@@ -18,11 +18,17 @@ class ParserGeneral():
         self.dialect_patterns = dialect_patterns
         self.grammar_fmw = grammar_fmw
         self.node_data = node_data
+        self.tokenizer = self.make_tokenizer()
+
+    def show_patterns(self):
+        self.tokenizer.show_patterns()
 
     def parse(self, sent_list):
         
-        tokenizer = self.make_tokenizer()
+        tokenizer = self.tokenizer
         lex_out = self.lex_step(tokenizer, sent_list)
+        print("lex_out:")
+        print(lex_out)
 
         # fix bug with: a |-> (a):
         if len(lex_out) == 1:
@@ -110,6 +116,6 @@ class ParserGeneral():
                                  'right': 'w'}}}
         tokenizer.set_grammar_parts(grammar_parts)
         tokenizer.load_patterns(self.dialect_patterns)
-
+        
         self.tokenizer = tokenizer
         return(tokenizer)

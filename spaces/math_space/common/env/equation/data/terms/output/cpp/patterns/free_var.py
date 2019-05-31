@@ -22,6 +22,21 @@ class FreeVar(Base):
     def __init__(self, net):
         Base.__init__(self, net)
         self.id = 'free_var'
+        self.params["free_var_prefix"] = lambda val, state: "idx"+val.upper()
+
+    def set_free_var_prefix(self, **kwargs):
+        
+        ''' x |-> params["free_var_prefix"](x, self)
+
+        Input:
+        free_var_prefix = lambda val, state: "idx"+val.upper()
+        '''
+    
+        try:
+            prefix = kwargs['free_var_prefix']
+            self.params['free_var_prefix'] = prefix
+        except KeyError:
+            logger.info("kwargs['free_var_prefix'] fail")
 
     def get_node_data(self, node):
 
@@ -45,6 +60,7 @@ class FreeVar(Base):
 
         self.params.has_param('var_name', 'FreeVar')
         var_name = self.params['var_name']
-        return("idx"+var_name.upper())
+        return(self.params["free_var_prefix"](var_name, self))
+        # return("idx"+var_name.upper())
 
 

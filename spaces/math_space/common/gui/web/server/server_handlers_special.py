@@ -7,6 +7,7 @@ from translator.grammar.grammars import get_fmw
 from translator.main.parser_general import ParserGeneral
 from env.equation_net.equation import Equation
 from env.equation.data.terms.output.cpp.postproc import delay_postproc
+from env.clause.clause_main import Clause
 
 from translator.sampling.vars.vars_extractor import Extractor
 import translator.sampling.vars.vars_maps as vms
@@ -27,12 +28,28 @@ class DialectHandlers(Handlers):
         self.create_dialect_handlers()
         # self.create_dialect_login_handlers()
 
+    def get_parser_data(self, dialect_name):
+        if dialect_name == "eqs":
+            self.equation.parser.show_patterns()
+        elif dialect_name == "cs":
+            self.clause.parser.show_patterns()
+
     def create_dialect_handlers(self):
-        
+    
+        # self.path_cs = "env/clause/data/terms/input/demo_dialect.db"
+        # self.path_eqs = "env/equation_net/data/terms/input/demo_dialect.db"
+
         TableHandler = self.TableHandler
         model = self.model
         global_self = self
+        
+        # FOR parsers (for get_parser_data in other handlers besides parser):
+        global_self.equation = Equation("2+2=4", db=global_self.model)
+        global_self.clause = Clause("paralelogram(A) \\and romb(A) => square(A)",
+                                    db=global_self.model)
+        # END FOR
 
+        # FOR sampler:
         mid_terms = ["clause_where", "clause_for", "clause_into",
                      "def_0", "in_0",
                      "if", "if_only", "if_def",
@@ -42,6 +59,7 @@ class DialectHandlers(Handlers):
         self.sampler = sm.ValTableSampling(None, None,
                                            stable, stable_fixed,
                                            mid_terms, vars_terms)
+        # END FOR
 
         class DialectTableHandler(TableHandler):
 
@@ -116,6 +134,8 @@ class DialectHandlers(Handlers):
                 
                 # FOR data update:
 
+                global_self.get_parser_data(data_json["dialect"])
+
                 data = self.parse(data_json["dialect"], [data_json["text"]],
                                   data_json["params"])
                 print("\ndata_to_send:")
@@ -147,11 +167,14 @@ class DialectHandlers(Handlers):
 
                 # choice grammar for dialect:
                 if dialect_name == "eqs":
-                    grammar_fmw = get_fmw()
-                    dialect_patterns = eqs
-                    node_data = {"ops": ['add', 'sub', 'mul', 'div', 'eq', ]}
-                    eq = Equation(sent_list[0])
+                    
+                    # in case it was chenged:
+                    global_self.model.change_dialect_db(dialect_name)
+
+                    # parse and save:
+                    eq = Equation(sent_list[0], db=global_self.model)
                     eq.parser.parse()
+                    self.equation = eq
             
                     # FOR params:
                     eq.replacer.cpp.editor.set_default()
@@ -177,6 +200,8 @@ class DialectHandlers(Handlers):
                     eq.replacer.cpp.editor.set_shape(shape=shape)
                     # END FOR
 
+                    # because we don't use system here,
+                    # delays raplacment complying manualy:
                     eq.replacer.cpp.make_cpp()
                     nodes = [[node for node in eq.get_all_nodes()]]
                     replacers = [eq.replacer.cpp.gen]
@@ -185,16 +210,20 @@ class DialectHandlers(Handlers):
                     eq.replacer.sympy.make_sympy()
 
                     net_out = eq.net_out
-                    lex_out = eq.parser.parsers["wolfram"].lex_out
+                    lex_out = eq.lex_out
 
                 elif dialect_name == "cs":
                     parser = self.parse_cs(sent_list)
                     net_out = parser.net_out
+
+                    # for vtable:
                     global_self.sampler.set_parsed_net(net_out)
                     net_out, nodes_idds = global_self.sampler.editor_step()
                     vtable_skeleton = global_self.sampler.get_vtable_skeleton(nodes_idds)
+                    
+                    # lex_out = parser.parsers["hol"].lex_out
                     lex_out = parser.lex_out
-
+                    
                 vars_extractor = Extractor(dialect_name)
                 net_vars = vms.get_args(str(["s"]), net_out,
                                         vars_extractor)
@@ -210,9 +239,9 @@ class DialectHandlers(Handlers):
 
                 # generate json out again:
                 if dialect_name == "eqs":
-                    json_out = eq.parser.parsers["wolfram"].net_to_json(net_out)
+                    json_out = eq.json_out
                 elif dialect_name == "cs":
-                    json_out = parser.net_to_json(net_out)
+                    json_out = parser.json_out
                 print("\nparser.json_out:")
                 print(json_out)
 
@@ -235,12 +264,18 @@ class DialectHandlers(Handlers):
                 return(out)
 
             def parse_cs(self, sent_list):
+                global_self.model.change_dialect_db("cs")
+
+                '''
+                dialect_patterns = global_self.model.get_entries_to_list()
+                # dialect_patterns = cs
+
                 grammar_fmw = get_fmw(ms=[["clause_where", "clause_for",
                                            "clause_into"],
                                           "def_0", "in_0",
                                           ["if", "if_only", "if_def"],
                                           "clause_or", "conj"])
-                dialect_patterns = cs
+                                
                 node_data = {"ops": ["clause_where", "clause_for",
                                      "clause_into",
                                      "def_0", "in_0",
@@ -249,8 +284,11 @@ class DialectHandlers(Handlers):
 
                 parser = ParserGeneral(dialect_patterns, grammar_fmw,
                                        node_data)
-                parser.parse(sent_list)
-                return(parser)
+                '''
+                clause = Clause(sent_list[0], db=global_self.model)
+                clause.parser.parse()
+                self.clause = clause
+                return(clause)
 
         self.NetHandlerParsing = NetHandlerParsing
 

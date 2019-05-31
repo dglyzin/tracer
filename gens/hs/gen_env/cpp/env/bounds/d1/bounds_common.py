@@ -52,9 +52,9 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         self.net.params.bounds = Params()
         self.net.params.bounds_edges = Params()
         
-        print("vertexs[vertex_num].sides_nums[0]")
-        print(model.blocks[0].vertexs['[0]'])
-        print(model.blocks[0].vertexs['[0]'].sides_nums)
+        # print("vertexs[vertex_num].sides_nums[0]")
+        # print(model.blocks[0].vertexs['[0]'])
+        # print(model.blocks[0].vertexs['[0]'].sides_nums)
 
         params = [self.make_bound_param(model, block.vertexs[vertex_num])
                   for block in model.blocks
@@ -190,6 +190,8 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         args = (eSystem, model, blockNumber, btype,
                 side_num, border_values)
         parsed = self.parse_equations(*args)
+        # print("bound bug debug:")
+        # print(parsed)
 
         # FOR collect template data:
         bParams = Params()

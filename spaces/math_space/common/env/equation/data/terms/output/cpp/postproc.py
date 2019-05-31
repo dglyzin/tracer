@@ -50,6 +50,14 @@ def delay_postproc(replacers, nodes_lists):
 
     var (like U(t-1.1)) used for factorize delays. In
     that case used only var[0] (U).
+    
+    Inputs:
+    
+    - ``replacers`` -- replacer for each equation.
+
+    - ``nodes_lists`` -- list of nodes for each equation.
+    count of that list must be equal count of equations
+    (and => count of replacers)
 
     Examples:
     for node:

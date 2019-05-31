@@ -1,27 +1,139 @@
 import peewee as pw
+import json
+import os
+
+# name and key for config patterns db:
+config_file_name = "configs/config_patterns_db.json"
+config_path_key = "paths_db_patterns"
+
+# prefix for hd:
+config_file_prefix = "spaces/math_space/common"
 
 
 class BaseDB():
 
-    def __init__(self, path="gui/web/model/demo_dialect.db"):
+    def __init__(self, dialect_name):
 
-        self.db = pw.SqliteDatabase(path)
-        self.path = path
-        self.path_default = path
+        self.change_dialect_db(dialect_name)
+        
+    # FOR paths:
+    def change_path_of_dialect_db(self, dialect_name, path):
 
-    def set_path(self, path):
-        self.db = pw.SqliteDatabase(path)
+        '''Change path and update current db.
+        '''
+
+        self.reload_db(path)
+
         self.path = path
+        self.save_path(dialect_name, path)
         return(path)
 
-    def set_path_default(self):
-        path = self.path_default
-        self.db = pw.SqliteDatabase(path)
-        self.path = path
+    def get_path_of_dialect_db(self, dialect_name):
+        
+        '''Just load and print path in ``config.json``
+        (do not check if it is differ from currently used
+         (for ex: when it was changed manualy))'''
+        
+        path = self.load_paths()[dialect_name]
         return(path)
 
-    def get_path(self):
+    def change_dialect_db(self, dialect_name):
+
+        '''Change path according to ``dialect_name``
+        (if it exist in ``config.json``) and
+        update the curent db.'''
+
+        path = self.get_path_of_dialect_db(dialect_name)
+
+        self.path = path
+        
+        self.reload_db(path)
         return(self.path)
+
+        '''
+        # if self.path not initiated yet:
+        try:
+            self.path
+        except:
+            # create it:
+            self.path = path
+
+        # if path was changed in json
+        # or other dialect was used:
+        if self.path != path:
+            # change it:
+
+            # self.set_path(path, dialect_name)
+        '''
+
+    def reload_db(self, path=None):
+       
+        '''Reload db with use of ``path`` or ``self.path``,
+        if no specified.
+        ``self.load_all_tables`` must be implemented in
+        ancestors.'''
+
+        if path is None:
+            path = self.path
+
+        if not os.path.exists(path):
+            path = os.path.join(config_file_prefix, path)
+
+        self.db = pw.SqliteDatabase(path)
+        self.load_all_tables()
+
+        # update path only when db successfuly
+        # reloaded:
+        if path is not None:
+            self.path = path
+        return(path)
+
+    def save_path(self, dialect_name, path):
+
+        '''Save path by modifying according entry in config.'''
+
+        data = self.load_config()
+        data[config_path_key][dialect_name] = path
+        data_json = json.dumps(data, sort_keys=False, indent=4)
+        with open(config_file_name, 'w') as config_file:
+            config_file.write(data_json)
+        
+    def load_paths(self):
+
+        '''Load paths from config.json.
+        Names ``config_file_name`` and ``config_path_key``
+        must be defined'''
+        
+        data = self.load_config()
+        try:
+            paths = data[config_path_key]
+        except:
+            raise(BaseException("\npatterns db: .json path key error"
+                                + "\nconfig_path_key: " + config_path_key))
+        return(paths)
+
+    def load_config(self):
+        
+        '''Load config.json.
+        Name ``config_file_name`` must be defined.'''
+        
+        data = None
+        try:
+            with open(config_file_name) as config_file:
+                data = json.loads(config_file.read())
+        except FileNotFoundError:
+            fixed_path = os.path.join(config_file_prefix, config_file_name)
+            with open(fixed_path) as config_file:
+                data = json.loads(config_file.read())
+        if data is None:
+            raise(BaseException("\npatterns db: .json load db error"
+                                + "\nconfig_file_name: " + config_file_name))
+        return(data)
+    # END FOR
+
+    def load_all_tables(self):
+        raise(BaseException("load_all_tables must be implemented"
+                            + " in ancestor"))
 
     def create_db(self, model_tables_gen, users_tables_gen):
         
@@ -65,6 +177,8 @@ class BaseDB():
         
     def load_tables(self, model_tables_gen, users_tables_gen):
     
+        # self.tables_dict will be used in both
+        # load_model_tables and load_users_tables:
         try:
             self.tables_dict
             print("tables_dict exist")
@@ -102,20 +216,24 @@ class BaseDB():
 
         return(model_tables)
 
-    def show_all_entries(self, table_name="dialect"):
+    def show_all_entries(self, table_name="dialect", silent=False):
 
-        print("\nFROM BaseDB.show_all_entries")
+        if not silent:
+            print("\nFROM BaseDB.show_all_entries")
 
         db = self.db
         table = self.tables_dict[table_name]
         table_field_names = table._meta.sorted_field_names
-        print("\n table_sorted_field_names: %s" % (table_field_names))
+        if not silent:
+            print("\n table_sorted_field_names: %s" % (table_field_names))
 
         qs = db.execute_sql("select * from %s" % (table_name,))
-        print("\n %s db entries:" % table_name)
+        if not silent:
+            print("\n %s db entries:" % table_name)
         out = []
         for q in qs:
-            print(q)
+            if not silent:
+                print(q)
             out.append(dict(zip(table_field_names, q)))
         return(out)
 
@@ -216,6 +334,11 @@ class BaseDB():
         for query in res:
             print(query)
         '''
+        
+    def clear_all_entries(self, table):
+        res = table.delete().execute()
+        print("\ndeleted:")
+        print(res)
 
     def del_table_entry(self, table,
                         filter_field_name: str,

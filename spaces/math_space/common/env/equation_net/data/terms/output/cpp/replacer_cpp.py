@@ -170,5 +170,9 @@ class CppGen(NetGen):
         # map  coeffs ot it's index
         # like (a,b)-> (params[+0], params[+1])
         self.terms_gens['coeffs'].set_coeffs_indexes(**kwargs)
+
+    def set_free_var_prefix(self, **kwargs):
+        # x |-> prefix(x)
+        self.terms_gens['free_var'].set_free_var_prefix(**kwargs)
     # END FOR
 

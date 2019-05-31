@@ -89,7 +89,7 @@ cs = [
     # END FOR
 
     # x, xs, normal_form_0
-    ('var', r"(?P<obj>[a-z|_|0-9]+)", ('a'),
+    ('var', r"(?P<obj>[a-z|_|0-9]+)", ('a',),
      ('re', 2)),
 
     # match all words which begin with capital letter
