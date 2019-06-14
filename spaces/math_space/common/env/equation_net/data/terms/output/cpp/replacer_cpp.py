@@ -1,3 +1,4 @@
+'''
 from env.equation.data.terms.output.cpp.patterns.diff import Diff
 from env.equation.data.terms.output.cpp.patterns.bdp import Bdp
 from env.equation.data.terms.output.cpp.patterns.var import Var
@@ -6,11 +7,11 @@ from env.equation.data.terms.output.cpp.patterns.diff_time_var import DiffTimeVa
 from env.equation.data.terms.output.cpp.patterns.coeffs import Coeffs
 from env.equation.data.terms.output.cpp.patterns.float import Float
 from env.equation_net.data.terms.output.cpp.patterns.default import Default
-from env.equation.data.terms.output.cpp.patterns.brackets.brackets_main import BracketsNet as BrTermsGens
-
+# from env.equation.data.terms.output.cpp.patterns.brackets.brackets_main import BracketsNet as BrTermsGens
+'''
 # from translator.replacer.cpp.cpp_out import delay_postproc
 from translator.replacer.net_replacer import NetGen
-
+from translator.replacer.replacer_brackets_patterns import BracketsNet as BrTermsGens
 
 import logging
 
@@ -28,8 +29,8 @@ logger = logging.getLogger('replacer_cpp')
 logger.setLevel(level=log_level)
 
 
-terms_gens_cls = [Diff, Bdp, Var, FreeVar, DiffTimeVar,
-                  Coeffs, Float, Default]
+# terms_gens_cls = [Diff, Bdp, Var, FreeVar, DiffTimeVar,
+#                   Coeffs, Float, Default]
 
 
 class CppGen(NetGen):
@@ -52,10 +53,17 @@ class CppGen(NetGen):
         self.global_params.delays = {}
         
     def get_terms_gen_cls(self):
+        terms_gens_cls = (self.patterns_editor
+                          .load_patterns("cpp", brackets=False))
+        
         return(terms_gens_cls)
 
     def get_terms_br_gen_cls(self):
-        return(BrTermsGens)
+
+        '''return instance, run after
+        ``self.patterns_editor`` initiated '''
+
+        return(BrTermsGens(self, "cpp"))
 
     def postproc(self, node):
         ###delay_postproc(node)
@@ -146,25 +154,41 @@ class CppGen(NetGen):
             self.terms_gens[gen_id].set_term_data(**kwargs)
 
     def set_dim(self, **kwargs):
+        for term_name in self.terms_gens:
+            if 'diff' in term_name:
+                self.terms_gens[term_name].set_dim(**kwargs)
+
         self.terms_gens['bdp'].set_dim(**kwargs)
 
     def set_shape(self, **kwargs):
         self.terms_gens['bdp'].set_shape(**kwargs)
 
     def set_blockNumber(self, **kwargs):
-        self.terms_gens['diff'].set_blockNumber(**kwargs)
+
+        for term_name in self.terms_gens:
+            if 'diff' in term_name:
+                self.terms_gens[term_name].set_blockNumber(**kwargs)
+        
+        # self.terms_gens['diff'].set_blockNumber(**kwargs)
         self.terms_gens['bdp'].set_blockNumber(**kwargs)
 
     def set_diff_type(self, **kwargs):
-        self.terms_gens['diff'].set_diff_type(**kwargs)
+        for term_name in self.terms_gens:
+            if 'diff' in term_name:
+                self.terms_gens[term_name].set_diff_type(**kwargs)
+        # self.terms_gens['diff'].set_diff_type(**kwargs)
 
     def set_vars_indexes(self, **kwargs):
         # int: shift index for variable like
         # like (U,V)-> (source[+0], source[+1])
-        self.terms_gens['diff'].set_vars_indexes(**kwargs)
+        for term_name in self.terms_gens:
+            if 'diff' in term_name:
+                self.terms_gens[term_name].set_vars_indexes(**kwargs)
+        
+        # self.terms_gens['diff'].set_vars_indexes(**kwargs)
         self.terms_gens['var'].set_vars_indexes(**kwargs)
         self.terms_gens['bdp'].set_vars_indexes(**kwargs)
-        self.terms_gens['diff_time'].set_vars_indexes(**kwargs)
+        # self.terms_gens['diff_time'].set_vars_indexes(**kwargs)
 
     def set_coeffs_indexes(self, **kwargs):
         # map  coeffs ot it's index

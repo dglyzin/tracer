@@ -28,6 +28,17 @@ define(['jquery'],
 			 "abelian(G) \\and subgroup(H, G,) => abelian(H)"])
 
 			 - ``input_buttons_callbacks`` -- callbacks for buttons.
+
+			Fields:
+
+			"to_"+subdiv_id_name+"_div_"+ elm -- is name of div, where text will
+			be rendered.
+
+			"edit_"+ subdiv_id_name +"_input" -- is name of div, where dialog
+			will be created.
+			
+			"epi_editor" -- div inside dialog, where content will be edit by user
+
 			*/
 
 		       

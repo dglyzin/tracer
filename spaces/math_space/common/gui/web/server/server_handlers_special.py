@@ -44,9 +44,14 @@ class DialectHandlers(Handlers):
         global_self = self
         
         # FOR parsers (for get_parser_data in other handlers besides parser):
+        
         global_self.equation = Equation("2+2=4", db=global_self.model)
         global_self.clause = Clause("paralelogram(A) \\and romb(A) => square(A)",
                                     db=global_self.model)
+        # END FOR
+
+        # FOR replacers:
+        global_self.replacer_sources = {}
         # END FOR
 
         # FOR sampler:
@@ -117,6 +122,7 @@ class DialectHandlers(Handlers):
 
         self.DialectTableHandler = DialectTableHandler
 
+        
         class NetHandlerParsing(self.BaseHandler):
             # @tornado.web.authenticated
             def post(self):
@@ -414,6 +420,85 @@ class DialectHandlers(Handlers):
 
         self.SamplingDeskHandler = SamplingDeskHandler
 
+        class ReplacerHandler(self.BaseHandler):
+
+            # @tornado.web.authenticated
+            def post(self):
+                # data = self.get_argument('proposals', 'No data received')
+                data_body = self.request.body
+                data_json = json.loads(data_body)
+           
+                print("\nFROM ReplacerHandler.post")
+                print("\ndata_json_recived:")
+                print(data_json)
+                
+                # FOR data update:
+                action = data_json["action"]
+                dialect_name = data_json["dialect_name"]
+
+                # like ('br_left', [True, False, False]) |-> True:
+                brackets = eval(data_json["brackets"])[0] in ["br_left", "br_right"]
+                # print("brackets:")
+                # print(brackets)
+
+                term_name = data_json["term_name"]
+                replacer = global_self.equation.replacer
+
+                if action == "set":
+                    code = data_json["code"]
+                    replacer.set_pattern(dialect_name, term_name,
+                                         code, brackets)
+                    sources = replacer.load_patterns_source(dialect_name, brackets)
+                    global_self.replacer_sources[(dialect_name, brackets)] = sources
+                    term_source = sources[term_name]
+
+                elif action == "load":
+                    # check if alredy loaded:
+                    if (dialect_name, brackets) in global_self.replacer_sources:
+                        sources = global_self.replacer_sources[(dialect_name, brackets)]
+                    else:
+                        sources = replacer.load_patterns_source(dialect_name, brackets)
+                        global_self.replacer_sources[(dialect_name, brackets)] = sources
+                    term_source = sources[term_name]
+
+                elif action == "remove":
+                    replacer.remove_patterns(dialect_name, [term_name])
+                    sources = replacer.load_patterns_source(dialect_name, brackets)
+                    global_self.replacer_sources[(dialect_name, brackets)] = sources
+                    term_source = "# term %s removed successfuly\n" % (term_name)
+                    term_source += "# check terms list for shure"
+
+                else:
+                    print("no such action: %s" % (action))
+
+                print("aveilable_terms:")
+                aveilable_terms = list(sources.keys())
+                print(list(sources.keys()))
+                available_terms_str = " ".join(aveilable_terms)
+                if brackets:
+                    available_terms_str += " (for brackets only)"
+                data = {"source": term_source,
+                        "available_terms": available_terms_str}
+                # END FOR
+
+                # send back new data:
+                # print("\ndata_to_send:")
+                # print(data)
+                response = data  # {"": data_json}
+                self.write(json.dumps(response))
+
+            # @tornado.web.authenticated
+            def get(self):
+                # not used
+
+                print("FROM ReplacerHandler.get")
+
+                data = {}
+                response = data  # {"": data_json}
+                self.write(json.dumps(response))
+                
+        self.ReplacerHandler = ReplacerHandler
+        
     '''
     def create_dialect_login_handlers(self):
         

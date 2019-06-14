@@ -115,7 +115,10 @@ class ParserGeneral():
                                  'mid': ',',
                                  'right': 'w'}}}
         tokenizer.set_grammar_parts(grammar_parts)
-        tokenizer.load_patterns(self.dialect_patterns)
-        
+        try:
+            tokenizer.load_patterns(self.dialect_patterns)
+        except:
+            print("load tokenizer fail:"
+                  + " probably patterns contradiction error")
         self.tokenizer = tokenizer
         return(tokenizer)

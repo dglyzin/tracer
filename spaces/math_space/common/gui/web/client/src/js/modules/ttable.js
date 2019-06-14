@@ -3,20 +3,30 @@ console.log("log ttable.js");
 
 //['jquery', 'jquery-ui-custom/jquery-ui'],
 //
-define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.min'],
-       function($, ui, tabulator){
+define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.min',
+	
+	"codemirror", "codemirror/mode/python/python",
+        "codemirror/keymap/emacs",
+	"codemirror/addon/edit/matchbrackets",
+	"codemirror/addon/comment/comment",
+	"codemirror/addon/dialog/dialog",
+	"codemirror/addon/search/searchcursor",
+	"codemirror/addon/search/search",
+        ],
+       function($, ui, tabulator, CodeMirror){
 
 	   $ = require('jquery');
 	   jquery_ui = require('jquery-ui-custom/jquery-ui');
 	   tabulator = require('tabulator/tabulator.min');
-	   
+	   CodeMirror = require('codemirror');
 	   return {
 	       Table: function Table(table_index, table_name){
       
 		   // FOR global variables:
 
 		   var self = this;
-	
+		   
+		   self.editor = [];
 		   // checker for test table button state:
 		   this.scene_checker = 0;
 	       
@@ -40,8 +50,28 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 		   this.columns = [];
 		   this.columns_add = [];
 		   // END FOR
+
+		   // for replacer set:
+		   self.row_data = "none";
 		   
+		   // for replacer delete:
+		   self.row_data_delete = "none";
+
 		   this.remove_table = function(){
+
+		       if (self.table_name == "dialect"){
+			   console.log("replacer");
+			   console.log($("#replacer"));
+			   if($("#replacer").length){
+			       // console.log(self);
+			       // console.log(self.editor);
+			       self.editor.toTextArea();
+			       console.log("codemirror.toTextArea done");
+			       $("#replacer").remove();
+			       $("#replacer_info").remove();
+			   }
+		       };
+		       $("#controls").remove();
 		       try
 		       {
 			   self.s_index = 0;
@@ -57,15 +87,17 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 			   if($("#div_table_add").length){
 			       $("#div_table_add").tabulator("destroy");
 			   };
+			   
 		       }
 		       catch(e)
 		       {
 			   console.log("tables div_table div_table_add not exist");
 		       }
+		       
 		   };
 
 		   this._fill_scene_table = function(){
-		       var str = ('<div id="div_table"></div>'
+		       var str = ('<div id="div_table" style="height: 300px; overflow: auto; border-width: 3px"></div>'
 				  + '<div id="controls">'
 				  + '<input id="add" type="button" value="Добавить">'
 				  + '<input id="delete" type="button" value="Удалить">'
@@ -73,8 +105,25 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 				  + '</div>'
 				  + '<div id="div_table_add"></div>'
 				  + '<div id="div_table_log"></div>');
-		       
+
+		       if(self.table_name == "dialect"){
+			   str += (('<div id="replacer_info">'
+				    + '<p>replacer editor:</p>'
+				    + '<div id="replacer_terms"></div>'
+				    + '<input id="code_button" type="button" value="set" class="ui-button"><br>'
+				    + '</div>')
+				   + '<div id="replacer" class="style_replacer_static">'
+				   + '<ul>'
+				   + '<li><a href="#tif-0"> cpp </a></li>'
+				   + '</ul>'
+				   + '<div id="tif-0" style="background: #CCCCCC;">'
+				   + '<textarea id="code" name="code" class="frame_codemirror"></textarea>'
+				   + '</div>'
+				   
+				   + '</div>');
+		       };
 		       $("#div_scene").html(str);
+		       $("#replacer").tabs();
 		   };
 		   
 		   
@@ -188,6 +237,7 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 			   // copy data to sorage
 			   self.data_delete_storage = self.data_delete_storage.concat(selectedData.slice());
 			   
+			   self.row_data_delete = self.row_data;
 			   // delete from table:
 			   $("#div_table").tabulator("deleteRow", self.s_index);
 		       });
@@ -248,6 +298,59 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 			   action = "delete";
 			   if(self.data_delete_storage.length > 0){
 			       self.send_data_to_server(self.data_delete_storage, succ, action);
+
+			       // self.row_data_delete was chosen
+			       // at delete button click
+			       // as self.row_data = self.row_data_delete:
+			       var row_data = self.row_data_delete;
+			       var term_name = row_data.term_name;
+			       var brackets = row_data.grammar_type;
+			       // console.log(term_name);
+ 			       
+			       // FOR remove term's replacer:
+			       var to_send = JSON.stringify({
+				   action: "remove",
+				   dialect_name: "cpp",
+				   term_name: term_name,
+				   brackets: brackets,
+			       });
+			       console.log("\n sending (from delete (save button))");
+			       console.log(to_send);
+			       
+			       // remove term replacer data from server:
+			       $.ajax(
+				   {
+				       url: 'api/tables/replacer',
+				       method: 'POST',
+				       data: to_send,
+				       
+				       success: function (jsonResponse) {
+					   console.log("from remove replacer success:");
+							   
+					   var objresponse = JSON.parse(jsonResponse);
+					   data = objresponse
+					   console.log(data["source"]);
+							   
+					   // set value
+					   self.editor.setOption("value", data["source"]);
+					   console.log(data);
+
+					   console.log("available_terms:");
+					   console.log(data["available_terms"]);
+					   $("#replacer_terms").text(data["available_terms"]);
+				       },
+				       
+				       error: function () {
+					   //$("#responsefield").text("Error to load api");
+					   console.log("Error to load api");							   				
+					   // set value
+					   self.editor.setOption("value",
+								 "# error while removing term "+term_name);
+					   
+				       }
+				   }
+			       );
+			       // END FOR
 			   }
 			   // END FOR
 			   // console.log("\ndata ");
@@ -342,18 +445,27 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 				       var entry = {};
 				       var entry_columns_add = {};
 				       
+				       console.log(index);
 				       entry.title = index;
 				       entry.field = index;
-				       entry.editor = true;
+
+				       // don't make id editable:
+				       if (index == "id"){
+					   entry.editor = false;
+				       }else{
+					   entry.editor = true;
+				       }				       
 				       
 				       entry_columns_add.title = index;
 				       entry_columns_add.field = index;
-				       entry_columns_add.editor = true;
 				       
+				       // make entry editable (inluding id):
+				       entry_columns_add.editor = true;
+
 				       entry_data_add[index] = value;
 				       // make entry editable:
 				       // entry.editor = true;
-				       console.log("entry " + Object.keys(entry));
+				       // console.log("entry " + Object.keys(entry));
 				       
 				       self.columns.push(entry);
 				       self.columns_add.push(entry_columns_add);
@@ -382,21 +494,175 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 					   index: self.table_index,
 					   rowClick:function(e, row){
 					       self.s_index = row.getIndex();
+					       console.log("from rowClick:");
 					       console.log("Row " + self.s_index + " Clicked!!!!")
-					       
+					       // console.log(row);
+					       var row_data = row.getData();
+					       console.log(row_data);
+					       var term_name = row_data.term_name;
+					       var brackets = row_data.grammar_type;
+					       console.log(term_name);
+ 					       
 					       // deselect all rows:
 					       $("#div_table").tabulator("deselectRow");
- 					       
+			
 					       // select selected row:
 					       // $("#div_table").tabulator("selectRow", self.s_index);
 					       row.select();
 					       // row.deselect();
+					       
+					       // FOR load dialect:
+					       var to_send = JSON.stringify({
+						   action: "load",
+						   dialect_name: "cpp",
+						   term_name: term_name,
+						   brackets: brackets,
+					       });
+					       console.log("\n sending (from rowClick)");
+					       console.log(to_send);
+					       
+					       
+					       // save for father use in set:
+					       self.row_data = row_data;
+
+					       // get replacer data from server:
+					       $.ajax(
+						   {
+						       url: 'api/tables/replacer',
+						       method: 'POST',
+						       data: to_send,
+
+						       success: function (jsonResponse) {
+							   console.log("from replacer get success:");
+							   
+							   var objresponse = JSON.parse(jsonResponse);
+							   data = objresponse
+							   // console.log(data["source"]);
+							   
+							   // set value
+							   self.editor.setOption("value", data["source"]);
+							   // console.log(data);
+							   console.log("available_terms:");
+							   console.log(data["available_terms"]);
+							   $("#replacer_terms").text(data["available_terms"]);
+						       },
+						       
+						       error: function () {
+							   //$("#responsefield").text("Error to load api");
+							   console.log("Error to load api");							   				
+							   // set value
+							   self.editor.setOption("value",
+										 "# no such term "+term_name);
+
+						       }
+						   }
+					       );
+					       // END FOR
 					   },	
 				       });
 				   // END FOR
 				   
 				   // fill scene component:
 				   self._fill_scene_components();
+
+				   if(self.table_name == "dialect"){
+				       
+				       CodeMirror.commands.save = function() {
+					   
+					   var elt = editor.getWrapperElement();
+					   elt.style.background = "#def";
+					   setTimeout(function() { elt.style.background = ""; }, 300);
+					   console.log("saved");
+					   console.log(elt);
+				       };
+				       
+				   
+				       var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+					   lineNumbers: true,
+					   mode: {name: "python",
+						  version: 3,
+						  singleLineStringErrors: false},
+					   matchBrackets: true,
+					   keyMap: "emacs"
+				       });
+				       self.editor = editor
+
+				       $("#code_button").on("click", function(event){
+
+					   if (self.row_data !== "none"){
+					       console.log("from code_button.click:");
+
+					       // FOR get value:
+					       self.editor.save();
+					       console.log(self.editor.getTextArea().value);  
+					       var code = self.editor.getTextArea().value;
+					       // var code = self.editor.getOption("value");
+					       
+					       // console.log(code);
+					       // END FOR
+
+					       // console.log("from code_button.click: code.text1");
+					       // console.log($("#code").text());
+					       // console.log(document.getElementById("code").value);
+					   
+					       var term_name = self.row_data.term_name;
+					       var brackets = self.row_data.grammar_type;
+					       
+					       var to_send = JSON.stringify({
+						   action: "set",
+						   dialect_name: "cpp",
+						   brackets: brackets,
+						   term_name: term_name,
+						   code: code
+					       });
+					       console.log("\n sending (from code_button)");
+					       console.log(to_send);
+					       			   
+					       // set replacer data from server:
+					       $.ajax(
+						   {
+						       url: 'api/tables/replacer',
+						       method: 'POST',
+						       data: to_send,
+
+						       success: function (jsonResponse) {
+							   console.log("from replacer set");
+							   
+							   var objresponse = JSON.parse(jsonResponse);
+							   data = objresponse
+							   // console.log(data["source"]);
+							   
+							   // set value
+							   self.editor.setOption("value", data["source"]);
+							   // console.log(data);
+							   console.log("available_terms:");
+							   console.log(data["available_terms"]);
+							   $("#replacer_terms").text(data["available_terms"]);
+						       },
+						       
+						       error: function () {
+							   //$("#responsefield").text("Error to load api");
+							   console.log("Error to load api");							   				
+							   // set value
+							   self.editor.setOption("value",
+										 "# no such term "+term_name);
+
+						       }
+						   }
+					       );
+					       // END FOR
+					       
+					       }else{
+						   console.log("self.row_data is none");
+					       }
+				       });
+				       
+				       // set value
+				       self.editor.setOption("value", "# click at row to see replacer source\n");
+				      				       
+				       // console.log("code.text");
+				       // console.log($("#code").text());
+				   };
 				   
 				   // self.make_table(data, columns, data_add, columns_add);
 				   console.log("ttables.js success");

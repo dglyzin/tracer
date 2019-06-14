@@ -35,4 +35,5 @@ class BracketsNet(GenBrackets):
     in self[]'''
 
     def get_terms_gen_cls(self):
+        # self.net.patterns_editor
         return(terms_br_gens)

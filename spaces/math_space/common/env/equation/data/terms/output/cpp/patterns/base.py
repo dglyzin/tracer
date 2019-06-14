@@ -15,6 +15,32 @@ logger.setLevel(level=log_level)
 '''
 
 
+class Params(dict):
+    '''
+    def __init__(self):
+        self.diffType = None  # 'pure'
+        self.diffMethod = None  # 'vertex'
+
+        # int: shift index for variable like
+        # like (U,V)-> (source[+0], source[+1])
+        self.unknownVarIndexes = []
+
+        # {x, 2}
+        self.indepVarList = []
+        self.indepVarOrders = {}
+        self.derivOrder = None
+
+        self.blockNumber = None
+        self.side = None
+    '''
+
+    def has_param(self, key, source):
+        try:
+            self[key]
+        except KeyError:
+            raise(KeyError('for term %s dont have %s param' % (source, key)))
+            
+
 class Base():
     metaclass = abc.ABCMeta
 
@@ -150,36 +176,57 @@ class Base():
                 else:
                     self.params['indepVarOrders'] = dict([(var, float(order))])
                 # break
+                
+    def set_diff_type(self, **kwargs):
+        '''
+        Inputs:
+           diffType="pure", diffMethod="common"
+
+           diffType="pure", diffMethod="borders",
+           side=0, func="sin(x)"
+
+           diffType="pure", diffMethod="interconnect",
+           side=0, firstIndex=0, secondIndexSTR=1
+        '''
+
+        try:
+            self.params['diffType'] = kwargs['diffType']
+            self.params['diffMethod'] = kwargs['diffMethod']
+        except:
+            raise(BaseException("for diff term diffType and diffMethod"
+                                + "(see Diff._set_diff_type for more)"
+                                + " params needed"))
+
+        diffMethod = self.params['diffMethod']
+        if diffMethod == 'borders':
+            try:
+                self.params['side'] = kwargs['side']
+                self.params['func'] = kwargs['func']
+            except:
+                raise(BaseException(('for method borders side'
+                                     + ' and func must be given'
+                                     + "(see Diff._set_diff_type for more)")))
+        elif diffMethod == 'interconnect':
+            try:
+                self.params['side'] = kwargs['side']
+                self.params['firstIndex'] = kwargs['firstIndex']
+                self.params['secondIndexSTR'] = kwargs['secondIndexSTR']
+            except:
+                raise(BaseException(('for method interconnect'
+                                     + ' side, firstIndex and secondIndexSTR'
+                                     + ' must be given'
+                                     + "(see Diff._set_diff_type for more)")))
+        elif diffMethod == 'vertex':
+            try:
+                self.params['vertex_sides'] = kwargs['vertex_sides']
+                self.params['func'] = kwargs['func']
+            except:
+                raise(BaseException(('for method vertex vertex_sides'
+                                     + "(see Diff._set_diff_type for more)"
+                                     + 'must be given')))
 
     def print_dbg(self, *args):
         if self.dbg:
             for arg in args:
                 print(self.dbgInx*' '+str(arg))
             print('')
-
-
-class Params(dict):
-    '''
-    def __init__(self):
-        self.diffType = None  # 'pure'
-        self.diffMethod = None  # 'vertex'
-
-        # int: shift index for variable like
-        # like (U,V)-> (source[+0], source[+1])
-        self.unknownVarIndexes = []
-
-        # {x, 2}
-        self.indepVarList = []
-        self.indepVarOrders = {}
-        self.derivOrder = None
-
-        self.blockNumber = None
-        self.side = None
-    '''
-
-    def has_param(self, key, source):
-        try:
-            self[key]
-        except KeyError:
-            raise(KeyError('for term %s dont have %s param' % (source, key)))
-            

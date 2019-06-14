@@ -7,7 +7,21 @@ requirejs.config({
     baseUrl: 'static/src/js/libs',
     paths: {
         modules: '../modules'
-    }
+    },
+    packages: [{
+	// name: The name of the package (used for the module name/prefix mapping)
+        name: "codemirror",
+
+	// location: The location on disk. Locations are relative to the baseUrl
+	// configuration value, unless they contain a protocol or start with a front slash (/).
+        location: "codemirror",
+
+	// main: The name of the module inside the package that should be used when
+	// someone does a require for "packageName". The default value is "main",
+	// so only specify it if it differs from the default. The value is relative to the package folder.
+        main: "lib/codemirror"
+    }]
+
 });
 
 // Start loading the main app file. Put all of

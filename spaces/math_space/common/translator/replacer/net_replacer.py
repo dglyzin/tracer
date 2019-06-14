@@ -1,8 +1,44 @@
 from translator.replacer.replacer import Gen
+from translator.replacer.replacer import Params
+from translator.replacer.patterns_editor import PatternsEditor
 
 
 class NetGen(Gen):
-    
+
+    def __init__(self):
+
+        '''set up terms generator from
+        ``self.get_terms_gen_cls`` and ``self.get_terms_br_gen_cls``
+        that must be impolimented.
+
+        with use of patterns_editor
+        '''
+
+        # some global data to extract from all
+        # nodes in tree:
+        self.global_params = Params()
+
+        self.patterns_editor = PatternsEditor()
+
+        # extract terms generators classes:
+        terms_gens_cls = self.get_terms_gen_cls()
+        terms_br_gens = self.get_terms_br_gen_cls()
+
+        if terms_gens_cls is None:
+            return
+        if terms_br_gens is None:
+            return
+
+        # terms generators for simple terms:
+        self.terms_gens = {}
+
+        for term_name in terms_gens_cls:
+            term = terms_gens_cls[term_name](self)
+            self.terms_gens[term.id] = term
+
+        # for brackets:
+        self.terms_br_gens = terms_br_gens
+
     def __call__(self, node_idd):
 
         '''Call tranlate method for simple nodes,

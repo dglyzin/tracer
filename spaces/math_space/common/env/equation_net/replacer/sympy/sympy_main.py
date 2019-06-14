@@ -37,7 +37,6 @@ class ReplSympy():
     def show_tree_sympy(self):
         print(self.net.eq_tree.show_sympy_out())
     
-
     '''
         def make_sympy(self):
 

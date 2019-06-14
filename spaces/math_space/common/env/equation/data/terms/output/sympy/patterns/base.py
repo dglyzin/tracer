@@ -16,6 +16,32 @@ logger.setLevel(level=log_level)
 '''
 
 
+class Params(dict):
+    '''
+    def __init__(self):
+        self.diffType = None  # 'pure'
+        self.diffMethod = None  # 'vertex'
+
+        # int: shift index for variable like
+        # like (U,V)-> (source[+0], source[+1])
+        self.unknownVarIndexes = []
+
+        # {x, 2}
+        self.indepVarList = []
+        self.indepVarOrders = {}
+        self.derivOrder = None
+
+        self.blockNumber = None
+        self.side = None
+    '''
+
+    def has_param(self, key, source):
+        try:
+            self[key]
+        except KeyError:
+            raise(KeyError('for term %s dont have %s param' % (source, key)))
+            
+
 class Base():
     metaclass = abc.ABCMeta
 
@@ -75,30 +101,3 @@ class Base():
             for arg in args:
                 print(self.dbgInx*' '+str(arg))
             print('')
-
-
-class Params(dict):
-    '''
-    def __init__(self):
-        self.diffType = None  # 'pure'
-        self.diffMethod = None  # 'vertex'
-
-        # int: shift index for variable like
-        # like (U,V)-> (source[+0], source[+1])
-        self.unknownVarIndexes = []
-
-        # {x, 2}
-        self.indepVarList = []
-        self.indepVarOrders = {}
-        self.derivOrder = None
-
-        self.blockNumber = None
-        self.side = None
-    '''
-
-    def has_param(self, key, source):
-        try:
-            self[key]
-        except KeyError:
-            raise(KeyError('for term %s dont have %s param' % (source, key)))
-            

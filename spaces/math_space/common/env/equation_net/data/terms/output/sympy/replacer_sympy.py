@@ -1,13 +1,16 @@
 from translator.replacer.net_replacer import NetGen
-from env.equation.data.terms.output.sympy.patterns \
-        .brackets.brackets_main import BracketsNet as BrTermsGens
+from translator.replacer.replacer_brackets_patterns import BracketsNet as BrTermsGens
 
+# from env.equation.data.terms.output.sympy.patterns \
+#         .brackets.brackets_main import BracketsNet as BrTermsGens
+
+'''
 from env.equation.data.terms.output.sympy.patterns.diff import Diff
 from env.equation.data.terms.output.sympy \
         .patterns.diff_time_var import DiffTimeVar
 from env.equation.data.terms.output.sympy.patterns.var import Var
 from env.equation_net.data.terms.output.sympy.patterns.default import Default
-
+'''
 
 import logging
 
@@ -18,7 +21,7 @@ logger = logging.getLogger('replacer_sympy.py')
 logger.setLevel(level=log_level)
 
 
-terms_gens_cls = [Diff, Var, DiffTimeVar, Default]
+# terms_gens_cls = [Diff, Var, DiffTimeVar, Default]
 
 
 class Out():
@@ -36,12 +39,27 @@ class SympyGen(NetGen):
     term.arg_sympy with get_args
     and term.lambda_sympy with lambdify
     '''
-    
+
+    def get_terms_gen_cls(self):
+        terms_gens_cls = (self.patterns_editor
+                          .load_patterns("sympy", brackets=False))
+        
+        return(terms_gens_cls)
+
+    def get_terms_br_gen_cls(self):
+
+        '''return instance, run after
+        ``self.patterns_editor`` initiated '''
+
+        return(BrTermsGens(self, "sympy"))
+
+    '''
     def get_terms_gen_cls(self):
         return(terms_gens_cls)
 
     def get_terms_br_gen_cls(self):
         return(BrTermsGens)
+    '''
 
     def postproc(self, node):
         pass

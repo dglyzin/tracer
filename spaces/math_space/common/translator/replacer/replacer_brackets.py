@@ -14,11 +14,15 @@ class GenBrackets(dict):
 
     def __init__(self, net):
 
-        # extract terms generators classes:
-        terms_gens_cls = self.get_terms_gen_cls()
         self.net = net
 
+        # extract terms generators classes:
+        terms_gens_cls = self.get_terms_gen_cls()
+
+        # print("terms_gens_cls:")
+        # print(terms_gens_cls)
         for gen in terms_gens_cls:
+            print(gen)
             term = gen(self)
             self[term.id] = term
 

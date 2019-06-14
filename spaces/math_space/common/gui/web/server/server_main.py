@@ -53,6 +53,7 @@ def make_app(handlers):
         (r"/api/net_parsing", handlers.NetHandlerParsing),
         (r"/api/tables/path", handlers.PathHandler),
         (r"/api/tables/dialect", handlers.DialectTableHandler),
+        (r"/api/tables/replacer", handlers.ReplacerHandler),
         (r"/api/tables/user", handlers.UsersTableHandler),
 
         # statics from /client folder
