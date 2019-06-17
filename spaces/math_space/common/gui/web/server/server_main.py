@@ -42,6 +42,7 @@ def make_app(handlers):
         (r"/net", handlers.NetHandler),
         (r"/sampling", handlers.SamplingHandler),
         (r"/sampling_desk", handlers.SamplingDeskHandler),
+        (r"/lex_tutorial_0", handlers.LexTut0Handler),
         (r"/login", handlers.SignInHandler),
         (r"/logout", handlers.LogoutHandler),
         (r"/signup", handlers.SignUpHandler),

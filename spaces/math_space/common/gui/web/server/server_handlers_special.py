@@ -406,7 +406,7 @@ class DialectHandlers(Handlers):
         class SamplingDeskHandler(self.BaseHandler):
             # @tornado.web.authenticated
             def get(self):
-                print("FROM NetHandler.get")
+                print("FROM SamplingDeskHandler.get")
                 print("self.current_user")
                 print(self.current_user)
                 # try:
@@ -498,6 +498,25 @@ class DialectHandlers(Handlers):
                 self.write(json.dumps(response))
                 
         self.ReplacerHandler = ReplacerHandler
+
+        class LexTut0Handler(self.BaseHandler):
+            # @tornado.web.authenticated
+            def get(self):
+                print("FROM LexTut0Handler.get")
+                print("self.current_user")
+                print(self.current_user)
+                # try:
+                #     name = tornado.escape.xhtml_escape(self.current_user)
+                #     self.render("index_net.html", title="", username=name)
+                # except TypeError:
+                print("self.current_user is None")
+                # TODO: users methods
+                self.render("index_tut_replacer.htm", username="default",
+                            var="{{var}}", int="{{int}}",
+                            base_dep_vars="{{base_dep_vars}}", arg_time="{{arg_time}}")
+                # self.redirect("/login")
+
+        self.LexTut0Handler = LexTut0Handler
         
     '''
     def create_dialect_login_handlers(self):

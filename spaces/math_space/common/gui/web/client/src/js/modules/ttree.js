@@ -16,7 +16,9 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'fancytree/modules/jq
 			       {title: "lex", key: "3"},
 			       {title: "net", key: "4"},
 			       {title: "sampling", key: "5"},
-			       {title: "sampling_desk", key: "6"}
+			       
+			       {title: "sampling_desk", key: "6"},
+			       {title: "lex_tutorial_0", key: "7"}
 			   ]}
 		       ],
 		        activate: function(event, data){
@@ -43,6 +45,11 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'fancytree/modules/jq
 				if (data.node.title=="sampling_desk"){
 				    
 				    window.open("/sampling_desk", "_self");
+				    // $("_self").load("/");
+				}
+				if (data.node.title=="lex_tutorial_0"){
+				    
+				    window.open("/lex_tutorial_0", "_self");
 				    // $("_self").load("/");
 				}
 				
