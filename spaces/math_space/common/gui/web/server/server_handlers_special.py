@@ -1,9 +1,6 @@
 from gui.web.server.server_handlers_base import Handlers
 import json
 
-from translator.tokenizer.patterns.patterns_list.tests.dialects import cs, eqs
-from translator.grammar.grammars import get_fmw
-
 from translator.main.parser_general import ParserGeneral
 from env.equation_net.equation import Equation
 from env.equation.data.terms.output.cpp.postproc import delay_postproc
@@ -46,7 +43,8 @@ class DialectHandlers(Handlers):
         # FOR parsers (for get_parser_data in other handlers besides parser):
         
         global_self.equation = Equation("2+2=4", db=global_self.model)
-        global_self.clause = Clause("paralelogram(A) \\and romb(A) => square(A)",
+        global_self.clause = Clause("paralelogram(A)"
+                                    + " \\and romb(A) => square(A)",
                                     db=global_self.model)
         # END FOR
 
@@ -122,7 +120,6 @@ class DialectHandlers(Handlers):
 
         self.DialectTableHandler = DialectTableHandler
 
-        
         class NetHandlerParsing(self.BaseHandler):
             # @tornado.web.authenticated
             def post(self):
@@ -181,20 +178,23 @@ class DialectHandlers(Handlers):
                     eq = Equation(sent_list[0], db=global_self.model)
                     eq.parser.parse()
                     self.equation = eq
-            
+                    
                     # FOR params:
-                    eq.replacer.cpp.editor.set_default()
+                    editor = eq.replacer.cpp.editor
+                    editor.set_default()
                     print("params")
                     print(params)
 
-                    eq.replacer.cpp.editor.set_dim(dim=int(params["dim"]))
-                    eq.replacer.cpp.editor.set_blockNumber(blockNumber=int(params["blockNumber"]))
+                    editor.set_dim(dim=int(params["dim"]))
+
+                    bn = int(params["blockNumber"])
+                    editor.set_blockNumber(blockNumber=bn)
 
                     vidxs = eval(params["vars_idxs"])
-                    eq.replacer.cpp.editor.set_vars_indexes(vars_to_indexes=vidxs)
+                    editor.set_vars_indexes(vars_to_indexes=vidxs)
 
                     coeffs = eval(params["coeffs"])
-                    eq.replacer.cpp.editor.set_coeffs_indexes(coeffs_to_indexes=coeffs)
+                    editor.set_coeffs_indexes(coeffs_to_indexes=coeffs)
 
                     params["btype"] = int(params["btype"])
                     params["side"] = int(params["side"])
@@ -225,7 +225,8 @@ class DialectHandlers(Handlers):
                     # for vtable:
                     global_self.sampler.set_parsed_net(net_out)
                     net_out, nodes_idds = global_self.sampler.editor_step()
-                    vtable_skeleton = global_self.sampler.get_vtable_skeleton(nodes_idds)
+                    vtable_skeleton = (global_self.sampler
+                                       .get_vtable_skeleton(nodes_idds))
                     
                     # lex_out = parser.parsers["hol"].lex_out
                     lex_out = parser.lex_out
@@ -270,27 +271,8 @@ class DialectHandlers(Handlers):
                 return(out)
 
             def parse_cs(self, sent_list):
+
                 global_self.model.change_dialect_db("cs")
-
-                '''
-                dialect_patterns = global_self.model.get_entries_to_list()
-                # dialect_patterns = cs
-
-                grammar_fmw = get_fmw(ms=[["clause_where", "clause_for",
-                                           "clause_into"],
-                                          "def_0", "in_0",
-                                          ["if", "if_only", "if_def"],
-                                          "clause_or", "conj"])
-                                
-                node_data = {"ops": ["clause_where", "clause_for",
-                                     "clause_into",
-                                     "def_0", "in_0",
-                                     "if", "if_only", "if_def",
-                                     "clause_or", "conj"]}
-
-                parser = ParserGeneral(dialect_patterns, grammar_fmw,
-                                       node_data)
-                '''
                 clause = Clause(sent_list[0], db=global_self.model)
                 clause.parser.parse()
                 self.clause = clause
@@ -331,7 +313,8 @@ class DialectHandlers(Handlers):
                 mode = data_json["mode"]
                 if mode == "parse":
                     global_self.sent_list = [data_json["text"]]
-                    data = self.parse(data_json["dialect"], [data_json["text"]],
+                    data = self.parse(data_json["dialect"],
+                                      [data_json["text"]],
                                       data_json["params"])
                     
                     stable = global_self.sampler.stable
@@ -518,32 +501,3 @@ class DialectHandlers(Handlers):
 
         self.LexTut0Handler = LexTut0Handler
         
-    '''
-    def create_dialect_login_handlers(self):
-        
-        SignUpHandler = self.SignUpHandler
-        model = self.model
-
-        class DialectSignUpHandler(SignUpHandler):
-            
-            def create_user(self, data):
-
-                print("FROM DialectSignUpHandler.create_user")
-                res = model.create_new_user(data["table"])
-                return(res)
-
-        self.DialectSignUpHandler = DialectSignUpHandler
-
-        SignInHandler = self.SignInHandler
-        model = self.model
-
-        class DialectSignInHandler(SignInHandler):
-            
-            def check_user(self, data):
-                
-                print("FROM DialectSignInHandler.check_user")
-                res = model.check_user(data["table"])
-                return(res)
-
-        self.DialectSignInHandler = DialectSignInHandler
-    '''

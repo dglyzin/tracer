@@ -79,8 +79,7 @@
     <p> So this proposal is asking whether from time <i>t0=0</i> to <i>t1=300</i> plasma (which represented with <i>eq_reg_1</i>)
     is spreading to <i>eq_reg_2</i></p>
     
-    <img src="/static/templates/sampling_desk_pic0.jpg"></img><br>
-    <label> pic 0</label>
+    <img src="/static/templates/sampling_desk_pic0.jpg"><br><br><h4>pic 0</h4></img><br>
 
     <h3>Example 1:</h3>
     <p>if sampler of equation <i>eq_id</i> can be defined like so:</p>
@@ -88,11 +87,32 @@
       <pre>eq_sampler_grammar(eq_id, params):</pre>
 
           <pre>&#9 # terms for sampling:</pre>
+          <pre>&#9 # (ex: [func, pow])</pre>
           <pre>&#9 terms_list = [term1, term2, ...]</pre>
 
+	  <pre><br></pre>
+
+	  <pre>&#9 # generator of syntacticaly correct sents:</pre>
+	  <pre>&#9 # (ex (for [func, pow]): U' = sin(x) +U^3 or U' = sin(x) +U^3)</pre>
           <pre>&#9 sampling_alg = sampling_with_grammar(terms_list)</pre>
     </div>
-    <p>or</p>
+    <p>
+      where
+      <font style="background: #EEEEEE;" color="#777777" face="Arial">sampling_with_grammar</font>
+      generate random sent from
+      <font style="background: #EEEEEE;" color="#777777" face="Arial">terms_list</font>
+      with,
+      despite randomness, is syntacticaly correct (like
+      <font style="background: #EEEEEE;" color="#777777" face="Arial">
+	"U' = sin(x) +U^3"
+      </font>
+      or
+      <font style="background: #EEEEEE;" color="#777777" face="Arial">
+	"U' = sin(x) +U^3")
+      </font>
+      ).<br>
+      or
+    </p>
     <div  style="background-color: #CCCCCC;width:500px">
       <pre>eq_sampler_params(eq_id, params):</pre>
 
@@ -111,6 +131,7 @@
   that <i>reg_3</i> in coords <i>(1, 0)</i> can be described with <i>eq_fixed_id</i> in radius <i>r=1</i> after <i>300</i> seconds.
   where <i>eq_init_id, eq_bound_id</i> can be chosen entirely random from given terms (with <i>eq_sampler_grammar</i>),
   or it can be fixed, but with unknown params (like: <i>U'=b*D[U,{x,a}]+c</i> with <i>eq_sampler_params</i>).</p>
-  <img src="ex_1.jpeg">pic 1</img>
+  <br><br>
+  <img src="/static/templates/sampling_desk_pic1.jpeg" width="450px" height="250px"><br><br><h4>pic 1</h4></img><br>
 </body>
 </html>

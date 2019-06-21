@@ -299,6 +299,7 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 			   if(self.data_delete_storage.length > 0){
 			       self.send_data_to_server(self.data_delete_storage, succ, action);
 
+			       // FOR replacer:
 			       // self.row_data_delete was chosen
 			       // at delete button click
 			       // as self.row_data = self.row_data_delete:
@@ -316,40 +317,9 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 			       });
 			       console.log("\n sending (from delete (save button))");
 			       console.log(to_send);
-			       
-			       // remove term replacer data from server:
-			       $.ajax(
-				   {
-				       url: 'api/tables/replacer',
-				       method: 'POST',
-				       data: to_send,
-				       
-				       success: function (jsonResponse) {
-					   console.log("from remove replacer success:");
-							   
-					   var objresponse = JSON.parse(jsonResponse);
-					   data = objresponse
-					   console.log(data["source"]);
-							   
-					   // set value
-					   self.editor.setOption("value", data["source"]);
-					   console.log(data);
 
-					   console.log("available_terms:");
-					   console.log(data["available_terms"]);
-					   $("#replacer_terms").text(data["available_terms"]);
-				       },
-				       
-				       error: function () {
-					   //$("#responsefield").text("Error to load api");
-					   console.log("Error to load api");							   				
-					   // set value
-					   self.editor.setOption("value",
-								 "# error while removing term "+term_name);
-					   
-				       }
-				   }
-			       );
+			       // remove term replacer data from server:
+			       self.query_replacer(to_send, " error while removing term "+term_name);
 			       // END FOR
 			   }
 			   // END FOR
@@ -412,8 +382,8 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 			       method: 'GET',
 			       
 			       success: function (jsonResponse) {
-				   console.log("self:");
-				   console.log(self);
+				   // console.log("self:");
+				   // console.log(self);
 				   
 				   self._fill_scene_table();
 				   
@@ -436,7 +406,7 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 				   */
 				   
 				   var entry_data_add = {};
-				   console.log("FROM ajax.get:");
+				   console.log("FROM make_table.get:");
 				   console.log("data[0] ");
 				   console.log(data[0]);
 				   $.each(data[0], function(index, value){
@@ -511,7 +481,7 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 					       row.select();
 					       // row.deselect();
 					       
-					       // FOR load dialect:
+					       // FOR replacer load dialect:
 					       var to_send = JSON.stringify({
 						   action: "load",
 						   dialect_name: "cpp",
@@ -522,41 +492,11 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 					       console.log(to_send);
 					       
 					       
-					       // save for father use in set:
+					       // save for further use in set:
 					       self.row_data = row_data;
-
+					       
 					       // get replacer data from server:
-					       $.ajax(
-						   {
-						       url: 'api/tables/replacer',
-						       method: 'POST',
-						       data: to_send,
-
-						       success: function (jsonResponse) {
-							   console.log("from replacer get success:");
-							   
-							   var objresponse = JSON.parse(jsonResponse);
-							   data = objresponse
-							   // console.log(data["source"]);
-							   
-							   // set value
-							   self.editor.setOption("value", data["source"]);
-							   // console.log(data);
-							   console.log("available_terms:");
-							   console.log(data["available_terms"]);
-							   $("#replacer_terms").text(data["available_terms"]);
-						       },
-						       
-						       error: function () {
-							   //$("#responsefield").text("Error to load api");
-							   console.log("Error to load api");							   				
-							   // set value
-							   self.editor.setOption("value",
-										 "# no such term "+term_name);
-
-						       }
-						   }
-					       );
+					       self.query_replacer(to_send, " no such term "+term_name);
 					       // END FOR
 					   },	
 				       });
@@ -591,7 +531,7 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 
 					   if (self.row_data !== "none"){
 					       console.log("from code_button.click:");
-
+					       
 					       // FOR get value:
 					       self.editor.save();
 					       console.log(self.editor.getTextArea().value);  
@@ -605,6 +545,7 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 					       // console.log($("#code").text());
 					       // console.log(document.getElementById("code").value);
 					   
+					       // FOR set replacer data from server:
 					       var term_name = self.row_data.term_name;
 					       var brackets = self.row_data.grammar_type;
 					       
@@ -617,44 +558,13 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 					       });
 					       console.log("\n sending (from code_button)");
 					       console.log(to_send);
-					       			   
-					       // set replacer data from server:
-					       $.ajax(
-						   {
-						       url: 'api/tables/replacer',
-						       method: 'POST',
-						       data: to_send,
-
-						       success: function (jsonResponse) {
-							   console.log("from replacer set");
-							   
-							   var objresponse = JSON.parse(jsonResponse);
-							   data = objresponse
-							   // console.log(data["source"]);
-							   
-							   // set value
-							   self.editor.setOption("value", data["source"]);
-							   // console.log(data);
-							   console.log("available_terms:");
-							   console.log(data["available_terms"]);
-							   $("#replacer_terms").text(data["available_terms"]);
-						       },
-						       
-						       error: function () {
-							   //$("#responsefield").text("Error to load api");
-							   console.log("Error to load api");							   				
-							   // set value
-							   self.editor.setOption("value",
-										 "# no such term "+term_name);
-
-						       }
-						   }
-					       );
+					       
+					       self.query_replacer(to_send, " no such term "+term_name);
 					       // END FOR
 					       
-					       }else{
-						   console.log("self.row_data is none");
-					       }
+					   }else{
+					       console.log("self.row_data is none");
+					   }
 				       });
 				       
 				       // set value
@@ -675,6 +585,40 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui', 'tabulator/tabulator.
 			   });
 		   };
 		   
+		   this.query_replacer = function(to_send, error_msg){
+		       $.ajax(
+			   {
+			       url: 'api/tables/replacer',
+			       method: 'POST',
+			       data: to_send,
+			       
+			       success: function (jsonResponse) {
+				   console.log("from replacer get success:");
+				   
+				   var objresponse = JSON.parse(jsonResponse);
+				   data = objresponse
+				   // console.log(data["source"]);
+				   
+				   // set value
+				   self.editor.setOption("value", data["source"]);
+				   // console.log(data);
+				   console.log("available_terms:");
+				   console.log(data["available_terms"]);
+				   $("#replacer_terms").text(data["available_terms"]);
+			       },
+						       
+			       error: function () {
+				   //$("#responsefield").text("Error to load api");
+				   console.log("Error to load api");							   				
+				   // set value
+				   self.editor.setOption("value",
+							 "#"+error_msg);
+				   
+			       }
+			   }
+		       );
+		       
+		   };
 	       }
 	   }
 	   
