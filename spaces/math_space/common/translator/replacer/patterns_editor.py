@@ -18,6 +18,12 @@ logging.basicConfig(level=log_level)
 logger = logging.getLogger('patterns_editor')
 logger.setLevel(level=log_level)
 
+import os
+import inspect
+currentdir = (os.path
+              .dirname(os.path
+                       .abspath(inspect.getfile(inspect.currentframe()))))
+
 
 class PatternsEditor():
 
@@ -34,11 +40,23 @@ class PatternsEditor():
 
     def __init__(self):
         self.patterns_json = "env/equation_net/data/terms/output/patterns.json"
+        # fix notebooks path bug:
+        self.patterns_json_hd_fixed = (os.path
+                                       .join(currentdir.split("translator")[0],
+                                                   ("env/equation_net/data/terms/"
+                                                    + "output/patterns.json")))
+        '''
         self.patterns_json_hd_fixed = ("spaces/math_space/common/env/"
                                        + "equation_net/data/terms/output/"
                                        + "patterns.json")
+        '''
 
-        self.compile_errors_file = "env/equation_net/data/terms/output/compile_log.txt"
+        self.compile_errors_file = (os.path
+                                    .join(currentdir.split("translator")[0],
+                                          ("env/equation_net/data/terms/"
+                                           + "output/compile_log.txt")))
+
+        # self.compile_errors_file = "env/equation_net/data/terms/output/compile_log.txt"
         self.exception_terms = ["base", "brackets_main"]
 
     def remove_patterns(self, dialect_name, term_names):

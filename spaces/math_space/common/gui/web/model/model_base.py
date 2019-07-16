@@ -9,6 +9,11 @@ config_path_key = "paths_db_patterns"
 # prefix for hd:
 config_file_prefix = "spaces/math_space/common"
 
+import inspect
+currentdir = (os.path
+              .dirname(os.path
+                       .abspath(inspect.getfile(inspect.currentframe()))))
+
 
 class BaseDB():
 
@@ -77,7 +82,10 @@ class BaseDB():
             path = self.path
 
         if not os.path.exists(path):
-            path = os.path.join(config_file_prefix, path)
+            # fix notebooks path bug:
+            fixed_path = os.path.join(currentdir.split("gui")[0], path)
+            path = fixed_path
+            # path = os.path.join(config_file_prefix, path)
 
         self.db = pw.SqliteDatabase(path)
         self.load_all_tables()
@@ -122,7 +130,10 @@ class BaseDB():
             with open(config_file_name) as config_file:
                 data = json.loads(config_file.read())
         except FileNotFoundError:
-            fixed_path = os.path.join(config_file_prefix, config_file_name)
+            # fix notebooks path bug:
+            fixed_path = os.path.join(currentdir.split("gui")[0],
+                                      config_file_name)
+            # fixed_path = os.path.join(config_file_prefix, config_file_name)
             with open(fixed_path) as config_file:
                 data = json.loads(config_file.read())
         if data is None:
