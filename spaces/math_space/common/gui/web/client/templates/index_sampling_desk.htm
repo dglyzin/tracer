@@ -1,0 +1,137 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex,follow">
+
+  <link href="static/src/css/styles.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="static/src/js/libs/jquery-ui-custom/jquery-ui.css">
+  <style>
+    .ui-menu { width: 150px;}
+  </style>
+
+  <!--
+  <script src="static/src/js/jquery/jquery-3.2.1.js" type="text/javascript"></script>
+  <script src="static/src/js/jquery/jquery-ui-1.12.1.custom/jquery-ui.js"></script>
+  -->
+  <!--
+  <script src="static/src/js/jquery/jquery.js" type="text/javascript"></script>
+  <script src="static/src/js/jquery/jquery-ui.custom.js" type="text/javascript"></script>
+  <script src="static/src/js/jquery/jquery.cookie.js" type="text/javascript"></script>
+  -->
+  <!--
+  <link href="static/dtree/skin-vista/ui.dynatree.css" rel="stylesheet" type="text/css">
+  <script src="static/dtree/jquery.dynatree.js" type="text/javascript"></script>
+  <script src="static/src/js/flot/jquery.flot.js" type="text/javascript"></script>
+  -->
+  <!--
+  <script type="text/javascript" src="static/src/js/dynamic_table/dynamic-table.jquery.js"></script>
+  <script type="text/javascript" src="static/src/js/dynamic_table/dynamic-table-editor.jquery.js"></script>
+  -->
+
+  <link href="static/src/css/tabulator.min.css" rel="stylesheet">
+  <!--
+  <script type="text/javascript" src="static/src/js/tabulator/tabulator.min.js"></script>
+  
+  <script src="static/src/js/cytoscape/cytoscape.min.js"></script>
+  -->
+  <!--
+  <script src="static/src/js/cytoscape/cytoscape.min.js"></script>
+  -->
+  <!--
+  <script src="static/src/js/main.js" type="text/javascript"></script>
+  -->
+  <script data-main="static/src/js/main.js" src="static/src/js/libs/require.js"></script>
+
+  <!--<link rel="stylesheet" href="static/src/css/dynamic-table.jquery.css"/>
+  -->
+
+  <title>lex io interface</title>
+</head>
+
+<body>
+
+  <div id="top" class="style_top">
+    <h1> {{ username }}  <a href= logout> Logout! </a> </h1>
+  </div>
+
+  <div id="nav" class="style_nav">
+    <div id="tree"></div>
+    
+    <p id="json_out"></p>
+    <!--<input id="input_file" type="file" >
+    <input id="button_file" type="button" value="Choice json">-->
+  </div>
+  
+  <div id="main" class="style_main">
+
+
+    <h2>Examples of sampling usage for hd:</h2>
+
+    <h3>Exapmle 0:</h3>
+    <div  style="background-color: #CCCCCC; width:750px">
+      <pre>Let(state0=states[time=0], state1=states[time=300] in:</pre>
+      <pre>coords(eq_reg_1, X, Y) \and coords(eq_reg_2, 1, 0)</pre>
+      <pre>&#9 => intersect(eq_reg_1, eq_reg_2, state)</pre>
+      <pre>where(eq_reg_1=state0.block0.eq_reg_1 \and eq_reg_2 = state1.block0.eq_reg_2))</pre>
+    </div>
+
+    <p> So this proposal is asking whether from time <i>t0=0</i> to <i>t1=300</i> plasma (which represented with <i>eq_reg_1</i>)
+    is spreading to <i>eq_reg_2</i></p>
+    
+    <img src="/static/templates/sampling_desk_pic0.jpg"><br><br><h4>pic 0</h4></img><br>
+
+    <h3>Example 1:</h3>
+    <p>if sampler of equation <i>eq_id</i> can be defined like so:</p>
+    <div  style="background-color: #CCCCCC; width:500px">
+      <pre>eq_sampler_grammar(eq_id, params):</pre>
+
+          <pre>&#9 # terms for sampling:</pre>
+          <pre>&#9 # (ex: [func, pow])</pre>
+          <pre>&#9 terms_list = [term1, term2, ...]</pre>
+
+	  <pre><br></pre>
+
+	  <pre>&#9 # generator of syntacticaly correct sents:</pre>
+	  <pre>&#9 # (ex (for [func, pow]): U' = sin(x) +U^3 or U' = sin(x) +U^3)</pre>
+          <pre>&#9 sampling_alg = sampling_with_grammar(terms_list)</pre>
+    </div>
+    <p>
+      where
+      <font style="background: #EEEEEE;" color="#777777" face="Arial">sampling_with_grammar</font>
+      generate random sent from
+      <font style="background: #EEEEEE;" color="#777777" face="Arial">terms_list</font>
+      with,
+      despite randomness, is syntacticaly correct (like
+      <font style="background: #EEEEEE;" color="#777777" face="Arial">
+	"U' = sin(x) +U^3"
+      </font>
+      or
+      <font style="background: #EEEEEE;" color="#777777" face="Arial">
+	"U' = sin(x) +U^3")
+      </font>
+      ).<br>
+      or
+    </p>
+    <div  style="background-color: #CCCCCC;width:500px">
+      <pre>eq_sampler_params(eq_id, params):</pre>
+
+          <pre>&#9 eq = Eq()(X, Y) </pre>
+          <pre>&#9 params(X\in [0,10], Y\in [0,10]) </pre>
+       
+          <pre>&#9 sampling_alg = sampling_for_params(eq, params)</pre>    
+  </div>
+  <p>Then it is possible to create proposals like so:</p>
+  <div style="background-color: #CCCCCC; width:750px">
+    <pre>Let(state0=states[time=0], state1=states[time=300] in:</pre>
+    <pre>&#9 init_region(eq_init_id, X, Y, state0) \and border(eq_bound_id, X, Y, \alpha, state0) \and ...</pre>
+    <pre>&#9 => reg_3(eq_fixed_id, x=1, y=0, r=1, state1))</pre>
+  </div>  
+  <p>In this case <i>eq_init_id, X, Y, eq_bound_id, \alpha</i> will be sampled in such a way
+  that <i>reg_3</i> in coords <i>(1, 0)</i> can be described with <i>eq_fixed_id</i> in radius <i>r=1</i> after <i>300</i> seconds.
+  where <i>eq_init_id, eq_bound_id</i> can be chosen entirely random from given terms (with <i>eq_sampler_grammar</i>),
+  or it can be fixed, but with unknown params (like: <i>U'=b*D[U,{x,a}]+c</i> with <i>eq_sampler_params</i>).</p>
+  <br><br>
+  <img src="/static/templates/sampling_desk_pic1.jpeg" width="450px" height="250px"><br><br><h4>pic 1</h4></img><br>
+</body>
+</html>

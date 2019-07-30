@@ -1,0 +1,20 @@
+d2 package
+==========
+
+.. automodule:: d2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+Submodules
+----------
+
+d2\.fm\_d2 module
+-----------------
+
+.. automodule:: d2.fm_d2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+

@@ -1,0 +1,37 @@
+{# COMMENT
+   TEMPLATE FOR INITIAL FUNCTION 1D
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+   bounds:
+	bound.blockNumber,
+	bound.boundName,
+	bound.funcName,
+	bound.parsedValues
+	bound.original
+END COMMENT #}
+
+{% for bound in bounds %}
+{% set bn = bound.blockNumber %}
+//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER {{bn}}======================//
+//Boundary condition for boundary {{bound.boundName}}
+void {{bound.funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;
+     {% for i, value in enumerate(bound.parsedValues)%}
+         // original: {{bound.original[i]}}
+	 {# result[idx + {{i}}] = #}
+	 {{value}};
+     {% endfor %}
+}
+//device side function pointer declaration and init:
+func_ptr_t p_{{bound.funcName}} = {{bound.funcName}};
+
+{% endfor %}

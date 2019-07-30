@@ -20,3 +20,11 @@
 18	21	22
 
 test test
+
+
+Перед тем, как делать push
+запустить из hybriddomain:
+
+python2 -m tests.tester
+
+log file tests/tester.log

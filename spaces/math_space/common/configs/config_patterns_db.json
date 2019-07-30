@@ -1,0 +1,6 @@
+{
+    "paths_db_patterns": {
+        "eqs": "env/equation_net/data/terms/input/demo_dialect.db",
+        "cs": "env/clause/data/terms/input/demo_dialect.db"
+    }
+}

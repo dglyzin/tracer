@@ -1,0 +1,67 @@
+{# COMMENT
+   TEMPLATE FOR cpp/core.h
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+	gridArgs list
+	blocksArgs list
+	paramsLen int
+	timeStep
+
+	namesAndNumbers
+	 (only block0 value will be used)
+	 
+END COMMENT #}
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "userfuncs.h"
+
+{% for gridArg in gridArgs %}
+{% set ga = gridArg %}
+#define D{{ga.indepVar.upper()}} {{ga.d}}
+#define D{{ga.indepVar.upper()}}2 {{ga.d2}}
+#define D{{ga.indepVar.upper()}}M1 {{ga.dm1}}
+#define D{{ga.indepVar.upper()}}M2 {{ga.dm2}}
+{% endfor %}
+
+#define DT {{timeStep}}
+
+
+{% for blockArgs in blocksArgs %}
+{% set bn = blockArgs.blockNumber %}
+
+#define Block{{bn}}CELLSIZE {{blockArgs.cellsize}}
+
+{% set indepVars = blockArgs.indepVars %}
+{% set countOfVars = len(indepVars) %}
+
+{% for i in range(countOfVars) %}
+#define Block{{bn}}Stride{{indepVars[i].upper()}} {{blockArgs.strides[i]}}
+#define Block{{bn}}Count{{indepVars[i].upper()}} {{blockArgs.counts[i]}}
+#define Block{{bn}}Offset{{indepVars[i].upper()}} {{blockArgs.offsets[i]}}
+{% endfor %}
+{% endfor %}
+#define PAR_COUNT {{ paramsLen }}
+
+//////////////////////////////////
+#define COUNT_OF_FUNC {{len(namesAndNumbers[0])}}
+
+{% for funcNumber, funcName in enumerate(namesAndNumbers[0]) %}
+void {{funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic);
+{% endfor %}
+
+void getBlock0BoundFuncArray(func_ptr_t** ppBoundFuncs);
+void getFuncArray(func_ptr_t** ppBoundFuncs, int blockIdx);
+void releaseFuncArray(func_ptr_t* BoundFuncs);
+
+

@@ -1,0 +1,368 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="robots" content="noindex,follow">
+
+  <link href="static/src/css/styles.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="static/src/js/libs/jquery-ui-custom/jquery-ui.css">
+  <style>
+    .ui-menu { width: 150px;}
+  </style>
+
+  <!--
+  <script src="static/src/js/jquery/jquery-3.2.1.js" type="text/javascript"></script>
+  <script src="static/src/js/jquery/jquery-ui-1.12.1.custom/jquery-ui.js"></script>
+  -->
+  <!--
+  <script src="static/src/js/jquery/jquery.js" type="text/javascript"></script>
+  <script src="static/src/js/jquery/jquery-ui.custom.js" type="text/javascript"></script>
+  <script src="static/src/js/jquery/jquery.cookie.js" type="text/javascript"></script>
+  -->
+  <!--
+  <link href="static/dtree/skin-vista/ui.dynatree.css" rel="stylesheet" type="text/css">
+  <script src="static/dtree/jquery.dynatree.js" type="text/javascript"></script>
+  <script src="static/src/js/flot/jquery.flot.js" type="text/javascript"></script>
+  -->
+  <!--
+  <script type="text/javascript" src="static/src/js/dynamic_table/dynamic-table.jquery.js"></script>
+  <script type="text/javascript" src="static/src/js/dynamic_table/dynamic-table-editor.jquery.js"></script>
+  -->
+
+  <link href="static/src/css/tabulator.min.css" rel="stylesheet">
+  <!--
+  <script type="text/javascript" src="static/src/js/tabulator/tabulator.min.js"></script>
+  
+  <script src="static/src/js/cytoscape/cytoscape.min.js"></script>
+  -->
+  <!--
+  <script src="static/src/js/cytoscape/cytoscape.min.js"></script>
+  -->
+  <!--
+  <script src="static/src/js/main.js" type="text/javascript"></script>
+  -->
+  <script data-main="static/src/js/main.js" src="static/src/js/libs/require.js"></script>
+
+  <!--<link rel="stylesheet" href="static/src/css/dynamic-table.jquery.css"/>
+  -->
+
+  <title>lex io interface</title>
+</head>
+
+<body>
+
+  <div id="top" class="style_top">
+    <h1> {{ username }}  <a href= logout> Logout! </a> </h1>
+  </div>
+
+  <div id="nav" class="style_nav">
+    <div id="tree"></div>
+    
+    <p id="json_out"></p>
+    <!--<input id="input_file" type="file" >
+    <input id="button_file" type="button" value="Choice json">-->
+  </div>
+  
+  <div id="main" class="style_main">
+
+
+    <h2>Create replacer's pattern tutorial:</h2>
+
+    For this example term
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"diff_2vv1"</font>
+    will be created with wolfram input and cpp output
+    like so:<br><br>
+
+    <table class="style_table">
+      <tr><td class="style_table" style="width: 150px; "> <h4>Input</h4></td>
+	<td class="style_table">  <h4>Output</h4></td></tr>
+      
+      <tr><td class="style_table">
+	  <font style="background: #EEEEEE;" color="#777777" face="Arial">"2vv1(3, U(t-1.1))" </font></td>
+	<td class="style_table"> 
+	  <font style="background: #EEEEEE;" color="#777777" face="Arial">"N/3*(source[delay][idx + 2 * Block0StrideX * Block%dCELLSIZE + 0]*source[delay][idx + 1 * Block0StrideX * Block0CELLSIZE + 0]-source[delay][idx - 1 * Block0StrideX * Block0CELLSIZE + 0]*source[delay][idx - 2 * Block0StrideX * Block0CELLSIZE + 0])"</font><br> at central,<br> <font style="background: #EEEEEE;" color="#777777" face="Arial">"0"</font><br> at border</td></tr>
+    </table>
+    <br>
+      where <font style="background: #EEEEEE;" color="#777777" face="Arial">blockNumber</font>, <font style="background: #EEEEEE;" color="#777777" face="Arial"> var_index</font> is params and can be chenged (with <font style="background: #EEEEEE;" color="#777777" face="Arial">set_*</font> methods of <font style="background: #EEEEEE;" color="#777777" face="Arial">Equation.replacer.cpp.editor</font>) 
+
+    <h3>Adding lex pattern:</h3>
+
+    
+    <p>1) In order to create new term open lex editor page:</p>
+    <img src="/static/templates/tut_replacer_pic_0.png"><br><br><h4>pic 0</h4></img>
+    <br>
+
+    <p>2) In loaded page click "dialect table" button. Table with default dialect
+      (wolfram) will be shown. Click "Add" button for adding new pattern. If You only
+    need to edit old pattern it can be done directily with click at according row field
+    (don't forget about "save" button or changes will be lost). If You don't need add new
+      term go to step 5.
+    </p>
+    <img src="/static/templates/tut_replacer_pic_1.png" width="700px"><br><br><h4>pic 1</h4></img>
+    <br>
+
+    3) In the opened subtable some default entry will appear. Next attributes must be chenged:<br><br>
+    
+    - <font style="background: #EEEEEE;" color="#777777" face="Arial">Id</font> -- must be unique so change it default value. Used for storage in db.<br><br>
+
+    - <font style="background: #EEEEEE;" color="#777777" face="Arial">term_name</font> - unique, it used trough all translator's parse steps from lexical to<br>
+    replacer levels. If this name contain
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"diff"</font>
+    word, some data will be available in node<br>
+    during replacer (like 
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">dim</font>
+    ,
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">blockNumber</font>
+    ,
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">var_idx</font>
+    ,
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">diffType</font> see more below).<br><br>
+
+    - <font style="background: #EEEEEE;" color="#777777" face="Arial">template</font> -- this is
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">re</font> or
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">txt</font> template (depending on
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">pattern_type</font> value).
+    For current example
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"2vv1\((?P<number>${{int}}),${{var}}\)"</font>
+    value is used and
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"pattern_type"</font>
+    is
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">('re',)</font>
+
+    (comma and brackets is required). This is not exactly an regular expression, it contain
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">${{int}}</font> and
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">${{var}}</font>
+    params. This params will be replaced with
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"int"
+    </font>
+    and
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"var"</font>
+    templates patterns (which is
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"\d+"</font>
+    and
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"(?P<val>[${{base_dep_vars}}](\(${{arg_time}}\))?)"</font>
+    accordingly) before 
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">re.search</font>
+    have been used.<br>
+    
+    You can see that this patterns themself is complex, consisting of other patterns. The lex alalyzer will replace
+    all of them recursively to finally get:<br>
+	
+    <div  style="background-color: #CCCCCC; width:750px">
+      <pre>   re_pattern = "2vv1\((?P<number>\d+),(?P<val>[A-Z](\([t](-(?P<delay>(?:\d+\.\d+|\d+)))?\))?)\)"
+      </pre>
+    </div>
+    <br>
+	
+    If You put it into re.search like:<br>
+    
+    <div  style="background-color: #CCCCCC; width:750px">
+      <pre>   res = re.search(re_pattern, "2vv1(3,U(t-1.1))")</pre>
+    </div>
+    <br>
+	
+    then 
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">.SRE_Match</font>
+    object will be returned with 
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">res.group("number") == 3
+    </font>
+    ,
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">res.group("val") == U</font>
+    ,
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">``res.group("delay") == 1.1</font>.<br><br>
+  
+    - <font style="background: #EEEEEE;" color="#777777" face="Arial">grammar_type</font> -- this is
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"('a',)"</font>
+    and this means that lex template represent whole pattern (not part of it, like
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"('br',)"</font>
+    ).<br><br>
+
+    4) After this done, add new term by clicking
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"add"</font>
+    button again, then save by
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"save"</font>
+    ones.<br>
+
+    <h3> Adding cpp replacer:</h3>
+    
+    5) Click at newly creaded row and move to the codemirror div. This can give You ability to write node replacer i.e. class, whose instance will be used for fill cpp data of node in parsed tree which represent found lex pattern in sentense. For example if sentence looks like
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"U'=2vv1(3, U(t-1.1))"</font>
+    this will be transformed to tree, whose node has id="diff_2vv1".<br>
+    
+    NOTE: if other objects exist, this class must be last in codemirror editor.<br>
+    
+    I copy node replacer from other term (source), then rename it to "Diff_2v11" and rename it id attribute same as pattern id (required!): <br><br>
+    <img src="/static/templates/tut_replacer_pic_2.png" width="450px"><br><br><h4>pic 2</h4></img>
+
+    <br>
+    Actual replaced value is that, what will be returned by
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"print_out"</font> method.<br>
+    
+    <div  style="background-color: #CCCCCC; width:750px">
+      <pre>def print_out(self):</pre>
+      <pre>   return(self.value)</pre>
+    </div>
+    <br>
+
+    Before that
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"get_node_data"</font>
+    method will be used in order to extract some data.<br>
+    First it get all data from data from term itself (which in Our example is "number"):
+    
+    <div  style="background-color: #CCCCCC; width:750px">
+      <pre> ... </pre>
+      
+      <pre>   # get found re pattern:</pre>
+      <pre>   re_pattern = self.net.get_term_pattern(node)</pre>
+      <pre>   # extract pattern data:</pre>
+      <pre>   N = re_pattern.group("number")</pre>
+      
+    </div>
+    <br>
+
+    Next it convert some data from
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">re_pattern</font>
+    to cpp, using standart methods from
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">Base</font>
+    class (in Our case transform
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">U</font>
+    to
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">0</font>
+    ):<br>
+
+    <div  style="background-color: #CCCCCC; width:750px">
+      
+        <pre>   self.set_var_index(node)</pre>
+        <pre></pre>
+
+    </div>
+    <br>
+
+    Then, because
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">diff</font>
+    word exist in our
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">term_id</font>
+    (which is 
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">diff_2vv1</font>
+    ), it 
+    have access to some params, that user was specified in methods like (
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">Equation.replacer.cpp.editor.set_dim</font>
+    )
+    (they was specified in some particular part of
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">hybriddomain</font>
+    ).<br>
+    So, We can use that data for Our output:<br>
+
+    <div  style="background-color: #CCCCCC; width:750px">
+	  
+        <pre>   # extract data taken with set_ methods:</pre>
+        <pre>   dim = self.params["dim"]</pre>
+        <pre>   blockNumber = self.params["blockNumber"]</pre>
+        <pre>   var_idx = self.params["unknownVarIndex"]</pre>
+        <pre>   diffMethod = self.params["diffMethod"]</pre>
+
+    </div>
+    <br>
+    Delays is special matter. It take delay data from node, and save it for posprocessor
+    with
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">self.set_delay</font>
+    method (store it into
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">node.output.cpp.global_data</font>
+    ). Then 
+    in out string word
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">delay</font>
+    must be included, where it needed. For example
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">source[delay]</font>
+    
+    will be transformed to 
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">source[n]</font>
+    where
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">n</font>
+    is calculated by 
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">env.equation.data.terms.output.cpp.postproc.delay_postproc</font>
+    for all term in sentence (or even in system):
+    
+
+    <div  style="background-color: #CCCCCC; width:750px">
+    
+        <pre>   # FOR delays:</pre>
+        <pre>   delay_data = self.set_delay(node)</pre>
+	<pre></pre>
+        <pre>   # add delays data for postproc:</pre>
+        <pre>   if delay_data is not None:</pre>
+        <pre>       # node.output.cpp.global_data = data</pre>
+        <pre>       self.net.set_output_data(node, 'delay_data', delay_data)</pre>
+        <pre>   # END FOR</pre>
+
+    </div>
+    <br>
+    The last part is out value itself:
+
+    <div  style="background-color: #CCCCCC; width:750px">
+    <pre></pre>
+        <pre>   if diffMethod == "common":</pre>
+        <pre></pre>
+        <pre>     bn = blockNumber</pre>
+        <pre>     vi = var_idx</pre>
+        <pre></pre>
+        <pre>     value = "(source[delay][idx + 2 * Block%dStrideX * Block%dCELLSIZE + %d]" %(bn, bn, vi)</pre>
+        <pre>     value += "*source[delay][idx + 1 * Block%dStrideX * Block%dCELLSIZE + %d]" %(bn, bn, vi)</pre>
+        <pre>     value += "-source[delay][idx - 1 * Block%dStrideX * Block%dCELLSIZE + %d]" %(bn, bn, vi)</pre>
+        <pre>     value += "*source[delay][idx - 2 * Block%dStrideX * Block%dCELLSIZE + %d])" %(bn, bn, vi)</pre>
+        <pre>     value = str(int(N)/3) + "*"+value</pre>
+        <pre>   else:</pre>
+        <pre>     value = "0"</pre>
+          
+        <pre>   # get found string:</pre>
+        <pre>   self.value = value</pre>
+
+    </div>
+  <br>
+
+  Now We ready for testing. Go to net page:<br><br>
+
+  <img src="/static/templates/tut_replacer_pic_3.png" width="450px"><br><br><h4>pic 3</h4></img>
+  <br><br>
+  
+  Write test sent in editor window:
+  <br><br>
+  <img src="/static/templates/tut_replacer_pic_4.png" width="450px"><br><br><h4>pic 4</h4></img>
+  <br>
+  And click "parse" button. But this do nothing. In order to understend reason of this switch
+  to terminal window and find lex_out:<br><br>
+
+  <img src="/static/templates/tut_replacer_pic_5.png" width="450px"><br><br><h4>pic 5</h4></img>
+  <br>
+  That list represent pre-syntax parse sent, that is output of lexical analyzer.
+  Because Our entry has
+  <font style="background: #EEEEEE;" color="#777777" face="Arial">"('a',)"</font>
+  as
+  <font style="background: #EEEEEE;" color="#777777" face="Arial">"grammar_type"</font>
+  value, We expect it to be as output of
+  lex analyzer. But instead We have several other terms, that apparently went from other
+  terms. Reason for that behavior is that order of Our term is less then order of it containments,
+  that is terms, that included in our term template  (probably "var" term, as it part of our template (which is "2vv1\((?P<number>${{int}}),${{var}}\)")).
+    To see list of orders You can find 
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"lex patterns (sorted, names only)"
+    </font>(see pic. 5). <br>
+
+  You can see that our pattern priority is much less then ... <br>
+  To fix that go back to lex table and change pattern type from
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"('re',)"</font>
+    to
+    <font style="background: #EEEEEE;" color="#777777" face="Arial">"('re', 0.1)"
+    </font> (don't forget restart server after that):<br><br>
+
+  <img src="/static/templates/tut_replacer_pic_6.png"><br><br><h4>pic 6</h4></img>
+  <br>
+
+  Now all work with order is ok and
+  <font style="background: #EEEEEE;" color="#777777" face="Arial">lex_out
+  </font> value is what expected:<br><br>
+
+  <img src="/static/templates/tut_replacer_pic_7.png" width="450px"><br><br><h4>pic 6</h4></img>
+  <br>
+
+
+</body>
+</html>
