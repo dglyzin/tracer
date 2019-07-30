@@ -1,0 +1,141 @@
+{
+    "ProjectName": "Brusselator1d", 
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 60.0, 
+        "TimeStep": 1e-05, 
+        "SaveInterval": 0.1, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "Dimension": 1, 
+        "dx": 0.001, 
+        "dy": 1, 
+        "dz": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "MainBlock", 
+            "Offset": {
+                "x": 0.0
+            }, 
+            "Size": {
+                "x": 1.0
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }
+    ], 
+    "Interconnects": [], 
+    "Equations": [
+        {
+            "Name": "Flat Brusselator", 
+            "Vars": [
+                "x"
+            ], 
+            "System": [
+                "U'=a+U*U*V-(b+1)*U+c*(D[U,{x,2}])", 
+                "V'=b*U-U*U*V+c*(D[V,{x,2}])"
+            ]
+        }
+    ], 
+    "EquationParams": {
+        "Params": [
+            "a", 
+            "b", 
+            "c"
+        ], 
+        "ParamValues": [
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 0.1
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 1.5
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 1.6
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 1.7
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 1.8
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 1.9
+            }, 
+            {
+                "a": 1.0, 
+                "c": 0.002, 
+                "b": 4.5
+            }
+        ], 
+        "DefaultParamsIndex": 5
+    }, 
+    "Bounds": [], 
+    "Initials": [
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "10.0 * x", 
+                "10.0 * sin(x)"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode7", 
+            "CpuCount": 1, 
+            "CpuMemory": [
+                56
+            ], 
+            "GpuCount": 3, 
+            "GpuMemory": [
+                5, 
+                5, 
+                5
+            ]
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
+        ]
+    }, 
+    "Plots": [
+	{
+            "Title": "u(t,x)", 
+            "Period": 0.1,
+            "Value": ["U", "V"]
+        }
+    ],
+    "Results":[
+        {
+            "Name": "u", 
+            "Period": 0.1,
+            "Value": ["U", "V"]
+        }
+    ]
+}
