@@ -163,13 +163,13 @@ class GenSH():
 
             # runFile.write("export OMP_NUM_THREADS=16\n")
 
-            runFile.write("export GOMP_CPU_AFFINITY='"
-                          + self.affinity + "'\n")
+            #runFile.write("export GOMP_CPU_AFFINITY='"
+            #              + self.affinity + "'\n")
 
-            runFile.write("salloc -N " + self.nodeCount
+            runFile.write("srun -N " + self.nodeCount
                           + " -n " + self.taskCountPerNode
                           + " " + self.nodes + self.partition
-                          + " mpirun " + self.mpimap
+                          #+ " mpirun " + self.mpimap
                           + " " + self.solverExecutable
                           + " " + self.domFile
                           + " " + self.flag

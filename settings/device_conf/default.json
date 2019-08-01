@@ -3,7 +3,7 @@
     "flag": "0",
     "finishTime": "-1.1",
     "cont": "n_a",
-    "partition": "exp",
+    "partition": "all",
     "mpimap": "",
     "affinity": "0-15"
 }

@@ -479,7 +479,7 @@ def remoteProjectRun(settings, dimention, notebook=None):
         # and run source generator:
         command = ("cd " + hs_hd + " &&"
                    + " pwd &&"
-                   + (" python3 "
+                   + (" ~/anaconda3/bin/python3 "
                       + ("-m gens.hs.tests.tests_gen_%dd"
                          % dimention))
                    + ' -t ' + hs_project_folder
