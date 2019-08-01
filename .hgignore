@@ -3,6 +3,7 @@ doc/api/_build/
 doc/api/_build/*
 doc/api/_build/**
 *.ipynb_checkpoints
+*-checkpoint.ipynb
 *.pyc
 *.bin
 *.lbin
