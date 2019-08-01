@@ -184,7 +184,7 @@ class GenSH():
 
             runFile.write("srun -n 1" + " " + self.nodes
                           + " " + self.partition
-                          + " python " + self.postprocessor
+                          + "~/anaconda3/bin/python3 " + self.postprocessor
                           + " " + self.projectDir+"/"
                           + " " + self.title
                           + " " + self.plot_params)
