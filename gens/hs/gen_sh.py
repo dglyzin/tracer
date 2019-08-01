@@ -163,13 +163,13 @@ class GenSH():
 
             # runFile.write("export OMP_NUM_THREADS=16\n")
 
-            runFile.write("export GOMP_CPU_AFFINITY='"
-                          + self.affinity + "'\n")
+            #runFile.write("export GOMP_CPU_AFFINITY='"
+            #              + self.affinity + "'\n")
 
-            runFile.write("salloc -N " + self.nodeCount
+            runFile.write("srun -N " + self.nodeCount
                           + " -n " + self.taskCountPerNode
                           + " " + self.nodes + self.partition
-                          + " mpirun " + self.mpimap
+                          #+ " mpirun " + self.mpimap
                           + " " + self.solverExecutable
                           + " " + self.domFile
                           + " " + self.flag
@@ -184,7 +184,7 @@ class GenSH():
 
             runFile.write("srun -n 1" + " " + self.nodes
                           + " " + self.partition
-                          + " python " + self.postprocessor
+                          + "~/anaconda3/bin/python3 " + self.postprocessor
                           + " " + self.projectDir+"/"
                           + " " + self.title
                           + " " + self.plot_params)
