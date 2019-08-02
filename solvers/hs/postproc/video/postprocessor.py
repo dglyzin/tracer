@@ -383,7 +383,7 @@ def createVideoFile(projectDir, projectName, plotIdx):
     logger.info("Creating video file: %s" % (str(plotIdx)))
     # TODO 2: separate plotIdx from postfix:
     command = ("avconv -r 5 -loglevel panic -i "+projectDir+projectName
-               + "-plot"+str(plotIdx)+"%d.png -b:v 1000k "
+               + "-plot"+str(plotIdx)+"%d.png -pix_fmt yuv420p -b:v 1000k -c:v libx264 "
                + projectDir+projectName+"-plot"+str(plotIdx)+".mp4")
     logger.info(command)
     # PIPE = subprocess.PIPE
