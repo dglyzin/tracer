@@ -91,10 +91,10 @@
     ], 
     "Hardware": [
         {
-            "Name": "cnode5", 
+            "Name": "dnode09",
             "CpuCount": 1, 
             "CpuMemory": [
-                56
+                5
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
