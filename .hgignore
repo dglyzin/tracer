@@ -2,6 +2,9 @@ syntax:glob
 doc/api/_build/
 doc/api/_build/*
 doc/api/_build/**
+settings/conn/
+settings/conn/*
+settings/conn/**
 *.ipynb_checkpoints
 *-checkpoint.ipynb
 *.pyc

@@ -50,6 +50,8 @@ Ex (from hd)::
 
  # 1d:
  python3 -m solvers.hs.remoterun.remoterun conn_base default paths_hs_base problems/1dTests/logistic_delays
+ # or 
+ ~/anaconda3/bin/./python3 -m solvers.hs.remoterun.remoterun conn_cluster1 default paths_hs_cluster1 problems/1dTests/logistic_delays
 
  # 2d one block:
  python3 -m solvers.hs.remoterun.remoterun conn_base default paths_hs_base problems/2dTests/heat_block_1
@@ -125,7 +127,7 @@ def copy_files(client, connection, hd_path, hs_path, name):
     logger.info("copy %s files:" % name)
     for root, folders_names, file_names in walk_gen:
         for file_name in file_names:
-            if file_name[-1] != '~':
+            if file_name[-1] != '~' and "checkpoint" not in file_name:
                 hd_file_name_full = os.path.join(hd_path, file_name)
                 hs_file_name_full = os.path.join(hs_path, file_name)
                 logger.info("copy " + hd_file_name_full)
@@ -304,7 +306,7 @@ def remoteProjectRun(settings, dimention, notebook=None):
     hs_dev_conf = paths['hs']['device_conf']
     # hs_dev_conf = fix_tilde_bug(connection, hs_dev_conf,
     #                             'hs', 'dev_conf')
-
+    
     hs_paths = paths['hs']['paths']
 
     hs_project_folder = paths['hs']['project_path_absolute']
@@ -475,11 +477,14 @@ def remoteProjectRun(settings, dimention, notebook=None):
         client.exec_command(command)
         '''
         
+        hd_python = settings.device_conf["hd_python"]
+        # " ~/anaconda3/bin/python3 "
+        
         # go to hs_hd dirrectory, show it
         # and run source generator:
         command = ("cd " + hs_hd + " &&"
                    + " pwd &&"
-                   + (" ~/anaconda3/bin/python3 "
+                   + (hd_python + " "
                       + ("-m gens.hs.tests.tests_gen_%dd"
                          % dimention))
                    + ' -t ' + hs_project_folder
