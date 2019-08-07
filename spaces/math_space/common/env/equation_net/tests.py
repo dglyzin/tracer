@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     # test_term_cpp_diff()
     # test_lex()
-    # test_one(11, verbose=True, EqBilder=Equation,
+    # test_one(51, verbose=True, EqBilder=Equation,
     #          tests=tests_list_main)
     test_all(EqBilder=Equation, tests=tests_list_main)
     # test_lambda()
