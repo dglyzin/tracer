@@ -77,14 +77,12 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "1.0", 
                 "1.0"
             ]
         }, 
         {
             "Name": "Initial values 1", 
             "Values": [
-                "1.0", 
                 "1.0"
             ]
         }

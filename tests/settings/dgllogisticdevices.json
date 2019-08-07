@@ -5,5 +5,5 @@
     "cont": "n_a",
     "partition": "exp",
     "mpimap": "",
-    "affinity": "0-15"
+    "affinity": "0-19"
 }
