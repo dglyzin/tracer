@@ -63,6 +63,8 @@ class GenSH():
         self.nodeCount = str(self.net.model.device.getNodeCount())
         self.taskCountPerNode = "1"
 
+        self.hd_python = "python3"
+
     def set_params(self, params):
         '''
         Set user's params.
@@ -77,6 +79,7 @@ class GenSH():
            params['nodes']
            params['mpimap']
            params['affinity']
+           params['hs_python']
         
         if some missing, default values will be used.
         '''
@@ -147,6 +150,9 @@ class GenSH():
         else:
             self.affinity = '0-15'
 
+        if "hs_python" in params.keys():
+            self.hs_python = params["hs_python"]
+
     def gen_sh(self, outputRunFile):
         '''
         Create sh file in ``outputRunFile``.
@@ -182,9 +188,12 @@ class GenSH():
                           + " " + str(finishTime)+" "+continueFileName+"\n")
             '''
 
+            hs_python = self.hs_python
+            # "~/anaconda3/bin/python3 "
+
             runFile.write("srun -n 1" + " " + self.nodes
                           + " " + self.partition
-                          + "~/anaconda3/bin/python3 " + self.postprocessor
+                          + " " + hs_python + " " + self.postprocessor
                           + " " + self.projectDir+"/"
                           + " " + self.title
                           + " " + self.plot_params)

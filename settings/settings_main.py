@@ -116,6 +116,9 @@ class Settings():
                                         conn_name,
                                         device_conf_name,
                                         paths_name):
+        
+        '''Collect json files to dict.'''
+
         def get_data(sfolder, sfile):
             # print(sfile)
             file_name = os.path.join(sfolder, sfile)

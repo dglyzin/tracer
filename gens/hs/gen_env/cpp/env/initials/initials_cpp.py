@@ -127,7 +127,20 @@ class GenCpp():
             block.bounds = bounds
 
             # FOR parser:
-            for initial in block.initials:
+            system_dim = len(model.equations[block.defaultEquation])
+            for idx, initial in enumerate(block.initials):
+
+                # check if count of equations in ``initial.value``
+                # is same as ``block.defaultEquation``:
+                initial_dim = len(initial.values)
+                if initial_dim != system_dim:
+                    raise(BaseException(
+                        ("ERROR: Wrong dim of initial %s: %s \n"
+                         + " must be equal "
+                         + "len(model.equations[block.defaultEquation])"
+                         + "\n which is currently %s")
+                        % (idx, initial_dim, system_dim)))
+
                 initial.parsedValues = [self.parse_equation(
                     value, convert_free_var=True)
                                         for value in initial.values]

@@ -51,5 +51,5 @@ class BracketsNet(GenBrackets):
         ititiated first'''
 
         terms_br_gens = (self.net.patterns_editor
-                         .load_patterns(self.dialect_name, brackets=False))
+                         .load_patterns(self.dialect_name, brackets=True))
         return(terms_br_gens)
