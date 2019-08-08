@@ -26,7 +26,7 @@ END COMMENT #}
 {% for blockNumber, block in enumerate(blocks) %}
 {% set bn = blockNumber %}
 {% for initialNumber, initial in enumerate(block.initials) %}
-void Initial_{{bn}}_{{ initial.idx }}(double* cellstart, double x, double y, double z){
+void Initial_{{bn}}_{{ initial.idx }}(double* cellstart, double t, double x, double y, double z){
      {% for valueNumber, value in enumerate(initial.parsedValues) %}
 	cellstart[{{ valueNumber }}] = {{ value }};
      {% endfor %}
@@ -34,8 +34,8 @@ void Initial_{{bn}}_{{ initial.idx }}(double* cellstart, double x, double y, dou
 {% endfor %}
 
 {% for boundNumber, bound in enumerate(block.bounds) %}
-void DirichletInitial_{{bn}}_{{ bound.idx }}(double* cellstart, double x, double y, double z){
-     double t = 0;
+void DirichletInitial_{{bn}}_{{ bound.idx }}(double* cellstart, double t, double x, double y, double z){
+
      {% for valueNumber, value in enumerate(bound.parsedValues) %}
 	cellstart[{{ valueNumber }}] = {{ value }};
      {% endfor %}
@@ -45,7 +45,7 @@ void DirichletInitial_{{bn}}_{{ bound.idx }}(double* cellstart, double x, double
 {% set initialCount = len(block.initials) %}
 {% set fDirichletCount = len(block.bounds) %}
 
-void Block{{ bn }}FillInitialValues(double* result, unsigned short int* initType){
+void Block{{ bn }}FillInitialValues(double* result, double t, unsigned short int* initType){
 	initfunc_ptr_t initFuncArray[{{ initialCount + fDirichletCount }}];
 	
     {% for initial in block.initials %}
@@ -60,7 +60,7 @@ void Block{{ bn }}FillInitialValues(double* result, unsigned short int* initType
 	for(int idxX = 0; idxX<Block{{ bn }}CountX; idxX++){
 	   	int idx = idxX;
 		int type = initType[idx];
-		initFuncArray[type](result+idx*Block{{ bn }}CELLSIZE, Block{{ bn }}OffsetX + idxX*DX, 0, 0);
+		initFuncArray[type](result+idx*Block{{ bn }}CELLSIZE, t, Block{{ bn }}OffsetX + idxX*DX, 0, 0);
 	}
     {% endif %}
     {% if dim == 2 %}
@@ -68,7 +68,7 @@ void Block{{ bn }}FillInitialValues(double* result, unsigned short int* initType
 		for(int idxX = 0; idxX<Block{{bn}}CountX; idxX++){
 			int idx = idxY*Block{{bn}}CountX + idxX;
 			int type = initType[idx];
-			initFuncArray[type](result+idx*Block{{bn}}CELLSIZE, Block{{bn}}OffsetX + idxX*DX, Block{{bn}}OffsetY + idxY*DY, 0);
+			initFuncArray[type](result+idx*Block{{bn}}CELLSIZE, t, Block{{bn}}OffsetX + idxX*DX, Block{{bn}}OffsetY + idxY*DY, 0);
     }
     {% endif %}
 }

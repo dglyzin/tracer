@@ -66,7 +66,7 @@
             "Name": "Dirichlet 1", 
             "Type": 0, 
             "Values": [
-                "0.0"
+                "0.0+sin(t)"
             ], 
             "Derivative": [
                 "0.0"
