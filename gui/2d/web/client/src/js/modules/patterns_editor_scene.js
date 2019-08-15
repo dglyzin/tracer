@@ -1,6 +1,6 @@
 console.log("log patterns_editor_scene.js");
 
-define(['jquery'], function($){
+define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
 
     return {
 	draw_scene: function draw_scene(div_id){
@@ -66,8 +66,15 @@ define(['jquery'], function($){
 	    
 	    var controls_patterns_str =
 		    `<input type="button" value="group selected" id="b_group">
-		    <input type="button" value="ungroup selected" id="b_ungroup">`;
+		    <input type="button" value="ungroup selected" id="b_ungroup">
+		    <br><br>
+		    <div id="m_patterns_wrap" class="style_editor_static editor_overflow">
+		     <ul id="m_patterns" class="ui-menu ui-widget ui-widget-content">
+		      <li class="ui-menu-item ui-widget ui-widget-content" title="title">empty</li>
+		     </ul>
+		    </div>`;
 	    $("#controls_patterns").html(controls_patterns_str);
+	    $("#m_patterns").menu();
 	    // END FOR
 	    console.log("draw patterns scene done");
 	}

@@ -27,9 +27,9 @@ requirejs.config({
 // Start loading the main app file. Put all of
 // your application logic in there.
 // 
-requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/ttree',
+requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/main_tree',
 	   'modules/models_2d_editor', 'modules/patterns_editor'],
-	  function($, ui, ttree, tmeditor, tpeditor){
+	  function($, ui, mtree, tmeditor, tpeditor){
 
 	      var self = this;
 	      
@@ -62,15 +62,16 @@ requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/ttree',
 		      self.boards[mode].init_board();
 		  }
 		  self.current_mode = mode;
-	      },
+	      };
 
-	      
+	      // create tree:
+	      var tree = new mtree.MTree(self);
+
 	      console.log("all files loaded");
 	      
 	      $( document ).ready(function() {
 
-		  ttree.create_tree(self);
-
+		
 		  // self.update("patterns_editor");
 		  self.update("models_editor");
 		  // var board = new tmeditor.Board();

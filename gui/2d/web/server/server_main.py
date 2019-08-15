@@ -40,7 +40,7 @@ def make_app(handlers):
         (r"/", handlers.MainHandler),
         
         #api
-        # (r"/api/tree", TreeHandler),
+        (r"/api/tree", handlers.TreeHandler),
         # (r"/api/editor", EditorHandler),
 
         # statics from /client folder

@@ -1,20 +1,21 @@
 console.log("log models_editor_scene.js");
 
-define(['jquery'], function($){
+define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
 
     return {
 	draw_scene: function draw_scene(div_id){
 	    // FOR scene:
 	    var scene_str =
-		    `<div id="scene_canvas" width="850" height="300"
-	                style="border: 1px solid; border-width: 1px; border-color: black;">
-		       <table>
+		    `<div id="controls" class="tree_positioned" ></div>
+		    <div id="scene_canvas" width="850" height="300"
+	                style="border: 1px solid; border-width: 1px; border-color: black; position: absolute;">
+		       <table class="tree_positioned">
 		       <tr><td>
 		          <canvas id="canvas" style="position: absolute; border: 1px solid; border-width: 1px;
                             border-color: #111111;" width="550" height="300"></canvas>
 		       </td></tr></table>
-                     </div>
-                     <div id="controls"></div>`;
+                     </div><br>
+                     `;
 
 	    $(div_id).html(scene_str);
 	    // END FOR
@@ -30,7 +31,7 @@ define(['jquery'], function($){
 		    <div id="controls_draw"></div>
 		    <div id="controls_eq_regions"></div>
 		    <div id="controls_br_regions"></div>
-		    <div id="controls_save"></div>`;
+		    <div id="controls_save" style="height: 470px;"></div>`;
 	    $("#controls").html(controls_str);
 
 	    var controls_draw_str =
@@ -88,13 +89,29 @@ define(['jquery'], function($){
 		</select><br>`;		
 	    $("#controls_br_regions").html(controls_br_regions_str);
 
+	    // <input type="button" value="save" id="b_save_fabric_canvas">
 	    var controls_save_str =
-		    `<input type="button" value="save" id="b_save_fabric_canvas">
+		    `
+		    <br><br>		       
+		    <div id="models_tree_wrap" class="tree_positioned">
+		     <div id="models_tree_wrap_style" class="style_editor_static editor_overflow tree_positioned">
+		      <div id="models_tree"  class="tree_positioned"></div>
+
+                     </div>
+		      <div id="models_menu"></div> 		     
+		    </div>
+		    <div id="models_tree_input"></div>
 		    <br>
+		    <input type="button" value="open" id="b_open_fabric_canvas">
+                    <br>
+                    <div id="result" style="top: 83px; position: relative;">
 		    Result
 		    <br>
-		    <img src="none.png" id="result_img"></img>`;
+		    <img src="none.png" id="result_img"></img>
+                    </div>
+		    `;
 	    $("#controls_save").html(controls_save_str);
+	    
 	    // END FOR
 	    console.log("draw model scene done");
 	}

@@ -1,10 +1,10 @@
 console.log("log models_2d_editor.js");
 define(['jquery', 'jquery-ui-custom/jquery-ui',
 	'fabric', 'modules/base_editor', 'modules/eqs_regions',
-	'modules/models_editor_scene'],
+	'modules/models_editor_scene', 'modules/models_tree'],
        
        function($, ui, fabric, base_editor, eqs_regions,
-		scene){
+		scene, mtree){
 	   
 	   function BoardModel(){
 	       
@@ -71,6 +71,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 
 	   BoardModel.prototype.apply_controls = function(){
 	       $("#controls").tabs();
+	       $("#models_tree_wrap_style").resizable();
 
 	       this.apply_draw("sr_draw_size", "sr_draw_color",
 			       "param_draw_observable", "b_change_fabric_mode");
@@ -79,7 +80,8 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       this.apply_remove_all("b_remove_all");
 	       this.apply_remove_selected("b_remove_selected");
 	       this.apply_regions("b_add_region", "b_add_region_br");
-	       this.apply_save("b_save_fabric_canvas");
+	       // this.apply_save("b_save_fabric_canvas");
+	       this.apply_tree();
 	   };
 
 	   BoardModel.prototype.apply_remove_all = function(b_id){
@@ -174,6 +176,10 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 		    */
 	       });   
 	   };
+	   BoardModel.prototype.apply_tree = function(){
+	       var self = this;
+	       self.tree = mtree.ModelsTree(self);
+	   };
 
 	   BoardModel.prototype.apply_save = function(b_save_fabric_canvas_id){
 	       
@@ -191,93 +197,9 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       // "#b_save_fabric_canvas"
 	       $("#"+b_save_fabric_canvas_id).on("click", function(){
 		   
-		   // for filter unobservable:
-		   console.log("unobservable objects:");
-		   var uo_objects = self.canvas._objects.filter(function(elm){return(!elm.observable);});
-		   console.log(uo_objects);
+		   var to_send = self.save();
 
-		   // FOR hiding unobservable by changing they color to canvas.background
-		   uo_objects.forEach(function(elm){
-		       elm.old_fill = elm.fill;
-		       // elm.set("fill", 'rgba(255, 255, 255, 1.0)');
-		       elm.setColor('rgba(0, 0, 0, 1.0)');
-		   });
-		   console.log("recolored done");
-		   self.canvas.renderCanvas(self.canvas.getContext(), uo_objects);
-		   // END FOR
-
-		   console.log("br objects:");
-		   var br_objects = self.canvas._objects.filter(function(elm){return(elm.type == "bRegion");});
-		   console.log(br_objects);
-
-		   // FOR set bRegion's width's to 1px:
-		   br_objects.forEach(function(elm){
-		       if(elm.side == 0){
-			   elm.old_width = elm.width;
-			   elm.set("width", 1);
-		       }
-		       if(elm.side == 1){
-			   elm.old_width = elm.width;
-			   elm.set("width", 1);
-			   elm.set("left", elm.left+elm.old_width-1);
-		       }
-		       if(elm.side == 2){
-			   elm.old_height = elm.height;
-			   elm.set("height", 1);
-		       }
-		       if(elm.side == 3){
-			   elm.old_height = elm.height;
-			   elm.set("height", 1);
-			   elm.set("top", elm.top+elm.old_height-1);
-		       }
-		       
-		   });
-		   self.canvas.renderCanvas(self.canvas.getContext(), br_objects);
-		   // END FOR
-
-		   self.canvas.setBackgroundColor('rgba(0, 0, 0, 1.0)',
-						  self.canvas.renderAll.bind(self.canvas));
-
-		   // convert to img:
-		   var data = self.canvas.toDataURL({format: 'jpeg', quality: 1,
-						     left: 0, top: 0, width: 550, height: 300});
-
-		   // FOR restore bRegions width:	
-		   br_objects.forEach(function(elm){
-		       if(elm.side == 0){
-			   elm.set("width", elm.old_width);
-		       }
-		       if(elm.side == 1){
-			   elm.set("width", elm.old_width);
-			   elm.set("left", elm.left-elm.old_width+1);
-		       }
-		       if(elm.side == 2){
-			   elm.set("height", elm.old_height);
-		       }
-		       if(elm.side == 3){
-			   elm.set("height", elm.old_height);
-			   elm.set("top", elm.top-elm.old_height+1);
-		       }
-		   });
-		   self.canvas.renderCanvas(self.canvas.getContext(), br_objects);
-		   // END FOR
-
-		   // FOR restore unobservable:
-		   uo_objects.forEach(function(elm){
-		       // elm.set("fill", elm.old_fill);
-		       elm.setColor(elm.old_fill);
-		   });
-		   self.canvas.renderCanvas(self.canvas.getContext(), uo_objects);
-		   // END FOR
-		   
-		   self.canvas.requestRenderAll();
-
-		   // for extracting image:
-		   var img = document.getElementById('result_img');
-		   img.src = data;
-		   
 		   // FOR send data to server:
-		   var to_send = JSON.stringify({img: data});
 		   console.log("\n sending");
 		   console.log(to_send);
 		   $.ajax(
@@ -292,6 +214,14 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 			       var data = objresponse;
 			       console.log("\ndata_successfuly_recived:");
 			       console.log(data);
+
+			       var models_id = $.map(data["models_id"], function(elm, id){
+				   console.log(elm);
+				   console.log(id);
+				   return('<li class="ui-menu-item ui-widget ui-widget-content"'
+					  + 'title="title">'+elm+'</li>');
+			       });
+			       $("#m_models").append(models_id.join(""));
 			   },
 
 			   error: function (data) {
@@ -302,6 +232,114 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 		   // END FOR
 	       });
 
+	   };
+	   
+	   BoardModel.prototype.load = function(data){
+	       var self = this;
+	       self.canvas.loadFromJSON(data,
+					self.canvas.renderAll.bind(self.canvas),
+					function(o, object) {
+					    fabric.log(o, object);
+					});
+	   };
+
+	   BoardModel.prototype.save = function(){
+	       
+	       var self = this;
+
+	       // for filter unobservable:
+	       console.log("unobservable objects:");
+	       var uo_objects = self.canvas._objects.filter(function(elm){return(!elm.observable);});
+	       console.log(uo_objects);
+
+	       // FOR hiding unobservable by changing they color to canvas.background
+	       uo_objects.forEach(function(elm){
+		   elm.old_fill = elm.fill;
+		   // elm.set("fill", 'rgba(255, 255, 255, 1.0)');
+		   elm.setColor('rgba(0, 0, 0, 1.0)');
+	       });
+	       console.log("recolored done");
+	       self.canvas.renderCanvas(self.canvas.getContext(), uo_objects);
+	       // END FOR
+
+	       console.log("br objects:");
+	       var br_objects = self.canvas._objects.filter(function(elm){return(elm.type == "bRegion");});
+	       console.log(br_objects);
+
+	       // FOR set bRegion's width's to 1px:
+	       br_objects.forEach(function(elm){
+		   if(elm.side == 0){
+		       elm.old_width = elm.width;
+		       elm.set("width", 1);
+		   }
+		   if(elm.side == 1){
+		       elm.old_width = elm.width;
+		       elm.set("width", 1);
+		       elm.set("left", elm.left+elm.old_width-1);
+		   }
+		   if(elm.side == 2){
+		       elm.old_height = elm.height;
+		       elm.set("height", 1);
+		   }
+		   if(elm.side == 3){
+		       elm.old_height = elm.height;
+		       elm.set("height", 1);
+		       elm.set("top", elm.top+elm.old_height-1);
+		   }
+		   
+	       });
+	       self.canvas.renderCanvas(self.canvas.getContext(), br_objects);
+	       // END FOR
+
+	       self.canvas.setBackgroundColor('rgba(0, 0, 0, 1.0)',
+					      self.canvas.renderAll.bind(self.canvas));
+
+	       // convert to img:
+	       var data = self.canvas.toDataURL({format: 'jpeg', quality: 1,
+						 left: 0, top: 0, width: 550, height: 300});
+
+	       // FOR restore bRegions width:	
+	       br_objects.forEach(function(elm){
+		   if(elm.side == 0){
+		       elm.set("width", elm.old_width);
+		   }
+		   if(elm.side == 1){
+		       elm.set("width", elm.old_width);
+		       elm.set("left", elm.left-elm.old_width+1);
+		   }
+		   if(elm.side == 2){
+		       elm.set("height", elm.old_height);
+		   }
+		   if(elm.side == 3){
+		       elm.set("height", elm.old_height);
+		       elm.set("top", elm.top-elm.old_height+1);
+		   }
+	       });
+	       self.canvas.renderCanvas(self.canvas.getContext(), br_objects);
+	       // END FOR
+
+	       // FOR restore unobservable:
+	       uo_objects.forEach(function(elm){
+		   // elm.set("fill", elm.old_fill);
+		   elm.setColor(elm.old_fill);
+	       });
+	       self.canvas.renderCanvas(self.canvas.getContext(), uo_objects);
+	       // END FOR
+	       
+	       self.canvas.requestRenderAll();
+
+	       // for extracting image:
+	       var img = document.getElementById('result_img');
+	       img.src = data;
+
+	       $("#controls").tabs("refresh");
+	       
+	       console.log("canvas json obj:");
+	       console.log(data);
+	       var to_send = JSON.stringify({canvas_img: data,
+					     canvas_source: JSON.stringify(self.canvas)});
+	       
+	       return(to_send);
 	   };
 	   
 	   return {
