@@ -253,6 +253,12 @@ def savePlots1D(projectDir, projectName, data, t,
 
     filename = os.path.join(projectDir, (projectName+"-plot"
                                          + str(plotIdx) + str(postfix) + ".png"))
+
+    # fix bug with cellsize:
+    cellSize = len(data)
+    logger.info("cellsize as len(data):")
+    logger.info(cellSize)
+
     savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
     # logger.info("produced png: "+ filename)
     # return "produced png: " + filename
@@ -290,6 +296,11 @@ def savePlots2D(projectDir, projectName, data, t,
     # t = binFile.split("-")[1]
     # Ex (binFile): heat_block_0-0.05300000-2.dbin
     # t = t.split(drawExtension)[0]
+
+    # fix bug with cellsize:
+    cellSize = len(data)
+    logger.info("cellsize as len(data):")
+    logger.info(cellSize)
 
     savePng2D(filename, X, Y, data, maxValue, minValue, t, cellSize)
     # if saveText:
@@ -681,6 +692,9 @@ def createMovie(projectDir, projectName, modelParamsPath):
         for resultValue in resultItem["Value"]:
 
             pool = mp.Pool(processes=16)
+
+            # here plotFileLists is list, generated
+            # with solver, and extracted with getBinFilesByPlot:
             arg_list = [(projectDir, projectName,
                          binFile, info, dimension,
                          countZ, countY, countX,
