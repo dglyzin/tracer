@@ -12,13 +12,13 @@ define(['jquery', 'cytoscape/cytoscape.min', "modules/tmenu"],
 		   var self = this;
 
 		   // FOR menu:
-		   self.menu_status = 0;
+		   
 		   menu_items = ["add term to db", ""];
 		   menu_tooltips = ["TODO_0", "TODO_1"];
 
-		   self.menu = new tmenu.Menu(menu_items, menu_tooltips);
+		   self.menu = new tmenu.Menu("#menu_div", menu_items, menu_tooltips);
 		   console.log("self.menu:");
-		   console.log(tmenu);
+		   console.log(self.menu);
 			       
 		   // END FOR
 		   // FOR net
@@ -112,8 +112,6 @@ define(['jquery', 'cytoscape/cytoscape.min', "modules/tmenu"],
 			       
 			       // cy.style().selector('edges:selected').css({"background-color": "black"}).update();
 			       self.cy.forceRender();
-			       
-			       self.menu_status = 0;
 
 			       self.cy.on("tap", "node", function(event){
 				   console.log("node right click");
@@ -193,20 +191,7 @@ define(['jquery', 'cytoscape/cytoscape.min', "modules/tmenu"],
 				   var y = cy_offset_y + pan_offset_y + node_pos_y;
 				   console.log("cy_offset + pan_offset + node_pos: ");
 				   console.log([x, y]);
-				   
-				   if(self.menu_status == 0){
-				       console.log(self);
-				       self.menu.menu_create(x, y);
-				       self.menu_status = 1;
-				   }else if(self.menu_status == 1){
-				       // menu_hide();
-				       self.menu.menu_remove();
-				       self.menu_status = 2;
-				   }else if(self.menu_status == 2){
-				       // menu_show(event);
-				       self.menu.menu_create(x, y);
-				       self.menu_status = 1;
-				   };
+				   self.menu.update(x, y);
 			       });
 			       
 			       self.cy.on("tap", function(event){
@@ -221,11 +206,7 @@ define(['jquery', 'cytoscape/cytoscape.min', "modules/tmenu"],
 				   
 				   console.log("clientX, clientY: ");
 				   console.log([clientX, clientY]);
-				   if(self.menu_status == 1){
-				       // menu_hide();
-				       self.menu.menu_remove();
-				       self.menu_status = 2;
-				   };
+				   self.menu.update_remove();
 			       });
 			       
 			       console.log("net created");
