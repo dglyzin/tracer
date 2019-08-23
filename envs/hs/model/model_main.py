@@ -4,6 +4,8 @@ from envs.hs.model.model_device import ModelDevice
 from envs.hs.model.cpp.model_gen_cpp import ModelGenCpp
 from envs.hs.model.model_editor import ModelEditor
 from envs.hs.model.grid.grid_main import GridNet as Grid
+# from envs.hs.model.model_results import ModelResults
+from solvers.hs.postproc.results.results_main import ResultPostprocNet as ResultPostproc
 
 import logging
 
@@ -32,7 +34,8 @@ class Tmp():
 class ModelNet():
 
     # model = Model(grid, blocks=[block1,...], ics=[ic1,...])
-    def __init__(self, grid=None, blocks=None, ics=None):
+    def __init__(self, grid=None, blocks=None, ics=None, settings=None):
+        
         if grid is None:
             self.grid = Grid()
         else:
@@ -51,6 +54,22 @@ class ModelNet():
         self.editor = ModelEditor(self)
         self.cpp = ModelGenCpp(self)
         self.domain = None
+        # self.results = ModelResults(self)
+        self.settings = settings
 
+    def set_settings(self, settings):
+        self.settings = settings
+
+    def readResults(self, names=[],
+                    result_format=1, progress=None):
+        '''
+        Create self.results_paths, self.plots_paths, self.results_arrays.
+        '''
+        result_postproc = ResultPostproc(self.project_folder)
+        
+        result_postproc.set_results_arrays(self, names=names,
+                                           result_format=result_format,
+                                           progress=progress)
+        
     def show(self):
         return(self.base.toDict())

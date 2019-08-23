@@ -1,7 +1,7 @@
 class GenPlot():
 
     '''
-    Generate sh file.
+    Generate params_plot.txt file.
     '''
 
     def __init__(self, net):

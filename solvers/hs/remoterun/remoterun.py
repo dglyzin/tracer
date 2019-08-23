@@ -76,6 +76,7 @@ from envs.hs.model.model_main import ModelNet as Model
 
 from solvers.hs.remoterun.progresses.progress_main import StdoutProgresses
 from solvers.hs.remoterun.progresses.progress_cmd import progress_cmd
+from solvers.hs.postproc.results.results_main import ResultPostprocNet as ResultPostproc
 
 import logging
 
@@ -207,7 +208,7 @@ def make_problems_as_workspace_link(client, hs_problems, workspace):
     logger.info("link created")
 
 
-def remoteProjectRun(settings, dimention, notebook=None):
+def remoteProjectRun(settings, dimention, notebook=None, model=None):
     '''
     Run hs with settings:
     1) Create folders at hs/workspace for model and settings
@@ -622,6 +623,11 @@ def remoteProjectRun(settings, dimention, notebook=None):
             '''
             logger.info("stderr END")
 
+        # clear old results:
+        for filename in sorted(os.listdir(hd_out_folder)):
+            if filename.endswith('mp4') or filename.endswith('out'):
+                os.remove(os.path.join(hd_out_folder, filename))
+
         #get resulting files
         logger.info("Downloading results...")
         logger.info("from:")
@@ -631,7 +637,7 @@ def remoteProjectRun(settings, dimention, notebook=None):
         cftp.chdir(hs_out_folder)
         for filename in sorted(cftp.listdir()):
             if filename.endswith('mp4') or filename.endswith('out'):
-
+                
                 if notebook is None:
                     progress = functools.partial(progress_cmd, prefix=filename,
                                                  is_sleep=False)
@@ -646,6 +652,24 @@ def remoteProjectRun(settings, dimention, notebook=None):
         cftp.close()
         logger.info("Done!")
         client.close()
+        
+        # FOR adding path to model:
+        if model is not None:
+            result_postproc = ResultPostproc("", hd_out_folder=hd_out_folder)
+            result_postproc.get_results_filespaths(model)
+
+            print("\nPlots:")
+            if "plots_paths" in dir(model):
+                print(model.plots_paths)
+            else:
+                print("no model.plots_paths")
+
+            print("\nResults:")
+            if "results_paths" in dir(model):
+                print(model.results_paths)
+            else:
+                print("no model.results_paths")
+        # END FOR
 
     #Обрабатываю исключения
     except paramiko.ssh_exception.AuthenticationException as e:
@@ -666,7 +690,7 @@ def remoteProjectRun(settings, dimention, notebook=None):
         return()
 
 
-def finalParseAndRun(settings, dimention):
+def finalParseAndRun(settings, dimention, model=None):
     '''
     continueFileName = args.cont
     continueEnabled = not (continueFileName is None)
@@ -688,7 +712,7 @@ def finalParseAndRun(settings, dimention):
         "nocppgen": args.nocppgen
     }
     '''
-    remoteProjectRun(settings, dimention, notebook=None)
+    remoteProjectRun(settings, dimention, notebook=None, model=model)
     # remoteProjectRun(settings, params, notebook=None)
     # logger.clean()
 
@@ -766,4 +790,6 @@ if __name__ == '__main__':
 
     settings = Settings(model, conn_name, device_conf_name, paths_name)
 
-    finalParseAndRun(settings, model.dimension)
+    finalParseAndRun(settings, model.dimension, model=model)
+
+    

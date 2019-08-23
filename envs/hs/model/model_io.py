@@ -8,6 +8,7 @@ from spaces.math_space.common.env.system.sys_main import sysNet as System
 from spaces.math_space.pde.bound import Bound
 from spaces.math_space.pde.initial import Initial
 from envs.hs.model.compnode import Compnode
+from solvers.hs.postproc.results.results_main import ResultPostprocNet as ResultPostproc
 
 from collections import OrderedDict
 
@@ -32,6 +33,12 @@ class ModelIO():
     def __init__(self, net):
         self.net = net
         self.initSessionSettings()
+
+        # default acc value for video file names:
+        self.plots_name_idx = 0
+
+        # default acc value for result file names:
+        self.results_name_idx = 0
 
     def initSessionSettings(self):
 
@@ -89,6 +96,7 @@ class ModelIO():
             logger.info("full path is given")
             logger.info(project_folder)
 
+        self.net.project_folder = project_folder
         self.net.project_path = project_folder.split('problems/')[-1]
         logger.debug("project_path:")
         logger.debug(self.net.project_path)
@@ -145,6 +153,11 @@ class ModelIO():
                 else:
                     plot_entry["Title"] = "no_title"
 
+                if "Name" in plot:
+                    plot_entry["Name"] = plot["Name"]
+                else:
+                    plot_entry["Name"] = "no_name_plot"
+
                 if "Period" in plot:
                     plot_entry["Period"] = plot["Period"]
                 else:
@@ -176,7 +189,7 @@ class ModelIO():
                 if "Name" in res:
                     res_entry["Name"] = res["Name"]
                 else:
-                    res_entry["Name"] = "no_name"
+                    res_entry["Name"] = "no_name_result"
 
                 if "Period" in res:
                     res_entry["Period"] = res["Period"]
@@ -200,6 +213,11 @@ class ModelIO():
         except:
             self.net.results = []
         '''
+        # FOR saving previus plots and results paths:
+        model_dir = self.net.project_folder
+        result_postproc = ResultPostproc(model_dir)
+        result_postproc.get_results_filespaths(self.net)
+        # END FOR
 
         self.initSessionSettings()
         self.projectFileAssigned = True

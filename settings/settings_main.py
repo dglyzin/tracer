@@ -100,9 +100,10 @@ class Settings():
             self.make_connection(name=conn_name)
         self.set_path(paths_name)
         self.set_device_conf(device_conf_name)
-
+        self.model = model
+        self.model.settings = self
         self.make_all_paths(model)
-
+        
     def get_confs(self, settings_folder):
 
         conns_folder = os.path.join(settings_folder, 'conn')

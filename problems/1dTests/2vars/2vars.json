@@ -119,6 +119,7 @@
     }, 
     "Plots": [ 
 	{
+	    "Name": "plot_name",
             "Title": "block0 u(t,x) + v(t,x)", 
             "Period": 0.1,
             "Value": ["U+V"]
