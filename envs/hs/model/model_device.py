@@ -37,20 +37,29 @@ class ModelDevice():
     def getNodeSpec(self):
         '''
         returns parameter string to slurm:
-        -w cnodex cnodey ...
-        if no "any" node is present in json
-        and empty string otherwise
+        -w cnode_x cnode_y ...
+        if node.name == "any" (or "*") for first node,
+        or self.net.compnodes is empty
+        then empty string return
         '''
+        
         paramLine = "-w "
         
-        if len(self.net.compnodes) == 1:
+        if len(self.net.compnodes) == 0:
+            return ""
+        elif len(self.net.compnodes) == 1:
             node = self.net.compnodes[0]
-            if node.name == "any":
+            if node.name in ("any", "*"):
                 return ""
             else:
                 paramLine += node.name
         else:
             for node in self.net.compnodes:
+                if node.name in ("any", "*"):
+                    raise(BaseException(
+                        'One of Hardware node Name is "any" or "*"'
+                        + '\n but there is other nodes here!'
+                        + '\n Remove them if all computation nodes needed'))
                 paramLine += node.name + ","
             paramLine = paramLine[:-1]
         return(paramLine)

@@ -64,6 +64,7 @@ class GenSH():
         self.taskCountPerNode = "1"
 
         self.hd_python = "python3"
+        self.exclusive = ""
 
     def set_params(self, params):
         '''
@@ -153,6 +154,10 @@ class GenSH():
         if "hs_python" in params.keys():
             self.hs_python = params["hs_python"]
 
+        if "exclusive" in params.keys():
+            if params["exclusive"]:
+                self.exclusive = "--exclusive"
+
     def gen_sh(self, outputRunFile):
         '''
         Create sh file in ``outputRunFile``.
@@ -175,6 +180,7 @@ class GenSH():
             runFile.write("srun -N " + self.nodeCount
                           + " -n " + self.taskCountPerNode
                           + " " + self.nodes + self.partition
+                          + " " + self.exclusive
                           #+ " mpirun " + self.mpimap
                           + " " + self.solverExecutable
                           + " " + self.domFile
@@ -193,6 +199,7 @@ class GenSH():
 
             runFile.write("srun -n 1" + " " + self.nodes
                           + " " + self.partition
+                          + " " + self.exclusive
                           + " " + hs_python + " " + self.postprocessor
                           + " " + self.projectDir+"/"
                           + " " + self.title

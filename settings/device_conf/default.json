@@ -8,5 +8,7 @@
     "mpimap": "",
     "affinity": "0-15",
     "hs_python": "~/anaconda3/bin/python3",
-    "hd_python": "~/anaconda3/bin/python3"
+    "hd_python": "~/anaconda3/bin/python3",
+    "exclusive": false
+
 }
