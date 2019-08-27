@@ -80,10 +80,10 @@
     ], 
     "Hardware": [
         {
-            "Name": "cnode3", 
+            "Name": "*", 
             "CpuCount": 1, 
             "CpuMemory": [
-                56
+                5
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
@@ -106,6 +106,7 @@
     "Plots": [ 
 	{
             "Title": "u(t,x)", 
+            "Name": "plotjustU",
             "Period": 0.1,
             "Value": "U"
         }
@@ -113,7 +114,7 @@
 
     "Results":[
         {
-            "Name": "u", 
+            "Name": "resJustU", 
             "Period": 0.1,
             "Value": "U"
         }
