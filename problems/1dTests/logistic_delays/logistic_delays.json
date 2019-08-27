@@ -77,19 +77,19 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "1.0"
+                "1.0+t"
             ]
         }, 
         {
             "Name": "Initial values 1", 
             "Values": [
-                "1.0"
+                "1.0+t"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "dnode09",
+            "Name": "*",
             "CpuCount": 1, 
             "CpuMemory": [
                 5
@@ -114,7 +114,8 @@
     }, 
     "Plots": [ 
 	{
-            "Title": "u(t,x)", 
+            "Name": "u_just_u", 
+            "Title": "u^2(t,x)", 
             "Period": 0.1,
             "Value": "U"
         }
@@ -122,9 +123,9 @@
 
     "Results":[
         {
-            "Name": "u", 
+            "Name": "u_just_res_u", 
             "Period": 0.1,
-            "Value": "U"
+            "Value": "U+1"
         }
     ]
 }
