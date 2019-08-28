@@ -78,26 +78,51 @@ from solvers.hs.remoterun.progresses.progress_main import StdoutProgresses
 from solvers.hs.remoterun.progresses.progress_cmd import progress_cmd
 from solvers.hs.postproc.results.results_main import ResultPostprocNet as ResultPostproc
 
+# import logging
+from settings.logger.logger_std import create_logger, get_logger_level
+
+# FOR logger:
+
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+# parentdir = os.path.dirname(currentdir)
+hd_dir = currentdir.split("solvers")[0]
+logFileName = os.path.join(hd_dir, 'settings/logger/remoterun.log')
+loggerName = 'remoterun'  # __name__
+
+log_level_console = 'INFO'
+log_level_file = 'DEBUG'
+# print("logFileName:")
+# print(logFileName)
+logger = create_logger(loggerName, logFileName,
+                       log_level_console, log_level_file)
+
+# END FOR
+
 import logging
+logging.getLogger("paramiko").setLevel(logging.WARNING)
+logging.getLogger("peewee").setLevel(logging.WARNING)
 
 # if using from tester.py uncoment that:
 # create logger that child of tester loger
-# logger = logging.getLogger('tests.tester.gen_1d')
-
+# logger = logging.getLogger('remoterun')
+# logger.setLevel(level=logging.INFO)  # logging.DEBUG
 # if using directly uncoment that:
 
+'''
 # create logger
 log_level = logging.INFO  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('remoterun')
 logger.setLevel(level=log_level)
 
+'''
 # paramiko.util.log_to_file(os.path.join(os.getcwd(), "tests", "paramiko.log"))
 
 
 def create_folder(client, folder):
 
-    logger.info("Checking if folder "+folder+" exists...")
+    logger.debug("Checking if folder "+folder+" exists...")
     cmd = 'test -d ' + folder
     stdin, stdout, stderr = client.exec_command(cmd)
     if stdout.channel.recv_exit_status():
@@ -107,7 +132,7 @@ def create_folder(client, folder):
                                                % folder))
         err = stderr.read()
         if len(err) > 0:
-            logger.info(err)
+            logger.error(err)
             raise(BaseException(err))
         else:
             logger.info("created folder %s" % folder)
@@ -125,17 +150,17 @@ def copy_files(client, connection, hd_path, hs_path, name):
 
     cftp = client.open_sftp()
     walk_gen = os.walk(hd_path)
-    logger.info("copy %s files:" % name)
+    logger.debug("copy %s files:" % name)
     for root, folders_names, file_names in walk_gen:
         for file_name in file_names:
             if file_name[-1] != '~' and "checkpoint" not in file_name:
                 hd_file_name_full = os.path.join(hd_path, file_name)
                 hs_file_name_full = os.path.join(hs_path, file_name)
-                logger.info("copy " + hd_file_name_full)
-                logger.info("to " + hs_file_name_full)
+                logger.debug("copy " + hd_file_name_full)
+                logger.debug("to " + hs_file_name_full)
                 cftp.put(hd_file_name_full, hs_file_name_full)
     cftp.close()
-    logger.info("finished copy %s files" % name)
+    logger.debug("finished copy %s files" % name)
 
 
 def copy_file_to_folder(client, hd_file_name_full, hs_path, name):
@@ -148,12 +173,12 @@ def copy_file_to_folder(client, hd_file_name_full, hs_path, name):
 
     file_name = os.path.basename(hd_file_name_full)
     hs_file_name_full = os.path.join(hs_path, file_name)
-    logger.info("copy " + hd_file_name_full)
-    logger.info("to " + hs_file_name_full)
+    logger.debug("copy " + hd_file_name_full)
+    logger.debug("to " + hs_file_name_full)
     cftp = client.open_sftp()
     cftp.put(hd_file_name_full, hs_file_name_full)
     cftp.close()
-    logger.info("finished copy %s files" % name)
+    logger.debug("finished copy %s files" % name)
 
 
 def copy_file(client, hd_file_name_full, hs_file_name_full):
@@ -162,7 +187,7 @@ def copy_file(client, hd_file_name_full, hs_file_name_full):
     # 1 copy json to hs:
     cftp.put(hd_file_name_full, hs_file_name_full)
     cftp.close()
-    logger.info("file copied")
+    logger.debug("file copied")
 
 
 def make_problems_as_workspace_link(client, hs_problems, workspace):
@@ -205,10 +230,11 @@ def make_problems_as_workspace_link(client, hs_problems, workspace):
         logger.error("ln err:")
         logger.error(err)
         raise(BaseException(err))
-    logger.info("link created")
+    logger.debug("link created")
 
 
-def remoteProjectRun(settings, dimention, notebook=None, model=None):
+def remoteProjectRun(settings, dimention, notebook=None, model=None,
+                     log_level_console="INFO", log_level_file="DEBUG"):
     '''
     Run hs with settings:
     1) Create folders at hs/workspace for model and settings
@@ -217,7 +243,8 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
     4) Run .sh
     5) Getting hs statuses and progress
        TODO: hs is running
-    6) Getting back result (.mp3, .out)
+    6) Clearing previus results
+    7) Getting back result (.mp3, .out)
 
     Inputs:
 
@@ -277,6 +304,12 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
     if not (params["mpimap"] is None):
         optionalArgs += " -mpimap " + str(params["mpimap"])
     '''
+    # FOR logger:
+    log_level_console = get_logger_level(log_level_console)
+    logger.setLevel(log_level_console)
+    log_level_file = get_logger_level(log_level_file)
+    logger.handlers[0].setLevel(log_level_file)
+    # END FOR
 
     # FOR paths:
     paths = settings.paths
@@ -291,8 +324,8 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
 
     project_name = paths['model']['name']
     project_path = paths['model']['path']
-    logger.info("project_path")
-    logger.info(project_path)
+    logger.debug("project_path")
+    logger.debug(project_path)
     hs_project_path_relative = paths['hs']['project_path_relative']
     project_path_folders = hs_project_path_relative.split(os.path.sep)
 
@@ -344,30 +377,33 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
     # END FOR
 
     # get project file name without extension
-    logger.info("project_name")
-    logger.info(project_name)
+    logger.debug("project_name")
+    logger.debug(project_name)
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
     # print conn.host, conn.username, passwd, conn.port
     try:
+        logger.info('\nconnect ...')
         client.connect(hostname=connection.host,
                        username=connection.username,
                        password=connection.password,
                        port=connection.port)
+        logger.info('\nconnection established')
+        logger.info('\nfiles/folders routine')
 
-        logger.info("Checking if folder "+workspace+" exists...")
+        logger.debug("Checking if folder "+workspace+" exists...")
         cmd = 'test -d '+workspace
         stdin, stdout, stderr = client.exec_command(cmd)
         if stdout.channel.recv_exit_status():
-            logger.info("Please create workspace folder and put hybriddomain"
-                        + " preprocessor into it")
+            logger.error("Please create workspace folder and put hybriddomain"
+                         + " preprocessor into it")
             return
         else:
-            logger.info("Workspace OK.")
+            logger.debug("Workspace OK.")
 
         # FOR creating/cleaning project folder
-        logger.info("Creating/cleaning project folder: ")
+        logger.debug("Creating/cleaning project folder: ")
         stdin, stdout, stderr = client.exec_command('test -d  '
                                                     + hs_project_folder)
         if stdout.channel.recv_exit_status():
@@ -381,56 +417,56 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
             # create out folder:
             create_folder(client, hs_out_folder)
 
-            logger.info("projects folders created.")
+            logger.debug("projects folders created.")
         else:
             stdin, stdout, stderr = client.exec_command('test -d  '
                                                         + hs_out_folder)
             if stdout.channel.recv_exit_status():
                 # create out folder:
                 create_folder(client, hs_out_folder)
-                logger.info("out folder created inside project folder.")
+                logger.debug("out folder created inside project folder.")
             if ("cont" not in device_conf
                 or ("cont" in device_conf
                     and device_conf["cont"] == "n_a")):
                 cmd = 'rm -rf ' + hs_out_folder+'/*'
                 stdin, stdout, stderr = client.exec_command(cmd)
                 stdout.read()
-                logger.info("Folder cleaned.")
+                logger.debug("Folder cleaned.")
             else:
-                logger.info("Folder exists, no cleaning needed.")
+                logger.debug("Folder exists, no cleaning needed.")
 
                 # now check if file to continue from exists
                 if "continueFileName" in device_conf:
-                    logger.info("Checking if file to continue from  ("
-                                + device_conf["continueFileName"]
-                                + ") exists...")
+                    logger.debug("Checking if file to continue from  ("
+                                 + device_conf["continueFileName"]
+                                 + ") exists...")
                     cmd = 'test -f '+device_conf["continueFileName"]
                     stdin, stdout, stderr = client.exec_command(cmd)
 
                     if stdout.channel.recv_exit_status():
-                        logger.info("File not found, please specify existing"
-                                    + " file to continue")
+                        logger.error("File not found, please specify existing"
+                                     + " file to continue")
                         return
                     else:
-                        logger.info("File OK.")
+                        logger.debug("File OK.")
         # END FOR
 
         # FOR create settings folders:
         # create settings folders:
-        logger.info("Creating settings folders: ")
+        logger.debug("Creating settings folders: ")
         create_folder(client, hs_settings)
         create_folder(client, hs_paths)
         create_folder(client, hs_dev_conf)
-        logger.info("settings folders created")
+        logger.debug("settings folders created")
         # END FOR
 
         # FOR copy files:
         
         # 1 copy json to hs:
-        logger.info("hd_json:")
-        logger.info(hd_json)
-        logger.info("hs_json:")
-        logger.info(hs_json)
+        logger.debug("hd_json:")
+        logger.debug(hd_json)
+        logger.debug("hs_json:")
+        logger.debug(hs_json)
         copy_file(client, hd_json, hs_json)
         
         # 2 copy device_conf to hs:
@@ -458,6 +494,7 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
         else:
             create_folder(client, hs_problems)
         '''
+        logger.info('\nfiles/folders routine complited')
 
         #3 Run preprocessor on json
         logger.info('\nRunning preprocessor:')
@@ -483,6 +520,7 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
         
         # go to hs_hd dirrectory, show it
         # and run source generator:
+        # (stderr to stdout)
         command = ("cd " + hs_hd + " &&"
                    + " pwd &&"
                    + (hd_python + " "
@@ -492,7 +530,8 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
                    + ' -d ' + settings.device_conf_name
                    + ' -p ' + settings.paths_name
                    + ' -w ' + workspace
-                   + ' -u ' + connection.username)
+                   + ' -u ' + connection.username
+                   + " 2>&1")
 
         '''
         command = ("cd " + hs_hd + " &&"
@@ -515,7 +554,7 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
         if notebook is None:
             logger.info("finally")
 
-            logger.info("jdontobin stdout:")
+            logger.info("preprocessor stdout:")
 
             stdout_out = stdout_out.decode()
 
@@ -524,27 +563,28 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
                 logger.info(line)
             logger.info("stdout END")
 
-            logger.info("jsontobin stderr:")
-
             stderr_out = stderr_out.decode()
 
             stderr_out = stderr_out.split("\n")
-            for line in stderr_out:
-                logger.info(line)
-            logger.info("stderr END")
+            if len(stderr_out) > 0:
+                logger.error("preprocessor stderr:")
+                for line in stderr_out:
+                    logger.error(line)
+                logger.error("stderr END")
 
         #4 Run Solver binary on created files
-        logger.info("Checking if solver executable at "
-                    + hs_solver
-                    + " exists...")
+        logger.info('\nRunning solver:')
+        logger.debug("Checking if solver executable at "
+                     + hs_solver
+                     + " exists...")
 
         stdin, stdout, stderr = client.exec_command('test -f ' + hs_solver)
         if stdout.channel.recv_exit_status():
-            logger.info("Please provide correct path to"
-                        + " the solver executable.")
+            logger.error("Please provide correct path to"
+                         + " the solver executable.")
             return
         else:
-            logger.info("Solver executable found.")
+            logger.debug("Solver executable found.")
 
         # stdin, stdout, stderr = client.exec_command('sh ' + hs_sh, get_pty=True)
         # redirect stderr to stdout (2>&1):
@@ -569,7 +609,7 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
                     # print(line)
                     progress.show_stdout_progresses(line)
             except:
-                logger.info("Wrong symbol")
+                logger.error("Wrong symbol")
                 break
 
         if success:
@@ -587,15 +627,16 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
                 if cond:
                     break
 
-
         stdout_out = stdout.read()
         stderr_out = stderr.read()
         
         if notebook is None:
+            stdout_out = stdout_out.decode()
 
-            logger.info("stdout:")
-            logger.info(stdout_out)
-
+            if len(stdout_out) > 0:
+                logger.info("stdout:")
+                logger.info(stdout_out)
+                logger.info("stdout END")
             # because \n stand with each word
             # in stdout, this code is not used:
             '''
@@ -606,11 +647,12 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
             for line in stdout_out:
                 logger.info(line)
             '''
-            logger.info("stdout END")
-
-            logger.info("stderr:")
-            logger.info(stderr_out)
-
+            stderr_out = stderr_out.decode()
+            if len(stderr_out) > 0:
+                
+                logger.error("stderr:")
+                logger.error(stderr_out)
+                logger.error("stderr END")
             # because \n stand with each word
             # in stdout, this code is not used:
             '''
@@ -621,17 +663,18 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
             for line in stderr_out:
                 logger.info(line)
             '''
-            logger.info("stderr END")
 
         # clear old results:
+        logger.debug("\nRemoving old results ...")
         for filename in sorted(os.listdir(hd_out_folder)):
             if filename.endswith('mp4') or filename.endswith('out'):
                 os.remove(os.path.join(hd_out_folder, filename))
-
+        logger.debug("\nOld results removed")
+ 
         #get resulting files
         logger.info("Downloading results...")
-        logger.info("from:")
-        logger.info(hs_out_folder)
+        logger.debug("from:")
+        logger.debug(hs_out_folder)
 
         cftp = client.open_sftp()
         cftp.chdir(hs_out_folder)
@@ -658,17 +701,17 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None):
             result_postproc = ResultPostproc("", hd_out_folder=hd_out_folder)
             result_postproc.get_results_filespaths(model)
 
-            print("\nPlots:")
+            logger.debug("\nPlots:")
             if "plots_paths" in dir(model):
-                print(model.plots_paths)
+                logger.debug(model.plots_paths)
             else:
-                print("no model.plots_paths")
+                logger.debug("no model.plots_paths")
 
-            print("\nResults:")
+            logger.debug("\nResults:")
             if "results_paths" in dir(model):
-                print(model.results_paths)
+                logger.debug(model.results_paths)
             else:
-                print("no model.results_paths")
+                logger.debug("no model.results_paths")
         # END FOR
 
     #Обрабатываю исключения

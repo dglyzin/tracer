@@ -27,16 +27,16 @@ class ParserGeneral():
         
         tokenizer = self.tokenizer
         lex_out = self.lex_step(tokenizer, sent_list)
-        print("lex_out:")
-        print(lex_out)
+        # print("lex_out:")
+        # print(lex_out)
 
         # fix bug with: a |-> (a):
         if len(lex_out) == 1:
             sent_list = ["("+sent_list[0]+")"]
-            print(sent_list)
+            # print(sent_list)
             lex_out = self.lex_step(tokenizer, sent_list)
-            print("lex_out bracket's bug fixed")
-            print(self.lex_out)
+            # print("lex_out bracket's bug fixed")
+            # print(self.lex_out)
 
         cyk_out = self.cyk_step(lex_out)
         tree_out = self.tree_step(cyk_out)

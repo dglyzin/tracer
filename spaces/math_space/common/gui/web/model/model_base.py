@@ -192,9 +192,10 @@ class BaseDB():
         # load_model_tables and load_users_tables:
         try:
             self.tables_dict
-            print("tables_dict exist")
+            # print("tables_dict exist")
         except AttributeError:
             self.tables_dict = {}
+            # print("tables_dict not exist")
 
         model_tables = self.load_model_tables(model_tables_gen)
         users_tables = self.load_users_tables(users_tables_gen)

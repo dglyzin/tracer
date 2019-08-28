@@ -46,21 +46,28 @@ from spaces.math_space.common.env.equation.tests import test_all as tests_equati
 import os
 import sys
 import shutil
-from tests.logger_std import create_logger
+from settings.logger.logger_std import create_logger, get_logger_level
+# from tests.logger_std import create_logger, get_logger_level
 
 from tests.TextTestRunner import SimpleTextRunner
 from tests.HTMLTestRunner import HTMLTestRunner
 
 import traceback
 
-hd_path = os.path.abspath('../..')
-logFileName = os.path.join(hd_path, 'tests/tester.log')
+import inspect
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+    
+# hd_path = os.path.abspath('../..')
+logFileName = os.path.join(currentdir, 'tester.log')
 loggerName = 'tests.tester'  # __name__
 
 # BUG: because of bug in logger this value has no effect:
-consoleLevel = 'CRITICAL'
+log_level_console = 'INFO'
+log_level_file = 'ERROR'
 # file level always ERROR
-logger = create_logger(loggerName, logFileName, consoleLevel)
+logger = create_logger(loggerName, logFileName,
+                       log_level_console, log_level_file)
 
 
 def set_tests_for_class(_class, dim, genType='gen', singleModel=None):
@@ -432,11 +439,25 @@ def test_logger():
     See:
     https://docs.python.org/2.7/howto/logging-cookbook.html#using-logging-in-multiple-modules
     '''
+    print("loggerName")
+    print(loggerName)
+    print("\nlog_level_console")
+    print(log_level_console)
+    print("log_level_file")
+    print(log_level_file)
+    logger.info("logger info first")
+    logger.debug("logger debug first")
+    logger.error("logger error first")
 
-    logger.info("logger info")
-    logger.debug("logger debug")
-    logger.error("logger error")
-
+    log_level_file_new = "ERROR"
+    logger.handlers[0].setLevel(get_logger_level(log_level_file_new))
+    print("\nlog_level_file_new")
+    print(log_level_file_new)
+    logger.info("logger info second")
+    logger.debug("logger debug second")
+    logger.error("logger error second")
+    
+    print("/ntests submodule:")
     # add log from submodule
     test_logger_from_submodule()
 
@@ -446,7 +467,10 @@ def test_equations(genType=None):
 
 
 if __name__ == '__main__':
+
+    test_logger()
     
+    '''
     if '-html' in sys.argv:
         runner = run_to_html
     elif '-eq' in sys.argv:
@@ -465,5 +489,5 @@ if __name__ == '__main__':
     # run_to_html(genType="gen")
     print("loggerName")
     print(loggerName)
-
+    '''
     

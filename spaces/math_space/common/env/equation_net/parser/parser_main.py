@@ -29,7 +29,7 @@ class EqParser():
             print("patterns from tests.dialects.eqs used")
             self.dialects_patterns["wolfram"] = eqs
         else:
-            print("patterns from db used")
+            # print("patterns from db used")
             dialect = self.net.db.get_entries_to_list()
             self.dialects_patterns["wolfram"] = dialect
 

@@ -27,7 +27,7 @@ import logging
 # if using directly uncoment that:
 
 # create logger
-log_level = logging.INFO  # logging.DEBUG
+log_level = logging.DEBUG  # logging.DEBUG
 logging.basicConfig(level=log_level)
 logger = logging.getLogger('gen_dim')
 logger.setLevel(level=log_level)

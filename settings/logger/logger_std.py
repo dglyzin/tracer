@@ -2,7 +2,8 @@ import logging
 import os
 
 
-def create_logger(logerName, logFileName, consoleLevel='None'):
+def create_logger(loggerName, logFileName,
+                  log_level_console='INFO', log_level_file='DEBUG'):
     '''
     DESCRIPTION:
     Create logger that use both steam and file.
@@ -40,42 +41,56 @@ def create_logger(logerName, logFileName, consoleLevel='None'):
         os.remove(logFileName)
     
     # create logger with name logerName
-    logger = logging.getLogger(logerName)
-
+    logger = logging.getLogger(loggerName)
+    log_level_console = get_logger_level(log_level_console)
+    logger.setLevel(log_level_console)
     # print
-    if consoleLevel == 'None':
-        consoleLevel = logging.NOTSET
-    elif consoleLevel == 'INFO':
-        consoleLevel = logging.INFO
-    elif consoleLevel == 'WARNING':
-        consoleLevel = logging.WARNING
-    elif consoleLevel == 'DEBUG':
-        consoleLevel = logging.DEBUG
-    elif consoleLevel == 'ERROR':
-        consoleLevel = logging.ERROR
-    elif consoleLevel == 'CRITICAL':
-        consoleLevel = logging.CRITICAL
-
     # for some bug in logger:
-    logger.setLevel(logging.ERROR)  # consoleLevel
+    # logger.setLevel(logging.ERROR)  # consoleLevel
 
     # create file handler which logs even debug messages
     # errors included
+    '''
+    with open(logFileName, "w") as f:
+        f.write("init logger file\n")
+    '''
     fh = logging.FileHandler(logFileName)
-    fh.setLevel(logging.ERROR)
+    log_level_file = get_logger_level(log_level_file)
+    fh.setLevel(log_level_file)
 
+    '''
     # create console handler with a higher log level
     # BUG: it not work (because parent (logger) level is ERROR)
     ch = logging.StreamHandler()
-    ch.setLevel(logging.CRITICAL)
+    log_level_console = get_logger_level(log_level_console)
+    ch.setLevel(log_level_console)
+    '''
 
     # create formatter and add it to the handlers
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
-    ch.setFormatter(formatter)
+    # ch.setFormatter(formatter)
 
     # add the handlers to the logger
     logger.addHandler(fh)
-    logger.addHandler(ch)
+    # logger.addHandler(ch)
 
     return(logger)
+
+
+def get_logger_level(log_level):
+    
+    if log_level == 'None':
+        log_level = logging.NOTSET
+    elif log_level == 'INFO':
+        log_level = logging.INFO
+    elif log_level == 'WARNING':
+        log_level = logging.WARNING
+    elif log_level == 'DEBUG':
+        log_level = logging.DEBUG
+    elif log_level == 'ERROR':
+        log_level = logging.ERROR
+    elif log_level == 'CRITICAL':
+        log_level = logging.CRITICAL
+
+    return(log_level)

@@ -173,8 +173,8 @@ class PatternBase():
         X = self.map_ptw(part, found_value)
         # X = self.map_ptg[part]
 
-        print('search_part res:')
-        print(res)
+        # print('search_part res:')
+        # print(res)
 
         # remove None:
         splited_sent = list(filter(lambda elm: elm is not None,
