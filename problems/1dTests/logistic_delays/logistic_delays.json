@@ -34,7 +34,27 @@
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
+        },
+        {
+            "Name": "SupplementaryBlock", 
+            "Offset": {
+                "x": 0.1
+            }, 
+            "Size": {
+                "x": 3.5
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 1, 
+            "BoundRegions": [
+                {
+                    "BoundNumber": 0, 
+                    "Side": 0
+                }
+            ], 
+            "InitialRegions": [], 
+            "EquationRegions": []
         }
+
     ], 
     "Interconnects": [], 
     "Equations": [
@@ -109,13 +129,25 @@
                 "NodeIdx": 0, 
                 "DeviceType": "cpu", 
                 "DeviceIdx": 0
+            },
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
             }
+
         ]
     }, 
     "Plots": [ 
 	{
-            "Name": "u_just_u", 
+            "Name": "name1", 
             "Title": "u^2(t,x)", 
+            "Period": 0.1,
+            "Value": "U"
+        },
+	{
+            "Name": "name2", 
+            "Title": "title2", 
             "Period": 0.1,
             "Value": "U"
         }
@@ -123,7 +155,12 @@
 
     "Results":[
         {
-            "Name": "u_just_res_u", 
+            "Name": "name1", 
+            "Period": 0.1,
+            "Value": "U+1"
+        },
+	{
+            "Name": "name2", 
             "Period": 0.1,
             "Value": "U+1"
         }
