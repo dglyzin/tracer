@@ -139,8 +139,8 @@ def calcMinMax(projectDir, binFileList, info,
             maxValue[i] = maxValue[i] + 1
             minValue[i] = minValue[i] - 1
 
-    logger.info(maxValue)
-    logger.info(minValue)
+    # logger.info(maxValue)
+    # logger.info(minValue)
 
     return maxValue, minValue
 
@@ -161,12 +161,12 @@ def savePng1D(filename, X, data, maxValue, minValue,
     column = math.ceil(cellSize / row)
 
     figure.suptitle(t)
-    print("cellSize:")
-    print(cellSize)
-    print("maxValue:")
-    print(maxValue)
-    print("minValue:")
-    print(minValue)
+    # print("cellSize:")
+    # print(cellSize)
+    # print("maxValue:")
+    # print(maxValue)
+    # print("minValue:")
+    # print(minValue)
 
     for i in range(cellSize):
         m = 100 * row + 10 * column + i + 1
@@ -284,8 +284,8 @@ def savePlots1D(projectDir, projectName, data, time_str,
 
     # fix bug with cellsize:
     cellSize = len(data)
-    logger.info("cellsize as len(data):")
-    logger.info(cellSize)
+    # logger.info("cellsize as len(data):")
+    # logger.info(cellSize)
 
     savePng1D(filename, xs, data, maxValue, minValue, time_str, cellSize)
     # logger.info("produced png: "+ filename)
@@ -327,8 +327,8 @@ def savePlots2D(projectDir, projectName, data, time_str,
 
     # fix bug with cellsize:
     cellSize = len(data)
-    logger.info("cellsize as len(data):")
-    logger.info(cellSize)
+    # logger.info("cellsize as len(data):")
+    # logger.info(cellSize)
 
     savePng2D(filename, X, Y, data, maxValue, minValue, time_str, cellSize)
     # if saveText:
@@ -721,6 +721,11 @@ def createMovie(projectDir, projectName, modelParamsPath):
         countZ, countY, countX, offsetZ, offsetY, offsetX = out
 
         resultItem = mParams['resultList'][result_idx]
+
+        # in case for single value:
+        if type(resultItem["Value"]) != list:
+            resultItem["Value"] = [resultItem["Value"]]
+      
         for resultValueIdx, resultValue in enumerate(resultItem["Value"]):
 
             pool = mp.Pool(processes=16)

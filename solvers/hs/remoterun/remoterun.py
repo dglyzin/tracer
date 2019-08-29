@@ -137,7 +137,7 @@ def create_folder(client, folder):
         else:
             logger.info("created folder %s" % folder)
     else:
-        logger.info("folder %s alredy exist" % folder)
+        logger.debug("folder %s alredy exist" % folder)
 
 
 def copy_files(client, connection, hd_path, hs_path, name):
@@ -379,6 +379,16 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None,
     # get project file name without extension
     logger.debug("project_name")
     logger.debug(project_name)
+
+    # clear old results:
+    try:
+        logger.debug("\nRemoving old results ...")
+        for filename in sorted(os.listdir(hd_out_folder)):
+            if filename.endswith('mp4') or filename.endswith('out'):
+                os.remove(os.path.join(hd_out_folder, filename))
+        logger.debug("\nOld results removed")
+    except:
+        logger.debug("\nOld results removing error: probaply there was none.")
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -663,13 +673,6 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None,
             for line in stderr_out:
                 logger.info(line)
             '''
-
-        # clear old results:
-        logger.debug("\nRemoving old results ...")
-        for filename in sorted(os.listdir(hd_out_folder)):
-            if filename.endswith('mp4') or filename.endswith('out'):
-                os.remove(os.path.join(hd_out_folder, filename))
-        logger.debug("\nOld results removed")
  
         #get resulting files
         logger.info("Downloading results...")
@@ -701,17 +704,17 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None,
             result_postproc = ResultPostproc("", hd_out_folder=hd_out_folder)
             result_postproc.get_results_filespaths(model)
 
-            logger.debug("\nPlots:")
+            logger.info("\nPlots:")
             if "plots_paths" in dir(model):
-                logger.debug(model.plots_paths)
+                logger.info(model.plots_paths)
             else:
-                logger.debug("no model.plots_paths")
+                logger.info("no model.plots_paths")
 
-            logger.debug("\nResults:")
+            logger.info("\nResults:")
             if "results_paths" in dir(model):
-                logger.debug(model.results_paths)
+                logger.info(model.results_paths)
             else:
-                logger.debug("no model.results_paths")
+                logger.info("no model.results_paths")
         # END FOR
 
     #Обрабатываю исключения
