@@ -6,6 +6,10 @@ import shutil
 import json
 import inspect
 
+from scipy.misc import imread
+from scipy.misc import imsave
+import base64
+
 currentdir = os.path.dirname(os.path
                              .abspath(inspect
                                       .getfile(inspect.currentframe())))
@@ -145,7 +149,7 @@ class Handlers():
                     else:
                         os.mkdir(node_path)
                         node_data_file = os.path.join(node_path, "src.json")
-                        node_img_file = os.path.join(node_path, "img.jpeg")
+                        node_img_file = os.path.join(node_path, "img.png")
                         node_data = json.loads(data_input["node_data"])
                         node_data_src = node_data["canvas_source"]
                         node_data_img = node_data["canvas_img"]
@@ -156,10 +160,20 @@ class Handlers():
                             # f.write(json.dumps(node_data_src,
                             #                    sort_keys=False, indent=4))
 
+                        img_orign = node_data_img.split(",")[1]
+                        print("img_orign:")
+                        print(img_orign)
+                        
                         # save img data:
-                        with open(node_img_file, "w") as f:
-                            f.write(node_data_img)
-                            
+                        with open(node_img_file, "wb") as f:
+                            # imsave(img_orign, node_img_file, format='jpeg')
+                            f.write(base64.decodebytes(img_orign.encode("utf-8")))
+                            # f.write(base64.decodebytes(node_data_img.encode("utf-8")))
+                        img = imread(node_img_file, mode="L")
+                        
+                        print("img array:")
+                        print(img)
+
                         tree_data_src = data_input["tree"]
                         
                         self.update_tree(tree_data_src)

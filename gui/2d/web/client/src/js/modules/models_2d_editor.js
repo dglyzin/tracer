@@ -295,8 +295,11 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 					      self.canvas.renderAll.bind(self.canvas));
 
 	       // convert to img:
-	       var data = self.canvas.toDataURL({format: 'jpeg', quality: 1,
+	       var data = self.canvas.toDataURL({format: 'png',
 						 left: 0, top: 0, width: 550, height: 300});
+
+	       // var data = self.canvas.toDataURL({format: 'jpeg', quality: 1,
+	       // left: 0, top: 0, width: 550, height: 300});
 
 	       // FOR restore bRegions width:	
 	       br_objects.forEach(function(elm){
