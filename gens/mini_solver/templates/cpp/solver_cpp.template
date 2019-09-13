@@ -1,0 +1,300 @@
+{# COMMENT
+   TEMPLATE FOR compute_for_ctype FUNCTION 2D
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+	none
+	(it just rewrite solver.cpp
+	 (for sake of .gitignere))
+END COMMENT #}
+
+// for manual tests:
+// mini_solver$ g++ -I include -g -shared -o cpp_test kernels.cpp solver.cpp -fPIC
+// ./cpp_test
+
+// for library:
+//mini_solver$ g++ -I include -g -shared -o solver_cpp.so kernels.cpp solver.cpp -fPIC
+
+#include "core.h"
+
+// FOR manual tests only:
+//===================INITIAL CONDITIONS==========================//
+void Initial0(double* cellstart, double x, double y, double z){
+     
+	cellstart[0] = 4.0;
+     
+}
+
+void Block0FillInitialValues(double* result){
+    for(int idxY = 0; idxY<Block0CountY; idxY++)
+		for(int idxX = 0; idxX<Block0CountX; idxX++){
+			int idx = idxY*Block0CountX + idxX;
+			Initial0(result+idx*Block0CELLSIZE, Block0OffsetX + idxX*DX, Block0OffsetY + idxY*DY, 0);
+    }
+    
+}
+
+
+//===================PARAMETERS==========================//
+void initDefaultParams(double** pparams, int* pparamscount){
+
+	*pparamscount = PAR_COUNT;
+
+	*pparams = (double *) malloc(sizeof(double)*PAR_COUNT);
+     
+	(*pparams)[0] = 1.0;
+     
+	(*pparams)[1] = 0.3;
+     
+	(*pparams)[2] = 0.1;
+     
+	(*pparams)[3] = 0.01;
+     
+}
+void releaseParams(double *params){
+	free(params);
+}
+
+
+void fill_func_idxs(int* funcIdxs){ 
+    for(int idxY = 0; idxY<Block0CountY; idxY++)
+		for(int idxX = 0; idxX<Block0CountX; idxX++){
+		  int idx = idxY*Block0CountX + idxX;
+
+		  // default
+		  funcIdxs[idx] = 0;
+		  
+		  // bounds
+		  // side 0
+		  if (idxX == 0)
+		    funcIdxs[idx] = 1;
+
+		  // side 1
+		  if (idxX == Block0CountX-1)
+		    funcIdxs[idx] = 2;
+
+		  // side 2
+		  if (idxY == 0)
+		    funcIdxs[idx] = 3;
+
+		  // side 3
+		  if (idxY == Block0CountY-1)
+		    funcIdxs[idx] = 4;
+		 
+		  // vertex
+		  // [0, 2]
+		  if (idxY == 0 & idxX == 0)
+		    funcIdxs[idx] = 5;
+
+		  // [2, 1]
+		  if (idxY == 0 & idxX == Block0CountX-1)
+		    funcIdxs[idx] = 6;
+		  
+		  // [3, 1]
+		  if (idxY == Block0CountY-1 & idxX == Block0CountX-1)
+		    funcIdxs[idx] = 7;
+
+		  // [3, 0]
+		  if (idxY == Block0CountY-1 & idxX == 0)
+		    funcIdxs[idx] = 8;
+		  
+		  
+		}
+}
+
+
+// for func array:
+func_ptr_t * funcArray;
+
+func_ptr_t  f;
+// END FOR
+
+void kernel(func_ptr_t * funcArray, int *  funcIdxs,
+	    double* result, double** source, double* params, double** ic)
+{
+  /*
+    DESCRIPTION:
+    Calculate one step iteration for block 0.
+
+    funcArray containing functions
+    funcIdxs containing function indexes for each node in block 0.
+    result used for storage new
+    source uded for getting old data.
+    ic is unused now
+
+    USED:
+    Block0CountX, Block0CountY, funcArray
+  */
+
+  //int idxX = 1;
+  //int idxY = 1;
+  
+  for(int idxY = 0; idxY<Block0CountY; idxY++)
+    for(int idxX = 0; idxX<Block0CountX; idxX++)
+      {
+	int idx = idxY*Block0CountX + idxX;
+	f =  funcArray[funcIdxs[idx]];
+	(*f)(result, source, 0.0, idxX, idxY, 0, params, ic);
+      }
+}
+
+extern "C" {
+void compute_for_ctype(int *  funcIdxs,
+			   double* result, double** source, double* params, double** ic,
+			   int SIZE_OF_RESULT, int COUNT_OF_DELAYS, int COUNT_OF_PARAMS,
+			   int ITERATION_COUNT)
+{
+  /*
+   DESCRIPTION:
+   Compute pde ITERATION_COUNT time steps.
+
+   INPUT:
+   That inputs unused here but used in cuda
+   (for ctypes interface code simplification reason don't remove them):
+   SIZE_OF_RESULT, COUNT_OF_DELAYS, COUNT_OF_PARAMS
+
+   USED:
+   funcArray
+   
+   */
+
+  
+  // fill funct array
+  getBlock0BoundFuncArray(&funcArray);  
+
+  printf("\n*source \n");
+  for (int i=0;i<SIZE_OF_RESULT;i++)
+    printf(" %f ; ", (*source)[i]);
+  printf("\nend of *source \n");
+
+  for(int i=0; i<ITERATION_COUNT; i++)
+    {
+      kernel(funcArray, funcIdxs, result, source, params, ic);
+      
+      // pointers exchange:
+      double * tmp = *source;
+      *source = result;
+      result = tmp;
+    }
+  
+
+
+}
+}
+
+
+// FOR manual tests only:
+int main(int argc, char **argv)
+{
+  // size of source and result and funcIdxs:
+  int SIZE_OF_RESULT = Block0CELLSIZE*Block0CountX*Block0CountY;
+  int COUNT_OF_DELAYS = 1;
+  int COUNT_OF_PARAMS = PAR_COUNT;
+  // count of iteration:
+  int ITERATION_COUNT = 170;
+
+  // count of iteration:
+  int ITERS = ITERATION_COUNT;
+
+  // result:
+  double * result = (double *)malloc(SIZE_OF_RESULT*sizeof(double));
+  
+  // source:
+  //double ** source = (double *)malloc(COUNT_OF_DELAYS*sizeof(double*));
+  double ** source = (double **)malloc(sizeof(double*));
+  *source = (double *)malloc(SIZE_OF_RESULT*sizeof(double));
+
+  // interconnects:
+  double ** ic;
+
+  // FOR params
+  double *  params;  // = (double *) malloc(sizeof(double)*PAR_COUNT);
+  int paramscount = 0;
+  initDefaultParams(&params, &paramscount);
+  printf("\n paramscount %d \n", paramscount);
+  // END FOR
+
+  // FOR funcIdxs:
+    int *  funcIdxs = (int *)malloc(SIZE_OF_RESULT*sizeof(int));
+  fill_func_idxs(funcIdxs);
+
+  /*
+  printf("\nfuncIdxs\n");
+  for (int i=0;i<SIZE_OF_RESULT;i++)
+    printf(" %d ; ", funcIdxs[i]);
+  printf("\n end of funcIdxs\n");
+  */
+  // END FOR
+
+  // FOR func array:
+  //func_ptr_t * funcArray;
+
+  /*
+  // for understanding:
+
+  func_ptr_t * funcArray = (func_ptr_t*) malloc( 1 * sizeof(func_ptr_t) );
+  funcArray[0] = Block0CentralFunction_Eqn0;
+  func_ptr_t  f =  funcArray[0];
+  (*f)(result, source, 0.0, 1, 1, 0, params, ic);
+  */
+
+  // fill funct array
+  //getBlock0BoundFuncArray(&funcArray);
+  
+  // END FOR
+
+  // main code:
+  Block0FillInitialValues(*source);
+  
+  /*
+  printf("\n*source \n");
+  for (int i=0;i<SIZE;i++)
+    printf(" %f ; ", (*source)[i]);
+  printf("\nend of *source \n");
+  */
+
+  
+  compute_for_ctype(funcIdxs, result, source, params, ic,
+		    SIZE_OF_RESULT, COUNT_OF_DELAYS, COUNT_OF_PARAMS,
+		    ITERATION_COUNT);
+
+  /*
+  for(int i=0; i<ITERS; i++)
+    {
+      kernel(funcArray, funcIdxs, result, source, params, ic);
+      
+      // pointers exchange:
+      double * tmp = *source;
+      *source = result;
+      result = tmp;
+    }
+  */
+  // result will be in *source
+ 
+  printf("\n*source \n");
+  for (int i=0;i<SIZE_OF_RESULT;i++)
+    printf(" %f ; ", (*source)[i]);
+  printf("\nend of *source \n");
+ 
+  printf("\nresult \n");
+  for (int i=0;i<SIZE_OF_RESULT;i++)
+    printf(" %f ; ", (result)[i]);
+  printf("\nend of result \n");
+ 
+  // free memory:
+  free(result);
+  free(*source);
+  free(source);
+  releaseParams(params);
+  releaseFuncArray(funcArray);
+  free(funcIdxs);
+}
+// END FOR

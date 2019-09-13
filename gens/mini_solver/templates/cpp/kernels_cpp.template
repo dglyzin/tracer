@@ -1,0 +1,94 @@
+# include "core.h"
+
+{# COMMENT
+   TEMPLATE FOR INITIAL FUNCTION 1D
+
+   {{i}} 
+    for variables
+
+   {% for i in src %}
+    for code blocks
+
+   # for i in src # 
+    for code blocks
+
+INPUTS:
+	centrals list	
+	bounds list	
+	vertexs list
+	namesAndNumbers dict
+END COMMENT #}
+
+{% for eq in centrals %}
+{% set bn = eq.blockNumber %}
+{% set num = eq.number %}
+//=========================CENTRAL FUNCTIONS FOR BLOCK WITH NUMBER {{bn}}========================//
+
+//{{num}} central function for {{eq.dim}}d model for block with number {{bn}}
+void {{eq.funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;	      {% for i, value in enumerate(eq.parsedValues) %}
+	{{value}};
+     {% endfor %}
+}
+
+//device side function pointer declaration and init:
+func_ptr_t p_{{eq.funcName}} = {{eq.funcName}};
+
+{% endfor %}
+
+{% for bound in bounds %}
+{% set bn = bound.blockNumber %}
+//=============================BOUNDARY CONDITIONS FOR BLOCK WITH NUMBER {{bn}}======================//
+//Boundary condition for boundary {{bound.boundName}}
+void {{bound.funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;
+     {% for i, value in enumerate(bound.parsedValues)%}
+     	   {{value}};
+     {% endfor %}
+}
+//device side function pointer declaration and init:
+func_ptr_t p_{{bound.funcName}} = {{bound.funcName}};
+
+{% endfor %}
+
+{% for vertex in vertexs %}
+{% set bn = vertex.blockNumber %}
+
+//=============================VERTEXS CONDITIONS FOR BLOCK WITH NUMBER {{bn}}======================//
+//Vertex condition for sides {{vertex.boundName}}
+void {{vertex.funcName}}(double* result, double** source, double t, int idxX, int idxY, int idxZ, double* params, double** ic){
+	 int idx = ( idxX + idxY * Block{{bn}}StrideY + idxZ * Block{{bn}}StrideZ) * Block{{bn}}CELLSIZE;
+     {% for i, value in enumerate(vertex.parsedValues)%}
+     	   {{value}};
+     {% endfor %}
+}
+//device side function pointer declaration and init:
+func_ptr_t p_{{vertex.funcName}} = {{vertex.funcName}};
+
+{% endfor %}
+
+//===================================FILL FUNCTIONS===========================//
+{% for blockNumber in namesAndNumbers.keys() %}
+{% set bn = blockNumber %}
+{% set size = len(namesAndNumbers[blockNumber]) %}
+void getBlock{{bn}}BoundFuncArray(func_ptr_t** ppBoundFuncs){
+	func_ptr_t* pBoundFuncs = *ppBoundFuncs;
+	pBoundFuncs = (func_ptr_t*) malloc( {{size}} * sizeof(func_ptr_t) );
+	*ppBoundFuncs = pBoundFuncs;
+      {% for funcNumber, funcName in enumerate(namesAndNumbers[bn]) %}
+	pBoundFuncs[{{funcNumber}}] = p_{{funcName}};
+      {% endfor %}
+}
+
+{% endfor %}
+
+void getFuncArray(func_ptr_t** ppBoundFuncs, int blockIdx){
+      {% for blockNumber in namesAndNumbers.keys() %}
+        if (blockIdx == {{blockNumber}})
+	   getBlock{{blockNumber}}BoundFuncArray(ppBoundFuncs);
+      {% endfor %}	
+}
+
+void releaseFuncArray(func_ptr_t* BoundFuncs){
+	free(BoundFuncs);
+}

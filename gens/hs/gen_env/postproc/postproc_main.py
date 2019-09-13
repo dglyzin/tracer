@@ -8,7 +8,9 @@ class Postproc():
     def postproc_dirichlet(self, params_of_gens):
 
         '''If btype is 0 use Dirichlet
-        i.e. bound values for whole equation's right side's'''
+        i.e. bound values for whole equation's right side's
+        Use only after for delays (because postporc_delays rewrite output).
+        '''
 
         all_params = reduce(lambda acc, x: acc+[param for param in x],
                             params_of_gens, [])

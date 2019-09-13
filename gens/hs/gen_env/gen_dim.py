@@ -270,7 +270,7 @@ class GenBase():
         elif self.dim == 2:
             gen_ics = GenIcsD2()
         else:
-            raise(BaseException("dim %s not support yet" % self.dim))
+            raise(BaseException("dim %s not supported yet" % self.dim))
 
         gen_ics.common.set_params_for_interconnects(model, funcNamesStack)
 
@@ -335,6 +335,7 @@ class GenBase():
         ### END FOR
         
         ### FOR Dirichlet:
+        # only after for delays (because postporc_delays rewrite output)
         self.postproc.postproc_dirichlet([gen_bounds.params.bounds])
         ### END FOR
         # END FOR
