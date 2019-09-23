@@ -237,6 +237,7 @@ class ResultPostprocNet():
                 yield((key, step_6))
 
         steps = 0
+        result_t = []
         for param in results_params:
             for var, data in enumerate(results_params[param]):
 

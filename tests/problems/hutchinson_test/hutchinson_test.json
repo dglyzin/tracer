@@ -106,7 +106,7 @@
     "Plots": [ 
 	{
             "Title": "u(t,x)", 
-            "Name": "plotjustU",
+            "Name": "U",
             "Period": 0.1,
             "Value": "U"
         }
@@ -114,7 +114,7 @@
 
     "Results":[
         {
-            "Name": "resJustU", 
+            "Name": "U", 
             "Period": 0.1,
             "Value": "U"
         }

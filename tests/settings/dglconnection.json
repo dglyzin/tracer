@@ -1,8 +1,0 @@
-{
-        "Host": "control1", 
-        "Port": 22, 
-        "Username": "dglyzin", 
-        "Password": "", 
-        "Workspace": "/clusterhome/dglyzin/Tracer/projects", 
-        "TracerFolder": "/clusterhome/dglyzin/Tracer"        
-}
