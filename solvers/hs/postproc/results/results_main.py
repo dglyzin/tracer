@@ -56,6 +56,8 @@ class ResultPostprocNet():
         # print(os.listdir(self.hd_out_folder))
         # self.model_path = model_path
         self.replacer_id = "_seq"
+        
+        self.common_shape = None
 
     def set_results_arrays(self, model, names=[],
                            result_format=1, progress=None):
@@ -111,10 +113,16 @@ class ResultPostprocNet():
             times_array = np.array(times, dtype=np.float32)
 
             # for get shape of all data:
-            firstname = list(results.keys())[0]
-            firstvar = 0
-            common_shape = names_arrays[firstname][firstvar][0].shape
+            if self.common_shape is None:
+                print("no results")
+                return({})
+            common_shape = self.common_shape
+            # firstname = list(results.keys())[0]
+            # firstvar = 0
+            # common_shape = names_arrays[firstname][firstvar][0].shape
+            
             common_dim = len(common_shape)
+            
             for name in names_arrays:
                 res[name] = {}
                 res[name]["timevalues"] = times_array
@@ -258,6 +266,12 @@ class ResultPostprocNet():
 
                     result_t = [(float(key), val) for key, val in gen(result)]
 
+                    # collect common_shape from some array
+                    if self.common_shape is None:
+                        try:
+                            self.common_shape = result_t[0][1].shape
+                        except:
+                            pass
                 except:
                     results_param_arrays[param][var] = None
                     continue
