@@ -71,24 +71,24 @@ func_ptr_t p_{{vertex.funcName}} = {{vertex.funcName}};
 {% for blockNumber in namesAndNumbers.keys() %}
 {% set bn = blockNumber %}
 {% set size = len(namesAndNumbers[blockNumber]) %}
-void getBlock{{bn}}BoundFuncArray(func_ptr_t** ppBoundFuncs){
-	func_ptr_t* pBoundFuncs = *ppBoundFuncs;
-	pBoundFuncs = (func_ptr_t*) malloc( {{size}} * sizeof(func_ptr_t) );
-	*ppBoundFuncs = pBoundFuncs;
+void getBlock{{bn}}CentralFuncArray(func_ptr_t** ppCentralFuncs){
+	func_ptr_t* pCentralFuncs = *ppCentralFuncs;
+	pCentralFuncs = (func_ptr_t*) malloc( {{size}} * sizeof(func_ptr_t) );
+	*ppCentralFuncs = pCentralFuncs;
       {% for funcNumber, funcName in enumerate(namesAndNumbers[bn]) %}
-	pBoundFuncs[{{funcNumber}}] = p_{{funcName}};
+	pCentralFuncs[{{funcNumber}}] = p_{{funcName}};
       {% endfor %}
 }
 
 {% endfor %}
 
-void getFuncArray(func_ptr_t** ppBoundFuncs, int blockIdx){
+void getFuncArray(func_ptr_t** ppCentralFuncs, int blockIdx){
       {% for blockNumber in namesAndNumbers.keys() %}
         if (blockIdx == {{blockNumber}})
-	   getBlock{{blockNumber}}BoundFuncArray(ppBoundFuncs);
+	   getBlock{{blockNumber}}CentralFuncArray(ppCentralFuncs);
       {% endfor %}	
 }
 
-void releaseFuncArray(func_ptr_t* BoundFuncs){
-	free(BoundFuncs);
+void releaseFuncArray(func_ptr_t* CentralFuncs){
+	free(CentralFuncs);
 }

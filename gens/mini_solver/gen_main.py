@@ -23,7 +23,7 @@ class Gen():
         self.model = model
         self.settings = settings if settings is not None else {}
 
-    def set_params(self, funcIdxs, func_dict):
+    def set_params(self, eqs_dict, bs_dict, funcIdxs):
         '''
         Generate centrals for all equations systems from
         func_dict, bounds and vertexs optional.
@@ -53,8 +53,25 @@ class Gen():
         # gen_params = GenParams()
         # gen_params.cpp.set_params_for_parameters(self.model)
 
-        # TODO: to gen equations.py
-        self.gen_eqs.set_params_for_eqs(model, blockNumber, func_dict, params)
+        funcIdxs, eqs_dict, bs_dict = self.gen_eqs.fix_indexes(funcIdxs, eqs_dict, bs_dict)
+        print("new_funcIdxs:")
+        print(funcIdxs)
+        print("eqs_dict:")
+        print(eqs_dict)
+        print("bs_dict:")
+        print(bs_dict)
+        self.gen_eqs.set_params_for_eqs(model, blockNumber,
+                                        eqs_dict, params)
+
+        bs_sides = self.gen_eqs.create_bs_sides(funcIdxs)
+        print("bs_sides:")
+        print(bs_sides)
+        self.gen_eqs.set_params_for_bounds(model, blockNumber,
+                                           eqs_dict,
+                                           bs_dict, bs_sides,
+                                           params)
+        print("apply_postproc:")
+        self.gen_eqs.apply_postproc(params)
 
     def gen_src_files_cuda(self):
 
@@ -139,10 +156,67 @@ class Params():
 
 if __name__ == "__main__":
     from envs.hs.model.model_main import ModelNet as Model
+    '''
+    from scipy.misc import imread
+    from scipy.misc import imsave
+    import base64
+
+    # save img data:
+    with open(node_img_file, "wb") as f:
+        # imsave(img_orign, node_img_file, format='jpeg')
+        f.write(base64.decodebytes(img_orign.encode("utf-8")))
+        # f.write(base64.decodebytes(node_data_img.encode("utf-8")))
+    img = imread(node_img_file, mode="L")
+    '''
+    import numpy as np
+    bimg = np.zeros((10, 10))
+    
+    # side 2:
+    bimg[0, 3:7] = 135
+    bimg[0, 7:9] = 183
+
+    # side 3:
+    bimg[9, 1:5] = 73
+    bimg[9, 5:7] = 164
+
+    # side 0:
+    bimg[1:9, 0] = 164
+
+    # side 1:
+    bimg[1:7, 9] = 183
+    bimg[7:9, 9] = 183
+
+    # inner borders:
+    bimg[3, 3] = 75
+    bimg[3, 4] = 164
+    bimg[4, 3] = 75
+    bimg[4, 4] = 164
+
+    img = img.astype(np.int)
+
+    # bs_sides = {0: [0, 164], 1: [0, 183],
+    #             2: [0, 135, 183], 3: [0, 73, 164]}
+
+    bounds = {
+        0: {"system": ["0.1"], "btype": 0},
+        164: {"system": ["sin(x)"], "btype": 1, "side_num": 1},
+        183: {"system": ["cos(x)"], "btype": 1, "side_num": 1},
+        135: {"system": ["exp(x)"], "btype": 1, "side_num": 1},
+        73: {"system": ["sqrt(x)"], "btype": 1, "side_num": 1}}
+
+    equations = {
+        0: {"system": ["U'=a*(D[U,{x,2}]+ D[U,{y,2}])"]},
+        75: {"system": ["U'=a*(D[U,{x,2}]+ D[U,{y,2}])"]},
+        164: {"system": ["U'=a*(D[U,{x,2}]+ D[U,{y,2}])"]}}
+    print("img array:")
+    print(img)
+
     model = Model()
     model.io.loadFromFile("problems/2dTests/heat_block_1")
-    
+
     gen = Gen(model, None)
+    gen.set_params(equations, bounds, img)
+    '''
     gen.set_params(None,
                    {0:
                     {"system": ["U'=a*(D[U,{x,2}]+ D[U,{y,2}])"]},
@@ -157,4 +231,10 @@ if __name__ == "__main__":
                         "side_num": 0,
                         "vertex_values": ["0.2"],
                         "sides": [0, 0]}})
-    gen.gen_src_files_cpp()
+    '''
+    # gen.gen_src_files_cpp()
+    print("namesAndNumbers:")
+    print(gen.params.namesAndNumbers)
+
+    print("functionMap:")
+    print(gen.params.functionMap)

@@ -168,7 +168,7 @@ void compute_for_ctype(int *  funcIdxs,
 
   
   // fill funct array
-  getBlock0BoundFuncArray(&funcArray);  
+  getBlock0CentralFuncArray(&funcArray);  
 
   printf("\n*source \n");
   for (int i=0;i<SIZE_OF_RESULT;i++)
@@ -247,7 +247,7 @@ int main(int argc, char **argv)
   */
 
   // fill funct array
-  //getBlock0BoundFuncArray(&funcArray);
+  //getBlock0CentralFuncArray(&funcArray);
   
   // END FOR
 
