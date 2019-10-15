@@ -1,116 +1,118 @@
-import numpy as np
+from solvers.mini_solver.python.bounds import Bounds
 
 
-class Bounds():
+class Solver():
     
-    def __init__(self, unbound_value=-1):
-        self.unbound_value = unbound_value
-
-    def on_bounds(self, idxX, idxY, bsIdxs, source):
-        '''
+    def __init__(self, unbound_value):
+        self.dx = self.dy = 0.01
+        self.dt = 0.000001
+        self.bounds = Bounds(unbound_value=unbound_value,
+                             dxdy=[self.dx, self.dy])
         
-        O ->y
-        |
-        V
-        x
-        u[idx-1, idy-1] = win[0]
-        u[idx-1, idy] = win[1]
-        u[idx-1, idy+1] = win[2]
-        u[idx, idy-1] = win[3]
-        u[idx, idy] = win[4]
-        u[idx, idy+1] = win[5]
-        u[idx+1, idy-1] = win[6]
-        u[idx+1, idy] = win[7]
-        u[idx+1, idy+1] = win[8]
-       
-        '''
-        idx = idxX
-        idy = idxY
-        win = source[np.array([idx-1, idx-1, idx-1, idx, idx, idx, idx+1, idx+1, idx+1]),
-                     np.array([idy-1, idy, idy+1, idy-1, idy, idy+1, idy-1, idy, idy+1])]
-        if self.unbound_value in win:
-            return(win.reshape((3, 3)))
-        else:
-            return(None)
+    def run(self, result, source,
+            csIdxs, cFuncs,
+            bsIdxs, btypes, bFuncs,
+            ITERATION_COUNT):
 
-    def set_bounds(self, source, bsIdxs, btypes, idxX, idxY, bsFuncs):
-        win = self.on_bounds(idxX, idxY, bsIdxs, source)
-        if win is None:
-            # if central case:
-            return()
-        
-        bIdx = bsIdxs[idxX, idxY]
-        btype = btypes[bIdx]
-        if btype == 0:
-            self.set_bound_dirichlet(win, idxX, idxY)
-            
-        elif btype == 1:
-            self.set_bound_neumann(win, idxX, idxY)
-            
-    def get_border_type(self, win):
-        cond = (win == self.unbound_value)
-        
-        '''
-           0
-        0     1
-           0
-        '''
-        if cond[1, 2] and win[cond].size == 1:
-            return("r")
+        # donot touch to border:
+        idxXs = range(1, source.shape[0]-1)
+        idxYs = range(1, source.shape[1]-1)
 
-        '''
-           0
-        0     0
-           1
-        '''
-        if cond[2, 1] and win[cond].size == 1:
-            return("b")
+        for step in range(ITERATION_COUNT):
+            for idxX in idxXs:
+                for idxY in idxYs:
+                    on_bounds = self.bounds.set_bounds(idxX, idxY,
+                                                       result, source,
+                                                       bsIdxs, btypes, bFuncs)
+                    
+                    # if not on_bounds:
+                    if bsIdxs[idxX, idxY] == self.bounds.unbound_value:
+                        dx, dy, dt = [self.dx, self.dy, self.dt]
+                        func = cFuncs[csIdxs[idxX, idxY]]
+                        result[idxX, idxY] = func(idxX, idxY, source, dt, dx, dy)
+                        # print("result[idxX, idxY]:")
+                        # print(result[idxX, idxY])
+            source = result.copy()
+                        
+        return(result)
 
-        '''
-           0
-        1     0
-           0
-        '''
-        if cond[1, 0] and win[cond].size == 1:
-            return("l")
 
-        '''
-           1
-        0     0
-           0
-        '''
-        if cond[0, 1] and win[cond].size == 1:
-            return("t")
-        
-        '''
-           0
-        0     1
-           1
-        '''
-        if cond[1, 2] and cond[2, 1] and win[cond].size == 2:
-            return("br")
-        
-        '''
-           0
-        1     0
-           1
-        '''
-        if cond[1, 0] and cond[2, 1] and win[cond].size == 2:
-            return("bl")
+if __name__ == "__main__":
 
-        '''
-           1
-        1     0
-           0
-        '''
-        if cond[1, 0] and cond[0, 1] and win[cond].size == 2:
-            return("tl")
+    import numpy as np
 
-        '''
-           1
-        0     1
-           0
-        '''
-        if cond[0, 1] and cond[1, 2] and win[cond].size == 2:
-            return("tr")
-        
+    source = np.ones((10, 10))
+    # source = np.ones((100, 100))
+    result = source.copy()
+
+    csIdxs = np.zeros(source.shape)
+
+    csIdxs[5:8, 5:8] = 1
+    # csIdxs[50:80, 50:80] = 1
+    csIdxs = csIdxs.astype(np.int)
+    print("csIdxs:")
+    print(csIdxs)
+
+    def eq_test(idxX, idxY, u, dt, dx, dy, a):
+        return(10*a)
+
+    def eq_heat(idxX, idxY, u, dt, dx, dy, a):
+        return(
+            u[idxX, idxY]
+            + dt*a*((u[idxX+1, idxY]-2*u[idxX, idxY] + u[idxX-1, idxY])/dx**2
+                    + (u[idxX, idxY+1]-2*u[idxX, idxY] + u[idxX, idxY-1])/dy**2))
+    
+    cFuncs = [(lambda x, y, u, dt, dx, dy, a=0.1*i: eq_heat(x, y, u, dt, dx, dy, a))
+              for i in [100, 1]]
+    print("cFuncs[0](0,0,0,0,0,0):")
+    # print(cFuncs[0](0, 0, 0, 0, 0, 0))
+    print("cFuncs[1](0,0,0,0,0,0):")
+    # print(cFuncs[1](0, 0, 0, 0, 0, 0))
+    unbound_value = -1
+
+    bsIdxs = np.zeros(source.shape) + unbound_value
+
+    # side 2:
+    bsIdxs[0] = 2
+    # bsIdxs[0, 3:7] = 2
+    # bsIdxs[0, 7:9] = 3
+
+    # side 3:
+    bsIdxs[9] = 3
+    # bsIdxs[9, 1:5] = 2
+    # bsIdxs[9, 5:7] = 3
+
+    # side 0:
+    bsIdxs[1:9, 0] = 0
+    # bsIdxs[1:99, 0] = 0
+
+    # side 1:
+    bsIdxs[:, 9] = 1
+    # bsIdxs[:, 99] = 1
+    # bsIdxs[1:7, 9] = 4
+    # bsIdxs[7:9, 9] =
+
+    # inner borders:
+    bsIdxs[3:5, 3:5] = 4
+    # bsIdxs[30:40, 30:40] = 4
+    # bsIdxs[30:40, 30:40] = 4
+    # bsIdxs[30:40, 30:40] = 4
+    # bsIdxs[4, 4] = 4
+    bsIdxs = bsIdxs.astype(np.int)
+    print("bsIdxs:")
+    print(bsIdxs)
+
+    btypes = [1, 1, 1, 1, 1]
+
+    bFuncs = [lambda idxX, idxY: 10*i for i in range(len(btypes))]
+    
+    solver = Solver(unbound_value)
+    
+    ITERATION_COUNT = 10
+    solver.run(result, source, csIdxs, cFuncs, bsIdxs, btypes, bFuncs,
+               ITERATION_COUNT)
+    import matplotlib.pyplot as plt
+    plt.imshow(result)
+    plt.show()
+    print("result:")
+    print(result)
