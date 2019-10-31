@@ -1,0 +1,168 @@
+{
+    "ProjectName": "Heat_test", 
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 10, 
+        "TimeStep": 0.1, 
+        "SaveInterval": 0.1, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "Dimension": 1, 
+        "dx": 0.01, 
+        "dy": 1, 
+        "dz": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "MainBlock", 
+            "Offset": {
+                "x": 0.1
+            }, 
+            "Size": {
+                "x": 3.5
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 1, 
+            "BoundRegions": [
+                {
+                    "BoundNumber": 0, 
+                    "Side": 0
+                }
+            ], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        },
+        {
+            "Name": "SupplementaryBlock", 
+            "Offset": {
+                "x": 0.1
+            }, 
+            "Size": {
+                "x": 3.5
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 1, 
+            "BoundRegions": [
+                {
+                    "BoundNumber": 0, 
+                    "Side": 0
+                }
+            ], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }
+
+    ], 
+    "Interconnects": [], 
+    "Equations": [
+        {
+            "Name": "1D heat 1", 
+            "Vars": [
+                "x"
+            ], 
+            "System": [
+                "U'= a*(b-U(t-1))*U"
+            ]
+        }
+    ], 
+    "EquationParams": {
+        "Params": [
+            "a", 
+            "b"
+        ], 
+        "ParamValues": [
+            {
+                "a": 1, 
+                "b": 2
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
+    "Bounds": [
+        {
+            "Name": "Dirichlet 1", 
+            "Type": 0, 
+            "Values": [
+                "0.0+sin(t)"
+            ], 
+            "Derivative": [
+                "0.0"
+            ]
+        }
+    ], 
+    "Initials": [
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "1.0+t"
+            ]
+        }, 
+        {
+            "Name": "Initial values 1", 
+            "Values": [
+                "1.0+t"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "*",
+            "CpuCount": 1, 
+            "CpuMemory": [
+                5
+            ], 
+            "GpuCount": 3, 
+            "GpuMemory": [
+                5, 
+                5, 
+                5
+            ]
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            },
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
+
+        ]
+    }, 
+    "Plots": [ 
+	{
+            "Name": "name1", 
+            "Title": "u^2(t,x)", 
+            "Period": 0.1,
+            "Value": "U"
+        },
+	{
+            "Name": "name2", 
+            "Title": "title2", 
+            "Period": 0.1,
+            "Value": "U"
+        }
+    ],
+
+    "Results":[
+        {
+            "Name": "name1", 
+            "Period": 0.1,
+            "Value": "U+1"
+        },
+	{
+            "Name": "name2", 
+            "Period": 0.1,
+            "Value": "U+1"
+        }
+    ]
+}

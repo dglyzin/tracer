@@ -1,0 +1,14 @@
+{
+    "_comment:": "nortpng:, nodes:, continueFileName:",
+    "nortpng": "",
+    "flag": "0",
+    "finishTime": "-1.1",
+    "cont": "n_a",
+    "partition": "all",
+    "mpimap": "",
+    "affinity": "0-15",
+    "hs_python": "~/anaconda_clusterhome/bin/python3",
+    "hd_python": "~/anaconda_clusterhome/bin/python3",
+    "exclusive": false
+
+}
