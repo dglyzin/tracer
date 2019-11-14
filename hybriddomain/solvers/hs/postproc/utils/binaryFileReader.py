@@ -5,7 +5,8 @@ Created on Sep 30, 2015
 '''
 import struct
 import numpy as np
-from utils.enums import *
+from hybriddomain.solvers.hs.postproc \
+            .utils.enums import *
 
 import logging
 
@@ -54,7 +55,7 @@ def readDomFile(fileName):
     rTol, = struct.unpack('d', dom.read(8))
     
     problemType, = struct.unpack('i', dom.read(4))
-    if problemType == 1 :
+    if problemType == 1:
         delayCount, = struct.unpack('i', dom.read(4))
         for i in range(0, delayCount):
             struct.unpack('d', dom.read(8))

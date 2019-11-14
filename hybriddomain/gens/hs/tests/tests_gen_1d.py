@@ -1,5 +1,5 @@
 '''
-hd$ python3 -m hybriddomain.gens.hs.tests.tests_gen_1d -t project_folder \
+~/anaconda3/bin/./python3 -m hybriddomain.gens.hs.tests.tests_gen_1d -t project_folder \
 -d device_conf_rpath -p paths_rpath \
 -w workspace_folder_location -u username
 
@@ -30,25 +30,26 @@ where
    username used for interpetation of tilde (~) in pathes if
       connection file not used or not exist.
 
-   paths_rpath (optional) is relative to settings path of paths file
+   paths_rpath (optional) is relative to settings if running from project_folder
+      (or hd/settings if running from hd) path of paths file
       default is ``paths/paths_hs_base.json``
 
-   device_conf_rpath (optional) is relative to settings path of device_conf
-      device_conf folder deffault is ``device_conf/default.json``
+   device_conf_rpath (optional) is relative to settings if running from project_folder
+      (or hd/settings if running from hd) path of device config file
+      default is ``device_conf/default.json``
 
-generaly for tests at client side use:
-   python3 -m hybriddomain.gens.hs.tests.tests_gen_1d -t logistic_delays -u username
+# for tests at client side from hd use:
+   ~/anaconda3/bin/./python3 -m hybriddomain.gens.hs.tests.tests_gen_1d -t logistic_delays -u username
 
    # or with undefault settings:
-   python3 -m hybriddomain.gens.hs.tests.tests_gen_1d -t logistic_delays -p paths/paths_hs_base.json \
-   -u username
-
-for run from remoterun.py use:
+   ~/anaconda3/bin/./python3 -m hybriddomain.gens.hs.tests.tests_gen_1d -t logistic_delays -p paths/paths_hs_base.json -u username
+l
+# for run from remoterun.py use:
 
    ~/anaconda3/bin/./python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t logistic_delays -u username
 
 # from project_folder
-~/anaconda3/bin/./python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t ~/Documents/projects/projectsNew/lab/project_folder/problems/logistic_delays -p connection.json -d devices.json -w ~/Documents/projects/projectsNew/lab/project_folder -u username
+~/anaconda3/bin/./python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run()" -t ~/Documents/projects/projectsNew/lab/project_folder/problems/logistic_delays -p connection.json -d devices.json -w ~/Documents/projects/projectsNew/lab/project_folder -u username
 
    # go to hs_hd dirrectory, show it
    # and run source generator:
@@ -76,45 +77,61 @@ import os
 import sys
 
 
-def run_from_remoterun():
+def run(problem=None, device=None, paths=None,
+        workspace=None, username=None):
 
-    if '-t' in sys.argv:
-        test_idx = sys.argv.index('-t') + 1
-        test_id = sys.argv[test_idx]
-        if len(test_id.split(".")) > 1:
-            raise(BaseException("tests_gen_1d -t parameter is"
-                                + " a path (relative to hd or absolute)"
-                                + "\n of folder, .json file contained in"))
-        if len(test_id.split(os.path.sep)) > 1:
-            test_name = test_id
+    if problem is not None:
+        test_name = problem
+    else:
+        if '-t' in sys.argv:
+            test_idx = sys.argv.index('-t') + 1
+            test_id = sys.argv[test_idx]
+            if len(test_id.split(".")) > 1:
+                raise(BaseException("tests_gen_1d -t parameter is"
+                                    + " a path (relative to hd or absolute)"
+                                    + "\n of folder, .json file contained in"))
+            if len(test_id.split(os.path.sep)) > 1:
+                test_name = test_id
+            else:
+                test_name = os.path.join('hybriddomain', 'problems', '1dTests',
+                                         sys.argv[test_idx])
         else:
-            test_name = os.path.join('hybriddomain', 'problems', '1dTests',
-                                     sys.argv[test_idx])
-    else:
-        test_name = 'hybriddomain/problems/1dTests/Brusselator1d'
-        # test_name = 'problems/1dTests/two_blocks0_delays'
+            test_name = 'hybriddomain/problems/1dTests/Brusselator1d'
+            # test_name = 'problems/1dTests/two_blocks0_delays'
 
-    if '-d' in sys.argv:
-        device_conf_idx = sys.argv.index('-d') + 1
-        device_conf_rpath = sys.argv[device_conf_idx]
+    if device is not None:
+        device_conf_rpath = device
     else:
-        device_conf_rpath = "device_conf/default.json"
+        if '-d' in sys.argv:
+            device_conf_idx = sys.argv.index('-d') + 1
+            device_conf_rpath = sys.argv[device_conf_idx]
+        else:
+            device_conf_rpath = "device_conf/default.json"
 
-    if '-p' in sys.argv:
-        paths_idx = sys.argv.index('-p') + 1
-        paths_rpath = sys.argv[paths_idx]
+    if paths is not None:
+        paths_rpath = paths
     else:
-        paths_rpath = "paths/paths_hs_base.json"
-        
-    if '-w' in sys.argv:
-        workspace = sys.argv[sys.argv.index('-w') + 1]
-    else:
-        workspace = None
+        if '-p' in sys.argv:
+            paths_idx = sys.argv.index('-p') + 1
+            paths_rpath = sys.argv[paths_idx]
+        else:
+            paths_rpath = "paths/paths_hs_base.json"
 
-    if '-u' in sys.argv:
-        username = sys.argv[sys.argv.index('-u') + 1]
+    if workspace is not None:
+        workspace = workspace
     else:
-        username = None
+        if '-w' in sys.argv:
+            workspace = sys.argv[sys.argv.index('-w') + 1]
+        else:
+            workspace = None
+
+    if username is not None:
+        username = username
+    else:
+        if '-u' in sys.argv:
+            username = sys.argv[sys.argv.index('-u') + 1]
+        else:
+            username = None
         
     test_gen_1d(test_name, device_conf_rpath, paths_rpath,
                 workspace, username)
@@ -181,4 +198,4 @@ if __name__ == '__main__':
     '''
     
     '''
-    run_from_remoterun()
+    run()

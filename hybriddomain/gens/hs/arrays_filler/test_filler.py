@@ -1,5 +1,5 @@
-import gens.hs.tests.tests_1d_dom as ts
-import gens.hs.arrays_filler.filler_main as fm
+import hybriddomain.gens.hs.tests.tests_1d_dom as ts
+import hybriddomain.gens.hs.arrays_filler.filler_main as fm
 
 
 def test_1d():

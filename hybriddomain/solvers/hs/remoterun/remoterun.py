@@ -26,41 +26,45 @@
 
 model -> mapped model -> domain.dom+funcs.cpp+run.sh
 
-Command:
+Command::
 
-hd$ python3 -m solvers.hs.remoterun.remoterun \
-conn_file_name device_conf_file_name paths_file_name \
+ hd$ ~/anaconda3/bin/./python3 -m solvers.hs.remoterun.remoterun \
+conn_file_rpath device_conf_file_rpath paths_file_rpath \
 test_folder_relative_name
 
 where
 
-   conn_file_name is name of conn file in conn folder
+   conn_file_rpath is relative path of conn file in ``hybriddomain/settings``
+      (ex: ``conn/conn_base.json``)
 
-   paths_file_name is name of paths file in paths folder
-      deffault is ``paths_hs_base``
+   paths_file_rpath is relative path of paths file in ``hybriddomain/settings`` folder
+      (ex: ``paths/paths_hs_base``)
 
-   device_conf_file_name is name of device_conf file in
-      device_conf folder.
+   device_conf_file_rpath is relative path of device_conf file in ``hybriddomain/settings`` folder
+      (ex: ``device_conf/default.json`` folder.
 
-   test_folder_relative_name relative to hd name of folder,
-      model .json file stored to.
-      (ex: ``problems/1dTests/test_folder``)
+   test_folder_relative_name relative to hd repository folder (where hd folder is lokated)
+      name of folder, model .json file stored to.
+      (ex: ``hybriddomain/problems/1dTests/logistic_delays``)
       
-Ex (from hd)::
+Ex (from hd):
 
- # 1d:
-hybriddomain$ ~/anaconda3/bin/./python3 -m hybriddomain.solvers.hs.remoterun.remoterun conn/conn_base.json device_conf/default.json paths/paths_hs_base.json hybriddomain/problems/1dTests/logistic_delays
 
- ~/anaconda3/bin/./python3
- ~/anaconda3/bin/./python3 -m hybriddomain.solvers.hs.remoterun.remoterun conn/conn_base.json device_conf/default.json paths/paths_hs_base.json hybriddomain/problems/1dTests/logistic_delays
- # or 
+# 1d::
+
+ hybriddomain$ ~/anaconda3/bin/./python3 -m hybriddomain.solvers.hs.remoterun.remoterun conn/conn_base.json device_conf/default.json paths/paths_hs_base.json hybriddomain/problems/1dTests/logistic_delays
+
+# or::
+
  ~/anaconda3/bin/./python3 -m hybriddomain.solvers.hs.remoterun.remoterun conn_cluster1 default paths_hs_cluster1 problems/1dTests/logistic_delays
 
- # 2d one block:
- python3 -m hybriddomain.solvers.hs.remoterun.remoterun conn_base default paths_hs_base problems/2dTests/heat_block_1
+# 2d one block::
 
- # 2d two blocks ics:
- python3 -m hybriddomain.solvers.hs.remoterun.remoterun conn_base ics_other paths_hs_base problems/2dTests/heat_block_2_ics_other
+ ~/anaconda3/bin/./python3 -m hybriddomain.solvers.hs.remoterun.remoterun conn/conn_base.json device_conf/default.json paths/paths_hs_base.json hybriddomain/problems/2dTests/heat_block_1
+
+# 2d two blocks ics::
+
+ ~/anaconda3/bin/./python3 -m hybriddomain.solvers.hs.remoterun.remoterun conn/conn_base.json device_conf/ics_other.json paths/paths_hs_base.json hybriddomain/problems/2dTests/heat_block_2_ics_other
 
 '''
 #remoteRunScriptName='project.sh'
@@ -553,7 +557,7 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None,
             '"import'
             + (' hybriddomain.gens.hs.tests.tests_gen_%dd as ts;'
                % dimention)
-            + ' ts.run_from_remoterun()"')
+            + ' ts.run()"')
         command = (hd_python + " "
                    + '-c ' + python_running_script
                    + ' -t ' + hs_project_folder

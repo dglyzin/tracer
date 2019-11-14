@@ -9,13 +9,13 @@ Tests:
 >>> err
 True
 '''
-from hybriddomain.gens.hs.env.definitions.def_main import Gen as GenDef
-from hybriddomain.gens.hs.env.initials.initials_main import Gen as GenInit
-from hybriddomain.gens.hs.env.params.params_main import Gen as GenParams
-from hybriddomain.gens.hs.env.centrals.cent_main import Gen as GenCent
-from hybriddomain.gens.hs.env.bounds.bounds_main import GenD1 as GenBounds
-from hybriddomain.gens.hs.env.ics.ics_main import GenD1 as GenIcs
-from hybriddomain.gens.hs.env.array.array_main import Gen as GenArr
+from hybriddomain.gens.hs.gen_env.cpp.env.definitions.def_main import Gen as GenDef
+from hybriddomain.gens.hs.gen_env.cpp.env.initials.initials_main import Gen as GenInit
+from hybriddomain.gens.hs.gen_env.cpp.env.params.params_main import Gen as GenParams
+from hybriddomain.gens.hs.gen_env.cpp.env.centrals.cent_main import Gen as GenCent
+from hybriddomain.gens.hs.gen_env.cpp.env.bounds.bounds_main import GenD1 as GenBounds
+from hybriddomain.gens.hs.gen_env.cpp.env.ics.ics_main import GenD1 as GenIcs
+from hybriddomain.gens.hs.gen_env.cpp.env.array.array_main import Gen as GenArr
 
 from hybriddomain.tests.tests_common import to_file, get_model_for_tests
 

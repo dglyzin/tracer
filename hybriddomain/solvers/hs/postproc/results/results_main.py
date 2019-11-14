@@ -111,12 +111,17 @@ class ResultPostprocNet():
 
             # fill self.results_paths:
             self.get_results_filespaths(model)
+        elif model.results_paths == {}:
+            # refill self.results_paths:
+            self.get_results_filespaths(model)
 
         # extract data from paths as strings:
         if len(names) > 0:
             results = dict([(name, model.results_paths[name])
                             for name in names])
         else:
+            # print("model.results_paths:")
+            # print(model.results_paths)
             results = model.results_paths
 
         names_strs = self.extract_out_from_paths(results)
@@ -291,6 +296,8 @@ class ResultPostprocNet():
                             result[key] += val
 
                     result_t = [(float(key), val) for key, val in gen(result)]
+                    # print("result_t:")
+                    # print(result_t)
 
                     # collect common_shape from some array
                     if self.common_shape is None:

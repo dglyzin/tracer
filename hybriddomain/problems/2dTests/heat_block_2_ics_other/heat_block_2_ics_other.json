@@ -184,22 +184,24 @@
             }
         ]
     }, 
-    "Plots": [	{
+    "Plots": [
+	{
+	    "Name": "plot0",
             "Title": "block0 u(t,x)", 
             "Period": 0.001,
             "Value": "U"
         },
 	{
+	    "Name": "plot1",
             "Title": "block1 u(t,x)", 
             "Period": 0.001,
             "Value": "U"
         }
-	
-       ],
+    ],
     "Results":[
         {
-            "Name": "u", 
-            "Period": 0.001,
+            "Name": "name0", 
+            "Period": 0.01,
             "Value": ["U"]
         }
 

@@ -6,5 +6,6 @@
     "partition": "exp",
     "mpimap": "",
     "affinity": "0-15",
-    "taskCountPerNode": "4"
+    "taskCountPerNode": "4",
+    "exclusive": true
 }

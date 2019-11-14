@@ -153,10 +153,20 @@
             }
         ]
     }, 
-    "Plots": [	{
-            "Title": "u(t,x)", 
-            "Period": 0.001,
+    "Plots": [
+	{
+            "Name": "plot0",
+	    "Title": "u(t,x)", 
+            "Period": 0.01,
             "Value": "U"
         }
-       ]
+       ],
+    
+    "Results":[
+        {
+            "Name": "name0", 
+            "Period": 0.1,
+            "Value": "U+1"
+        }]
+
 }

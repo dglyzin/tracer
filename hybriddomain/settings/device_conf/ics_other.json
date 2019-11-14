@@ -8,6 +8,7 @@
     "mpimap": "",
     "affinity": "0-15",
     "taskCountPerNode": "2",
-    "hs_python": "~/anaconda3/bin/python3",
-    "hd_python": "~/anaconda3/bin/python3"
+    "hs_python": "~/anaconda_clusterhome/bin/python3",
+    "hd_python": "~/anaconda_clusterhome/bin/python3",
+    "exclusive": true
 }

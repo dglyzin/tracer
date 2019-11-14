@@ -193,7 +193,8 @@
             }
         ]
     }, 
-    "Plots": [	{
+    "Plots": [
+	{
             "Title": "block0 u(t,x)", 
             "Period": 0.001,
             "Value": "U"

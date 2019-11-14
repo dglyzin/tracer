@@ -26,18 +26,28 @@ class Filler():
 
         block1 = self.dmodel.blocks[ic.block1]
         block2 = self.dmodel.blocks[ic.block2]
-        [b1xc, b1yc, b1zc] = block1.getCellCount(self.dmodel.gridStepX,
-                                    self.dmodel.gridStepY, self.dmodel.gridStepZ)
-        [b2xc, b2yc, b2zc] = block2.getCellCount(self.dmodel.gridStepX,
-                                    self.dmodel.gridStepY, self.dmodel.gridStepZ)
-        [b1xoff, b1yoff, b1zoff] = block1.getCellOffset(self.dmodel.gridStepX,
-                                    self.dmodel.gridStepY, self.dmodel.gridStepZ)
-        [b2xoff, b2yoff, b2zoff] = block2.getCellOffset(self.dmodel.gridStepX,
-                                    self.dmodel.gridStepY, self.dmodel.gridStepZ)
+        [b1xc, b1yc, b1zc] = (block1
+                              .getCellCount(self.dmodel.gridStepX,
+                                            self.dmodel.gridStepY,
+                                            self.dmodel.gridStepZ))
+        [b2xc, b2yc, b2zc] = (block2
+                              .getCellCount(self.dmodel.gridStepX,
+                                            self.dmodel.gridStepY,
+                                            self.dmodel.gridStepZ))
+        [b1xoff, b1yoff, b1zoff] = (block1
+                                    .getCellOffset(self.dmodel.gridStepX,
+                                                   self.dmodel.gridStepY,
+                                                   self.dmodel.gridStepZ))
+        [b2xoff, b2yoff, b2zoff] = (block2
+                                    .getCellOffset(self.dmodel.gridStepX,
+                                                   self.dmodel.gridStepY,
+                                                   self.dmodel.gridStepZ))
         
-        print "Filling interconnect", icIdx, ": block1 off:", b1xoff, b1yoff, b1zoff, "; block2 off:", b2xoff, b2yoff, b2zoff 
+        print("Filling interconnect", icIdx,
+              ": block1 off:", b1xoff, b1yoff, b1zoff,
+              "; block2 off:", b2xoff, b2yoff, b2zoff)
         
-        if (ic.block1Side==0) or (ic.block1Side==1):
+        if (ic.block1Side == 0) or (ic.block1Side == 1):
             #x=const connection
             #Y=N
             if b1yoff < b2yoff:
@@ -57,7 +67,7 @@ class Filler():
                 b1offM = 0
                 b2offM = b1zoff - b2zoff
                 icLenM = min(b1zoff+b1zc, b2zoff+b2zc) - b1zoff
-        elif (ic.block1Side==2) or (ic.block1Side==3):
+        elif (ic.block1Side == 2) or (ic.block1Side == 3):
             #y=const connection
             #X=N
             if b1xoff < b2xoff:
@@ -98,8 +108,7 @@ class Filler():
                 b2offM = b1yoff - b2yoff
                 icLenM = min(b1yoff+b1yc, b2yoff+b2yc) - b1yoff
             
-
-        print "Saving interconnect", icIdx, "part 1"
+        print("Saving interconnect", icIdx, "part 1")
         icPropArr1 = np.zeros(5+3*icDim, dtype=np.int32)
         icPropArr1[0] = icDim
         icPropArr1[1] = icLenM
@@ -111,12 +120,12 @@ class Filler():
         icPropArr1[7] = b1offM
         icPropArr1[8] = b1offN
         icPropArr1[9] = b2offM
-        icPropArr1[10]= b2offN
+        icPropArr1[10] = b2offN
         
         self.icList.append(icPropArr1)
-        print icPropArr1
+        print(icPropArr1)
 
-        print "Saving interconnect", icIdx, "part 2"
+        print("Saving interconnect", icIdx, "part 2")
         icPropArr2 = np.zeros(5+3*icDim, dtype=np.int32)
         icPropArr2[0] = icDim
         icPropArr2[1] = icLenM
@@ -128,6 +137,6 @@ class Filler():
         icPropArr2[7] = b2offM
         icPropArr2[8] = b2offN
         icPropArr2[9] = b1offM
-        icPropArr2[10]= b1offN
+        icPropArr2[10] = b1offN
         self.icList.append(icPropArr2)
-        print icPropArr2
+        print(icPropArr2)

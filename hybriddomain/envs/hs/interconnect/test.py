@@ -1,4 +1,4 @@
-import envs.hs.model.model_main as model
+import hybriddomain.envs.hs.model.model_main as model
 from hybriddomain.envs.hs.interconnect.ic_main import icMain as interconnect
 
 

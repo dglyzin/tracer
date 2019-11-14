@@ -366,6 +366,7 @@ class Filler():
         
         self.fPlot.fillBinaryPlots()
         self.fPlot.show(gout=self.out_data)
+        self.model.gen_out_data = self.out_data
 
     def show(self, out_folder=None):
 

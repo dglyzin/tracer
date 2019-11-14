@@ -47,6 +47,7 @@ logger = logging.getLogger('postproc.video')
 logger.setLevel(level=log_level)
 
 import inspect
+'''
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 
 folder = "video"
@@ -55,17 +56,24 @@ logger.info("postproc dir:")
 logger.info(sourcedir)
 if sourcedir not in sys.path:
     sys.path += [sourcedir]
-
+'''
 # from domainmodel.model import Model
 
-from utils.fileUtils import getSortedDrawBinFileList
-from utils.fileUtils import drawExtension
-from utils.fileUtils import defaultGeomExt
-from utils.fileUtils import getPlotValList
+from hybriddomain.solvers.hs.postproc \
+        .utils.fileUtils import getSortedDrawBinFileList
+from hybriddomain.solvers.hs.postproc \
+        .utils.fileUtils import drawExtension
+from hybriddomain.solvers.hs.postproc \
+        .utils.fileUtils import defaultGeomExt
+from hybriddomain.solvers.hs.postproc \
+        .utils.fileUtils import getPlotValList
 
-from utils.binaryFileReader import readBinFile 
-from utils.binaryFileReader import readDomFile
-from utils.binaryFileReader import getDomainProperties
+from hybriddomain.solvers.hs.postproc \
+        .utils.binaryFileReader import readBinFile 
+from hybriddomain.solvers.hs.postproc \
+        .utils.binaryFileReader import readDomFile
+from hybriddomain.solvers.hs.postproc \
+        .utils.binaryFileReader import getDomainProperties
 
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 

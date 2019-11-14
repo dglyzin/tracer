@@ -1,22 +1,20 @@
 '''
-hd$ python3 -m hybriddomain.gens.hs.tests.tests_gen_2d -t project_folder \
+hd$ ~/anaconda3/bin/./python3 -m hybriddomain.gens.hs.tests.tests_gen_2d -t project_folder \
 -d device_conf_rpath -p paths_rpath \
 -w workspace_folder_location -u username
 
 where
 
-   project folder is folder, where .json file stored
+   - ``project folder`` -- is folder, where .json file stored
          and it can be:
 
       either relative to hd:
       (ex: ``hybriddomain/problems/2dTests/test_folder``)
-      python3 -m gens.hs.tests.tests_gen_2d -t \
-      hybriddomain/problems/2dTests/heat_block_2_ics_other -d ics_other
+      python3 -m hybriddomain.gens.hs.tests.tests_gen_2d -t hybriddomain/problems/2dTests/heat_block_2_ics_other -d ics_other
 
       or absolute:
       (ex: )
-      python3 -m hybriddomain.gens.hs.tests.tests_gen_2d -t \
-      ~/projects/lab/hybriddomain/hybriddomain/problems/2dTests/heat_block_2_ics_other -d device_conf/ics_other.json
+      python3 -m hybriddomain.gens.hs.tests.tests_gen_2d -t ~/projects/lab/hybriddomain/hybriddomain/problems/2dTests/heat_block_2_ics_other -d device_conf/ics_other.json
 
       or test_folder name
       where test_folder in ``hd/problems/2dTests``
@@ -37,18 +35,23 @@ where
    device_conf_rpath (optional) is relative to settings path of device_conf
       device_conf folder deffault is ``device_conf/default.json``
 
-generaly for tests at client side use::
+generaly for tests at client side from hd use::
 
-   python3 -m hybriddomain.gens.hs.tests.tests_gen_2d -t heat_block_2_ics_other -d device_conf/ics_other.json -u username
+   ~/anaconda3/bin/./python3 -m hybriddomain.gens.hs.tests.tests_gen_2d -t heat_block_2_ics_other -d device_conf/ics_other.json -u username
+
+   ~/anaconda3/bin/./python3 -m hybriddomain.gens.hs.tests.tests_gen_2d -t heat_block_1   -d device_conf/default.json -p paths/paths_hs_base.json -u username
 
    # or with undefault settings
 
-   python3 -m hybriddomain.gens.hs.tests.tests_gen_2d -t heat_block_2_ics_other \
+   ~/anaconda3/bin/./python3 -m hybriddomain.gens.hs.tests.tests_gen_2d -t heat_block_2_ics_other \
    -d device_conf/ics_other.json -p paths/paths_hs_base.json -u username
 
 for run from remoterun.py use::
 
-   ~/anaconda3/bin/./python3 -c "import hybriddomain.gens.hs.tests.tests_gen_2d as ts; ts.run_from_remoterun()" -t heat_block_2_ics_other -d device_conf/ics_other.json -u username
+   ~/anaconda3/bin/./python3 -c "import hybriddomain.gens.hs.tests.tests_gen_2d as ts; ts.run()" -t heat_block_2_ics_other -d device_conf/ics_other.json -u username
+
+# from project_folder
+~/anaconda3/bin/./python3 -c "import hybriddomain.gens.hs.tests.tests_gen_2d as ts; ts.run()" -t ~/Documents/projects/projectsNew/lab/project_folder/problems/2dTests/heat_block_1 -p connection.json -d devices.json -w ~/Documents/projects/projectsNew/lab/project_folder -u username
 
    # go to hs_hd dirrectory, show it
    # and run source generator:
@@ -78,43 +81,65 @@ import os
 import sys
 
 
-def run_from_remoterun():
-    if '-t' in sys.argv:
-        test_idx = sys.argv.index('-t') + 1
-        test_id = sys.argv[test_idx]
-        if len(test_id.split(".")) > 1:
-            raise(BaseException("tests_gen_2d -t parameter is"
-                                + " a path (relative to hd or absolute)"
-                                + "\n of folder, .json file contained in"))
-        if len(test_id.split(os.path.sep)) > 1:
-            test_name = test_id
+def run(problem=None, device=None, paths=None,
+        workspace=None, username=None):
+    
+    if problem is not None:
+        test_name = problem
+    else:
+
+        if '-t' in sys.argv:
+            test_idx = sys.argv.index('-t') + 1
+            test_id = sys.argv[test_idx]
+            if len(test_id.split(".")) > 1:
+                raise(BaseException("tests_gen_2d -t parameter is"
+                                    + " a path (relative to hd or absolute)"
+                                    + "\n of folder, .json file contained in"))
+            if len(test_id.split(os.path.sep)) > 1:
+                test_name = test_id
+            else:
+                test_name = os.path.join('hybriddomain', 'problems', '2dTests',
+                                         sys.argv[test_idx])
         else:
-            test_name = os.path.join('hybriddomain', 'problems', '2dTests',
-                                     sys.argv[test_idx])
-    else:
-        test_name = 'hybriddomain/problems/2dTests/tests_2d_two_blocks0'
+            test_name = 'hybriddomain/problems/2dTests/tests_2d_two_blocks0'
 
-    if '-d' in sys.argv:
-        device_conf_idx = sys.argv.index('-d') + 1
-        device_conf_rpath = sys.argv[device_conf_idx]
+    if device is not None:
+        device_conf_rpath = device
     else:
-        device_conf_rpath = "device_conf/default.json"
 
-    if '-p' in sys.argv:
-        paths_idx = sys.argv.index('-p') + 1
-        paths_rpath = sys.argv[paths_idx]
+        if '-d' in sys.argv:
+            device_conf_idx = sys.argv.index('-d') + 1
+            device_conf_rpath = sys.argv[device_conf_idx]
+        else:
+            device_conf_rpath = "device_conf/default.json"
+
+    if paths is not None:
+        paths_rpath = paths
     else:
-        paths_rpath = "paths/paths_hs_base.json"
+
+        if '-p' in sys.argv:
+            paths_idx = sys.argv.index('-p') + 1
+            paths_rpath = sys.argv[paths_idx]
+        else:
+            paths_rpath = "paths/paths_hs_base.json"
+
+    if workspace is not None:
+        workspace = workspace
+    else:
         
-    if '-w' in sys.argv:
-        workspace = sys.argv[sys.argv.index('-w') + 1]
-    else:
-        workspace = None
+        if '-w' in sys.argv:
+            workspace = sys.argv[sys.argv.index('-w') + 1]
+        else:
+            workspace = None
 
-    if '-u' in sys.argv:
-        username = sys.argv[sys.argv.index('-u') + 1]
+    if username is not None:
+        username = username
     else:
-        username = None
+
+        if '-u' in sys.argv:
+            username = sys.argv[sys.argv.index('-u') + 1]
+        else:
+            username = None
 
     test_gen_2d(test_name, device_conf_rpath, paths_rpath,
                 workspace, username)
@@ -180,6 +205,6 @@ def test_gen_dim_2d(model=('hybriddomain/problems/2dTests/tests_2d_two_blocks0')
 
 if __name__ == '__main__':
 
-    run_from_remoterun()
+    run()
     # test_gen_2d()
     # test_gen_dim_2d()
