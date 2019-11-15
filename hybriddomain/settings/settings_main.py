@@ -81,10 +81,7 @@ class Settings():
         # self.use_pf_prefix = use_pf_prefix
         self.use_hd_prefix = False
         self.use_workspace = False
-        # settings_prefix = hd_in_src
-        # settings_prefix = ""
         self.hd_prefix = ""
-        # self.pf_prefix = ""
         self.workspace = None
         self.use_workspace = False
 
@@ -98,16 +95,7 @@ class Settings():
                 self.hd_prefix = hd_prefix
                 self.use_hd_prefix = True
                 settings_prefix = hd_prefix
-            '''
-            else:
-                settings_prefix = pf_dir
-                if pf_prefix is not None:
-                    if "~" in pf_prefix:
-                        raise(BaseException("tilde must not been in pf_prefix"))
-                    self.pf_prefix = pf_prefix
-                    # settings_prefix = pf_prefix
-                    # self.use_pf_prefix = True
-            '''
+
         self.settings_folder = os.path.join(settings_prefix,
                                             settings_folder)
         # set up paths to config files:
@@ -115,15 +103,6 @@ class Settings():
         self.set_device_conf_rpath(device_conf_rpath)
         self.set_conn_rpath(conn_rpath)
 
-        '''
-        if self.use_pf_prefix:
-            self.extract_all_settings_from_files(self.settings_folder,
-                                                 conn_name,
-                                                 device_conf_name,
-                                                 paths_name)
-        else:
-            self.extract_all_settings_from_default(self.settings_folder)
-        '''
         # load configs:
         # choice current settings files:
         if conn_rpath is not None:
@@ -133,18 +112,19 @@ class Settings():
         self.model = model
         self.model.settings = self
         self.make_all_paths(model)
-        
+
+    '''
     def extract_all_settings_from_files(self, settings_folder,
                                         conn_name,
                                         device_conf_name,
                                         paths_name):
         
-        '''Collect json files to dict.
+        ''Collect json files to dict.
         (settings_folder+conn_name+".json")
         (settings_folder+device_conf_name+".json")
         (settings_folder+paths_name+".json")
         
-        Used if specific settings files were given '''
+        Used if specific settings files were given ''
 
         def get_data(sfolder, sfile):
             # print(sfile)
@@ -166,17 +146,17 @@ class Settings():
         self.conns[conn_name] = get_data(settings_folder, conn_name + ".json")
 
     def extract_all_settings_from_default(self, settings_folder):
-        '''Extract settings from default configs files
+        ''Extract settings from default configs files
         i.e files, that stored in:
         hybriddomain/hybriddomain/settings/conn
         hybriddomain/hybriddomain/settings/device_conf
-        hybriddomain/hybriddomain/settings/pathes'''
+        hybriddomain/hybriddomain/settings/pathes''
 
         self._get_confs(settings_folder)
         self._extract_all_settings()
 
     def _extract_all_settings(self):
-        '''Extract settings from all files in self.folders[key] folder to::
+        ''Extract settings from all files in self.folders[key] folder to::
 
         ``self.conn, self.device_conf, self.pathes``
         where key in ["conn", "device_conf", "pathes"].
@@ -185,7 +165,7 @@ class Settings():
 
         Each file will be key in according settings::
 
-           ``settings/conn/conn_base.json -> self.conn['conn_base']``'''
+           ``settings/conn/conn_base.json -> self.conn['conn_base']``''
             
         def get_data(sfolder, sfile):
             # print(sfile)
@@ -208,11 +188,11 @@ class Settings():
         self.device_confs = self.settings["device_conf"]
         self.paths_confs = self.settings["paths"]
         self.conns = settings["conn"]
-
+    
     def _get_confs(self, settings_folder):
         
-        '''put all configs folders: conn, device_conf, paths
-        to self.folders dict'''
+        ''put all configs folders: conn, device_conf, paths
+        to self.folders dict''
 
         conns_folder = os.path.join(settings_folder, 'conn')
         devices_conf_folder = os.path.join(settings_folder, 'device_conf')
@@ -220,6 +200,7 @@ class Settings():
         self.folders = {"conn": conns_folder,
                         "device_conf": devices_conf_folder,
                         "paths": paths_folder}
+    '''
 
     def set_paths_rpath(self, rpath):
         if rpath is None:
@@ -279,20 +260,7 @@ class Settings():
             workspace = self.workspace
         workspace = self.fix_tilde_bug(workspace, 'workspace', 'path')
         global hd_path
-        '''
-        if self.use_pf_prefix:
-            # in that case supposed Settings running
-            # from client project_folder
-            # so hd_path will in fact be project_folder
-            # hd_path = self.pf_prefix
-            pass
-            # hd_path = os.getcwd()
-            # print("hd_path")
-            # print(hd_path)
-            # print("currentdir")
-            # print(currentdir)
-        else:
-        '''
+
         if self.use_hd_prefix:
             hd_path = self.hd_prefix
         '''
@@ -306,16 +274,7 @@ class Settings():
             hd_project_prefix = workspace
         else:
             hd_project_prefix = pf_dir
-            '''
-            if self.use_pf_prefix:
-                hd_project_prefix = self.pf_prefix
-                # hd_project_prefix = hd_path
-            else:
-                # no prefix:
-                # project_folder and hd_path is same:
-                hd_project_prefix = hd_path
-                # hd_project_prefix = os.path.join(hd_path, hd_in_src)
-            '''
+
         if model_path is None:
             model_path = model.project_path
         model_path = self.fix_tilde_bug(model_path, 'model', 'path')
@@ -367,29 +326,11 @@ class Settings():
 
         paths['hd']['plot'] = os.path.join(paths['hd']['out_folder'],
                                            'params_plot.txt')
-        '''
-        if self.use_workspace:
-            hd_settings_prefix = workspace
-        else:
-            hd_settings_prefix = paths['hd']['hd']
-        '''
         # hd paths:
-        '''
-        if self.use_pf_prefix:
-            file_or_folder = self.device_conf_name + ".json"
-        else:
-            file_or_folder = "device_conf"
-        '''
         paths['hd']['device_conf'] = (os.path
                                       .join(hd_project_prefix,
                                             settings_folder,
                                             self.device_conf_rpath))
-        '''
-        if self.use_pf_prefix:
-            file_or_folder = self.paths_rpath + ".json"
-        else:
-            file_or_folder = "paths"
-        '''
         paths['hd']['paths'] = (os.path
                                 .join(hd_project_prefix,
                                       settings_folder, self.paths_rpath))
