@@ -109,8 +109,8 @@ class GenCommon(GenBaseCommon):
                                                equationNumber=eRegion.equationNumber)
         
         eParam.default = False
-
-        eParam.parsedValues = self._get_eq_cpp(eSystem, eParam)
+        parameters = model.params
+        eParam.parsedValues = self._get_eq_cpp(eSystem, eParam, parameters)
         eParam.original = [e.sent for e in eSystem.eqs]
 
         logger.debug("parsedValues")
@@ -135,7 +135,8 @@ class GenCommon(GenBaseCommon):
                                                equationNumber=block.defaultEquation)
         eParam.default = True
 
-        eParam.parsedValues = self._get_eq_cpp(eSystem, eParam)
+        parameters = model.params
+        eParam.parsedValues = self._get_eq_cpp(eSystem, eParam, parameters)
         eParam.original = [e.sent for e in eSystem.eqs]
 
         logger.debug("parsedValues")
@@ -144,12 +145,16 @@ class GenCommon(GenBaseCommon):
         logger.debug('blockNumber revSp=%s' % str(blockNumber))
         return(eParam)
 
-    def _get_eq_cpp(self, eSystem, eParam):
+    def _get_eq_cpp(self, eSystem, eParam, parameters):
 
         eSystem.cpp.set_default()
         eSystem.cpp.set_dim(eParam.dim)
         eSystem.cpp.set_blockNumber(eParam.blockNumber)
         eSystem.cpp.set_diff_type_common(diffType='pure', diffMethod='common')
+        # ['a', 'b'] -> [('a',0), ('b', 1)]
+        coeffs_to_indexes = [(param, idx)
+                             for idx, param in enumerate(parameters)]
+        eSystem.cpp.set_coeffs_indexes(coeffs_to_indexes=coeffs_to_indexes)
 
         return([eq.replacer.cpp.make_cpp() for eq in eSystem.eqs])
         # return([eq.flatten('cpp') for eq in eSystem.eqs])

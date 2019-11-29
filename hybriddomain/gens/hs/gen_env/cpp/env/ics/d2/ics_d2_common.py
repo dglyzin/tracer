@@ -94,6 +94,7 @@ class GenCommonD2(GenBaseCommon, GenCppCommon):
 
             # generate equation:
             parsedValues = self.parse_equations(equation, model.dimension,
+                                                model.params,
                                                 blockNumber, side_num,
                                                 icRegion.firstIndex,
                                                 icRegion.secondIndex)

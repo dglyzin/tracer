@@ -55,10 +55,14 @@ import traceback
 import sympy
 
 
-def test_one(_id=0, sympy=False, verbose=False,
+def test_one(sent=None, _id=0, sympy=False, verbose=False,
              EqBilder=Equation, tests=tests):
-    eq = EqBilder(tests[_id])
-    print("\n=== test %s: %s ===" % (_id, tests[_id]))
+    if sent is not None:
+        eq = EqBilder(sent)
+        print("\n=== test sent: %s ===" % (sent))
+    else:
+        eq = EqBilder(tests[_id])
+        print("\n=== test %s: %s ===" % (_id, tests[_id]))
     try:
         try:
             eq.parser.parse()
@@ -100,7 +104,7 @@ def test_all(EqBilder=Equation, tests=tests):
     failed = []
 
     for _id, test in enumerate(tests):
-        if test_one(_id, EqBilder=EqBilder, tests=tests):
+        if test_one(_id=_id, EqBilder=EqBilder, tests=tests):
             succesed.append(_id)
         else:
             failed.append(_id)

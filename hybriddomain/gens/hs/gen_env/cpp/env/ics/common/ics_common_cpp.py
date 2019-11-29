@@ -1,11 +1,11 @@
 class GenCppCommon():
     
-    def parse_equations(self, eSystem, dim, blockNumber,
+    def parse_equations(self, eSystem, dim, parameters, blockNumber,
                         side_num, firstIndex, secondIndex):
 
         # for equatioin cpp:
         self.set_eq_base_params(eSystem,
-                                dim, blockNumber)
+                                dim, blockNumber, parameters)
         self.set_eq_spec_params(eSystem, side_num,
                                 firstIndex, secondIndex)
         parsedValues = self.get_eq_cpp(eSystem)

@@ -89,23 +89,23 @@ class Filler():
         for side_num in block.boundRegions:
             for bRegion in block.boundRegions[side_num]:
 
-                bound_btype = self.dmodel.bounds[bRegion.boundNumber].btype
+                bound_btype = model.bounds[bRegion.boundNumber].btype
                 if (bound_btype == bdict["dirichlet"]):
                     initFuncNum = (usedIndices
                                    + usedDirBoundNums.index(bRegion.boundNumber))
-                    if bRegion.side == 0:
+                    if bRegion.side_num == 0:
                         idxX = 0
                         ystart, yend = getYrange(bRegion.yfrom, bRegion.yto)
                         funcArr[ystart:yend, idxX] = initFuncNum
-                    elif bRegion.side == 1:
+                    elif bRegion.side_num == 1:
                         idxX = xc - 1
                         ystart, yend = getYrange(bRegion.yfrom, bRegion.yto)
                         funcArr[ystart:yend, idxX] = initFuncNum
-                    elif bRegion.side == 2:
+                    elif bRegion.side_num == 2:
                         idxY = 0
                         xstart, xend = getXrange(bRegion.xfrom, bRegion.xto)
                         funcArr[idxY, xstart:xend] = initFuncNum
-                    elif bRegion.side == 3:
+                    elif bRegion.side_num == 3:
                         idxY = yc-1
                         xstart, xend = getXrange(bRegion.xfrom, bRegion.xto)
                         funcArr[idxY, xstart:xend] = initFuncNum

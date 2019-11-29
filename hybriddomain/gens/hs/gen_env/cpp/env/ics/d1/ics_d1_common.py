@@ -116,6 +116,7 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
 
         # generate equation:
         parsedValues = self.parse_equations(equation, model.dimension,
+                                            model.params,
                                             blockNumber, side_num,
                                             firstIndex, 0)
         # fill params:
@@ -187,11 +188,13 @@ class GenCommonD1(GenBaseCommon, GenCppCommon):
         # FOR equatioin cpp:
         # first equation:
         parsedValues_1 = self.parse_equations(equation1, model.dimension,
+                                              model.params,
                                               blockNumber, iconn.block1Side,
                                               1, 0)
 
         # second equation:
         parsedValues_2 = self.parse_equations(equation2, model.dimension,
+                                              model.params,
                                               blockNumber, iconn.block2Side,
                                               0, 0)
         # END FOR

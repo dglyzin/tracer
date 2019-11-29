@@ -149,7 +149,7 @@ class GenCppCommon():
 
         # set up equation:
         self.set_eq_base_params(eSystem, model.dimension,
-                                blockNumber)
+                                blockNumber, model.params)
         block = model.blocks[blockNumber]
         bv_parsed = self.set_eq_spec_params(model, block, eSystem, btype,
                                             side_num, border_values)
@@ -181,6 +181,10 @@ class GenCppCommon():
                  cellsize/float(model.grid.gridStepZ)]
         dim = block.size.dimension
 
+        # ['a', 'b'] -> [('a',0), ('b', 1)]
+        coeffs_to_indexes = [(param, idx)
+                             for idx, param in enumerate(model.params)]
+
         border_values_parsed = []
         # parse border values:
         for i, bv in enumerate(border_values):
@@ -191,6 +195,8 @@ class GenCppCommon():
             ebv.replacer.cpp.editor.set_default()
             ebv.replacer.cpp.editor.set_dim(dim=dim)
             ebv.replacer.cpp.editor.set_shape(shape=shape)
+
+            ebv.replacer.cpp.editor.set_coeffs_indexes(coeffs_to_indexes=coeffs_to_indexes)
 
             # make cpp for border values:
             ebv_cpp = ebv.replacer.cpp.make_cpp()

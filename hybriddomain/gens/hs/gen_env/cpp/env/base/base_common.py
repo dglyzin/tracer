@@ -5,7 +5,7 @@ class GenBaseCommon():
 
     '''Base for all common objects methods'''
 
-    def set_eq_base_params(self, eSystem, dim, blockNumber):
+    def set_eq_base_params(self, eSystem, dim, blockNumber, parameters):
         eSystem.cpp.parse()
 
         # print("eSystem:")
@@ -17,6 +17,10 @@ class GenBaseCommon():
         eSystem.cpp.set_default()
         eSystem.cpp.set_dim(dim=dim)
         eSystem.cpp.set_blockNumber(blockNumber)
+        # ['a', 'b'] -> [('a',0), ('b', 1)]
+        coeffs_to_indexes = [(param, idx)
+                             for idx, param in enumerate(parameters)]
+        eSystem.cpp.set_coeffs_indexes(coeffs_to_indexes=coeffs_to_indexes)
 
     def get_eq_cpp(self, eSystem):
         return([eq.replacer.cpp.make_cpp() for eq in eSystem.eqs])

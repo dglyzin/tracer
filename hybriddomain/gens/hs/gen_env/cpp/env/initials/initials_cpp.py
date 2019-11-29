@@ -142,26 +142,32 @@ class GenCpp():
                         % (idx, initial_dim, system_dim)))
 
                 initial.parsedValues = [self.parse_equation(
-                    value, convert_free_var=True)
+                    value, model.params, convert_free_var=True)
                                         for value in initial.values]
                 logger.debug("initial.parsedValues:")
                 logger.debug(initial.parsedValues)
 
             for bound in block.bounds:
                 
-                bound.parsedValues = [self.parse_equation(value)
+                bound.parsedValues = [self.parse_equation(value, model.params,
+                                                          convert_free_var=True)
                                       for value in bound.values]
             # END FOR
 
         self.net.params.dim = model.dimension
         self.net.params.blocks = model.blocks
 
-    def parse_equation(self, value, convert_free_var=False):
+    def parse_equation(self, value, parameters, convert_free_var=False):
         
         eq = Equation(value)
         eq.parser.parse()
         editor = eq.replacer.cpp.editor
         editor.set_default()
+        # ['a', 'b'] -> [('a',0), ('b', 1)]
+        coeffs_to_indexes = [(param, idx)
+                             for idx, param in enumerate(parameters)]
+        editor.set_coeffs_indexes(coeffs_to_indexes=coeffs_to_indexes)
+
         if convert_free_var:
             # convert free_var from idxX to just x:
             # (for initial functions signaturs

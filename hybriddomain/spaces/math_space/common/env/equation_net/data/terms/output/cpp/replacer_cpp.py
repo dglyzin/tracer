@@ -168,7 +168,9 @@ class CppGen(NetGen):
         for term_name in self.terms_gens:
             if 'diff' in term_name:
                 self.terms_gens[term_name].set_blockNumber(**kwargs)
-        
+            if term_name == 'free_var':
+                self.terms_gens[term_name].set_blockNumber(**kwargs)
+
         # self.terms_gens['diff'].set_blockNumber(**kwargs)
         self.terms_gens['bdp'].set_blockNumber(**kwargs)
 
