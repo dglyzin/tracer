@@ -28,12 +28,13 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 	       var self = this;
 	       // self.net = net;
 
+	       self.container_div_id = options["container_div_id"];
 	       self.tree_div_id = options["tree_div_id"];
 	       self.menu_div_id = options["menu_div_id"];
 	       self.input_div_id = options["input_div_id"];
 
 	       console.log('options["menu_shift"]=', options["menu_shift"]);
-	       self.menu_shift = options["menu_shift"]?options["menu_shift"]:0;
+	       self.menu_shift = options["menu_shift"]?options["menu_shift"]:[0,0];
 
 	       // FOR activate:
 	       self.activator = options["activator"];
@@ -70,6 +71,40 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 	       // END FOR
 	   }
 
+	   // FOR reload:
+	   Tree.prototype.reload_container = function(){
+	       
+	       /*
+		Reload tree container before rewrite tree.
+
+		$("#main_tree").empty(); not work
+		TODO:
+		use reload winth init_data (as well for menu)
+		// var tree = $(self.tree_div_id).fancytree('getTree');
+		// tree.reload(init_data);
+		// tree.render(true);
+		*/
+	       var self = this;
+	       
+	       $(self.tree_div_id).remove();
+	       $(self.menu_div_id).remove();
+	       $(self.input_div_id).remove();
+	       
+	       var original_tree_div_id = self.tree_div_id.slice(1);
+	       var original_menu_div_id = self.menu_div_id.slice(1);
+	       var original_input_div_id = self.input_div_id.slice(1);
+	       
+	       $(self.container_div_id).append(
+		   ('<div id="'
+		    + original_tree_div_id
+		    + '" class="tree_positioned" style="top: 70px;"></div>'));
+	       $(self.container_div_id).append(
+		   ('<div id="' + original_menu_div_id + '"></div>'));
+	       $(self.container_div_id).append(
+		   ('<div id="' + original_input_div_id + '"></div>'));
+	   };
+	   // END FOR
+
 	   // FOR server side:
 	   Tree.prototype.set_tree_from_server = function(url){
 	       
@@ -82,25 +117,32 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 		   console.log("set_tree_from_server init_data:");
 		   console.log(init_data);
 		   self.create_tree(init_data);
+
+		   // add tree roots:
+		   self.roots = data["roots"];
 	       };
 	       this.send_data(url, to_send, succ);
 	   };
 	   
-	   Tree.prototype.add_node_server = function(url, node_name, is_folder, node_data){
+	   Tree.prototype.add_node_server = function(url, node, node_data,
+						     parent_node, parents_list){
 	       
 	       /*Add node in js and server.*/
 
 	       var self = this;
 
 	       // add node to js tree:
-	       self.add_node(node_name, is_folder);
+	       self.add_node(node);
 	       
 	       // convert to json and send to server:
-	       var tree = this.convert_tree_to_dict();
+	       // var tree = this.convert_tree_to_dict();
 	       var to_send = {mode: "add",
-			      node_name: node_name, is_folder: is_folder,
+			      node: node,
 			      node_data: node_data,
-			      tree: tree};
+			      // tree: tree
+			      parent: parent_node,
+			      parents_list: parents_list
+			     };
 	       /*
 	       var succ = function(data){
 		   self.add_node(node_name, is_folder);
@@ -109,17 +151,27 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 	       this.send_data(url, to_send);
 	   };
 
-	   Tree.prototype.rename_node_server = function(url, node_name){
+	   Tree.prototype.rename_node_server = function(url, node, node_name){
 	       var self = this;
 
 	       // rename node to js tree:
-	       self.rename_selected_node(node_name);
+	       var old_name = self.rename_node(node, node_name);
+	       var parents_list = self.get_parents_list(node);
 
+	       var node_dict = node.toDict();
+
+	       // fix old name in old data:
+	       node_dict["title"] = old_name;
 	       // convert to json and send to server:
-	       var tree = this.convert_tree_to_dict();
+	       // var tree = this.convert_tree_to_dict();
 	       var to_send = {mode: "rename",
-			      node_name: node_name,
-			      tree: tree};
+			      node: node_dict,
+			      node_data: {title: node_name},
+			      // tree: tree
+			      parent: {},
+			      parents_list: parents_list
+			     };
+	      
 	       /*
 	       var succ = function(data){
 		   self.add_node(node_name, is_folder);
@@ -128,7 +180,7 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 	       this.send_data(url, to_send);
 	   };
 
-	   Tree.prototype.remove_node_server = function(url){
+	   Tree.prototype.remove_selected_node_server = function(url, check_empty){
 	       
 	       /* Remove selected and put children nodes to common parent.
 		Report to server.*/
@@ -136,13 +188,23 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 	       var self = this;
 
 	       // remove selected node to js tree:
-	       var node_name = self.remove_selected_node();
+	       var selected_node = self.get_selected_node();
+			
+	       var parents_list = self.get_parents_list(selected_node);
+			
+	       var node = self.remove_selected_node(check_empty);
 	       
-	       // convert to json and send to server:
-	       var tree = this.convert_tree_to_dict();
+	       // var tree = this.convert_tree_to_dict();
+
+	       // convert to json and send to server:	       
 	       var to_send = {mode: "remove",
-			      node_name: node_name,
-			      tree: tree};
+			      node: node.toDict(),
+			      node_data: {},
+			      // tree: tree
+			      parent: {},
+			      parents_list: parents_list
+			     };
+	       
 	       /*
 	       var succ = function(data){
 		   self.add_node(node_name, is_folder);
@@ -152,21 +214,35 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 	   };
 
 
-	   Tree.prototype.rewrite_node_server = function(url, node_data){
+	   Tree.prototype.save_node_server = function(url, node, node_data){
 
 	       /* Use selected node as storage for current model.
-		Report to server.*/
+		Report to server.
+		When clicked at env_content*/
 
 	       var self = this;
 
-	       var node = self.get_selected_node();
+	       // var node = self.get_selected_node();
+	       var node_dict = node.toDict();
+	       node_dict["node_data"] = node_data;
 
+	       var node_parent = self.get_node_parent(node);
+	       // var node_parent_dict = node_parent.toDict();
+	       var parents_list = self.get_parents_list(node);
+	       
 	       // convert to json and send to server:
-	       var tree = this.convert_tree_to_dict();
+	       // var tree = this.convert_tree_to_dict();
+	       
+	       var to_send = {mode: "save",
+			      node: node_dict,
+			      parent: {},
+			      parents_list: parents_list};
+	       /*
 	       var to_send = {mode: "rewrite",
 			      node_name: node.title,
 			      node_data: node_data,
 			      tree: tree};
+		*/
 	       /*
 	       var succ = function(data){
 		   self.add_node(node_name, is_folder);
@@ -219,33 +295,62 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 	   // END FOR
 
 	   // FOR node editing:
-	   Tree.prototype.add_node = function(name, is_folder){
+	   Tree.prototype.get_node_parent = function(node){
+	       return(node.parent);
+	   };
+	   
+	   Tree.prototype.get_parents_list = function(node){
+	       return($.map(node.getParentList(), function(elm, id){
+		   return(elm.title);
+	       }));
+	   };
+
+	   Tree.prototype.add_node = function(node){
 	       
 	       /* Add node to js tree. */
 
 	       var self = this;
 	       
-	       var node = $(self.tree_div_id).fancytree("getActiveNode");
-	       if(!node)
-		   node = $(self.tree_div_id).fancytree("getRootNode");
-	       console.log("node = ", node);
-	       
+	       var parent_node = $(self.tree_div_id).fancytree("getActiveNode");
+	       if(!parent_node)
+		   parent_node = $(self.tree_div_id).fancytree("getRootNode");
+	       console.log("parent_node = ", parent_node);
+	       self.check_node_unique(parent_node, node["title"]);
 	       /*
 	       if (!self.active_node)
 		   return;
 		var node = self.active_node;
 		*/
-	      
-	       node.addChildren({title: name, folder: is_folder});
+	       
+	       parent_node.addChildren(node);
 	       console.log("done");
 	       //node.fromDict({title: node.title,
 	       //children: [{title: name, folder: is_folder}]});
 	   };
 	   
-	   
-	   Tree.prototype.remove_selected_node = function(){
+	   Tree.prototype.check_node_unique = function(parent_node, name){
+	       /*Check if name is unique in parent_node.children,
+		generate error, if not.
+		Also remove input, if not.*/
+
+	       var children_titles = $.map(parent_node.children, function(elm, id){
+		   return(elm.title);
+	       });
+	       console.log("children_titles = ", children_titles);
+	       console.log("node.title = ", name);
+	       // here + "" used for convert int to string, if any:
+	       if(children_titles.indexOf(name+"") >= 0){
+		   // remove input:
+		   self.menu.input.remove_input();
+		   // console.error("node with such name alredy exist: "+node["title"]);
+		   throw new Error("node with such name alredy exist: "+node["title"]);
+	       }
+
+	   };
+
+	   Tree.prototype.remove_selected_node = function(check_empty){
 	       
-	       /*And keep children.*/
+	       /*.*/
 
 	       var self = this;
 
@@ -256,12 +361,16 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 	       var node = $(self.tree_div_id).fancytree("getActiveNode");
 	       if(!node)
 		   return;
-	       while( node.hasChildren() ) {
-		       node.getFirstChild().moveTo(node.parent, "child");
+	       if(check_empty)
+		   while( node.hasChildren() ) {
+		   
+		       throw new Error("node not empty!");
+		       // And keep children:
+		       // node.getFirstChild().moveTo(node.parent, "child");
 		   }
 	       var title = node.title;
 	       node.remove();
-	       return(title);
+	       return(node);
 	       /*
 	       var tree = $(self.tree_div_id).fancytree("getTree"),
 		   selNodes = tree.getSelectedNodes();
@@ -277,22 +386,32 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 	   };
 	   
 
-	   Tree.prototype.rename_selected_node = function(name){
+	   Tree.prototype.rename_node = function(node, name){
 
 	       /* In js tree. */
 
 	       var self = this;
-	       
+	       /*
 	       var node = $(self.tree_div_id).fancytree("getActiveNode");
 	       if(!node)
 		   return;
-
+		*/
+	       
+	       var parent_node = self.get_parent_node(node);
+	       self.check_node_unique(parent_node, name);
 	       /*
 	       if (!self.active_node)
 		   return;
 		*/
+	       var old_name = node.title;
 	       node.setTitle(name);
+	       return(old_name);
 	   };
+
+	   Tree.prototype.get_parent_node = function(node){
+	       return(node.parent);
+	   };
+
 	   Tree.prototype.get_selected_node = function(){
 	       var self = this;
 	       var node = $(self.tree_div_id).fancytree("getActiveNode");
@@ -300,17 +419,19 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 		   return;
 	       return(node);
 	   };
+	   
+	   Tree.prototype.get_root_node = function(){
+	       var self = this;
+	       return($(self.tree_div_id).fancytree("getRootNode"));
+	   };
 	   // REF: http://wwwendt.de/tech/fancytree/demo/#sample-api.html
 	   // END FOR
-
 
 	   Tree.prototype.create_tree = function(init_data){
 
 	       /*Create tree with contextmenu.*/
 
 	       var self = this;
-
-	       
 
 	       var original_tree_div_id = self.tree_div_id.slice(1);
 	       console.log("self.tree_div_id = ", self.tree_div_id);
@@ -346,6 +467,7 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 		       $(data.node).addClass("ui-state-focus ui-state-active");
 		       self.activator(event, data);
 		       self.active_node = data.node;
+		       
 		   },
 		   deactivate: function(event, data){
 		       $(data.node).removeClass("ui-state-focus ui-state-active");
@@ -364,11 +486,14 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 		   console.log("x, y = ", [x,y]);
 		   console.log("self.menu_shift = ", self.menu_shift);
 
-		   self.menu.update(x, y+self.menu_shift);
+		   self.menu.update(x+self.menu_shift[0], y+self.menu_shift[1]);
 		   
-	       });	       
+	       });
+	       
+	       // $(self.container_div_id).resizable();
+	       // console.log("self.container_div_id = ", self.container_div_id);
 	   };
-
+	   
 	   return {
 	       Tree: Tree
 	   }});

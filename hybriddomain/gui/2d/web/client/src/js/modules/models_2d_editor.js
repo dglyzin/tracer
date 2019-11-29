@@ -1,10 +1,10 @@
 console.log("log models_2d_editor.js");
 define(['jquery', 'jquery-ui-custom/jquery-ui',
 	'fabric', 'modules/base_editor', 'modules/eqs_regions',
-	'modules/models_editor_scene', 'modules/models_tree'],
+	'modules/models_editor_scene'],
        
        function($, ui, fabric, base_editor, eqs_regions,
-		scene, mtree){
+		scene){
 	   
 	   function BoardModel(){
 	       
@@ -13,6 +13,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       self.name = "models_2d_editor";
 	       // END FOR
 	       base_editor.BoardBase.call(this);
+	       
 	   };
 
 	   // inheritance:
@@ -73,8 +74,10 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       $("#controls").tabs();
 	       $("#models_tree_wrap_style").resizable();
 
-	       this.apply_draw("sr_draw_size", "sr_draw_color",
+	       this.apply_eqs_tables();
+	       this.apply_draw("sr_draw_size", "t_eqs_draw",
 			       "param_draw_observable", "b_change_fabric_mode");
+
 	       // BoardModel.prototype.apply_draw("sr_draw_size", "b_change_fabric_mode");
 	       
 	       this.apply_remove_all("b_remove_all");
@@ -82,6 +85,61 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       this.apply_regions("b_add_region", "b_add_region_br");
 	       // this.apply_save("b_save_fabric_canvas");
 	       this.apply_tree();
+	   };
+
+
+	   BoardModel.prototype.get_color_val_from_input = function(color_input_id){
+	       /*Get value from input value. Stored table value used*/
+	       var self = this;
+	       return(parseInt(self.eqs_table_selected_row_val, 10));
+	   };
+
+	   BoardModel.prototype.apply_draw_color = function(color_input_id){
+
+	       /*Undefault input for color. Table used */
+	       var self = this;
+	       // this will work dynamically i.e. applies to tr which
+	       // was added with $.append:
+	       $("#"+color_input_id).on("click", "tr", function(){
+	       // $("#"+color_input_id+" tr").on("click", function(){
+		   console.log("tr click |-> color_val:");
+		   var color_val = $.text(this.children[0]);
+		   console.log(color_val);
+
+		   // add to selected row value:
+		   self.eqs_table_selected_row_val = color_val;
+
+		   // FOR set color:
+		   console.log("tr.style:");
+		   console.log(this.parentElement.children);
+		   $.each(this.parentElement.children, function(id, elm){
+		       elm.setAttribute("style", "background-color: white");
+		   });
+		   // this.setAttribute("style", "color: blue");
+		   this.setAttribute("style", "background-color: blue");
+		   // END FOR
+
+		   // FOR apply to canvas:
+		   console.log("freeDrawingBrush:");
+		   console.log(self.canvas.freeDrawingBrush);
+		   
+		   var color = "rgba("+ color_val+","+ color_val+","+ color_val+","+"1.0)";
+		   self.canvas.freeDrawingBrush.color = color;
+		   console.log(self.canvas.freeDrawingBrush.color);
+		   // END FOR
+	       });
+
+	       /*
+	       // "t_eqs_draw"
+	       $("#"+color_input_id).on("click", function(){
+		   console.log("freeDrawingBrush:");
+		   console.log(self.canvas.freeDrawingBrush);
+		   var color_val = this.value;
+		   var color = "rgba("+ color_val+","+ color_val+","+ color_val+","+"1.0)";
+		   self.canvas.freeDrawingBrush.color = color;
+		   console.log(self.canvas.freeDrawingBrush.color);
+	       });
+		*/
 	   };
 
 	   BoardModel.prototype.apply_remove_all = function(b_id){
@@ -98,12 +156,51 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       });
 	   };
 	   
+	   BoardModel.prototype.apply_eqs_tables = function(){
+	       var self = this;
+	       self.eqs_table = self.eqs_table || [];
+	       self.eqs_table_selected_row_val = self.eqs_table_selected_row_val || 255;
+
+	       self.apply_eqs_table_draw("b_draw_add_eq_num", "t_eqs_draw",
+					"i_eq_num_draw", "sr_draw_color");
+	       // TODO:
+	       // apply_eqs_table_eregions
+	       // apply_eqs_table_br #  may be separately from here
+	   };
+
+	   BoardModel.prototype.apply_eqs_table_draw = function(b_add_eq_id, table_id,
+								i_eq_num_id, sr_eq_color_id){
+	       
+	       /*Apply colors/equations_numbers table's button callback for draw tab*/
+	       
+	       var self = this;
+	        $("#"+b_add_eq_id).on("click", function(){
+		    var color_val = $("#"+sr_eq_color_id).val();
+		    var eq_num = $("#"+i_eq_num_id).val();
+		    
+		    if($.map(self.eqs_table, function(elm, id){
+			return(elm[0]);}).indexOf(color_val) < 0)
+		    {
+			$("#"+table_id).append( '<tr><td>'+color_val+ '</td>'
+						+ ' <td>'+eq_num+'</td></tr>');
+			self.eqs_table.push([color_val, eq_num]);
+		    }else{
+			throw new Error("cannot add more then one eq to"
+					+ " one color");
+		    }
+		    console.log("self.eqs_table = ", self.eqs_table);
+		});
+	   };
+
 	   BoardModel.prototype.apply_regions = function(b_add_region_id, b_add_region_br_id){
 	       
 	       /*Apply add bound and equation regions to according divs
 		*/
 
 	       var self = this;
+	       
+	       // create all needed subclasses:
+	       eqs_regions.create_regions_cls(self);
 
 	       //"#b_add_region_br" 
 	       $("#"+b_add_region_br_id).on("click", function(){
@@ -116,7 +213,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 		   console.log($("#param_side").val());
 		   console.log($("#param_side").val());
 
-		   var rect = new eqs_regions.BoundRegion({
+		   var rect = new fabric.BRegion({
 		       side: parseInt($("#param_side").val(), 10),
 		       observable: true,
 		       equation_number: eq_number,
@@ -158,12 +255,12 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 		   console.log("observable:");
 		   console.log(observable);
 
-		   // choice teype of region (Text, Circle, Rect):
+		   // choice type of region (Text, Circle, Rect):
 		   var param_type = $("#param_type").val();
 		   console.log("param_type");
 		   console.log(param_type);
 		   // var rect = new eqs_regions.EquationRegion({
-		   var obj = eqs_regions.create_region(param_type,
+		   var obj = eqs_regions.choice_region(param_type,
 						       {observable: observable,
 							equation_number: eq_number,
 							color: color});
@@ -178,7 +275,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	   };
 	   BoardModel.prototype.apply_tree = function(){
 	       var self = this;
-	       self.tree = mtree.ModelsTree(self);
+	       // self.tree = mtree.ModelsTree(self);
 	   };
 
 	   BoardModel.prototype.apply_save = function(b_save_fabric_canvas_id){
@@ -236,11 +333,18 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	   
 	   BoardModel.prototype.load = function(data){
 	       var self = this;
-	       self.canvas.loadFromJSON(data,
+	       console.log("data[canvas_src]:");
+	       console.log(data["canvas_src"]);
+	       self.canvas.loadFromJSON(data["canvas_src"],
 					self.canvas.renderAll.bind(self.canvas),
 					function(o, object) {
+					    console.log("from fabric.loadFromJosn:");
+					    console.log(o);
+					    console.log(object);
 					    fabric.log(o, object);
 					});
+	       self.canvas.requestRenderAll();
+
 	   };
 
 	   BoardModel.prototype.save = function(){

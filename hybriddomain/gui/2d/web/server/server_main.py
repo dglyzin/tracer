@@ -5,7 +5,7 @@ import tornado.ioloop
 import tornado.web
 import os
 
-from hybriddomain.server.server_handlers import Handlers
+from server.server_handlers import Handlers
 
 
 class MyStaticFileHandler(tornado.web.StaticFileHandler):

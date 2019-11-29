@@ -35,7 +35,7 @@ requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/main_tree',
 	      
 	      // boards:
 	      self.boards = {
-		  models_editor: new tmeditor.Board(),
+		  models_envs: new tmeditor.Board(),
 		  patterns_editor: new tpeditor.Board()
 	      };
 	      
@@ -65,7 +65,7 @@ requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/main_tree',
 	      };
 
 	      // create tree:
-	      var tree = new mtree.MTree(self);
+	      var tree = new mtree.MTree(self, "api/tree");
 
 	      console.log("all files loaded");
 	      
@@ -73,7 +73,7 @@ requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/main_tree',
 
 		
 		  // self.update("patterns_editor");
-		  self.update("models_editor");
+		  self.update("models_envs");
 		  // var board = new tmeditor.Board();
 		  //board.init_board();
 	      });

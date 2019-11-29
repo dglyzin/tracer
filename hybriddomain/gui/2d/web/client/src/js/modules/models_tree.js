@@ -5,7 +5,7 @@ define(['ttree'],
        function(ttree){
 
 	 
-	   function ModelsTree(net){
+	   function ModelsTree(net, url){
 
 	       /*Node object for main net. It uses
 		 ttree template with add some data to it.
@@ -30,7 +30,7 @@ define(['ttree'],
 		   // for avoiding canvas influence:
 		   menu_shift: 0, // parseInt(menu_shift_controls_top, 10),
 
-		   url: "api/tree",
+		   url: url,
 
 		   /*
 		   tree_data:[
@@ -42,7 +42,8 @@ define(['ttree'],
 		   ],
 		   */
 		   activator: function(event, data){
-		       
+		       console.log("data.node.toDict() = ", data.node.toDict());
+
 		       // A node was activated: display its title:
 		       if(!data.node.isFolder()){
 			   var node = data.node;
@@ -54,8 +55,8 @@ define(['ttree'],
 		   },
 		   
 		   // FOR menu:
-		   menu_items: ["load", "save as new", "rewrite", "remove", "rename",
-				"create new folder"],
+		   menu_items: ["load", "save", "rewrite", "remove", "rename",
+				"mk folder"],
 
 		   menu_tooltips: ["load previously saved model",
 				   "create new model", "rewrite selected model",
@@ -89,29 +90,35 @@ define(['ttree'],
 			   
 		       },
 		       
-		       "save as new": function(){
+		       "save": function(){
 
 			   /* After user enter node name it call 
 			    tree.add_node_server func.*/
+			   
+			   var selected_node = self.tree.get_selected_node();
+			   var parent_node = selected_node; 
+			   var parents_list = self.tree.get_parents_list(parent_node);
 
-			   console.log("save as new callback");
+			   console.log("save callback");
 			   // console.log(self);
 			   var x = self.tree.menu.offset[0];
 			   var y = self.tree.menu.offset[1];
 			   console.log("x, y:");
 			   console.log([x, y]);
 
+			   
 			   var node_data = self.net.save();
 			   
 			   // console.log("node_data:");
 			   // console.log(node_data);
 
 			   var succ = function(node_name){
-			       
-			       self.tree.add_node_server("api/tree", node_name, false,
-							 node_data);
+			       var node = {title: node_name, folder: false};
+			       self.tree.add_node_server("api/tree", node,
+							 node_data, parent_node,
+							parents_list);
 			   };
-			   self.tree.menu.input.create_input(x, y, succ);
+			   // self.tree.menu.input.create_input(x, y, succ);
 		       },
 
 		       "rewrite": function(){
@@ -153,7 +160,7 @@ define(['ttree'],
 		       },
 
 
-		       "create new folder": function(){
+		       "mk folder": function(){
 			   
 			   console.log("create new folder callback");
 			   console.log(self);

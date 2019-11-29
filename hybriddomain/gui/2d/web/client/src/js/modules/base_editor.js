@@ -35,15 +35,8 @@ define(['jquery',
 		   console.log("clicked");
 	       });
 		*/
-	       // "sr_draw_size"
-	       $("#"+sr_color_id).on("change", function(){
-		   console.log("freeDrawingBrush:");
-		   console.log(self.canvas.freeDrawingBrush);
-		   var color_val = this.value;
-		   var color = "rgba("+ color_val+","+ color_val+","+ color_val+","+"1.0)";
-		   self.canvas.freeDrawingBrush.color = color;
-		   console.log(self.canvas.freeDrawingBrush.color);
-	       });
+	       self.apply_draw_color(sr_color_id);
+
 	       // "sr_draw_size"
 	       $("#"+sr_size_id).on("change", function(){
 		   console.log("onchange");
@@ -63,7 +56,8 @@ define(['jquery',
 		   self.canvas.isDrawingMode=!self.canvas.isDrawingMode;
 
 		   if (self.canvas.isDrawingMode){
-		       var color_val = parseInt($("#"+sr_color_id).val(), 10);
+		       var color_val = self.get_color_val_from_input(sr_color_id);
+		       // var color_val = parseInt($("#"+sr_color_id).val(), 10);
 		       console.log("color_val:");
 		       console.log(color_val);
 		       var color = "rgba("+ color_val+","+ color_val+","+ color_val+","+"1.0)";
@@ -78,6 +72,28 @@ define(['jquery',
 		       console.log(self.canvas.freeDrawingBrush);
 		   };
 		   
+	       });
+	   };
+
+	   
+	   BoardBase.prototype.get_color_val_from_input = function(color_input_id){
+	       /*Get value from default input*/
+	       return(parseInt($("#"+color_input_id).val(), 10));
+	   };
+
+	   BoardBase.prototype.apply_draw_color = function(color_input_id){
+
+	       /*Default input range used */
+	       var self = this;
+
+	       // "sr_draw_size"
+	       $("#"+color_input_id).on("change", function(){
+		   console.log("freeDrawingBrush:");
+		   console.log(self.canvas.freeDrawingBrush);
+		   var color_val = this.value;
+		   var color = "rgba("+ color_val+","+ color_val+","+ color_val+","+"1.0)";
+		   self.canvas.freeDrawingBrush.color = color;
+		   console.log(self.canvas.freeDrawingBrush.color);
 	       });
 	   };
 

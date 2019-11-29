@@ -170,6 +170,9 @@
     width: 15%;
     height: 100%;
     owerflow: auto;
+    overflow-y: auto;
+    overflow-x: scroll;
+    scrollbar-x-position: top; 
 
     background-color: #39414A;
     color: white;

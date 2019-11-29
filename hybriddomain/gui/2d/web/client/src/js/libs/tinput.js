@@ -28,6 +28,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui', 'tooltip'],
 	   };
 
 	   Input.prototype.remove_input = function(){
+	       this.text_acc = undefined;
 	       $(this.input_id).remove();
 	   };
 	

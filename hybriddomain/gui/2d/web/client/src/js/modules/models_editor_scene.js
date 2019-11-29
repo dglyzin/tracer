@@ -43,6 +43,19 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
 		    draw color:
 		    <input id="sr_draw_color" value="255" min="1" max="255" style="display: block" type="range">
 		    <br>
+                    <input type="text" id="i_eq_num_draw" value="0" class="style_button_number">
+                    <br>
+                    <input type="button" value="add color" id="b_draw_add_eq_num">
+                    <br>
+                    <table id="t_eqs_draw" class="style_table">
+                      <tr class="style_table">
+                       <td class="style_table">color</td><td class="style_table">eq_num</td>
+                      </tr>
+                      <tr>
+                       <td>1 </td> <td>2</td>
+                      </tr>
+                    </table>
+                    <br>
 		    <input id="param_draw_observable" type="checkbox" value="true" checked>observable<br>
 		    
 		    <input type="button" value="remove selected" id="b_remove_selected">
