@@ -1,0 +1,229 @@
+{
+    "ProjectName": "test2d_two_blocks_with_stride", 
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 1.0, 
+        "TimeStep": 1e-05, 
+        "SaveInterval": 0.05, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "Dimension": 2, 
+        "dx": 0.1, 
+        "dy": 0.1, 
+        "dz": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "SecBlock", 
+            "Offset": {
+                "x": 3.0, 
+                "y": 3.0
+            }, 
+            "Size": {
+                "x": 3.0, 
+                "y": 8.0
+            }, 
+            "DefaultEquation": 1, 
+            "DefaultInitial": 0,
+	    "DefaultBound": 0,
+
+            "BoundRegions": [
+                {
+                    "BoundNumber": 0, 
+                    "Side": 1, 
+                    "xfrom": 3.0, 
+                    "xto": 3.0, 
+                    "yfrom": 1.0, 
+                    "yto": 3.0
+                },
+		{
+                    "BoundNumber": 1, 
+                    "Side": 1, 
+                    "xfrom": 3.0, 
+                    "xto": 3.0, 
+                    "yfrom": 3.0, 
+                    "yto": 8.0
+                },
+		{
+                    "BoundNumber": 0, 
+                    "Side": 3, 
+                    "xfrom": 0.0, 
+                    "xto": 1.0, 
+                    "yfrom": 8.0, 
+                    "yto": 8.0
+                }
+            ], 
+            "InitialRegions": [
+                {
+                    "InitialNumber": 1, 
+                    "xfrom": 0.75, 
+                    "xto": 2.25, 
+                    "yfrom": 0.5, 
+                    "yto": 1.5
+                }
+            ], 
+            "EquationRegions": [
+                {
+                    "EquationNumber": 0, 
+                    "xfrom": 0.0, 
+                    "xto": 0.5, 
+                    "yfrom": 0.0, 
+                    "yto": 1.0
+                },
+		{
+                    "EquationNumber": 2, 
+                    "xfrom": 0.5, 
+                    "xto": 2.7, 
+                    "yfrom": 0.0, 
+                    "yto": 1.0
+                }, 
+                {
+                    "EquationNumber": 2, 
+                    "xfrom": 2.5, 
+                    "xto": 3.0, 
+                    "yfrom": 7.0, 
+                    "yto": 8.0
+                },
+		{
+                    "EquationNumber": 3, 
+                    "xfrom": 0.5, 
+                    "xto": 2.5, 
+                    "yfrom": 7.0, 
+                    "yto": 8.0
+                }
+            ]
+        }
+    ], 
+    "Interconnects": [
+        
+    ], 
+    "Equations": [
+        {
+            "Name": "Heat 1", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=a*(U(t-3.1)+U(t-1.1))"
+            ]
+        }, 
+        {
+            "Name": "Heat 2", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=b*(U(t-3.1)+U(t-4.1))"
+            ]
+        }, 
+        {
+            "Name": "Psevdo Heat", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=c*(U(t-3.3) + U(t-5.1))"
+            ]
+        },
+	{
+            "Name": "Psevdo Heat", 
+            "Vars": [
+                "x", 
+                "y"
+            ], 
+            "System": [
+                "U'=d*(U(t-3.1)+U(t-4.1))"
+            ]
+        }
+    ], 
+    "EquationParams": {
+        "Params": [
+            "a", 
+            "b", 
+            "c", 
+            "d"
+        ], 
+        "ParamValues": [
+            {
+                "a": 2, 
+                "c": 0.1, 
+                "b": 3, 
+                "d": 100
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
+    "Bounds": [
+        {
+            "Name": "Dirichlet 1", 
+            "Type": 1, 
+            "Values": [
+                "sin(y)"
+            ], 
+            "Derivative": [
+                "cos(y)"
+            ]
+        },
+	{
+            "Name": "Neumann 1", 
+            "Type": 1, 
+            "Values": [
+                "sin(y)"
+            ], 
+            "Derivative": [
+                "cos(y)"
+            ]
+        }
+    ], 
+    "Initials": [
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "0.0"
+            ]
+        }, 
+        {
+            "Name": "Initial values 1", 
+            "Values": [
+                "40.0"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "dnode1", 
+            "CpuCount": 1, 
+            "CpuMemory": [
+                56
+            ], 
+            "GpuCount": 3, 
+            "GpuMemory": [
+                5, 
+                5, 
+                5
+            ]
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }, 
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
+        ]
+    }, 
+    "Plots": []
+}

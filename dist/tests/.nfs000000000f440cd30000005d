@@ -1,0 +1,144 @@
+2019-12-02 08:43:42,053 - remoterun - INFO - 
+connect ...
+2019-12-02 08:43:42,177 - remoterun - INFO - 
+connection established
+2019-12-02 08:43:42,178 - remoterun - INFO - 
+files/folders routine
+2019-12-02 08:43:43,582 - remoterun - INFO - 
+files/folders routine complited
+2019-12-02 08:43:43,583 - remoterun - INFO - 
+Running preprocessor:
+2019-12-02 08:43:43,586 - remoterun - INFO - command:
+2019-12-02 08:43:43,588 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t /clusterhome/imaslenikov/tracer/workspace/problems/error_param1 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-02 08:43:47,349 - remoterun - INFO - 
+Running solver:
+2019-12-02 08:43:48,007 - remoterun - INFO - 12-02 11:43:47 produced results for t=6.93067e-310: /clusterhome/imaslenikov/tracer/workspace/problems/error_param1/out/error_param1-0.00000000-6.dbin
+
+2019-12-02 08:43:53,884 - remoterun - INFO - Downloading results...
+2019-12-02 08:43:54,256 - remoterun - INFO - Done!
+2019-12-02 08:45:28,295 - remoterun - INFO - 
+connect ...
+2019-12-02 08:45:28,399 - remoterun - INFO - 
+connection established
+2019-12-02 08:45:28,401 - remoterun - INFO - 
+files/folders routine
+2019-12-02 08:45:29,638 - remoterun - INFO - 
+files/folders routine complited
+2019-12-02 08:45:29,641 - remoterun - INFO - 
+Running preprocessor:
+2019-12-02 08:45:29,643 - remoterun - INFO - command:
+2019-12-02 08:45:29,645 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t /clusterhome/imaslenikov/tracer/workspace/problems/error_param1 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-02 08:45:33,283 - remoterun - INFO - 
+Running solver:
+2019-12-02 08:45:33,790 - remoterun - INFO - 12-02 11:45:33 produced results for t=6.94913e-310: /clusterhome/imaslenikov/tracer/workspace/problems/error_param1/out/error_param1-0.00000000-6.dbin
+
+2019-12-02 08:45:40,305 - remoterun - INFO - Downloading results...
+2019-12-02 08:45:40,615 - remoterun - INFO - Done!
+2019-12-02 08:47:02,325 - remoterun - INFO - 
+connect ...
+2019-12-02 08:47:02,441 - remoterun - INFO - 
+connection established
+2019-12-02 08:47:02,443 - remoterun - INFO - 
+files/folders routine
+2019-12-02 08:47:03,695 - remoterun - INFO - 
+files/folders routine complited
+2019-12-02 08:47:03,697 - remoterun - INFO - 
+Running preprocessor:
+2019-12-02 08:47:03,699 - remoterun - INFO - command:
+2019-12-02 08:47:03,701 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t /clusterhome/imaslenikov/tracer/workspace/problems/error_param1 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-02 08:47:07,311 - remoterun - INFO - 
+Running solver:
+2019-12-02 08:47:07,933 - remoterun - INFO - 12-02 11:47:07 produced results for t=6.91547e-310: /clusterhome/imaslenikov/tracer/workspace/problems/error_param1/out/error_param1-0.00000000-6.dbin
+
+2019-12-02 08:47:14,138 - remoterun - INFO - Downloading results...
+2019-12-02 08:47:14,516 - remoterun - INFO - Done!
+2019-12-02 08:47:54,713 - remoterun - INFO - 
+connect ...
+2019-12-02 08:47:54,837 - remoterun - INFO - 
+connection established
+2019-12-02 08:47:54,838 - remoterun - INFO - 
+files/folders routine
+2019-12-02 08:47:56,062 - remoterun - INFO - 
+files/folders routine complited
+2019-12-02 08:47:56,063 - remoterun - INFO - 
+Running preprocessor:
+2019-12-02 08:47:56,066 - remoterun - INFO - command:
+2019-12-02 08:47:56,068 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t /clusterhome/imaslenikov/tracer/workspace/problems/error_param1 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-02 08:47:59,174 - remoterun - INFO - 
+Running solver:
+2019-12-02 08:47:59,654 - remoterun - INFO - 12-02 11:47:59 produced results for t=6.90628e-310: /clusterhome/imaslenikov/tracer/workspace/problems/error_param1/out/error_param1-0.00000000-6.dbin
+
+2019-12-02 08:48:05,660 - remoterun - INFO - Downloading results...
+2019-12-02 08:48:06,013 - remoterun - INFO - Done!
+2019-12-02 08:50:00,175 - remoterun - INFO - 
+connect ...
+2019-12-02 08:50:00,278 - remoterun - INFO - 
+connection established
+2019-12-02 08:50:00,280 - remoterun - INFO - 
+files/folders routine
+2019-12-02 08:50:01,518 - remoterun - INFO - 
+files/folders routine complited
+2019-12-02 08:50:01,519 - remoterun - INFO - 
+Running preprocessor:
+2019-12-02 08:50:01,523 - remoterun - INFO - command:
+2019-12-02 08:50:01,525 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t /clusterhome/imaslenikov/tracer/workspace/problems/error_param1 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-02 08:50:05,174 - remoterun - INFO - 
+Running solver:
+2019-12-02 08:50:05,671 - remoterun - INFO - 12-02 11:50:05 produced results for t=6.91203e-310: /clusterhome/imaslenikov/tracer/workspace/problems/error_param1/out/error_param1-0.00000000-6.dbin
+
+2019-12-02 08:50:11,654 - remoterun - INFO - Downloading results...
+2019-12-02 08:50:12,038 - remoterun - INFO - Done!
+2019-12-02 08:50:47,774 - remoterun - INFO - 
+connect ...
+2019-12-02 08:50:47,923 - remoterun - INFO - 
+connection established
+2019-12-02 08:50:47,924 - remoterun - INFO - 
+files/folders routine
+2019-12-02 08:50:49,125 - remoterun - INFO - 
+files/folders routine complited
+2019-12-02 08:50:49,129 - remoterun - INFO - 
+Running preprocessor:
+2019-12-02 08:50:49,130 - remoterun - INFO - command:
+2019-12-02 08:50:49,132 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t /clusterhome/imaslenikov/tracer/workspace/problems/error_param1 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-02 08:50:52,246 - remoterun - INFO - 
+Running solver:
+2019-12-02 08:50:52,790 - remoterun - INFO - 12-02 11:50:52 produced results for t=6.93653e-310: /clusterhome/imaslenikov/tracer/workspace/problems/error_param1/out/error_param1-0.00000000-6.dbin
+
+2019-12-02 08:50:58,808 - remoterun - INFO - Downloading results...
+2019-12-02 08:50:59,169 - remoterun - INFO - Done!
+2019-12-02 08:52:22,494 - remoterun - INFO - 
+connect ...
+2019-12-02 08:52:22,620 - remoterun - INFO - 
+connection established
+2019-12-02 08:52:22,621 - remoterun - INFO - 
+files/folders routine
+2019-12-02 08:52:23,890 - remoterun - INFO - 
+files/folders routine complited
+2019-12-02 08:52:23,891 - remoterun - INFO - 
+Running preprocessor:
+2019-12-02 08:52:23,894 - remoterun - INFO - command:
+2019-12-02 08:52:23,896 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t /clusterhome/imaslenikov/tracer/workspace/problems/error_param1 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-02 08:52:27,531 - remoterun - INFO - 
+Running solver:
+2019-12-02 08:52:28,119 - remoterun - INFO - 12-02 11:52:27 produced results for t=6.93106e-310: /clusterhome/imaslenikov/tracer/workspace/problems/error_param1/out/error_param1-0.00000000-6.dbin
+
+2019-12-02 08:52:34,221 - remoterun - INFO - Downloading results...
+2019-12-02 08:52:34,719 - remoterun - INFO - Done!
+2019-12-02 08:53:39,646 - remoterun - INFO - 
+connect ...
+2019-12-02 08:53:39,762 - remoterun - INFO - 
+connection established
+2019-12-02 08:53:39,764 - remoterun - INFO - 
+files/folders routine
+2019-12-02 08:53:40,990 - remoterun - INFO - 
+files/folders routine complited
+2019-12-02 08:53:40,993 - remoterun - INFO - 
+Running preprocessor:
+2019-12-02 08:53:40,995 - remoterun - INFO - command:
+2019-12-02 08:53:40,997 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t /clusterhome/imaslenikov/tracer/workspace/problems/error_param1 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-02 08:53:44,599 - remoterun - INFO - 
+Running solver:
+2019-12-02 08:53:45,088 - remoterun - INFO - 12-02 11:53:44 produced results for t=6.9478e-310: /clusterhome/imaslenikov/tracer/workspace/problems/error_param1/out/error_param1-0.00000000-6.dbin
+
+2019-12-02 08:53:51,357 - remoterun - INFO - Downloading results...
+2019-12-02 08:53:51,715 - remoterun - INFO - Done!

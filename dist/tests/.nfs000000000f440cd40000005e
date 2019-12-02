@@ -1,0 +1,36 @@
+2019-12-02 08:59:50,638 - remoterun - INFO - 
+connect ...
+2019-12-02 08:59:50,745 - remoterun - INFO - 
+connection established
+2019-12-02 08:59:50,747 - remoterun - INFO - 
+files/folders routine
+2019-12-02 08:59:51,981 - remoterun - INFO - 
+files/folders routine complited
+2019-12-02 08:59:51,983 - remoterun - INFO - 
+Running preprocessor:
+2019-12-02 08:59:51,985 - remoterun - INFO - command:
+2019-12-02 08:59:51,988 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t /clusterhome/imaslenikov/tracer/workspace/problems/error_sinx -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-02 08:59:55,778 - remoterun - INFO - 
+Running solver:
+2019-12-02 09:00:05,436 - remoterun - INFO - 12-02 11:59:56 produced results for t=6.94483e-310: /clusterhome/imaslenikov/tracer/workspace/problems/error_sinx/out/error_sinx-0.00000000-6.dbin
+
+2019-12-02 09:02:19,409 - remoterun - INFO - Downloading results...
+2019-12-02 09:02:19,761 - remoterun - INFO - Done!
+2019-12-02 09:03:00,653 - remoterun - INFO - 
+connect ...
+2019-12-02 09:03:00,761 - remoterun - INFO - 
+connection established
+2019-12-02 09:03:00,762 - remoterun - INFO - 
+files/folders routine
+2019-12-02 09:03:01,695 - remoterun - INFO - 
+files/folders routine complited
+2019-12-02 09:03:01,696 - remoterun - INFO - 
+Running preprocessor:
+2019-12-02 09:03:01,699 - remoterun - INFO - command:
+2019-12-02 09:03:01,701 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run_from_remoterun()" -t /clusterhome/imaslenikov/tracer/workspace/problems/error_sinx -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-02 09:03:05,206 - remoterun - INFO - 
+Running solver:
+2019-12-02 09:03:13,966 - remoterun - INFO - 12-02 12:03:05 produced results for t=6.91632e-310: /clusterhome/imaslenikov/tracer/workspace/problems/error_sinx/out/error_sinx-0.00000000-6.dbin
+
+2019-12-02 09:06:54,653 - remoterun - INFO - Downloading results...
+2019-12-02 09:06:55,108 - remoterun - INFO - Done!

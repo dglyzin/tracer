@@ -1,0 +1,8 @@
+{
+        "Host": "control1", 
+        "Port": 22, 
+        "Username": "imaslenikov", 
+        "Password": "", 
+        "Workspace": "/clusterhome/imaslenikov/tracer/workspace", 
+        "TracerFolder": "/clusterhome/imaslenikov/tracer"        
+}
