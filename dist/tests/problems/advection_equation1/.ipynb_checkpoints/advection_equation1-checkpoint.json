@@ -71,7 +71,7 @@
             "Name": "Neyman1", 
             "Type": 1, 
             "Values": [
-                "cos(0+t)"
+                "0+cos(0+t)"
             ], 
             "Derivative": [
                 "0"
