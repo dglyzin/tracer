@@ -1,0 +1,24 @@
+2019-12-12 07:20:55,675 - remoterun - INFO - 
+connect ...
+2019-12-12 07:20:55,767 - remoterun - INFO - 
+connection established
+2019-12-12 07:20:55,769 - remoterun - INFO - 
+files/folders routine
+2019-12-12 07:21:00,138 - remoterun - INFO - 
+files/folders routine complited
+2019-12-12 07:21:00,141 - remoterun - INFO - 
+Running preprocessor:
+2019-12-12 07:21:00,142 - remoterun - INFO - command:
+2019-12-12 07:21:00,143 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run()" -t /clusterhome/imaslenikov/tracer/workspace/problems/advection_equation2 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-12 07:21:07,934 - remoterun - INFO - 
+Running solver:
+2019-12-12 07:26:48,821 - remoterun - INFO - 12-12 10:26:48 Performance (10^6): 29.404
+
+2019-12-12 07:26:58,101 - remoterun - INFO - INFO:postproc.video:Creating images for block 0 value U
+
+2019-12-12 07:27:05,469 - remoterun - INFO - INFO:postproc.video:Creating video file: 0
+
+2019-12-12 07:27:06,738 - remoterun - INFO - INFO:postproc.video:Creating out file: 0
+
+2019-12-12 07:27:09,477 - remoterun - INFO - Downloading results...
+2019-12-12 07:27:10,682 - remoterun - INFO - Done!

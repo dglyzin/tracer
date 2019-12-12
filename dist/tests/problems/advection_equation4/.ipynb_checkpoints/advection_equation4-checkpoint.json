@@ -71,7 +71,7 @@
             "Name": "Neyman1", 
             "Type": 1, 
             "Values": [
-                "0-(0+t)-(0+t)"
+                "-10-(0-t)-(0-t)"
             ], 
             "Derivative": [
                 "0"
