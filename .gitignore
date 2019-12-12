@@ -30,5 +30,6 @@ ManualHeat/*
 *~
 *.zip
 *.out
+*.nfs000*
 
 TAGS
