@@ -1,0 +1,46 @@
+2019-12-12 10:21:58,768 - remoterun - INFO - 
+connect ...
+2019-12-12 10:21:58,886 - remoterun - INFO - 
+connection established
+2019-12-12 10:21:58,887 - remoterun - INFO - 
+files/folders routine
+2019-12-12 10:22:09,057 - remoterun - INFO - 
+files/folders routine complited
+2019-12-12 10:22:09,058 - remoterun - INFO - 
+Running preprocessor:
+2019-12-12 10:22:09,061 - remoterun - INFO - command:
+2019-12-12 10:22:09,062 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run()" -t /clusterhome/imaslenikov/tracer/workspace/problems/nonlinear_system4 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-12 10:22:25,165 - remoterun - INFO - 
+Running solver:
+2019-12-12 10:23:07,892 - remoterun - INFO - srun: error: Unable to allocate resources: Job/step already completing or completed
+
+2019-12-12 10:23:23,186 - remoterun - INFO - Downloading results...
+2019-12-12 10:23:23,242 - remoterun - INFO - Done!
+2019-12-12 10:23:55,211 - remoterun - INFO - 
+connect ...
+2019-12-12 10:23:55,339 - remoterun - INFO - 
+connection established
+2019-12-12 10:23:55,340 - remoterun - INFO - 
+files/folders routine
+2019-12-12 10:23:56,754 - remoterun - INFO - 
+files/folders routine complited
+2019-12-12 10:23:56,757 - remoterun - INFO - 
+Running preprocessor:
+2019-12-12 10:23:56,759 - remoterun - INFO - command:
+2019-12-12 10:23:56,761 - remoterun - INFO - ~/anaconda3/bin/python3 -c "import hybriddomain.gens.hs.tests.tests_gen_1d as ts; ts.run()" -t /clusterhome/imaslenikov/tracer/workspace/problems/nonlinear_system4 -d /clusterhome/imaslenikov/tracer/workspace/settings/device_conf/devices.json -p /clusterhome/imaslenikov/tracer/workspace/settings/paths/connection.json -w /clusterhome/imaslenikov/tracer/workspace -u imaslenikov 2>&1
+2019-12-12 10:24:19,949 - remoterun - INFO - 
+Running solver:
+2019-12-12 10:26:46,401 - remoterun - INFO - 12-12 13:26:46 Performance (10^6): 0.138954
+
+2019-12-12 10:26:49,673 - remoterun - INFO - INFO:postproc.video:Creating images for block 0 value U
+
+2019-12-12 10:26:50,035 - remoterun - INFO - INFO:postproc.video:Creating images for block 0 value V
+
+2019-12-12 10:26:53,410 - remoterun - INFO - INFO:postproc.video:Creating video file: 0
+
+2019-12-12 10:26:55,909 - remoterun - INFO - INFO:postproc.video:Creating out file: 0
+
+2019-12-12 10:26:59,694 - remoterun - INFO - INFO:postproc.video:Creating out file: 0
+
+2019-12-12 10:27:01,720 - remoterun - INFO - Downloading results...
+2019-12-12 10:27:02,808 - remoterun - INFO - Done!
