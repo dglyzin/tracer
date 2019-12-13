@@ -22,7 +22,7 @@
                 "x": 0.0
             }, 
             "Size": {
-                "x": 10.0
+                "x": 3.1415926
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -49,7 +49,7 @@
                 "x"
             ], 
             "System": [
-                "U'=a*D[U,{x,1}]"
+                "U'=-a*D[U,{x,1}]"
             ]
         }
     ], 
@@ -68,23 +68,23 @@
     }, 
     "Bounds": [
         {
-            "Name": "Dirihle1", 
-            "Type": 0, 
+            "Name": "Neyman1", 
+            "Type": 1, 
             "Values": [
-                "10-(x+t)"
+                "cos(0-t)"
             ], 
             "Derivative": [
-                "-1"
+                "0"
             ]
         },
         {
-            "Name": "Dirihle2", 
-            "Type": 0, 
+            "Name": "Neyman2", 
+            "Type": 1, 
             "Values": [
-                "10-(x+t)"
+                "cos(3.1415926-t)"
             ], 
             "Derivative": [
-                "-1"
+                "0"
             ]
         }
     ], 
@@ -92,7 +92,7 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "10-x"
+                "sin(x)"
             ]
         }
     ], 

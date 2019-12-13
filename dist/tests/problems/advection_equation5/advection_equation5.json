@@ -4,7 +4,7 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 10.0, 
-        "TimeStep": 0.000001, 
+        "TimeStep": 0.0001, 
         "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
@@ -22,7 +22,7 @@
                 "x": 0.0
             }, 
             "Size": {
-                "x": 3.1415926
+                "x": 10.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -49,7 +49,7 @@
                 "x"
             ], 
             "System": [
-                "U'=0-a*D[U,{x,1}]"
+                "U'=a*D[U,{x,1}]"
             ]
         }
     ], 
@@ -71,7 +71,7 @@
             "Name": "Neyman1", 
             "Type": 1, 
             "Values": [
-                "0-cos(0+t)"
+                "10-(0+t)-(0+t)"
             ], 
             "Derivative": [
                 "0"
@@ -81,7 +81,7 @@
             "Name": "Neyman2", 
             "Type": 1, 
             "Values": [
-                "0-cos(3.1415926-t)"
+                "10-(10+t)-(10+t)"
             ], 
             "Derivative": [
                 "0"
@@ -92,7 +92,7 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "sin(x)"
+                "x*(10-x)"
             ]
         }
     ], 
