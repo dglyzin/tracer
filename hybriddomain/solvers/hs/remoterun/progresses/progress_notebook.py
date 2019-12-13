@@ -19,10 +19,16 @@ class ProgressNotebook():
     def succ(self, val):
         self.progress.value = val
 
+    def set_steps(self, STEPS):
+        self.progress.max = STEPS-1
+
     def set_prefix(self, prefix):
         self.prefix = prefix
         self.progress.description = prefix + ": "
 
+    def get_prefix(self):
+        return(self.prefix)
+    
 
 def test_notebook(interval=1):
     print("test for: ")

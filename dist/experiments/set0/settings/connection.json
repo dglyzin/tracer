@@ -1,0 +1,8 @@
+{
+        "Host": "control1", 
+        "Port": 22, 
+        "Username": "hpc", 
+        "Password": "", 
+        "Workspace": "/clusterhome/hpc/tracer/workspace", 
+        "TracerFolder": "/clusterhome/hpc/tracer"        
+}

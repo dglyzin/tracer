@@ -241,6 +241,50 @@ class ResultPostprocNet():
                 data[name] = mapped
         return(data)
 
+    def get_params_results(self, progress):
+        
+        def get_idxs(filepath):
+            filename = os.path.basename(filepath)
+            res_seq = re.search("_seq(?P<idx>\d+)", filename)
+            res_val = re.search("-value(?P<idx>\d+)", filename)
+            res = (int(res_seq.groupdict()["idx"]),
+                   int(res_val.groupdict()["idx"]))
+            return(res)
+
+        # bouts = list(map(get_idxs, outs))
+        
+        out_dir = os.path.join(self.model_dir, "out")
+        listdir = os.listdir(out_dir)
+        replacer_id = self.replacer_id
+
+        outs = [os.path.join(out_dir, file_name)
+                for file_name in listdir
+                if ('.out' in file_name) and (replacer_id in file_name)]
+        outs.sort(key=lambda elm: get_idxs(elm))
+        
+        def succ(acc, filename):
+            seq_idx, val_idx = get_idxs(filename)
+            if seq_idx not in acc:
+                acc[seq_idx] = {}
+            
+            with open(filename) as f:
+                seq_val_data = f.read()
+            acc[seq_idx][val_idx] = seq_val_data
+            return(acc)
+        res_strings = reduce(succ, outs, {})
+
+        self.results_param_strings = res_strings
+
+        # reinit progress steps:
+        if progress is not None:
+            progress.set_steps(len(outs))
+
+        # convert to arrays:
+        times, res_arrays = self.out_to_array(res_strings, progress)
+        self.times = times
+        self.results_param_arrays = res_arrays
+        return((times, res_arrays))
+
     def out_to_array(self, results_params, progress=None):
 
         '''Convert strings with data from ``results_params[param]``
@@ -278,7 +322,18 @@ class ResultPostprocNet():
         steps = 0
         result_t = []
         for param in results_params:
-            for var, data in enumerate(results_params[param]):
+            # TODO: only dict for all
+            if type(results_params[param]) == dict:
+                # if vars data stored like a dict,
+                # convert to generator object:
+                vars_keys = list(results_params[param].keys())
+                vars_keys.sort()
+                data_list = (results_params[param][var_id]
+                             for var_id in vars_keys)
+            else:
+                # default is list:
+                data_list = results_params[param]
+            for var, data in enumerate(data_list):
 
                 if param not in results_param_arrays:
                     results_param_arrays[param] = {}
@@ -412,3 +467,16 @@ class ResultPostprocNet():
 
         for num, file_name in enumerate(mp4):
             os.rename(file_name, new_mp4[num])
+
+
+def test_get_params(model_dir):
+    import hybriddomain.solvers.hs.remoterun.progresses.progress_cmd as pcmd
+    
+    rp = ResultPostprocNet(model_dir)
+    
+    # set progress with arbitrary value:
+    # (it will be rewrited inside get_params_results)
+    p = pcmd.ProgressCmd(1)
+ 
+    rp.get_params_results(p)
+    return(rp)

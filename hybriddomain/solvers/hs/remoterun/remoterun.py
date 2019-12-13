@@ -244,7 +244,8 @@ def make_problems_as_workspace_link(client, hs_problems, workspace):
 
 
 def remoteProjectRun(settings, dimention, notebook=None, model=None,
-                     log_level_console="INFO", log_level_file="DEBUG"):
+                     log_level_console="INFO", log_level_file="DEBUG",
+                     remove_old=True):
     '''
     Run hs with settings:
     1) Create folders at hs/workspace for model and settings
@@ -394,14 +395,16 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None,
     logger.debug(project_name)
 
     # clear old results:
-    try:
-        logger.debug("\nRemoving old results ...")
-        for filename in sorted(os.listdir(hd_out_folder)):
-            if filename.endswith('mp4') or filename.endswith('out'):
-                os.remove(os.path.join(hd_out_folder, filename))
-        logger.debug("\nOld results removed")
-    except:
-        logger.debug("\nOld results removing error: probaply there was none.")
+    if remove_old:
+        try:
+            logger.debug("\nRemoving old results ...")
+            for filename in sorted(os.listdir(hd_out_folder)):
+                if filename.endswith('mp4') or filename.endswith('out'):
+                    os.remove(os.path.join(hd_out_folder, filename))
+            logger.debug("\nOld results removed")
+        except:
+            logger.debug("\nOld results removing error:"
+                         + " probaply there was none.")
 
     client = paramiko.SSHClient()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

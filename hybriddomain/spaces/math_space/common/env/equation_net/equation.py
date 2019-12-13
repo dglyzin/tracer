@@ -5,7 +5,7 @@ import inspect
 # env must contain env folder:
 currentdir = os.path.dirname(os.path
                              .abspath(inspect.getfile(inspect.currentframe())))
-env = currentdir.find("env")
+env = currentdir.find("env/equation_net")
 env_dir = currentdir[:env]
 # print(env_dir)
 if env_dir not in sys.path:

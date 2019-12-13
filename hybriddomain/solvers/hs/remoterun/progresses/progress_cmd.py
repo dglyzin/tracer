@@ -13,8 +13,14 @@ class ProgressCmd():
         progress_cmd(value, self.steps_total, is_sleep=False,
                      prefix=self.prefix)
 
+    def set_steps(self, STEPS):
+        self.steps_total = STEPS
+
     def set_prefix(self, prefix):
         self.prefix = prefix
+
+    def get_prefix(self):
+        return(self.prefix)
 
 
 def progress_cmd(value, total, win_size=10, prefix="progress",
