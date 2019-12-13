@@ -21,7 +21,8 @@ class FilesystemDatastore():
         self.models_root_title = "models_envs"
         self.templates_path = templates_path
         self.env_content_list = ["bounds", "centrals",
-                                 "initials"]
+                                 "initials", "equations"]
+        self.env_content_list_for_imgs = ["bounds", "centrals", "initials"]
         self.metafile = os.path.join(data_folder, tree_file_name)
 
     def rename(self, data_input):
@@ -45,44 +46,56 @@ class FilesystemDatastore():
         to env folder for
            node["node"]["title"]+_{src.json/img.png}
         name.'''
-
+        
         di = data_input
-        parent_path = self.get_parent_full_path(di)  # , node_name="parent"
-        node_data_file = os.path.join(parent_path,
-                                      di["node"]["title"]+"_src.json")
-        print("node_data_file:")
-        print(node_data_file)
+        if di["node"]["title"] == "equations":
+            node_data = di["node"]["node_data"]
+            table = node_data["table"]
+            parent_path = self.get_parent_full_path(di)  # , node_name="parent"
+            print("parent_path:")
+            print(parent_path)
+            print("table:")
+            print(table)
+        else:
+            parent_path = self.get_parent_full_path(di)  # , node_name="parent"
+            node_data_file = os.path.join(parent_path,
+                                          di["node"]["title"]+"_src.json")
+            print("node_data_file:")
+            print(node_data_file)
 
-        node_img_file = os.path.join(parent_path,
-                                     di["node"]["title"]+"_img.png")
-        print("node_img_file:")
-        print(node_img_file)
+            node_img_file = os.path.join(parent_path,
+                                         di["node"]["title"]+"_img.png")
+            print("node_img_file:")
+            print(node_img_file)
 
-        node_data = json.loads(data_input["node"]["node_data"])
-        node_data_src = node_data["canvas_source"]
-        node_data_img = node_data["canvas_img"]
+            node_data = json.loads(data_input["node"]["node_data"])
+            print("di[node][node_data][eqs_table]")
+            print(node_data["eqs_table"])
 
-        # save json data:
-        with open(node_data_file, "w") as f:
-            f.write(node_data_src)
-            # f.write(json.dumps(node_data_src,
-            #                    sort_keys=False, indent=4))
+            node_data_src = node_data["canvas_source"]
+            node_data_img = node_data["canvas_img"]
 
-        img_orign = node_data_img.split(",")[1]
-        print("img_orign:")
-        print(img_orign)
+            # save json data:
+            with open(node_data_file, "w") as f:
+                f.write(node_data_src)
+                # f.write(json.dumps(node_data_src,
+                #                    sort_keys=False, indent=4))
 
-        # save img data:
-        with open(node_img_file, "wb") as f:
-            # imsave(img_orign, node_img_file, format='jpeg')
-            f.write(base64.decodebytes(img_orign.encode("utf-8")))
-            # f.write(base64.decodebytes(node_data_img.encode("utf-8")))
-        img = imread(node_img_file, mode="L")
+            img_orign = node_data_img.split(",")[1]
+            print("img_orign:")
+            print(img_orign)
 
-        print("img array:")
-        print(img)
+            # save img data:
+            with open(node_img_file, "wb") as f:
+                # imsave(img_orign, node_img_file, format='jpeg')
+                f.write(base64.decodebytes(img_orign.encode("utf-8")))
+                # f.write(base64.decodebytes(node_data_img.encode("utf-8")))
+            img = imread(node_img_file, mode="L")
 
-        # tree_data_src = data_input["tree"]
+            print("img array:")
+            print(img)
+
+            # tree_data_src = data_input["tree"]
 
         # self.update_tree(tree_data_src)
         print("done")
@@ -101,7 +114,7 @@ class FilesystemDatastore():
         print(path)
         self.mk_folder(path)
 
-        for name in ["bounds", "centrals", "initials"]:
+        for name in self.env_content_list_for_imgs:
             shutil.copy2(os.path.join(self.templates_path,
                                       name+"_src.json"),
                          path)
@@ -134,14 +147,23 @@ class FilesystemDatastore():
 
         di = data_input
         content = di["node"]["title"]
-        out = {}
-        # this will return /path/to/model:
-        model_folder_full_path = self.get_parent_full_path(di)
-        content_img_src_data_file = os.path.join(model_folder_full_path,
-                                                 content+"_src.json")
-        with open(content_img_src_data_file) as f:
-            content_img_data_src = f.read()
-        out["canvas_src"] = content_img_data_src
+        out = {"content_type": content}
+        if content == "equations":
+            out["table"] = [
+                ["U'=a*U+b*U*((U)^2+(V)^2)+c*D[U,{x,2}]\n"
+                 + "V'=a*V+b*V*((U)^2+(V)^2)+c*D[V,{x,2}]\n"],
+                ["U'=a*(D[U,{x,2}]+ D[U,{y,2}])\n"],
+                ["U'= a*(b-U(t-1))*U\n"]
+            ]
+            out["table"] = 3*out["table"]
+        else:
+            # this will return /path/to/model:
+            model_folder_full_path = self.get_parent_full_path(di)
+            content_img_src_data_file = os.path.join(model_folder_full_path,
+                                                     content+"_src.json")
+            with open(content_img_src_data_file) as f:
+                content_img_data_src = f.read()
+            out["canvas_src"] = content_img_data_src
         return(out)
 
     def get_node_full_path(self, data_input, node_name="node"):

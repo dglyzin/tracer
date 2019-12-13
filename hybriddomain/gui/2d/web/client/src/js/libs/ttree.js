@@ -343,7 +343,10 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 		   // remove input:
 		   self.menu.input.remove_input();
 		   // console.error("node with such name alredy exist: "+node["title"]);
-		   throw new Error("node with such name alredy exist: "+node["title"]);
+		   var msg = ("node with such name alredy exist: "
+			      + name);
+		   alert(msg);
+		   throw new Error(msg);
 	       }
 
 	   };
@@ -363,8 +366,9 @@ define(['require', 'jquery', 'jquery-ui-custom/jquery-ui',
 		   return;
 	       if(check_empty)
 		   while( node.hasChildren() ) {
-		   
-		       throw new Error("node not empty!");
+		       var msg = "node not empty!";
+		       alert(msg);
+		       throw new Error(msg);
 		       // And keep children:
 		       // node.getFirstChild().moveTo(node.parent, "child");
 		   }

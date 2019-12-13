@@ -1,10 +1,10 @@
 console.log("log models_2d_editor.js");
 define(['jquery', 'jquery-ui-custom/jquery-ui',
 	'fabric', 'modules/base_editor', 'modules/eqs_regions',
-	'modules/models_editor_scene'],
+	'modules/models_editor_scene', 'modules/models_table'],
        
        function($, ui, fabric, base_editor, eqs_regions,
-		scene){
+		scene, table){
 	   
 	   function BoardModel(){
 	       
@@ -13,7 +13,12 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       self.name = "models_2d_editor";
 	       // END FOR
 	       base_editor.BoardBase.call(this);
+
+	       self.scene = new scene.ModelsScene(self);
+	       console.log("BoardModel.scene = ", self.scene);
 	       
+	       self.table = new table.ModelsTable(self);
+	       self.tables_ids = ["t_eqs_draw", "t_eqs_eqr", "t_eqs_br"];
 	   };
 
 	   // inheritance:
@@ -21,14 +26,72 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	   Object.defineProperty(BoardModel.prototype, 'constructor',
 				{value: BoardModel, enumerable: false, writable:true});
 	   
-	   BoardModel.prototype.init_board = function(){
+	   BoardModel.prototype.remove = function(){
+
+	       // clear scene:
+	       var children = $("#scene").children();
+	       console.log("children = ", children);
+	       $.each(children, function(id, elm){
+		   console.log("elm = ", elm);
+		   console.log("elm = ", elm);
+		   elm.remove();
+	       });
 	       
+	    };
+	   
+	  
+	   BoardModel.prototype.update = function(content_type){
+	       var self = this;
+	       
+	       // clear scene:
+	       self.remove();
+
+	       var draw_bounds = undefined;
+	       var draw_eq_number = undefined;
+
+	       if(content_type == "initials"){
+		   draw_bounds = false;
+		   draw_eq_number = false;
+	       }
+		
+	       if(content_type == "centrals"){
+		   draw_bounds = false;
+		   draw_eq_number = true;
+	       }
+	       if(content_type == "bounds"){
+		   draw_bounds = true;
+		   draw_eq_number = true;
+	       }
+	       if(content_type == undefined){
+		   self.scene.draw_scene_welcome("#scene");
+		   return;
+		   // throw Error("content_type is undefinded");
+	       };
+		   	       
+	       this.draw_scene(draw_bounds, draw_eq_number);
+	       base_editor.BoardBase.prototype.init_board.call(this);
+	       this.canvas.setBackgroundColor('rgba(0, 0, 0, 1.0)',
+					      this.canvas.renderAll.bind(this.canvas));
+	       this.canvas.renderAll();
+
+	       console.log("BoardModel.prototype.init_board.this:");
+	       console.log(this);
+
+	       // apply controls to divs:
+	       this.apply_controls(draw_bounds, draw_eq_number);
+
+
+	   };
+	   BoardModel.prototype.init_board = function(){
+	       // TODO:
+	       this.update();
+	       /*
 	       this.draw_scene();
 	       
 	       base_editor.BoardBase.prototype.init_board.call(this);
 	       this.canvas.setBackgroundColor('rgba(0, 0, 0, 1.0)',
 					      this.canvas.renderAll.bind(this.canvas));
-
+		*/
 	       /*
 	       var rect = new fabric.Rect({
 		   top : 100,
@@ -51,6 +114,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 					       editable: true});
 	       this.canvas.add(text);
 		*/
+	       /*
 	       this.canvas.renderAll();
 
 	       console.log("BoardModel.prototype.init_board.this:");
@@ -58,24 +122,22 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 
 	       // apply controls to divs:
 	       this.apply_controls();
-	       
+	       */
 	   };
 
-	   /*
-	   BoardModel.prototype.remove = function(){
-	       
-	    };
-	    */
-	   BoardModel.prototype.draw_scene = function(){
-	       scene.draw_scene("#scene");
+	   BoardModel.prototype.draw_scene = function(draw_bounds, draw_eq_number){
+	       var self = this;
+	       self.scene.draw_scene("#scene", draw_bounds, draw_eq_number);
 	   };
 
-	   BoardModel.prototype.apply_controls = function(){
+	   BoardModel.prototype.apply_controls = function(draw_bounds, draw_eq_number){
+	       var self = this;
 	       $("#controls").tabs();
 	       $("#models_tree_wrap_style").resizable();
 
-	       this.apply_eqs_tables();
-	       this.apply_draw("sr_draw_size", "t_eqs_draw",
+	       this.apply_eqs_tables(draw_bounds, draw_eq_number);
+
+	       this.apply_draw("sr_draw_size", self.tables_ids,
 			       "param_draw_observable", "b_change_fabric_mode");
 
 	       // BoardModel.prototype.apply_draw("sr_draw_size", "b_change_fabric_mode");
@@ -84,51 +146,21 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       this.apply_remove_selected("b_remove_selected");
 	       this.apply_regions("b_add_region", "b_add_region_br");
 	       // this.apply_save("b_save_fabric_canvas");
-	       this.apply_tree();
+	       // this.apply_tree();
 	   };
 
 
 	   BoardModel.prototype.get_color_val_from_input = function(color_input_id){
-	       /*Get value from input value. Stored table value used*/
+	       /*Owerride Get value from input value. Stored table value used*/
 	       var self = this;
-	       return(parseInt(self.eqs_table_selected_row_val, 10));
+	       return(parseInt(self.table.eqs_table_selected_row_val, 10));
 	   };
 
-	   BoardModel.prototype.apply_draw_color = function(color_input_id){
+	   BoardModel.prototype.apply_draw_color = function(tables_ids){
 
-	       /*Undefault input for color. Table used */
+	       /*Owerride default input for color. Table used */
 	       var self = this;
-	       // this will work dynamically i.e. applies to tr which
-	       // was added with $.append:
-	       $("#"+color_input_id).on("click", "tr", function(){
-	       // $("#"+color_input_id+" tr").on("click", function(){
-		   console.log("tr click |-> color_val:");
-		   var color_val = $.text(this.children[0]);
-		   console.log(color_val);
-
-		   // add to selected row value:
-		   self.eqs_table_selected_row_val = color_val;
-
-		   // FOR set color:
-		   console.log("tr.style:");
-		   console.log(this.parentElement.children);
-		   $.each(this.parentElement.children, function(id, elm){
-		       elm.setAttribute("style", "background-color: white");
-		   });
-		   // this.setAttribute("style", "color: blue");
-		   this.setAttribute("style", "background-color: blue");
-		   // END FOR
-
-		   // FOR apply to canvas:
-		   console.log("freeDrawingBrush:");
-		   console.log(self.canvas.freeDrawingBrush);
-		   
-		   var color = "rgba("+ color_val+","+ color_val+","+ color_val+","+"1.0)";
-		   self.canvas.freeDrawingBrush.color = color;
-		   console.log(self.canvas.freeDrawingBrush.color);
-		   // END FOR
-	       });
-
+	       self.table.set_on_row_click(tables_ids);
 	       /*
 	       // "t_eqs_draw"
 	       $("#"+color_input_id).on("click", function(){
@@ -156,41 +188,43 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       });
 	   };
 	   
-	   BoardModel.prototype.apply_eqs_tables = function(){
+	   BoardModel.prototype.apply_eqs_tables = function(draw_bounds, draw_eq_number){
 	       var self = this;
-	       self.eqs_table = self.eqs_table || [];
-	       self.eqs_table_selected_row_val = self.eqs_table_selected_row_val || 255;
 
-	       self.apply_eqs_table_draw("b_draw_add_eq_num", "t_eqs_draw",
-					"i_eq_num_draw", "sr_draw_color");
-	       // TODO:
-	       // apply_eqs_table_eregions
-	       // apply_eqs_table_br #  may be separately from here
+	       var btype_draw = undefined;
+	       var btype_eq = undefined;
+	       var btype_br = undefined;
+	       
+	       var eq_number_draw = undefined;
+	       var eq_number_eq = undefined;
+	       var eq_number_br = undefined;
+
+	       if (draw_eq_number){
+		   eq_number_draw = "i_eq_num_draw";
+		   eq_number_eq = "i_eq_num";
+		   eq_number_br = "i_eq_num_br";
+	       };
+
+	       if (draw_bounds){
+		   btype_draw = "s_btype_draw";
+		   btype_eq = "s_btype_eq";
+		   btype_br = "s_btype_br";
+		   }
+	       
+
+	       self.table.apply_eqs_table("b_draw_add_eq_num", self.tables_ids,
+					  eq_number_draw, "sr_draw_color",
+					  btype_draw);
+	       
+	       self.table.apply_eqs_table("b_eqr_add_eq_num", self.tables_ids,
+					  eq_number_eq, "sr_eq_color",
+					  btype_eq);
+	       
+	       self.table.apply_eqs_table("b_br_add_eq_num", self.tables_ids,
+					  eq_number_br, "sr_eq_color_br",
+					  btype_br);
 	   };
 
-	   BoardModel.prototype.apply_eqs_table_draw = function(b_add_eq_id, table_id,
-								i_eq_num_id, sr_eq_color_id){
-	       
-	       /*Apply colors/equations_numbers table's button callback for draw tab*/
-	       
-	       var self = this;
-	        $("#"+b_add_eq_id).on("click", function(){
-		    var color_val = $("#"+sr_eq_color_id).val();
-		    var eq_num = $("#"+i_eq_num_id).val();
-		    
-		    if($.map(self.eqs_table, function(elm, id){
-			return(elm[0]);}).indexOf(color_val) < 0)
-		    {
-			$("#"+table_id).append( '<tr><td>'+color_val+ '</td>'
-						+ ' <td>'+eq_num+'</td></tr>');
-			self.eqs_table.push([color_val, eq_num]);
-		    }else{
-			throw new Error("cannot add more then one eq to"
-					+ " one color");
-		    }
-		    console.log("self.eqs_table = ", self.eqs_table);
-		});
-	   };
 
 	   BoardModel.prototype.apply_regions = function(b_add_region_id, b_add_region_br_id){
 	       
@@ -204,7 +238,8 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 
 	       //"#b_add_region_br" 
 	       $("#"+b_add_region_br_id).on("click", function(){
-		   var color_val = $("#sr_eq_color_br").val();
+		   var color_val = self.get_color_val_from_input();
+		   // var color_val = $("#sr_eq_color_br").val();
 		   var color = "rgba("+ color_val+","+ color_val+","+ color_val+","+"1.0)";
 		   var eq_number = $("#i_eq_num_br").val();
 		   console.log("color");
@@ -245,7 +280,8 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 		    */
 
 		   // choice color and equation number:
-		   var color_val = $("#sr_eq_color").val();
+		   var color_val = self.get_color_val_from_input();
+		   // var color_val = $("#sr_eq_color").val();
 		   var color = "rgba("+ color_val+","+ color_val+","+ color_val+","+"1.0)";
 		   var eq_number = $("#i_eq_num").val();
 		   console.log("color");
@@ -333,6 +369,13 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	   
 	   BoardModel.prototype.load = function(data){
 	       var self = this;
+	       
+	       // TODO:
+	       var content_type = data["content_type"];
+	       console.log("content_type:");
+	       console.log(data["content_type"]);
+	       self.update(content_type);
+	       
 	       console.log("data[canvas_src]:");
 	       console.log(data["canvas_src"]);
 	       self.canvas.loadFromJSON(data["canvas_src"],
@@ -444,7 +487,8 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       console.log("canvas json obj:");
 	       console.log(data);
 	       var to_send = JSON.stringify({canvas_img: data,
-					     canvas_source: JSON.stringify(self.canvas)});
+					     canvas_source: JSON.stringify(self.canvas),
+					     eqs_table: JSON.stringify(self.eqs_table)});
 	       
 	       return(to_send);
 	   };

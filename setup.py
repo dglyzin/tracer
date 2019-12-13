@@ -37,8 +37,8 @@ if __name__ == "__main__":
         name="hybriddomain",
 
         # use version (only) from setuptools_scm:
-        # use_scm_version=True,
-        version=get_version(root='.', relative_to=__file__),
+        use_scm_version=True,
+        # version=get_version(root='.', relative_to=__file__),
 
         author="lab",
         author_email="lab@lab.com",
@@ -48,13 +48,6 @@ if __name__ == "__main__":
         url="",
         packages=find_packages('.'),
         include_package_data=True,
-
-        # key '' used to include data from any package
-        # from repository folder, but since there is only
-        # "hybriddomain", use it as a key for ``find_files``:
-        
-        # package_data={
-        #     '': find_files("hybriddomain")},
 
         exclude_package_data={"hybriddomain.tests":
                               ["*.json", "*.ipynb",
@@ -73,28 +66,8 @@ if __name__ == "__main__":
         # [setuptools.file_finders]
         # setuptools_scm = setuptools_scm.integration:find_files
         # """,
-
+       
         setup_requires=['setuptools_scm'],
         # setup_requires=[ "setuptools_git >= 0.3", ],
         install_requires=requirements
     )
-    
-    '''
-    entry_points={
-    "setuptools.file_finders": [
-        "foobar = setuptools_scm:files_command",
-    ]
-    }
-    '''
-    '''
-    print("\nget_distribution version:")
-    try:
-        # __version__ = get_distribution(__name__).version
-        # print(__version__)
-        
-        version = get_version(root='.', relative_to=__file__)
-        print(version)
-    except DistributionNotFound:
-        # package is not installed
-        print("not found")
-    '''
