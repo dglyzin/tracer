@@ -41,7 +41,7 @@
                 "x"
             ], 
             "System": [
-                "U'= 2*(1-U(t-1)/b)*U"
+                "U'= a*(1-U(t-1)/b)*U+0.01"
             ]
         }
     ], 
@@ -52,8 +52,8 @@
         ], 
         "ParamValues": [
             {
-                "a": 2, 
-                "b": 2
+                "a": 3, 
+                "b": 5
             }
         ], 
         "DefaultParamsIndex": 0
@@ -80,7 +80,7 @@
     ], 
     "Hardware": [
         {
-            "Name": "cnode7", 
+            "Name": "cnode5", 
             "CpuCount": 1, 
             "CpuMemory": [
                 5

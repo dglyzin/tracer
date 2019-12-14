@@ -4,14 +4,14 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 10, 
-        "TimeStep": 0.001, 
+        "TimeStep": 0.1, 
         "SaveInterval": 0.1, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
     "Grid": {
         "Dimension": 1, 
-        "dx": 0.1, 
+        "dx": 0.01, 
         "dy": 1, 
         "dz": 1
     }, 
@@ -41,19 +41,17 @@
                 "x"
             ], 
             "System": [
-                "U'= a*(1-U(t-1)/b)*U+0.01"
+                "U'= a*U*(1-U(t-1))"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
-            "a", 
-            "b"
+            "a"
         ], 
         "ParamValues": [
             {
-                "a": 3, 
-                "b": 5
+                "a": 1
             }
         ], 
         "DefaultParamsIndex": 0
@@ -74,16 +72,16 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "t+1.0"
+                "0.5"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "cnode5", 
+            "Name": "cnode3", 
             "CpuCount": 1, 
             "CpuMemory": [
-                5
+                56
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
@@ -106,7 +104,6 @@
     "Plots": [ 
 	{
             "Title": "u(t,x)", 
-            "Name": "U",
             "Period": 0.1,
             "Value": "U"
         }
@@ -114,7 +111,7 @@
 
     "Results":[
         {
-            "Name": "U", 
+            "Name": "u", 
             "Period": 0.1,
             "Value": "U"
         }
