@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 10.0, 
+        "FinishTime": 20.0, 
         "TimeStep": 0.001, 
         "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
@@ -22,7 +22,7 @@
                 "x": 0.0
             }, 
             "Size": {
-                "x": 3.1415926
+                "x": 1.0
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -49,7 +49,7 @@
                 "x"
             ], 
             "System": [
-                "U'=D[U,{x,2}]+c*asin(x)*(1-U(t-1))*U"
+                "U'=a*D[U,{x,2}]+c*asin(x)*(1-U(t-1))*U"
             ]
         }
     ], 
@@ -63,7 +63,7 @@
             {
                 "a": 1, 
                 "b": 1,
-                "c": 0.0001
+                "c": 0.8
             }
         ], 
         "DefaultParamsIndex": 0
@@ -90,7 +90,7 @@
     ], 
     "Hardware": [
         {
-            "Name": "cnode3", 
+            "Name": "cnode5", 
             "CpuCount": 1, 
             "CpuMemory": [
                 56

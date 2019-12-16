@@ -1,9 +1,9 @@
- {
+{
     "ProjectName": "Heat_test", 
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 20.0, 
+        "FinishTime": 30, 
         "TimeStep": 0.001, 
         "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
@@ -11,7 +11,7 @@
     }, 
     "Grid": {
         "Dimension": 1, 
-        "dx": 0.01, 
+        "dx": 0.1, 
         "dy": 1, 
         "dz": 1
     }, 
@@ -19,23 +19,15 @@
         {
             "Name": "MainBlock", 
             "Offset": {
-                "x": 0.0
+                "x": 0
             }, 
             "Size": {
-                "x": 1.0
+                "x": 1
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [
-                {
-                    "BoundNumber": 0, 
-                    "Side": 0
-                },
-            {
-                    "BoundNumber": 0, 
-                    "Side": 1
-                }
-
+                 
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
@@ -49,31 +41,31 @@
                 "x"
             ], 
             "System": [
-                "U'=a*D[U,{x,2}]+c*asin(x)*(1-U(t-1))*U"
+                "U'= r*(1-a*(1-U(t-1))-U(t-0.3))*U"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
-            "a", 
-            "b",
-            "c"
+            "a",
+            "r",
+            "h"
         ], 
         "ParamValues": [
             {
-                "a": 1, 
-                "b": 1,
-                "c": 0.8
+                "a": 0.9,
+                "r": 3.0,
+                "h": 0.3
             }
         ], 
         "DefaultParamsIndex": 0
     }, 
     "Bounds": [
         {
-            "Name": "Dirichlet1111", 
+            "Name": "Dirichlet 1", 
             "Type": 0, 
             "Values": [
-                "0"
+                "0.0"
             ], 
             "Derivative": [
                 "0.0"
@@ -84,16 +76,16 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "sin(x)"
+                "0.9"
             ]
         }
     ], 
     "Hardware": [
         {
-            "Name": "cnode5", 
+            "Name": "cnode2", 
             "CpuCount": 1, 
             "CpuMemory": [
-                56
+                1
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
@@ -116,8 +108,7 @@
     "Plots": [ 
 	{
             "Title": "u(t,x)", 
-            "Name": "U",
-            "Period": 0.1,
+            "Period": 0.01,
             "Value": "U"
         }
     ],
@@ -125,7 +116,7 @@
     "Results":[
         {
             "Name": "u", 
-            "Period": 0.1,
+            "Period": 0.01,
             "Value": "U"
         }
     ]
