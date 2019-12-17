@@ -42,15 +42,23 @@ class GenCppCommon():
     def get_func_for_dirichlet(self, model, blockNumber, side_num,
                                boundNumber, equationNumber):
         
-        '''Generate func names and get values for Dirichlet'''
+        '''Generate func names and get values for Dirichlet
+        
+        Return:
+        function name,
+        dirivative values (for substitution to dU, ddU ...),
+        original values (for substitution to U) '''
 
         btype = 0
         funcName = self.get_func_name(btype, blockNumber, side_num,
                                       boundNumber, equationNumber)
 
-        outputValues = list(model.bounds[boundNumber].derivative)
-
-        return((funcName, outputValues))
+        # borders is always used for derivative only (dU, ddU)
+        # not for U (which probably taken from init value):
+        outputValuesDeriv = list(model.bounds[boundNumber].derivative)
+        outputValues = list(model.bounds[boundNumber].values)
+        
+        return((funcName, outputValuesDeriv, outputValues))
 
     def get_func_for_neumann(self, model, blockNumber, side_num,
                              boundNumber, equationNumber):
@@ -61,13 +69,15 @@ class GenCppCommon():
         funcName = self.get_func_name(btype, blockNumber, side_num,
                                       boundNumber, equationNumber)
         outputValues = list(model.bounds[boundNumber].values)
-        
+
+        '''
         # special for Neumann bound
         if side_num == 0 or side_num == 2:
             for idx, value in enumerate(outputValues):
                 outputValues.pop(idx)
                 outputValues.insert(idx, '-(' + value + ')')
-      
+        '''
+
         return((funcName, outputValues))
 
     def get_func_default(self, equation, blockNumber, side_num,
@@ -76,11 +86,11 @@ class GenCppCommon():
         '''Generate func names and get values for default'''
 
         funcName = ("Block" + str(blockNumber)
-                    + "DefaultNeumann__side"
+                    + "DefaultDirichlet__side"
                     + str(side_num)
                     + "__Eqn" + str(equationNumber))
         values = len(equation.eqs) * ['0.0']
-        return((funcName, values))
+        return((funcName, values, values))
 
     def get_func_name(self, btype, blockNumber, side_num,
                       boundNumber, equationNumber):
@@ -122,7 +132,7 @@ class GenCppCommon():
         '''
         # alredy parsed in make_bounds_for_edges:
         border_values_parsed = vertex_edge.border_values_parsed
-
+        border_values_parsed_underiv = vertex_edge.border_values_parsed_underiv
         btype = vertex_edge.btype
         
         vertex_sides = vertex.sides_nums
@@ -142,22 +152,27 @@ class GenCppCommon():
 
         parsed = self.get_eq_cpp(eSystem)
         
-        return((parsed, border_values_parsed))
+        return((parsed, border_values_parsed,
+                border_values_parsed_underiv))
 
     def parse_equations(self, eSystem, model, blockNumber,
-                        btype, side_num, border_values):
+                        btype, side_num, border_values,
+                        border_values_underiv):
 
         # set up equation:
         self.set_eq_base_params(eSystem, model.dimension,
                                 blockNumber, model.params)
         block = model.blocks[blockNumber]
-        bv_parsed = self.set_eq_spec_params(model, block, eSystem, btype,
-                                            side_num, border_values)
+        bv_parsed, udbv_parsed = (self
+                                  .set_eq_spec_params(model, block, eSystem, btype,
+                                                      side_num, border_values,
+                                                      border_values_underiv))
         parsed = self.get_eq_cpp(eSystem)
-        return((parsed, bv_parsed))
+        return((parsed, bv_parsed, udbv_parsed))
         
     def set_eq_spec_params(self, model, block, eSystem, btype,
-                           side_num, border_values):
+                           side_num, border_values,
+                           border_values_underiv):
         '''parse border values:
 
         for derivOrder = 1:
@@ -186,26 +201,42 @@ class GenCppCommon():
                              for idx, param in enumerate(model.params)]
 
         border_values_parsed = []
+        border_values_parsed_underiv = []
+
         # parse border values:
         for i, bv in enumerate(border_values):
             # print("bound bug debug:")
             # print(bv)
+
+            if border_values_underiv is not None:
+                # fir Dirichlet only:
+                ebvud = Equation(bv)
+                ebvud.parser.parse()
+                ebvud.replacer.cpp.editor.set_default()
+                ebvud.replacer.cpp.editor.set_dim(dim=dim)
+                ebvud.replacer.cpp.editor.set_shape(shape=shape)
+                ebvud.replacer.cpp.editor.set_coeffs_indexes(coeffs_to_indexes=coeffs_to_indexes)
+
+                # make cpp for border values:
+                ebvud_cpp = ebvud.replacer.cpp.make_cpp()
+                border_values_parsed_underiv.append(ebvud_cpp)
+
             ebv = Equation(bv)
             ebv.parser.parse()
             ebv.replacer.cpp.editor.set_default()
             ebv.replacer.cpp.editor.set_dim(dim=dim)
             ebv.replacer.cpp.editor.set_shape(shape=shape)
-
             ebv.replacer.cpp.editor.set_coeffs_indexes(coeffs_to_indexes=coeffs_to_indexes)
 
             # make cpp for border values:
             ebv_cpp = ebv.replacer.cpp.make_cpp()
+            
             border_values_parsed.append(ebv_cpp)
-
+            
             # set eq parameters (including of border values):
             editor = eSystem.eqs[i].replacer.cpp.editor
             editor.set_diff_type(diffType='pure',
                                  diffMethod='borders',
                                  btype=btype, side=side_num,
                                  func=ebv_cpp)
-        return(border_values_parsed)
+        return((border_values_parsed, border_values_parsed_underiv))
