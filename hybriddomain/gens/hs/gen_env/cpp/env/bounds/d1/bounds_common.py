@@ -190,7 +190,7 @@ class GenCommon(GenBaseCommon, GenCppCommon):
             border_values_underiv = list(func[2])
             btype = 0
             boundNumber = -1
-
+        
         args = (eSystem, model, blockNumber, btype,
                 side_num, border_values, border_values_underiv)
         parsed = self.parse_equations(*args)

@@ -201,25 +201,11 @@ class GenCppCommon():
                              for idx, param in enumerate(model.params)]
 
         border_values_parsed = []
-        border_values_parsed_underiv = []
 
         # parse border values:
         for i, bv in enumerate(border_values):
             # print("bound bug debug:")
             # print(bv)
-
-            if border_values_underiv is not None:
-                # fir Dirichlet only:
-                ebvud = Equation(bv)
-                ebvud.parser.parse()
-                ebvud.replacer.cpp.editor.set_default()
-                ebvud.replacer.cpp.editor.set_dim(dim=dim)
-                ebvud.replacer.cpp.editor.set_shape(shape=shape)
-                ebvud.replacer.cpp.editor.set_coeffs_indexes(coeffs_to_indexes=coeffs_to_indexes)
-
-                # make cpp for border values:
-                ebvud_cpp = ebvud.replacer.cpp.make_cpp()
-                border_values_parsed_underiv.append(ebvud_cpp)
 
             ebv = Equation(bv)
             ebv.parser.parse()
@@ -239,4 +225,22 @@ class GenCppCommon():
                                  diffMethod='borders',
                                  btype=btype, side=side_num,
                                  func=ebv_cpp)
+        
+        if border_values_underiv is not None:
+            border_values_parsed_underiv = []
+            for bv in border_values_underiv:
+                # fir Dirichlet only:
+                ebvud = Equation(bv)
+                ebvud.parser.parse()
+                ebvud.replacer.cpp.editor.set_default()
+                ebvud.replacer.cpp.editor.set_dim(dim=dim)
+                ebvud.replacer.cpp.editor.set_shape(shape=shape)
+                ebvud.replacer.cpp.editor.set_coeffs_indexes(coeffs_to_indexes=coeffs_to_indexes)
+
+                # make cpp for border values:
+                ebvud_cpp = ebvud.replacer.cpp.make_cpp()
+                border_values_parsed_underiv.append(ebvud_cpp)
+        else:
+            border_values_parsed_underiv = None
+
         return((border_values_parsed, border_values_parsed_underiv))
