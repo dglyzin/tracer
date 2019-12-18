@@ -20,7 +20,7 @@ class Postproc():
                 # replace right side with border_values:
                 prefixs = [pv[:pv.find("=")+1]
                            for pv in param.parsedValues]
-                param.parsedValues = [prefix+param.border_values_parsed_underiv[idx]
+                param.parsedValues = [prefix+param.border_values_parsed[idx]
                                       for idx, prefix in enumerate(prefixs)]
             # print(param.parsedValues)
 
