@@ -31,5 +31,7 @@ ManualHeat/*
 *.zip
 *.out
 *.nfs000*
+dist/project_folder/settings/*.json
+dist/tests/settings/*.json
 
 TAGS
