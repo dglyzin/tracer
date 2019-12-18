@@ -28,15 +28,17 @@ requirejs.config({
 // your application logic in there.
 // 
 requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/main_tree',
-	   'modules/models_2d_editor', 'modules/patterns_editor'],
-	  function($, ui, mtree, tmeditor, tpeditor){
+	   'modules/models_2d_editor', 'modules/patterns_editor',
+	   'modules/equations_table'],
+	  function($, ui, mtree, tmeditor, tpeditor, tetable){
 
 	      var self = this;
 	      
 	      // boards:
 	      self.boards = {
 		  models_envs: new tmeditor.Board(),
-		  patterns_editor: new tpeditor.Board()
+		  patterns_editor: new tpeditor.Board(),
+		  equations_mode: new tetable.ETable(self)
 	      };
 	      
 	      // board for patterns:
@@ -65,8 +67,8 @@ requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/main_tree',
 	      };
 
 	      // create tree:
-	      var tree = new mtree.MTree(self, "api/tree");
-
+	      self.tree = new mtree.MTree(self, "api/tree");
+	      
 	      console.log("all files loaded");
 	      
 	      $( document ).ready(function() {

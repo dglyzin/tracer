@@ -17,6 +17,7 @@ define(['ttree'],
 
 	       var self = this;
 	       self.net = net;
+	       self.url = url;
 
 	       self.env_content = ["bounds", "centrals", "initials"];
 
@@ -74,6 +75,7 @@ define(['ttree'],
 		       // console.log(to_send);
 
 		       var succ = function(recived_data){
+			   recived_data["out"]["in"] = to_send;
 			   console.log("recived_data = ", recived_data);
 			   var entries_idxs = [];
 			   
@@ -87,9 +89,23 @@ define(['ttree'],
 			   console.log(data.node.title);
 			   console.log("entries_idxs = ", entries_idxs);
 			   if(parent.type=="env"){
+			       // if recived_data["out"]["content_type"] == equations
+			       // self.net.update("equations_editor")
+			       // self.net.update("field_editor")
 			       // load env content:
-			       self.net.boards[self.net.current_mode].load(recived_data["out"]);
-			   }
+			       console.log("self.net.current_mode = ", self.net.current_mode);       
+			       if (recived_data["out"]["content_type"] == "equations"){
+				   self.net.update("equations_mode");
+				   // TODO to_send
+				   self.net.boards[self.net.current_mode].load(recived_data["out"]);
+			       }
+			       else{
+				   // (recived_data["out"]["content_type"] == "centrals")
+				   self.net.update("models_envs");
+				   // TODO to_send
+				   self.net.boards[self.net.current_mode].load(recived_data["out"]);
+				   }
+			       }
 			   else{
 			       // load children:
 			       data.node.fromDict({
@@ -132,8 +148,10 @@ define(['ttree'],
 			   // var parent = self.tree.get_parent_node(selected_node);
 			   // var parent_node = selected_node; 
 			   if (selected_node.type != "env_content"){
-			       throw new Error("cannot save node with type: "
-					       + selected_node.type);
+			       var msg = ("cannot save node with type: "
+					  + selected_node.type);
+			       alert(msg);
+			       throw new Error(msg);
 			   }
 			 
 			   // var parents_list = self.tree.get_parents_list(selected_node);
@@ -164,8 +182,10 @@ define(['ttree'],
 			   var node_dict = selected_node.toDict();
 			   if(node_dict["type"] != "folder"
 			      & node_dict["type"] != "env"){
-			       throw new Error("rename for not supported type:"
-					       + node_dict["type"]);
+			       var msg = ("rename for not supported type:"
+					  + node_dict["type"]);
+			       alert(msg);
+			       throw new Error(msg);
 			       return;
 			   }
 			   var x = self.tree.menu.offset[0];
@@ -193,8 +213,10 @@ define(['ttree'],
 			   var parents_list = self.tree.get_parents_list(parent_node);
 			   if(parent_node_dict["type"] != "folder" &
 			      parent_node_dict["type"] != "envs_root"){
-			       throw new Error("mk folder for not supported type:"
-					       + parent_node_dict["type"]);
+			       var msg = ("mk folder for not supported type:"
+					  + parent_node_dict["type"]);
+			       alert(msg);
+			       throw new Error(msg);
 			       return;
 			   }
 			   var x = self.tree.menu.offset[0];
@@ -225,8 +247,10 @@ define(['ttree'],
 			   var parents_list = self.tree.get_parents_list(parent_node);
 			   if(parent_node_dict["type"] != "folder" &
 			      parent_node_dict["type"] != "envs_root"){
-			       throw new Error("mk folder for not supported type:"
-					       + parent_node_dict["type"]);
+			       var msg = ("mk folder for not supported type:"
+					  + parent_node_dict["type"]);
+			       alert(msg);
+			       throw new Error(msg);
 			       return;
 			   }
 			   var x = self.tree.menu.offset[0];
@@ -256,8 +280,10 @@ define(['ttree'],
 			   if(selected_node_dict["type"] != "folder" &
 			      selected_node_dict["type"] != "envs_root" &
 			      selected_node_dict["type"]!= "env"){
-			       throw new Error("cannot remove node with type: "
-					       + selected_node_dict["type"]);
+			       var msg = ("cannot remove node with type: "
+					  + selected_node_dict["type"]);
+			       alert(msg);
+			       throw new Error(msg);
 			   }
 			   var check_empty = true;
 			   if(selected_node_dict["type"] == "env")

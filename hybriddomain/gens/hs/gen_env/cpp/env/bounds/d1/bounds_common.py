@@ -167,13 +167,16 @@ class GenCommon(GenBaseCommon, GenCppCommon):
             # for Dirichlet bound
             if bound.btype == 0:
                 func = self.get_func_for_dirichlet(*args)
-
+                funcName = func[0]
+                border_values = list(func[1])
+                border_values_underiv = list(func[2])
             # for Neumann bound
             elif bound.btype == 1:
                 func = self.get_func_for_neumann(*args)
+                funcName = func[0]
+                border_values = list(func[1])
+                border_values_underiv = None
 
-            funcName = func[0]
-            border_values = list(func[1])
             btype = bound.btype
         else:
             # if not, use default
@@ -184,12 +187,14 @@ class GenCommon(GenBaseCommon, GenCppCommon):
 
             funcName = func[0]
             border_values = func[1]
-            btype = 1
+            border_values_underiv = list(func[2])
+            btype = 0
             boundNumber = -1
-
+        
         args = (eSystem, model, blockNumber, btype,
-                side_num, border_values)
+                side_num, border_values, border_values_underiv)
         parsed = self.parse_equations(*args)
+
         # print("bound bug debug:")
         # print(parsed)
 
@@ -213,6 +218,7 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         bParams.boundName = determineNameOfBoundary(side_num)
         bParams.parsedValues = parsed[0]
         bParams.border_values_parsed = parsed[1]
+        bParams.border_values_parsed_underiv = parsed[2]
         bParams.original = [e.sent for e in eSystem.eqs]
         # END FOR
 

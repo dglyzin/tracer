@@ -110,7 +110,7 @@
     ],
     "Hardware": [
         {
-            "Name": "cnode5",
+            "Name": "*",
             "CpuCount": 1,
             "CpuMemory": [
                 56
@@ -136,6 +136,7 @@
     "Plots": [
         {
             "Title": "u(t,x)",
+            "Name": "no_name_plot",
             "Period": 0.1,
             "Value": [
                 "U",

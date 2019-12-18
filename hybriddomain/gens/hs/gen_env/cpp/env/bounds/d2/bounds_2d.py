@@ -198,13 +198,15 @@ class GenCommon(GenBaseCommon, GenCppCommon):
                 # for Dirichlet bound
                 if btype == 0:
                     func = self.get_func_for_dirichlet(*args)
-
+                    funcName = func[0]
+                    border_values = list(func[1])
+                    border_values_underiv = list(func[2])
                 # for Neumann bound
                 elif btype == 1:
                     func = self.get_func_for_neumann(*args)
-
-                funcName = func[0]
-                border_values = list(func[1])
+                    funcName = func[0]
+                    border_values = list(func[1])
+                    border_values_underiv = None
 
             else:
 
@@ -215,16 +217,18 @@ class GenCommon(GenBaseCommon, GenCppCommon):
 
                 funcName = func[0]
                 border_values = func[1]
+                border_values_underiv = list(func[2])
 
             args = (eSystem, model, bParams.blockNumber, btype,
-                    bParams.side_num, border_values)
-            parsed, bv_parsed = self.parse_equations(*args)
+                    bParams.side_num, border_values, border_values_underiv)
+            parsed = self.parse_equations(*args)
 
             bParams.funcName = funcName
             bParams.btype = btype
             bParams.equation = eSystem
-            bParams.parsedValues = parsed
-            bParams.border_values_parsed = bv_parsed
+            bParams.parsedValues = parsed[0]
+            bParams.border_values_parsed = parsed[1]
+            bParams.border_values_parsed_underiv = parsed[2]
             bParams.original = [e.sent for e in eSystem.eqs]
 
             # for comment
@@ -331,11 +335,12 @@ class GenCommon(GenBaseCommon, GenCppCommon):
         vParams.btype = vertex_edge.btype
 
         eSystem = vertex_edge.equation.copy()
-        parsedValues, bv_parsed = self.parse_equations_vertex(vertex, vertex_edge, eSystem)
-        vParams.parsedValues = parsedValues
-        vParams.border_values_parsed = bv_parsed
+        parsed = self.parse_equations_vertex(vertex, vertex_edge, eSystem)
+        vParams.parsedValues = parsed[0]
+        vParams.border_values_parsed = parsed[1]
+        vParams.border_values_parsed_underiv = parsed[2]
         # vParams.parsedValues = vertex_edge.parsedValues
-
+        
         vParams.equation = eSystem
 
         logger.debug("parsedValues:")

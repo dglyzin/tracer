@@ -1,5 +1,5 @@
 {
-    "Workspace": "/clusterhome/valdecar/projects/lab/workspace", 
-    "TracerFolder": "/clusterhome/valdecar/projects/lab",
+    "Workspace": "/clusterhome/hpc/tracer/workspace", 
+    "TracerFolder": "/clusterhome/hpc/tracer",
     "Old": "/clusterhome/dglyzin/Tracer"
 }
