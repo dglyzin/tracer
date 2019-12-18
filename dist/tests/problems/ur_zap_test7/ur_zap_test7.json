@@ -1,0 +1,135 @@
+{
+    "ProjectName": "Heat_test", 
+    "Solver": {
+        "SolverIdx": 0, 
+        "StartTime": 0.0, 
+        "FinishTime": 10, 
+        "TimeStep": 0.001, 
+        "SaveInterval": 0.1, 
+        "AbsTolerance": 0.001, 
+        "RelTolerance": 0.001
+    }, 
+    "Grid": {
+        "Dimension": 1, 
+        "dx": 0.01, 
+        "dy": 1, 
+        "dz": 1
+    }, 
+    "Blocks": [
+        {
+            "Name": "MainBlock", 
+            "Offset": {
+                "x": 0
+            }, 
+            "Size": {
+                "x": 1
+            }, 
+            "DefaultEquation": 0, 
+            "DefaultInitial": 0, 
+            "BoundRegions": [
+                
+            ], 
+            "InitialRegions": [], 
+            "EquationRegions": []
+        }
+    ], 
+    "Interconnects": [], 
+    "Equations": [
+        {
+            "Name": "1D heat 1", 
+            "Vars": [
+                "x"
+            ], 
+            "System": [
+                "U'= 3.0/(1+0.7)*(1+0.7*(1-V*0.005)-U(t-0.5)*0.01)*U",
+                "V'= 2.0/(1+0.8)*(1+0.8*(1-U*0.01)-V(t-0.6)*0.005)*V"
+            ]
+        }
+    ], 
+    "EquationParams": {
+        "Params": [
+            "r",
+            "a",
+            "k",
+            "h",
+            "s",
+            "d",
+            "f",
+            "g"
+        ], 
+        "ParamValues": [
+            {
+                "r": 3,
+                "a": 0.7,
+                "k": 100,
+                "h": 0.5,
+                "s": 2,
+                "d": 0.8,
+                "f": 200,
+                "g": 0.6
+            }
+        ], 
+        "DefaultParamsIndex": 0
+    }, 
+    "Bounds": [
+        {
+            "Name": "Dirichlet 1", 
+            "Type": 0, 
+            "Values": [
+                "0.0"
+            ], 
+            "Derivative": [
+                "0.0"
+            ]
+        }
+    ], 
+    "Initials": [
+        {
+            "Name": "Initial values 0", 
+            "Values": [
+                "24.0",
+                "35.0"
+            ]
+        }
+    ], 
+    "Hardware": [
+        {
+            "Name": "cnode4", 
+            "CpuCount": 1, 
+            "CpuMemory": [
+                56
+            ], 
+            "GpuCount": 3, 
+            "GpuMemory": [
+                5, 
+                5, 
+                5
+            ]
+        }
+    ], 
+    "Mapping": {
+        "IsMapped": true, 
+        "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            }
+        ]
+    }, 
+    "Plots": [ 
+	{
+            "Title": "u(t,x)", 
+            "Period": 0.1,
+            "Value": ["U","V"]
+        }
+    ],
+
+    "Results":[
+        {
+            "Name": "u", 
+            "Period": 0.1,
+            "Value": ["U","V"]
+        }
+    ]
+}

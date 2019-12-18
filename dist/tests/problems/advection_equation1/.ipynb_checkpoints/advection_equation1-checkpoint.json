@@ -68,23 +68,23 @@
     }, 
     "Bounds": [
         {
-            "Name": "Neyman1", 
-            "Type": 1, 
+            "Name": "Dirihle1", 
+            "Type": 0, 
             "Values": [
-                "cos(0+t)"
+                "sin(0+t)"
             ], 
             "Derivative": [
-                "0"
+                "cos(0+t)"
             ]
         },
         {
-            "Name": "Neyman2", 
-            "Type": 1, 
+            "Name": "Dirihle2", 
+            "Type": 0, 
             "Values": [
-                "cos(3.1415926+t)"
+                "sin(3.1415926+t)"
             ], 
             "Derivative": [
-                "0"
+                "cos(3.1415926+t)"
             ]
         }
     ], 
