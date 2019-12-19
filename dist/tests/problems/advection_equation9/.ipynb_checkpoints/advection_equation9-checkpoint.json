@@ -68,23 +68,23 @@
     }, 
     "Bounds": [
         {
-            "Name": "Dirihle1", 
-            "Type": 0, 
+            "Name": "Neyman1", 
+            "Type": 1, 
             "Values": [
-                "10-(x+t)"
+                "-1"
             ], 
             "Derivative": [
-                "-1"
+                "0"
             ]
         },
         {
-            "Name": "Dirihle2", 
-            "Type": 0, 
+            "Name": "Neyman2", 
+            "Type": 1, 
             "Values": [
-                "10-(x+t)"
+                "-1"
             ], 
             "Derivative": [
-                "-1"
+                "0"
             ]
         }
     ], 

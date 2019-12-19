@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 20.0, 
+        "FinishTime": 10.0, 
         "TimeStep": 0.0001, 
         "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
@@ -49,7 +49,7 @@
                 "x"
             ], 
             "System": [
-                "U'=a*D[U,{x,1}]"
+                "U'=-a*D[U,{x,1}]"
             ]
         }
     ], 
@@ -68,23 +68,23 @@
     }, 
     "Bounds": [
         {
-            "Name": "Dirihle1", 
-            "Type": 0, 
+            "Name": "Neyman1", 
+            "Type": 1, 
             "Values": [
-                "10-(x+t)"
+                "10-(x-t)-(x-t)"
             ], 
             "Derivative": [
-                "-1"
+                "0"
             ]
         },
         {
-            "Name": "Dirihle2", 
-            "Type": 0, 
+            "Name": "Neyman2", 
+            "Type": 1, 
             "Values": [
-                "10-(x+t)"
+                "10-(x-t)-(x-t)"
             ], 
             "Derivative": [
-                "-1"
+                "0"
             ]
         }
     ], 
@@ -92,7 +92,7 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "10-x"
+                "x*(10-x)"
             ]
         }
     ], 

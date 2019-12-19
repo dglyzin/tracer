@@ -68,23 +68,23 @@
     }, 
     "Bounds": [
         {
-            "Name": "Neyman1", 
-            "Type": 1, 
+            "Name": "Dirihle1", 
+            "Type": 0, 
             "Values": [
-                "10-(0+t)-(0+t)"
+                "(x+t)*(10-(x+t))"
             ], 
             "Derivative": [
-                "0"
+                "10-(0+t)-(0+t)"
             ]
         },
         {
-            "Name": "Neyman2", 
-            "Type": 1, 
+            "Name": "Dirihle2", 
+            "Type": 0, 
             "Values": [
-                "10-(10+t)-(10+t)"
+                "(x+t)*(10-(x+t))"
             ], 
             "Derivative": [
-                "0"
+                "10-(10+t)-(10+t)"
             ]
         }
     ], 
@@ -98,7 +98,7 @@
     ], 
     "Hardware": [
         {
-            "Name": "cnode3", 
+            "Name": "cnode5", 
             "CpuCount": 1, 
             "CpuMemory": [
                 56
