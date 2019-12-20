@@ -4,7 +4,7 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 10.0, 
-        "TimeStep": 0.000001, 
+        "TimeStep": 0.00001, 
         "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
@@ -49,7 +49,7 @@
                 "x"
             ], 
             "System": [
-                "U'=D[U,{x,2}]"
+                "U'=D[U,{x,2}]-sin(x)"
             ]
         }
     ], 
@@ -71,10 +71,10 @@
             "Name": "Dirichlet1111", 
             "Type": 0, 
             "Values": [
-                "t"
+                "0"
             ], 
             "Derivative": [
-                "1"
+                "0.0"
             ]
         }
     ], 
