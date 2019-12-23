@@ -528,7 +528,7 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None,
         else:
             create_folder(client, hs_problems)
         '''
-        logger.info('\nfiles/folders routine complited')
+        logger.info('\nfiles/folders routine completed')
 
         #3 Run preprocessor on json
         logger.info('\nRunning preprocessor:')
