@@ -99,9 +99,9 @@ def get_mp4_filename(plotName, plotIdx):
            + str(plotIdx) + ".mp4")
 
 
-def get_reuslt_filename(projectName, resIdx, valIdx):
+def get_result_filename(resName):
     '''For createResultFile func.'''
-    return(projectName+"-block"+str(resIdx)+"-value"+str(valIdx)+".out")
+    return(resName+".out")
 
 
 class Params(dict):
@@ -352,7 +352,7 @@ def getResults(projectDir, projectName, binFile,
                info, dimension,
                countZ, countY, countX,
                offsetZ, offsetY, offsetX,
-               cellSize, nameEquations, resultExpression,
+               cellSize, nameEquations, resultExpressions,
                block_idx):
     '''
         returns time and requested value from state file binfile
@@ -377,7 +377,12 @@ def getResults(projectDir, projectName, binFile,
     #    idx = 0
     # res = data[0,0,:,idx]
     # res = dictfun[countfun]
-    res = eval(resultExpression, dictfun)
+    if type(resultExpressions) != list:
+        res = eval(resultExpressions, dictfun)
+    else:
+        res = []
+        for resultExpression in resultExpressions:
+            res.append(eval(resultExpression, dictfun))
     # filename = os.path.join(projectDir, (projectName+"-res"
     #                                      + str(resIdx) + postfix + ".txt"))
 
@@ -403,11 +408,11 @@ def wSavePlots2D(args):
     return(savePlots2D(*args))
 
 
-def createResultFile(projectDir, projectName, resIdx, valIdx, resLog):
-    logger.info("Creating out file: %s" % (str(resIdx)))
+def createResultFile(projectDir, resName, resLog):
+    logger.info("Creating out file: %s" % (resName))
 
     outfileNamePath = (projectDir
-                       + get_reuslt_filename(projectName, resIdx, valIdx))
+                       + get_result_filename(resName))
 
     # for removing truncation (like: [1, ..., 3]):
     np.set_printoptions(threshold=np.inf)
@@ -562,7 +567,8 @@ def createMovie(projectDir, projectName, modelParamsPath):
     for plotIdx in range(pCount):
         # for plotIdx, plot in enumerate(mParams['plotList']):
         # t1 = time.time()
-        block_idx = plotIdx
+        #TODO iterate through blocks to combine whole domain
+        block_idx = 0
         
         out = getDomainProperties(info, block_idx)
         countZ, countY, countX, offsetZ, offsetY, offsetX = out
@@ -628,7 +634,7 @@ def createMovie(projectDir, projectName, modelParamsPath):
             log = pool.map(saveResultFunc, arg_list)
 
         if plotType == list:
-            logger.info('ЛИСТ! Ы')
+            logger.info('List!')
             logData = []
             logger.info("plot[value]:")
             logger.info(plot["Value"])
@@ -723,38 +729,37 @@ def createMovie(projectDir, projectName, modelParamsPath):
     # resIdx = 0
     # logger.info('aaaa ', resultlistname)
     for result_idx in range(rCount):
-        block_idx = result_idx
+        # TODO iterate through blocks to combine whole domain
+        block_idx = 0
 
         out = getDomainProperties(info, block_idx)
         countZ, countY, countX, offsetZ, offsetY, offsetX = out
 
         resultItem = mParams['resultList'][result_idx]
 
-        # in case for single value:
-        if type(resultItem["Value"]) != list:
-            resultItem["Value"] = [resultItem["Value"]]
+        # in case of single value:
+        #if type(resultItem["Value"]) != list:
+        #    resultItem["Value"] = [resultItem["Value"]]
       
-        for resultValueIdx, resultValue in enumerate(resultItem["Value"]):
+        resultValues = resultItem["Value"]# can be one element or can be list
+        pool = mp.Pool(processes=16)
+        # here plotFileLists is list, generated
+        # by solver, and extracted with getBinFilesByPlot:
+        arg_list = [(projectDir, projectName,
+                     binFile, info, dimension,
+                     countZ, countY, countX,
+                     offsetZ, offsetY, offsetX, cellSize,
+                     dep_vars_names,
+                     resultValues, block_idx)
+                    for idx, binFile in enumerate(
+                            plotFileLists[pCount + result_idx])]
+        results = pool.map(wGetResults, arg_list)
+        logger.info('skks:')
+        logger.info(projectDir)
+        logger.info(resultItem)
+        logger.info(resultValues)
 
-            pool = mp.Pool(processes=16)
-
-            # here plotFileLists is list, generated
-            # with solver, and extracted with getBinFilesByPlot:
-            arg_list = [(projectDir, projectName,
-                         binFile, info, dimension,
-                         countZ, countY, countX,
-                         offsetZ, offsetY, offsetX, cellSize,
-                         dep_vars_names,
-                         resultValue, block_idx)
-                        for idx, binFile in enumerate(
-                                plotFileLists[pCount + result_idx])]
-            results = pool.map(wGetResults, arg_list)
-            logger.info('skks:')
-            logger.info(projectDir)
-            logger.info(resultItem)
-            logger.info(resultValue)
-            createResultFile(projectDir, resultItem["Name"],
-                             result_idx, resultValueIdx, results)
+        createResultFile(projectDir, resultItem["Name"], results)
         # resIdx += 1
     logger.info(mParams['namesEquations'])
     logger.info("Done")
