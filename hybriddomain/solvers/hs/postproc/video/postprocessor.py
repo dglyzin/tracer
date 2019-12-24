@@ -393,7 +393,7 @@ def getResults(projectDir, projectName, binFile,
     #    f.write(t)
     # savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
     # logger.info("produced png: "+ filename)
-    return t, res  # "produced text result: "+ filename
+    return t, np.array(res)  # "produced text result: "+ filename
 
 
 def wGetResults(args):
