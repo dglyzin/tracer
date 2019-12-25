@@ -1,5 +1,14 @@
 from hybriddomain.solvers.mini_solver.python.bounds import Bounds
 
+from scipy.misc import imread
+from scipy.misc import imsave
+import base64
+import json
+import os
+from functools import reduce
+import sympy
+import numpy as np
+
 
 class Solver():
     
@@ -12,13 +21,18 @@ class Solver():
     def run(self, result, source,
             csIdxs, cFuncs,
             bsIdxs, btypes, bFuncs,
-            ITERATION_COUNT):
+            ITERATION_COUNT, progress=None):
 
         # donot touch to border:
         idxXs = range(1, source.shape[0]-1)
         idxYs = range(1, source.shape[1]-1)
 
         for step in range(ITERATION_COUNT):
+            
+            # update progress:
+            if progress is not None:
+                progress.succ(step)
+
             for idxX in idxXs:
                 for idxY in idxYs:
                     on_bounds = self.bounds.set_bounds(idxX, idxY,
@@ -37,13 +51,187 @@ class Solver():
         return(result)
 
 
-if __name__ == "__main__":
+def run_files(model_path):
+
+    source = imread(os.path.join(model_path, "initials_img.png"), mode="L")
+    csIdxs = imread(os.path.join(model_path, "centrals_img.png"), mode="L")
+    bsIdxs = imread(os.path.join(model_path, "bounds_img.png"), mode="L")
+    with open(os.path.join(model_path, "centrals_colors_table.json")) as f:
+        centrals_colors_table = json.loads(f.read())
+    centrals_colors_table = [[int(col) for col in row]
+                             for row in centrals_colors_table]
+
+    with open(os.path.join(model_path, "bounds_colors_table.json")) as f:
+        bounds_colors_table = json.loads(f.read())
+    bounds_colors_table = [[int(col) if col_idx != 2 else col
+                            for col_idx, col in enumerate(row)]
+                           for row in bounds_colors_table]
+
+    with open(os.path.join(model_path, "initials_colors_table.json")) as f:
+        initials_colors_table = json.loads(f.read())
+    initials_colors_table = [[int(col) for col_idx, col in enumerate(row)]
+                             for row in initials_colors_table]
+
+    print("centrals_colors_table:")
+    print(centrals_colors_table)
+    print("bounds_colors_table:")
+    print(bounds_colors_table)
+    print("initials_colors_table:")
+    print(initials_colors_table)
+
+    with open(os.path.join(model_path, "equations_table.json")) as f:
+        equations_table = json.loads(f.read())
+    
+    with open(os.path.join(model_path, "equations_bs_table.json")) as f:
+        equations_bs_table = json.loads(f.read())
+    
+    # convert indexes from colors to equations numbers:
+    print("bsIdxs:")
+    print(bsIdxs)
+
+    # for check if all equations available:
+    f = lambda acc, x: acc+[x] if (x not in [y for y in acc]) else acc    
+    centrals_equations_numbers = [row[1] for row in centrals_colors_table]
+    centrals_equations_numbers = list(reduce(f, centrals_equations_numbers, []))
+    
+    # add default value:
+    if 0 not in centrals_equations_numbers:
+        centrals_equations_numbers.append(0)
+
+    bounds_eq_number_btype = dict([(row[1], row[2]) for row in bounds_colors_table])
+    bounds_equations_numbers = [row[1] for row in bounds_colors_table]
+    bounds_equations_numbers = list(reduce(f, bounds_equations_numbers, []))
+
+    # add default value:
+    # if 0 not in bounds_equations_numbers:
+    #     bounds_equations_numbers.append(0)
+    # if 0 not in bounds_eq_number_btype:
+        
+    print("centrals_equations_numbers:")
+    print(centrals_equations_numbers)
+    print("bounds_eq_numbers_btype:")
+    print(bounds_eq_number_btype)
+
+    print("bounds_equations_numbers:")
+    print(bounds_equations_numbers)
+
+    for row in centrals_colors_table:
+        csIdxs[csIdxs == row[0]] = row[1]
+    for row in bounds_colors_table:
+        bsIdxs[bsIdxs == row[0]] = row[1]
+
+    unbound_value = 0
+
+    def fix_missing_colors(idxs, equations_numbers):
+        '''Put all unknown colors to default value'''
+
+        or_args = [idxs != eq_num for eq_num in equations_numbers]
+        or_func = np.vectorize(lambda x, y: x and y)
+        condition = reduce(lambda acc, elm: or_func(acc, elm),
+                           or_args[1:], or_args[0])
+        idxs[condition] = unbound_value
+    fix_missing_colors(csIdxs, centrals_equations_numbers)
+    fix_missing_colors(bsIdxs, bounds_equations_numbers)
+
+    print("csIdxs:")
+    print(csIdxs)
+    print("bsIdxs:")
+    print(bsIdxs)
+    
+    # FOR cFuncs:
+    cFuncs = {}
+    for eq_num in centrals_equations_numbers:
+        if eq_num not in range(len(equations_table)):
+            raise(BaseException("no equation for num: %s"
+                                % (eq_num)))
+        # only on equation in system, for now:
+        cFuncs[eq_num] = (lambda idxX, idxY, u, dt, dx, dy:
+                          eval(equations_table[eq_num][0]))
+    print("equations_table:")
+    print(equations_table)
+    print("cFuncs:")
+    print(cFuncs)
+    print(cFuncs[0](0, 0,
+                    {(0, 0): 0, (1, 0): 1, (-1, 0): 1,
+                     (0, 1): 1, (0, -1): 1},
+                    0.1, 0.1, 0.1))
+    # END FOR
+
+    # FOR bFuncs:
+    bFuncs = {}
+    btypes = {}
+
+    for eq_num in bounds_eq_number_btype:
+        if eq_num not in range(len(equations_bs_table)):
+            raise(BaseException("no equation for num: %s"
+                                % (eq_num)))
+        # only on equation in system, for now:
+        bFuncs[eq_num] = (lambda idxX, idxY:
+                          eval(equations_bs_table[eq_num][0]))
+        btype = bounds_eq_number_btype[eq_num]
+        if btype == "Dirichlet":
+            btypes[eq_num] = 0
+        else:
+            btypes[eq_num] = 1
+    # for default
+    if unbound_value not in btypes:
+        btypes[unbound_value] = -1  # otherwise all bound will be Dirichlet
+    print("equations_bs_table:")
+    print(equations_bs_table)
+    print("bFuncs:")
+    print(bFuncs)
+    print("btypes:")
+    print(btypes)
+    # END FOR
+
+    ITERATION_COUNT = 3
+    result = run_cmd(source, csIdxs, cFuncs,
+                     bsIdxs, btypes, bFuncs, unbound_value,
+                     ITERATION_COUNT)
+
+    import matplotlib.pyplot as plt
+    plt.imshow(result)
+    plt.show()
+    print("result:")
+    print(result)
+
+
+def test_files():
+    import os
+    path = os.getcwd()
+    print("path")
+    print(path)
+    hd = path.split("solvers")[0]
+    model_path = os.path.join(hd, "gui", "2d", "web", "model",
+                              "data", "physics", "n-body", "test0")
+    print("model_path:")
+    print(model_path)
+    run_files(model_path)
+
+
+def run_cmd(source, csIdxs, cFuncs,
+            bsIdxs, btypes, bFuncs, unbound_value,
+            ITERATION_COUNT):
+
+    result = source.copy()
+
+    from hybriddomain.solvers.hs.remoterun.progresses.progress_cmd import ProgressCmd
+    progress_cmd = ProgressCmd(ITERATION_COUNT)
+
+    solver = Solver(unbound_value)
+
+    solver.run(result, source, csIdxs, cFuncs,
+               bsIdxs, btypes, bFuncs,
+               ITERATION_COUNT, progress_cmd)
+    return(result)
+
+
+def test_cmd():
 
     import numpy as np
 
     source = np.ones((10, 10))
     # source = np.ones((100, 100))
-    result = source.copy()
 
     csIdxs = np.zeros(source.shape)
 
@@ -105,14 +293,21 @@ if __name__ == "__main__":
     btypes = [1, 1, 1, 1, 1]
 
     bFuncs = [lambda idxX, idxY: 10*i for i in range(len(btypes))]
-    
-    solver = Solver(unbound_value)
-    
+
     ITERATION_COUNT = 10
-    solver.run(result, source, csIdxs, cFuncs, bsIdxs, btypes, bFuncs,
-               ITERATION_COUNT)
+
+    result = run_cmd(source, csIdxs, cFuncs,
+                     bsIdxs, btypes, bFuncs, unbound_value,
+                     ITERATION_COUNT)
+
     import matplotlib.pyplot as plt
     plt.imshow(result)
     plt.show()
     print("result:")
     print(result)
+
+
+if __name__ == "__main__":
+    
+    test_files()
+    # test_cmd()

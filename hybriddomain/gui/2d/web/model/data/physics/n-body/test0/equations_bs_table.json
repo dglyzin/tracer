@@ -1,0 +1,11 @@
+[
+    [
+        "sympy.sin(idxX)"
+    ],
+    [
+        "sympy.cos(idxY)"
+    ],
+    [
+        "1"
+    ]
+]

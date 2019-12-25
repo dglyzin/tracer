@@ -46,6 +46,8 @@ class Bounds():
         x
         '''
         bwin_main = bsIdxs[self.idxXs_main(idxX), self.idxYs_main(idxY)]
+        # print("bwin_main:")
+        # print(bwin_main)
         if (bwin_main != self.unbound_value).any():
             # if we near some border
             # (i.e. it intersects with main part of win):

@@ -1,0 +1,14 @@
+[
+    [
+        "u[idxX, idxY]+ dt*10*((u[idxX+1, idxY]-2*u[idxX, idxY] + u[idxX-1, idxY])/dx**2+ (u[idxX, idxY+1]-2*u[idxX, idxY] + u[idxX, idxY-1])/dy**2)"
+    ],
+    [
+        "u[idxX, idxY]+ dt*0.1*((u[idxX+1, idxY]-2*u[idxX, idxY] + u[idxX-1, idxY])/dx**2+ (u[idxX, idxY+1]-2*u[idxX, idxY] + u[idxX, idxY-1])/dy**2)"
+    ],
+    [
+        "u[idxX, idxY]+ dt*0.01*((u[idxX+1, idxY]-2*u[idxX, idxY] + u[idxX-1,idxY])/dx**2+ (u[idxX, idxY+1]-2*u[idxX, idxY] + u[idxX, idxY-1])/dy**2)"
+    ],
+    [
+        "u[idxX, idxY]+ dt*0.03*((u[idxX+1, idxY]-2*u[idxX, idxY] + u[idxX-1,idxY])/dx**2+ (u[idxX, idxY+1]-2*u[idxX, idxY] + u[idxX, idxY-1])/dy**2)"
+    ]
+]
