@@ -1,11 +1,11 @@
 {
     "ProjectName": "Heat_test", 
     "Solver": {
-        "SolverIdx": 0, 
+        "SolverIdx": 2, 
         "StartTime": 0.0, 
-        "FinishTime": 30, 
+        "FinishTime": 10, 
         "TimeStep": 0.001, 
-        "SaveInterval": 0.01, 
+        "SaveInterval": 0.1, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
@@ -41,8 +41,8 @@
                 "x"
             ], 
             "System": [
-                "U'= V-2*U",
-                "V'= 2*U-3*V"
+                "U'= U*V-4",
+                "V'= (U-4)*(V-U)"
             ]
         }
     ], 
@@ -117,7 +117,7 @@
     "Results":[
         {
             "Name": "u", 
-            "Period": 0.1,
+            "Period": 0.01,
             "Value": ["U","V"]
         }
     ]

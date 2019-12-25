@@ -1,7 +1,7 @@
  {
     "ProjectName": "Heat_test", 
     "Solver": {
-        "SolverIdx": 0, 
+        "SolverIdx": 1, 
         "StartTime": 0.0, 
         "FinishTime": 10.0, 
         "TimeStep": 0.00001, 
