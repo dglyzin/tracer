@@ -40,9 +40,9 @@ class StdoutProgresses():
     
 
 def test():
-    lines = ["there is 11% complited"]
-    lines.append("there is 1 % complited")
-    lines.append("there is 100 % complited")
+    lines = ["there is 11% completed"]
+    lines.append("there is 1 % completed")
+    lines.append("there is 100 % completed")
     
     progress = StdoutProgresses()
     for line in lines:
