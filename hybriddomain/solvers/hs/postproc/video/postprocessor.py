@@ -669,7 +669,7 @@ def createMovie(projectDir, projectName, modelParamsPath):
                       + str(int(float(dataTime[timeIdx])
                                 / float(total_time)*100))
                       + "% "+str(dataTime[timeIdx])+" "+str(total_time)),
-                     block_idx)
+                     plotIdx)
                     for timeIdx, val in enumerate(dataVals)]
 
         log = pool.map(saveResultFunc, arg_list)
