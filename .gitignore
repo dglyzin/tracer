@@ -30,7 +30,7 @@ ManualHeat/*
 *~
 *.zip
 *.out
-!tests/problems/1dTests/Ginzburg_Landau/out/*.ou
+!tests/problems/1dTests/Ginzburg_Landau/out/*.out
 !tests/problems/1dTests/Ginzburg_Landau_params/out/*.out
 !tests/problems/2dTests/heat_block_2_ics_other_offsets/out/*.out
 *.nfs000*
