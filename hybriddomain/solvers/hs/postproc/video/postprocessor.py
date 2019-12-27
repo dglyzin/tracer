@@ -83,13 +83,13 @@ def get_img_filename(projectName, plotIdx, timeIdx):
     '''For savePlots1D, savePlots2D and therefore
     wSavePlots1D, wSavePlots2D, saveResultFunc funcs'''
 
-    return(projectName+"-block"
+    return(projectName+"-plot"
            + str(plotIdx) + "-time"+str(timeIdx) + ".png")
 
 
 def get_img_filename_avconv(projectName, plotIdx):
     '''For createVideoFile func'''
-    return(projectName+"-block"
+    return(projectName+"-plot"
            + str(plotIdx) + "-time" + "%d.png")
 
 
