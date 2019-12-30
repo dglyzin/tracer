@@ -1,11 +1,11 @@
- {
+{
     "ProjectName": "Heat_test", 
     "Solver": {
-        "SolverIdx": 0, 
+        "SolverIdx": 1, 
         "StartTime": 0.0, 
-        "FinishTime": 20.0, 
-        "TimeStep": 0.001, 
-        "SaveInterval": 0.01, 
+        "FinishTime": 10, 
+        "TimeStep": 0.0001, 
+        "SaveInterval": 0.1, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
@@ -19,10 +19,10 @@
         {
             "Name": "MainBlock", 
             "Offset": {
-                "x": 0.0
+                "x": 0
             }, 
             "Size": {
-                "x": 1.0
+                "x": 1
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -31,11 +31,10 @@
                     "BoundNumber": 0, 
                     "Side": 0
                 },
-            {
+                {
                     "BoundNumber": 0, 
                     "Side": 1
                 }
-
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
@@ -49,31 +48,29 @@
                 "x"
             ], 
             "System": [
-                "U'=a*D[U,{x,2}]+c*asin(x)*(1-U(t-1))*U"
+                "U'= D[U,{x,2}]*0.1 + a*(1-U(t-1)/b)*U"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
             "a", 
-            "b",
-            "c"
+            "b"
         ], 
         "ParamValues": [
             {
-                "a": 1, 
-                "b": 1,
-                "c": 0.8
+                "a": 3, 
+                "b": 2
             }
         ], 
         "DefaultParamsIndex": 0
     }, 
     "Bounds": [
         {
-            "Name": "Dirichlet1111", 
-            "Type": 0, 
+            "Name": "Dirichlet 1", 
+            "Type": 1, 
             "Values": [
-                "0"
+                "0.0"
             ], 
             "Derivative": [
                 "0.0"
@@ -84,7 +81,7 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "sin(x)"
+                "sin(x)*2+t+1.0"
             ]
         }
     ], 
@@ -93,7 +90,7 @@
             "Name": "*", 
             "CpuCount": 1, 
             "CpuMemory": [
-                56
+                5
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
@@ -124,7 +121,7 @@
 
     "Results":[
         {
-            "Name": "u", 
+            "Name": "U", 
             "Period": 0.1,
             "Value": "U"
         }
