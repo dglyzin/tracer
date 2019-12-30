@@ -1,3 +1,6 @@
+hybriddomain.egg-info/
+hybriddomain.egg-info/*
+hybriddomain.egg-info/**
 build/
 build/*
 build/**
