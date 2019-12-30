@@ -19,7 +19,7 @@ define(['ttree'],
 	       self.net = net;
 	       self.url = url;
 
-	       self.env_content = ["bounds", "centrals", "initials"];
+	       // self.env_content = ["bounds", "centrals", "initials"];
 
 	       var mtree = new ttree.Tree({		  
 	
@@ -97,14 +97,17 @@ define(['ttree'],
 			       if (recived_data["out"]["content_type"] == "equations"){
 				   self.net.update("equations_mode");
 				   // TODO to_send
-				   self.net.boards[self.net.current_mode].load(recived_data["out"]);
+				   
 			       }
 			       else{
-				   // (recived_data["out"]["content_type"] == "centrals")
-				   self.net.update("models_envs");
-				   // TODO to_send
-				   self.net.boards[self.net.current_mode].load(recived_data["out"]);
-				   }
+				   if (recived_data["out"]["content_type"] == "equations_bs"){
+				       self.net.update("equations_bs_mode");
+				   }else{
+				       // (recived_data["out"]["content_type"] == "centrals")
+				       self.net.update("models_envs");
+				       }
+			       }
+			       self.net.boards[self.net.current_mode].load(recived_data["out"]);
 			       }
 			   else{
 			       // load children:
