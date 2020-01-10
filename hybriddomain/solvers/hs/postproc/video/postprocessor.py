@@ -83,25 +83,24 @@ def get_img_filename(projectName, plotIdx, timeIdx):
     '''For savePlots1D, savePlots2D and therefore
     wSavePlots1D, wSavePlots2D, saveResultFunc funcs'''
 
-    return(projectName+"-block"
+    return(projectName+"-plot"
            + str(plotIdx) + "-time"+str(timeIdx) + ".png")
 
 
 def get_img_filename_avconv(projectName, plotIdx):
     '''For createVideoFile func'''
-    return(projectName+"-block"
+    return(projectName+"-plot"
            + str(plotIdx) + "-time" + "%d.png")
 
 
-def get_mp4_filename(plotName, plotIdx):
+def get_mp4_filename(plotName):
     '''For createVideoFile func'''
-    return(plotName+"-block"
-           + str(plotIdx) + ".mp4")
+    return(plotName+ ".mp4")
 
 
-def get_reuslt_filename(projectName, resIdx, valIdx):
+def get_result_filename(resName):
     '''For createResultFile func.'''
-    return(projectName+"-block"+str(resIdx)+"-value"+str(valIdx)+".out")
+    return(resName+".out")
 
 
 class Params(dict):
@@ -352,7 +351,7 @@ def getResults(projectDir, projectName, binFile,
                info, dimension,
                countZ, countY, countX,
                offsetZ, offsetY, offsetX,
-               cellSize, nameEquations, resultExpression,
+               cellSize, nameEquations, resultExpressions,
                block_idx):
     '''
         returns time and requested value from state file binfile
@@ -377,7 +376,12 @@ def getResults(projectDir, projectName, binFile,
     #    idx = 0
     # res = data[0,0,:,idx]
     # res = dictfun[countfun]
-    res = eval(resultExpression, dictfun)
+    if type(resultExpressions) != list:
+        res = eval(resultExpressions, dictfun)
+    else:
+        res = []
+        for resultExpression in resultExpressions:
+            res.append(eval(resultExpression, dictfun))
     # filename = os.path.join(projectDir, (projectName+"-res"
     #                                      + str(resIdx) + postfix + ".txt"))
 
@@ -388,7 +392,7 @@ def getResults(projectDir, projectName, binFile,
     #    f.write(t)
     # savePng1D(filename, xs, data, maxValue, minValue, t, cellSize)
     # logger.info("produced png: "+ filename)
-    return t, res  # "produced text result: "+ filename
+    return t, np.array(res)  # "produced text result: "+ filename
 
 
 def wGetResults(args):
@@ -403,11 +407,11 @@ def wSavePlots2D(args):
     return(savePlots2D(*args))
 
 
-def createResultFile(projectDir, projectName, resIdx, valIdx, resLog):
-    logger.info("Creating out file: %s" % (str(resIdx)))
+def createResultFile(projectDir, resName, resLog):
+    logger.info("Creating out file: %s" % (resName))
 
     outfileNamePath = (projectDir
-                       + get_reuslt_filename(projectName, resIdx, valIdx))
+                       + get_result_filename(resName))
 
     # for removing truncation (like: [1, ..., 3]):
     np.set_printoptions(threshold=np.inf)
@@ -433,7 +437,7 @@ def createVideoFile(projectDir, projectName, plotName, plotIdx):
     command = ("avconv -r 5 -loglevel panic -i "+projectDir
                + get_img_filename_avconv(projectName, plotIdx)
                + " -pix_fmt yuv420p -b:v 1000k -c:v libx264 "
-               + projectDir+get_mp4_filename(plotName, plotIdx))
+               + projectDir+get_mp4_filename(plotName))
     logger.info(command)
     # PIPE = subprocess.PIPE
     # proc = subprocess.Popen(command, shell=True, stdin=PIPE,
@@ -562,200 +566,148 @@ def createMovie(projectDir, projectName, modelParamsPath):
     for plotIdx in range(pCount):
         # for plotIdx, plot in enumerate(mParams['plotList']):
         # t1 = time.time()
-        block_idx = plotIdx
+        #TODO iterate through blocks to combine whole domain
+        block_idx = 0
         
         out = getDomainProperties(info, block_idx)
         countZ, countY, countX, offsetZ, offsetY, offsetX = out
         
         plot = mParams['plotList'][plotIdx]
-        '''
-        maxValue, minValue = calcMinMax(projectDir, plotFileLists[plotIdx],
-                                        info, countZ, countY, countX,
-                                        offsetZ, offsetY, offsetX,
-                                        cellSize, block_idx)
-        '''
         # t2 = time.time()
         # logger.info("Расчет минимума / максимума: ", t2 - t1)
-        plotType = type(plot['Value'])
         logger.info('plot["Value"]')
         logger.info(plot['Value'])
-        logger.info(type(plot['Value']))
+        #logger.info(type(plot['Value']))
         pool = mp.Pool(processes=16)
         # saveResultFunc = savePlots1D
         if dimension == 1:
             saveResultFunc = wSavePlots1D  # savePlots1D
         if dimension == 2:
             saveResultFunc = wSavePlots2D
-        if plotType == str:
-            logger.info("Creating images for block %s value %s"
-                        % (str(block_idx), plot["Value"]))
-            # TODO: this code is particular case of plotType == list
-            # with plotList = ['U'] and can be removed
-            arg_list = [(projectDir, projectName, binFile,
-                         info, dimension,
-                         countZ, countY, countX,
-                         offsetZ, offsetY, offsetX,
-                         cellSize, dep_vars_names,
-                         plot['Value'], block_idx)
-                        for idx, binFile in enumerate(plotFileLists[plotIdx])]
-            logData = pool.map(wGetResults, arg_list)
 
-            dataListMin = [min([i[1].min() for i in logData])]
-            dataListMax = [max([i[1].max() for i in logData])]
-            logger.info('min:')
-            logger.info(dataListMin)
-            # picCount = 1
-            total_time = logData[-1][0]
-            logger.info("total_time:")
-            logger.info(total_time)
+        logger.info("plot[value]:")
+        logger.info(plot["Value"])
 
-            arg_list = [(projectDir, projectName,
-                         [dataNum[1]],
-                         
-                         # title:
-                         (plot["Title"]+"\n"
-                          # + equations_str+"\n"+plot["Value"]
-                          + " t = "+str(dataNum[0])),
+        #we combine multiple plots on one screen if required
+        logger.info("Creating images for block %s value %s"
+                    % (str(block_idx), str(plot["Value"])))
 
-                         countZ, countY, countX,
-                         offsetZ, offsetY, offsetX,
-                         cellSize,
-                         dataListMax, dataListMin, dx, dy, timeIdx,
-                         ("-"+str(int(float(dataNum[0])/float(total_time)*100))
-                          + "% "+str(dataNum[0])+" "+str(total_time)),
-                         block_idx)
-                        for timeIdx, dataNum in enumerate(logData)]
-            log = pool.map(saveResultFunc, arg_list)
+        vals = plot["Value"] if type(plot["Value"]) == list else [plot["Value"]]
 
-        if plotType == list:
-            logger.info('ЛИСТ! Ы')
-            logData = []
-            logger.info("plot[value]:")
-            logger.info(plot["Value"])
-            for elemPlot in plot["Value"]:
-                logger.info("Creating images for block %s value %s"
-                            % (str(block_idx), elemPlot))
+        arg_list = [(projectDir, projectName,
+                     binFile, info, dimension,
+                     countZ, countY, countX,
+                     offsetZ, offsetY, offsetX, cellSize,
+                     dep_vars_names, vals, block_idx)
+                    for idx, binFile in enumerate(
+                            plotFileLists[plotIdx])]
+        results = pool.map(wGetResults, arg_list) #pairs of t, value where value is a list of arrays (possibly of 1 array)
 
-                arg_list = [(projectDir, projectName,
-                             binFile, info, dimension,
-                             countZ, countY, countX,
-                             offsetZ, offsetY, offsetX, cellSize,
-                             dep_vars_names, elemPlot, block_idx)
-                            for idx, binFile in enumerate(
-                                    plotFileLists[plotIdx])]
-                dataAny = pool.map(wGetResults, arg_list)
+        logger.debug("len(plotFileLists)")
+        logger.debug(len(plotFileLists))
+        '''
+        for binFile in plotFileLists[plotIdx]:
+            path = projectDir + "/" + binFile
+            # logger.info("path:")
+            # logger.info(path)
+            data = readBinFile(path, info,
+                               countZ, countY, countX,
+                               offsetZ, offsetY, offsetX,
+                               cellSize, block_idx)
+            # logger.info("data:")
+            # logger.info(data)
+        '''
+        dataVals = []
+        dataTime = []
+        for res in results:
+            dataTime.append(res[0])
+            dataVals.append(res[1])
+        dataVals = np.array(dataVals) #major axis is time, next axis is variable number, then data axes
 
-                logger.debug("len(plotFileLists)")
-                logger.debug(len(plotFileLists))
-                '''
-                for binFile in plotFileLists[plotIdx]:
-                    path = projectDir + "/" + binFile
-                    # logger.info("path:")
-                    # logger.info(path)
-                    data = readBinFile(path, info,
-                                       countZ, countY, countX,
-                                       offsetZ, offsetY, offsetX,
-                                       cellSize, block_idx)
-                    # logger.info("data:")
-                    # logger.info(data)
-                '''
-                dataNum = []
-                dataTime = []
-                for i in dataAny:
-                    dataTime.append(i[0])
-                    dataNum.append(i[1])
-                logData.append(np.array(dataNum))
-            # picCount = len(plot["Value"])
-            logger.info("logData:")
-            logger.info(len(logData))
-            logger.info("namesEquations:")
-            logger.info(mParams['namesEquations'])
-            dataListMin = [min([i.min() for i in j]) for j in logData]
-            dataListMax = [max([i.max() for i in j]) for j in logData]
-            logger.info("dataListMin:")
-            logger.info(dataListMin)
-            logger.info("len(logData):")
-            logger.info(len(logData))
-            logger.info("len(dataTime):")
-            logger.info(len(dataTime))
-            
-            # logDataNp[value{U,V}][time]
-            # logDataNp[value{U,V}, time ]
-            # logDataNp[:, Idx] gets data for all
-            # variables (U, V), for fixed time Idx
-            # saveResultFunc save all variables (U, V) data
-            # in some image for current time.
-            # pool.map means call saveResultFunc for all times
-            # that will generate images with variables (U, V)
-            # for all times in time interval
-            logDataNp = np.array(logData)
-            # logger.info(logDataNp[:, 0])
-            total_time = dataTime[-1]
-            logger.info("total_time:")
-            logger.info(total_time)
-            arg_list = [(projectDir, projectName, logDataNp[:, timeIdx],
+        # picCount = len(plot["Value"])
+        logger.info("logData:")
+        logger.info(len(dataVals))
+        logger.info("namesEquations:")
+        logger.info(mParams['namesEquations'])
+        
+        outCellSize = len(vals)
+        dataListMin = [np.min(dataVals[:,idx]) for idx in range(outCellSize)]
+        dataListMax = [np.max(dataVals[:,idx]) for idx in range(outCellSize)]        
+        
+        logger.info("dataListMin:")
+        logger.info(dataListMin)
+        logger.info("len(dataVals):")
+        logger.info(len(dataVals))
+        logger.info("len(dataTime):")
+        logger.info(len(dataTime))
 
-                         # title:
-                         (plot["Title"]+"\n"
-                          # + equations_str + "\n"
-                          + " ".join(plot["Value"])
-                          + " t = " + str(dataTime[timeIdx])),
+        # logDataNp[value{U,V}][time]
+        # logDataNp[value{U,V}, time ]
+        # logDataNp[:, Idx] gets data for all
+        # variables (U, V), for fixed time Idx
+        # saveResultFunc save all variables (U, V) data
+        # in some image for current time.
+        # pool.map means call saveResultFunc for all times
+        # that will generate images with variables (U, V)
+        # for all times in time interval
+        total_time = dataTime[-1]
+        logger.info("total_time:")
+        logger.info(total_time)
+        arg_list = [(projectDir, projectName, val,
+                     # title:
+                     (plot["Title"]+"\n"
+                      # + equations_str + "\n"
+                      + " ".join(plot["Value"])
+                      + " t = " + str(dataTime[timeIdx])),
 
-                         countZ, countY, countX,
-                         offsetZ, offsetY, offsetX,
-                         cellSize,
-                         dataListMax, dataListMin, dx, dy,
-                         timeIdx,
-                         ("-"
-                          + str(int(float(dataTime[timeIdx])
-                                    / float(total_time)*100))
-                          + "% "+str(dataTime[timeIdx])+" "+str(total_time)),
-                         block_idx)
-                        for timeIdx, itemd in enumerate(logDataNp[0])]
-            log = pool.map(saveResultFunc, arg_list)
+                     countZ, countY, countX,
+                     offsetZ, offsetY, offsetX,
+                     cellSize,
+                     dataListMax, dataListMin, dx, dy,
+                     timeIdx,
+                     ("-"
+                      + str(int(float(dataTime[timeIdx])
+                                / float(total_time)*100))
+                      + "% "+str(dataTime[timeIdx])+" "+str(total_time)),
+                     plotIdx)
+                    for timeIdx, val in enumerate(dataVals)]
+
+        log = pool.map(saveResultFunc, arg_list)
+
         for element in log:
             logger.info(element)
 
         createVideoFile(projectDir, projectName, plot["Name"], plotIdx)
 
-    # U and V
-    # TODO get result all list U or V
-    # resIdx = 0
-    # logger.info('aaaa ', resultlistname)
+
     for result_idx in range(rCount):
-        block_idx = result_idx
+        # TODO iterate through blocks to combine whole domain
+        block_idx = 0
 
         out = getDomainProperties(info, block_idx)
         countZ, countY, countX, offsetZ, offsetY, offsetX = out
 
         resultItem = mParams['resultList'][result_idx]
 
-        # in case for single value:
-        if type(resultItem["Value"]) != list:
-            resultItem["Value"] = [resultItem["Value"]]
-      
-        for resultValueIdx, resultValue in enumerate(resultItem["Value"]):
+        resultValues = resultItem["Value"]# can be one element or can be list
+        pool = mp.Pool(processes=16)
+        # here plotFileLists is list, generated
+        # by solver, and extracted with getBinFilesByPlot:
+        arg_list = [(projectDir, projectName,
+                     binFile, info, dimension,
+                     countZ, countY, countX,
+                     offsetZ, offsetY, offsetX, cellSize,
+                     dep_vars_names,
+                     resultValues, block_idx)
+                    for idx, binFile in enumerate(
+                            plotFileLists[pCount + result_idx])]
+        results = pool.map(wGetResults, arg_list)
+        logger.info('skks:')
+        logger.info(projectDir)
+        logger.info(resultItem)
+        logger.info(resultValues)
+        createResultFile(projectDir, resultItem["Name"], results)
 
-            pool = mp.Pool(processes=16)
-
-            # here plotFileLists is list, generated
-            # with solver, and extracted with getBinFilesByPlot:
-            arg_list = [(projectDir, projectName,
-                         binFile, info, dimension,
-                         countZ, countY, countX,
-                         offsetZ, offsetY, offsetX, cellSize,
-                         dep_vars_names,
-                         resultValue, block_idx)
-                        for idx, binFile in enumerate(
-                                plotFileLists[pCount + result_idx])]
-            results = pool.map(wGetResults, arg_list)
-            logger.info('skks:')
-            logger.info(projectDir)
-            logger.info(resultItem)
-            logger.info(resultValue)
-            createResultFile(projectDir, resultItem["Name"],
-                             result_idx, resultValueIdx, results)
-        # resIdx += 1
     logger.info(mParams['namesEquations'])
     logger.info("Done")
 

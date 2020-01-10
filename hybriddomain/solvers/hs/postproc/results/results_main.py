@@ -89,14 +89,25 @@ class ResultPostprocNet():
         -- ``result_format`` -
         if 0 then result will be:
          res["timevalues"] = [0.0, 0.1, 0.2, 0.3, ... ]
-         res["resvalues"][name][var][time] = [0.12, 0.13, ..., 3.1]
-            where name = model.results[block_idx]["Name"]
+        
+         # data acces for 1d or 2d:
+         model.results_arrays['resvalues']['name0'][filenumber or var][time]
+         # for special case for several vars under one time (spec_svuot):
+         model.results_arrays['resvalues']['u'][filenumber][time][var]
+
         if 1 then:
          res[name]["timevalues"] = [0.0, 0.1, 0.2, 0.3, ... ]
-         res[name]["resvalues"][time] = [[var0 val, var1 val, ...],
-                                         ...,
-                                         [var0 val, var1 val, ...]]
-            where name = model.results[block_idx]["Name"]
+
+        # data access for 1d:
+         first_30_res = model.results_arrays['u']['resvalues'][time][filenumber or var][:30]
+                        
+        # data access for 2d in that case:
+        time = model.results_arrays['name0']['timevalues'][3]
+        res = model.results_arrays['name0']['resvalues'][time][filenumber or var]
+        plt.imshow(res)
+        
+        # for special case for several vars under one time (spec_svuot):
+        first_30_res = model.results_arrays[result_name]['resvalues'][filenumber][time][var][:30]
         '''
         if "results_paths" not in dir(model):
             '''
@@ -127,7 +138,7 @@ class ResultPostprocNet():
         names_strs = self.extract_out_from_paths(results)
         
         # print("names_strs:")
-        # print(names_strs.keys())
+        # print(names_strs)
         
         # convert strings to arrays:
         times, names_arrays = (self
@@ -149,6 +160,9 @@ class ResultPostprocNet():
             
             common_dim = len(common_shape)
             
+            # for checking special case for several vars under one time
+            self.spec_svuot = ((model.dimension == 1 and common_dim == 2)
+                               or (model.dimension == 2 and common_dim == 3))
             for name in names_arrays:
                 res[name] = {}
                 res[name]["timevaluesarray"] = times_array
@@ -156,35 +170,69 @@ class ResultPostprocNet():
                 res[name]["resvalues"] = {}
                 # print("times:")
                 # print(times)
-                for idxt in times:
-                    '''
-                    a1 = np.ones((3))
-                    a2 = np.ones((3))
-                    np.concatenate((a1.reshape((3,1)),a2.reshape((3,1))),axis=1)
-                    a1 = np.ones((3,3))
-                    a2 = np.ones((3,3))
-                    np.concatenate((a1.reshape((3,3,1)),a2.reshape((3,3,1))),axis=2)
-                    '''
-                    # FOR unite differ vars for fixed time:
-                    # print("vars:")
-                    # print([var for var in names_arrays[name]])
-                    # print("names_arrays[name][var][idxt]")
-                    # print("times keys:")
-                    # print(names_arrays[name][0].keys())
-                    # print("names_arrays[name][0][0.0]:")
-                    # print(names_arrays[name][0][0.0])
-                    # print("common_shape:")
-                    # print(common_shape)
-                    vars_data = [
-                        names_arrays[name][var][idxt].reshape(
-                            common_shape+(1,))
-                        for var in names_arrays[name]]
 
-                    res[name]["resvalues"][idxt] = np.concatenate(vars_data,
-                                                                  axis=common_dim)
-                    # END FOR
-                 
+                if self.spec_svuot:
+                    # for special case for several vars under one time
+
+                    # print("case when all vars inside times")
+                    # case when all vars inside times:
+                    # (ex 1d: (0.0, array([ [ ... ], [ ... ] ])))
+                    # (ex 2d: (0,0, array([ [[ ... ]], [[ ... ]] ])))
+                    # print("names_arrays[name]:")
+                    # print(names_arrays[name])
+
+                    '''# data access for 1d in that case:
+                    first_30_res = model.results_arrays[result_name]['resvalues'][filenumber][time][var][:30]
+                    '''
+                    # map: [time][var] -> [var][time]:
+                    res[name]["resvalues"] = names_arrays[name]
+                    # for filenumber in names_arrays[name]:
+                    #     vars = range(len(names_arrays[name][filenumber][0]))
+                else:
+                    for idxt in times:
+
+                        # print("case when all vars inside files")
+                        '''
+                        a1 = np.ones((3))
+                        a2 = np.ones((3))
+                        np.concatenate((a1.reshape((3,1)),a2.reshape((3,1))),axis=1)
+                        a1 = np.ones((3,3))
+                        a2 = np.ones((3,3))
+                        np.concatenate((a1.reshape((3,3,1)),a2.reshape((3,3,1))),axis=2)
+                        '''
+                        # FOR unite differ vars for fixed time:
+                        # print("vars:")
+                        # print([var for var in names_arrays[name]])
+                        # print("names_arrays[name][var][idxt]")
+                        # print("times keys:")
+                        # print(names_arrays[name][0].keys())
+                        # print("names_arrays[name][0][0.0]:")
+                        # print(names_arrays[name][0][0.0])
+                        # print("common_shape:")
+                        # print(common_shape)
+                        vars_data = [
+                            names_arrays[name][var][idxt].reshape(
+                                common_shape+(1,))
+                            for var in names_arrays[name]]
+
+                        '''# data access for 1d in that case:
+                        first_30_res = model.results_arrays['u']['resvalues'][time][filenumber or var][:30]
+                        '''
+                        '''# data access for 2d in that case:
+                        time = model.results_arrays['name0']['timevalues'][3]
+                        res = model.results_arrays['name0']['resvalues'][time][filenumber or var]
+                        plt.imshow(res)
+                        '''
+                        res[name]["resvalues"][idxt] = np.concatenate(vars_data,
+                                                                      axis=common_dim).T
+                        # END FOR
+
         else:
+            '''# data acces for 1d or 2d:
+            model.results_arrays['resvalues']['name0'][filenumber or var][time]
+            # for special case for several vars under one time (spec_svuot):
+            model.results_arrays['resvalues']['u'][filenumber][time][var]
+            '''
             res["timevalues"] = times
             res["resvalues"] = names_arrays
 
@@ -203,6 +251,9 @@ class ResultPostprocNet():
             results_names = [result["Name"] for result in model.results]
 
             result_files = self.get_results_files()
+            # print("result_files:")
+            # print(result_files)
+
             filenames_plot, filenames_result = result_files
             model.plots_paths = (self
                                  .set_paths(filenames_plot, plots_names))
@@ -216,6 +267,11 @@ class ResultPostprocNet():
 
         filenames_plot = []
         filenames_result = []
+        # print("self.hd_out_folder:")
+        # print(self.hd_out_folder)
+        # print("sorted(os.listdir(self.hd_out_folder)):")
+        # print(sorted(os.listdir(self.hd_out_folder)))
+
         for filename in sorted(os.listdir(self.hd_out_folder)):
             if filename.endswith('mp4'):
                 filenames_plot.append(filename)
@@ -353,6 +409,7 @@ class ResultPostprocNet():
                     result_t = [(float(key), val) for key, val in gen(result)]
                     # print("result_t:")
                     # print(result_t)
+                    self.result_t = result_t
 
                     # collect common_shape from some array
                     if self.common_shape is None:
@@ -360,7 +417,9 @@ class ResultPostprocNet():
                             self.common_shape = result_t[0][1].shape
                         except:
                             pass
+                
                 except:
+                    
                     results_param_arrays[param][var] = None
                     continue
 
@@ -370,6 +429,7 @@ class ResultPostprocNet():
                     progress.succ(steps)
                 # print(steps)
         times = [key[0] for key in result_t]
+        self.results_param_arrays = results_param_arrays
         # result_x = np.array([result_t[key] for key in result_t]).T
         return(times, results_param_arrays)
 
