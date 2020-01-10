@@ -1,9 +1,9 @@
  {
     "ProjectName": "Heat_test", 
     "Solver": {
-        "SolverIdx": 0, 
+        "SolverIdx": 1, 
         "StartTime": 0.0, 
-        "FinishTime": 20.0, 
+        "FinishTime": 10.0, 
         "TimeStep": 0.001, 
         "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
@@ -49,7 +49,7 @@
                 "x"
             ], 
             "System": [
-                "U'= D[U,{x,2}]*0.01 + c*(1-U(t-1))*U"
+                "U'= D[U,{x,2}] + c*(1-U(t-1))*U"
             ]
         }
     ], 
@@ -63,7 +63,7 @@
             {
                 "a": 1, 
                 "b": 1,
-                "c": 3
+                "c": 1.5
             }
         ], 
         "DefaultParamsIndex": 0
