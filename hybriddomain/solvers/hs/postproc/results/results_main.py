@@ -126,6 +126,10 @@ class ResultPostprocNet():
             # refill self.results_paths:
             self.get_results_filespaths(model)
 
+        # check if there is bijection between names and files:
+        self.seq = any([len(model.results_paths[name]) > 1
+                        for name in model.results_paths])
+
         # extract data from paths as strings:
         if len(names) > 0:
             results = dict([(name, model.results_paths[name])
@@ -147,7 +151,6 @@ class ResultPostprocNet():
         # print(times)
         res = {}
         if result_format == 1:
-            times_array = np.array(times, dtype=np.float32)
 
             # for get shape of all data:
             if self.common_shape is None:
@@ -163,10 +166,12 @@ class ResultPostprocNet():
             # for checking special case for several vars under one time
             self.spec_svuot = ((model.dimension == 1 and common_dim == 2)
                                or (model.dimension == 2 and common_dim == 3))
+            
             for name in names_arrays:
                 res[name] = {}
-                res[name]["timevaluesarray"] = times_array
-                res[name]["timevalues"] = times
+                res[name]["timevaluesarray"] = np.array(times[name],
+                                                        dtype=np.float32)
+                res[name]["timevalues"] = times[name]
                 res[name]["resvalues"] = {}
                 # print("times:")
                 # print(times)
@@ -184,12 +189,14 @@ class ResultPostprocNet():
                     '''# data access for 1d in that case:
                     first_30_res = model.results_arrays[result_name]['resvalues'][filenumber][time][var][:30]
                     '''
-                    # map: [time][var] -> [var][time]:
-                    res[name]["resvalues"] = names_arrays[name]
+                    if not self.seq:
+                        res[name]["resvalues"] = names_arrays[name][0]
+                    else:
+                        res[name]["resvalues"] = names_arrays[name]
                     # for filenumber in names_arrays[name]:
                     #     vars = range(len(names_arrays[name][filenumber][0]))
                 else:
-                    for idxt in times:
+                    for idxt in times[name]:
 
                         # print("case when all vars inside files")
                         '''
@@ -233,6 +240,7 @@ class ResultPostprocNet():
             # for special case for several vars under one time (spec_svuot):
             model.results_arrays['resvalues']['u'][filenumber][time][var]
             '''
+            # map: [time][var] -> [var][time]:
             res["timevalues"] = times
             res["resvalues"] = names_arrays
 
@@ -361,6 +369,7 @@ class ResultPostprocNet():
         '''
 
         results_param_arrays = {}
+        times = {}
 
         def gen(result):
             for key in result:
@@ -376,8 +385,10 @@ class ResultPostprocNet():
                 yield((key, step_6))
 
         steps = 0
-        result_t = []
+
         for param in results_params:
+            result_t = []
+
             # TODO: only dict for all
             if type(results_params[param]) == dict:
                 # if vars data stored like a dict,
@@ -428,7 +439,8 @@ class ResultPostprocNet():
                 if progress is not None:
                     progress.succ(steps)
                 # print(steps)
-        times = [key[0] for key in result_t]
+            times[param] = [key[0] for key in result_t]
+
         self.results_param_arrays = results_param_arrays
         # result_x = np.array([result_t[key] for key in result_t]).T
         return(times, results_param_arrays)

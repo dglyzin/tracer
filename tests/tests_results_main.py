@@ -123,12 +123,13 @@ def test_rf1_1d_svuot():
     result_format = 1
     model = init_model(result_format,
                        "problems/1dTests/Ginzburg_Landau")
-    filenumber = 0
+    # filenumber = 0
     time = 0
     var = 0
-    result = model.results_arrays['u']['resvalues'][filenumber][time][var]
+    result = model.results_arrays['u']['resvalues'][time][var]
+    # result = model.results_arrays['u']['resvalues'][filenumber][time][var]
     var = 1
-    result = model.results_arrays['u']['resvalues'][filenumber][time][var]
+    result = model.results_arrays['u']['resvalues'][time][var]
     print("done;")
 
     return(result)
