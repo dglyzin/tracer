@@ -1,9 +1,9 @@
  {
     "ProjectName": "Heat_test", 
     "Solver": {
-        "SolverIdx": 1, 
+        "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 15.0, 
+        "FinishTime": 1.0, 
         "TimeStep": 0.0001, 
         "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
@@ -49,7 +49,7 @@
                 "x"
             ], 
             "System": [
-                "U'= a*D[U,{x,2}] + r*(1-U(t-1)/x/k)*U"
+                "U'= a*D[U,{x,2}] + r*(1-U(t-1)/(x)^0.5/k)*U"
             ]
         }
     ], 
@@ -61,8 +61,8 @@
         ], 
         "ParamValues": [
             {
-                "a": 10, 
-                "k": 4.6051,
+                "a": 0.5, 
+                "k": 2,
                 "r": 2
             }
         ], 
@@ -93,7 +93,7 @@
             "Name": "*", 
             "CpuCount": 1, 
             "CpuMemory": [
-                56
+                10
             ], 
             "GpuCount": 3, 
             "GpuMemory": [

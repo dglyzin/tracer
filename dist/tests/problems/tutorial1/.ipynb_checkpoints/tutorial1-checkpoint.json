@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 1.0, 
+        "FinishTime": 10.0, 
         "TimeStep": 0.0001, 
         "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 
@@ -19,10 +19,10 @@
         {
             "Name": "MainBlock", 
             "Offset": {
-                "x": 0.01
+                "x": 0.0
             }, 
             "Size": {
-                "x": 1.0
+                "x": 3.1415926
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
@@ -31,8 +31,8 @@
                     "BoundNumber": 0, 
                     "Side": 0
                 },
-                {
-                    "BoundNumber": 0, 
+            {
+                    "BoundNumber": 1, 
                     "Side": 1
                 }
 
@@ -49,34 +49,46 @@
                 "x"
             ], 
             "System": [
-                "U'= a*D[U,{x,2}] + r*(1-U(t-1)/(x)^0.5/k)*U"
+                "U'=-a*D[U,{x,1}]"
             ]
         }
     ], 
     "EquationParams": {
         "Params": [
             "a", 
-            "k",
-            "r"
+            "b"
         ], 
         "ParamValues": [
             {
-                "a": 0.5, 
-                "k": 2,
-                "r": 2
+                "a": 1, 
+                "b": 1
+            },
+            {
+                "a": 0.1, 
+                "b": 0.1
             }
         ], 
         "DefaultParamsIndex": 0
     }, 
     "Bounds": [
         {
-            "Name": "Dirichlet1111", 
+            "Name": "Neyman1", 
             "Type": 1, 
             "Values": [
-                "0"
+                "cos(0-t)"
             ], 
             "Derivative": [
-                "0.0"
+                "0"
+            ]
+        },
+        {
+            "Name": "Neyman2", 
+            "Type": 1, 
+            "Values": [
+                "cos(3.1415926-t)"
+            ], 
+            "Derivative": [
+                "0"
             ]
         }
     ], 
@@ -84,7 +96,7 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "sin(x*3.1415926)"
+                "sin(x)"
             ]
         }
     ], 
@@ -93,7 +105,7 @@
             "Name": "*", 
             "CpuCount": 1, 
             "CpuMemory": [
-                10
+                56
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
@@ -116,17 +128,28 @@
     "Plots": [ 
 	{
             "Title": "u(t,x)", 
-            "Name": "U",
+            "Name": "uplot1",
             "Period": 0.1,
             "Value": "U"
+        },
+        {
+            "Title": "u(t,x)", 
+            "Name": "uplot2",
+            "Period": 0.1,
+            "Value": ["U", "-U"]
         }
     ],
 
     "Results":[
         {
-            "Name": "u", 
+            "Name": "ures1", 
             "Period": 0.1,
             "Value": "U"
+        },
+        {
+            "Name": "ures2", 
+            "Period": 0.1,
+            "Value": ["U", "-U"]
         }
     ]
 }
