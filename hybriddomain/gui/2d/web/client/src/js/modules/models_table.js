@@ -13,7 +13,11 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 	       // END FOR    	       
 	   };
 
-	   ModelsTable.prototype.set_on_row_click = function(tables_ids){
+	   ModelsTable.prototype.set_on_row_click = function(tables_ids, sranges_ids){
+
+	       /*tables_ids and sranges_ids orders must be same
+		- ``sranges_ids`` -- id of ranges to change when row clicked*/
+
 	       var self = this;
 
 	       $.each(tables_ids, function(id, table_id){
@@ -23,13 +27,43 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 		   $("#"+table_id).on("click", "tr", function(){
 		       // $("#"+color_input_id+" tr").on("click", function(){
 		       console.log("tr click |-> color_val:");
-		       var color_val = $.text(this.children[0]);
-		       console.log(color_val);
-
-		       // add to selected row value:
-		       self.eqs_table_selected_row_val = color_val;
-
+		       
 		       // FOR set color:
+		       // FOR set color:
+		       // selected idx:
+		       var row_idx = this.rowIndex;
+		       console.log("this = ", this);
+		       if(row_idx == 0){
+			   // if in header:
+			   return;
+		       };
+		       var color_val = undefined;
+
+		       // select row for all tables
+		       // (it will need for del row button)
+		       $.each(tables_ids, function(id, table_id1){
+			   // console.log("selected_row:");
+			   // console.log($("#"+table_id1+" tr").not(".style_table"));
+			   $("#"+table_id1+" tr.table_selected_row").removeClass("table_selected_row");
+			   $($("#"+table_id1+" tr").not(".style_table")[row_idx-1])
+			       .addClass("table_selected_row");
+			   // console.log("selected_row:");
+			   // console.log($("#"+table_id1+" tr.table_selected_row"));
+			   color_val = $.text($("#"+table_id1+" tr.table_selected_row")[0].children[0]);
+			   // color_val = $.text(this.children[0]);
+			   console.log("color_val:");
+			   console.log(color_val);
+
+			   // set color to sranges_ids.val:
+			   $("#"+ sranges_ids[id]).val(color_val);
+
+			   // add to selected row value:
+			   self.eqs_table_selected_row_val = color_val;
+		       
+			   // $(this).addClass("table_selected_row");
+		       });
+		       
+		       /*
 		       console.log("tr.style:");
 		       console.log(this.parentElement.children);
 		       $.each(this.parentElement.children, function(id, elm){
@@ -37,6 +71,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 		       });
 		       // this.setAttribute("style", "color: blue");
 		       this.setAttribute("style", "background-color: blue");
+			*/
 		       // END FOR
 
 		       // FOR apply to canvas:
@@ -51,7 +86,8 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 	       });
 	   };
 
-	   ModelsTable.prototype.apply_eqs_table = function(b_add_eq_id, tables_ids,
+	   ModelsTable.prototype.apply_eqs_table = function(b_add_eq_id, b_del_eq_id,
+							    tables_ids,
 						            i_eq_num_id, sr_eq_color_id, s_btype_id){
 	       
 	       /*Apply colors/equations_numbers table's button callback for draw tab
@@ -64,6 +100,29 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 		*/
 	       
 	       var self = this;
+
+	        $("#"+b_del_eq_id).on("click", function(){
+		    
+		    $.each(tables_ids, function(id, table_id){
+			var selected_rows = $("#"+table_id+" tr.table_selected_row");
+			
+			// remove self.eqs_table row last:
+			if(tables_ids.length == id+1){
+			    var row_idx = selected_rows[0].rowIndex;
+			    console.log("row_idx:");
+			    console.log(row_idx);
+			    // row_idx-1 because of header:
+			    self.eqs_table.splice(row_idx-1, 1);
+			    console.log("self.eqs_table:");
+			    console.log(self.eqs_table);
+			};
+			console.log("selected_rows = ", selected_rows);
+			$(selected_rows[0]).remove();
+			
+			
+		    });
+		});
+
 	        $("#"+b_add_eq_id).on("click", function(){
 		    var color_val = $("#"+sr_eq_color_id).val();
 		    
@@ -106,19 +165,23 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 			    self.eqs_table.push([color_val]);
 			}
 		    }else{
-			throw new Error("cannot add more then one eq to"
-					+ " one color");
+			var msg = ("cannot add more then one eq to"
+				   + " one color");
+			alert(msg);
+			throw new Error(msg);
 		    }
 		    console.log("self.eqs_table = ", self.eqs_table);
 		});
 	   };
 
 
-	   ModelsTable.prototype.draw = function(table_id, b_id, draw_bounds,
-						 draw_eq_number){
+	   ModelsTable.prototype.draw = function(table_id, b_add_id, b_del_id,
+						 draw_bounds, draw_eq_number){
 
-	       /*get difer table depend on draw_bounds/ draw_eq_number*/
+	       /*get different table source string depending on
+		draw_bounds/draw_eq_number*/
 
+	       var self = this;
 	       var header = (`<tr class="style_table">`
 			     + `<td class="style_table">color</td>`);
 	       var number = "eq_num";
@@ -131,11 +194,19 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 	       if(draw_bounds)
 		   header += `<td class="style_table">btype</td>`;
 	       header += `</tr>`;
-
-	       return(`<input type="button" value="add color" id="`+b_id+`">
-                    <br>
+	       var data = $.map(self.eqs_table, function(row, id){
+		   return('<tr>' + $.map(row, function(column, id){
+		       return('<td>'+ column +'</td>');
+		   }).reduce((acc, val)=>acc+val, "")+ '</tr>');
+	       }).reduce((acc, val)=>acc+val, "");
+	       console.log("draw table.data = ", data);
+	       
+	       return(`<input type="button" value="add color" id="`+b_add_id+`">`
+		      + `<input type="button" value="del color" id="`+b_del_id+`">`
+                    + `<br>
                     <table id="`+ table_id +`" class="style_table">`
 		      + header 
+		      + data
 		      + `</table>`);
 	   };
 	   return {

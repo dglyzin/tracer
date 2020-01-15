@@ -21,15 +21,15 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 	   };
 
 	   EquationsTable.prototype.save= function(){
-	       /*save table to list*/
+	       /*save table to list of lists*/
 	       var self = this;
 	       
 	       var table_rows = $("#"+ self.table_id +" tr");
 	       console.log("table_rows = ", table_rows);
 	       var table = $.map(table_rows, function(row, id){
-		   return($.map(row.children, function(column, id){
+		   return([$.map(row.children, function(column, id){
 		       return($(column).text());
-		   }));
+		   })]);
 		   // console.log(row);
 	       });
 	       /*
@@ -210,6 +210,9 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 	   };			    
 
 	   EquationsTable.prototype.set_editor_callback = function(){
+	       /*
+		Change selected table row.td when chenging editor text.
+		*/
 	       var self = this;
 	       
 	       $("#"+self.table_editor_id).on("keyup",  function(){
@@ -219,9 +222,9 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 		 
 		   var selected_rows = $("#"+ self.table_id +" tr.table_selected_row");
 		   console.log("selected_rows = ", selected_rows);
-
+		   
 		   if(selected_rows.length){
-		       $(selected_rows[0]).text($.text(this));
+		       $(selected_rows[0].children[0]).text($.text(this));
 		   }		   
 		   
 	       });
@@ -235,6 +238,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'],
 	       $("#"+self.table_id).on("click", "tr", function(){
 		   // $("#"+color_input_id+" tr").on("click", function(){
 		   console.log("tr click |-> color_val:");
+		   console.log(this);
 		   self.selected_rowIndex = this.rowIndex;
 		   console.log("selected_row (this.rowIndex):");
 		   console.log(self.selected_rowIndex);

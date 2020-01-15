@@ -16,7 +16,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
     ModelsScene.prototype.get_equation_input = function(i_eq_num){
 	return(`equation number:`
 	       + `<input type="text" id="`
-	       + i_eq_num + `" value="0" class="style_button_number">`);
+	       + i_eq_num + `" value="1" class="style_button_number">`);
     };
 
     ModelsScene.prototype.draw_scene_welcome = function(div_id){
@@ -67,6 +67,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
 	var table_draw = "";
 	if (draw_tables)
 	    table_draw = self.net.table.draw("t_eqs_draw", "b_draw_add_eq_num",
+					     "b_draw_del_eq_num",
 					     draw_bounds, draw_eq_number);
 	var btype_draw = "";
 	if(draw_bounds)
@@ -82,6 +83,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
 		    <br>
 		    draw color:
 		    <input id="sr_draw_color" value="255" min="1" max="255" style="display: block" type="range">
+                    <p id="p_draw_sr_val"></p>
 		    <br>`
 		+ eq_number_draw
 		+ `<br>`+ btype_draw
@@ -103,6 +105,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
 	var table_eq = "";
 	if (draw_tables)
 	    table_eq = self.net.table.draw("t_eqs_eqr", "b_eqr_add_eq_num",
+					   "b_eqr_del_eq_num",
 					   draw_bounds, draw_eq_number);
 
 	var btype_eq = "";
@@ -116,7 +119,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
 		+ `<br>
 		    region color:<br>
 		    <input id="sr_eq_color" value="255" min="0" max="255" style="display: block" type="range">
-		                        
+		    <p id="p_eq_sr_val"></p>                    
                     <br>
                     <br>`+ btype_eq
                 + `<br>`
@@ -137,6 +140,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
 	var table_br = "";
 	if(draw_tables)
 	    table_br = self.net.table.draw("t_eqs_br", "b_br_add_eq_num",
+					   "b_br_del_eq_num",
 					   draw_bounds, draw_eq_number);
 
 	var btype_br = "";
@@ -149,6 +153,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
 		+ `<br>
 		    region color:<br>
 		    <input id="sr_eq_color_br" value="255" min="0" max="255" style="display: block" type="range">
+ 		    <p id="p_eq_br_sr_val"></p>
 		    <br>
                     
                     <br>`+ btype_br
@@ -165,20 +170,23 @@ define(['jquery', 'jquery-ui-custom/jquery-ui'], function($, ui){
 		    </select><br>`;		
 	$("#controls_br_regions").html(controls_br_regions_str);
 
-	// <input type="button" value="save" id="b_save_fabric_canvas">
+	/*
+	 <br><br>		       
+	 <div id="models_tree_wrap" class="tree_positioned">
+	 <div id="models_tree_wrap_style" class="style_editor_static editor_overflow tree_positioned">
+	 <div id="models_tree"  class="tree_positioned"></div>
+	 
+         </div>
+	 <div id="models_menu"></div> 		     
+	 </div>
+	 <div id="models_tree_input"></div>
+	 <br>
+	 */
+	// 
 	var controls_save_str =
-		`
-		    <br><br>		       
-		    <div id="models_tree_wrap" class="tree_positioned">
-		     <div id="models_tree_wrap_style" class="style_editor_static editor_overflow tree_positioned">
-		      <div id="models_tree"  class="tree_positioned"></div>
-
-                     </div>
-		      <div id="models_menu"></div> 		     
-		    </div>
-		    <div id="models_tree_input"></div>
-		    <br>
-		    <input type="button" value="open" id="b_open_fabric_canvas">
+		`	    
+                    <input type="button" value="save" id="b_save_fabric_canvas">
+	            <input type="button" value="reload" id="b_reload_fabric_canvas">	    
                     <br>
                     <div id="result" style="top: 83px; position: relative;">
 		    Result

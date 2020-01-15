@@ -4,6 +4,10 @@ from hybriddomain.solvers.hs.remoterun.progresses.progress_cmd import ProgressCm
 
 
 class StdoutProgresses():
+
+    '''Progress for parsing stdout.
+    Can make output to cmd or given notebook progress.'''
+
     def __init__(self, re_pattern="(?P<val>[\d]+)\s?%",
                  STEPS=100, notebook=None):
         self.re_pattern = re_pattern
