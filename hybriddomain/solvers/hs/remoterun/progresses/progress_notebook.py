@@ -20,7 +20,15 @@ class ProgressNotebook():
         self.progress.value = val
 
     def set_steps(self, STEPS):
+        # self.progress.min = 0
+        # print("max-min:")
+        # print(self.progress.max - self.progress.min)
+        # print("Steps:")
+        # print(STEPS)
         self.progress.max = STEPS-1
+
+    def get_steps(self):
+        return(self.progress.max+1)
 
     def set_prefix(self, prefix):
         self.prefix = prefix

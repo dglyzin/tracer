@@ -107,7 +107,11 @@ class ResultPostprocNet():
         plt.imshow(res)
         
         # for special case for several vars under one time (spec_svuot):
+        # if bijection between names and files:
+        first_30_res = model.results_arrays[result_name]['resvalues'][time][var][:30]
+        # else (in case of parametrization):
         first_30_res = model.results_arrays[result_name]['resvalues'][filenumber][time][var][:30]
+        
         '''
         if "results_paths" not in dir(model):
             '''
@@ -150,6 +154,13 @@ class ResultPostprocNet():
         # print("times orig:")
         # print(times)
         res = {}
+        
+        for name in names_arrays:
+            res[name] = {}
+            res[name]["timevaluesarray"] = np.array(times[name],
+                                                    dtype=np.float32)
+            res[name]["timevalues"] = times[name]
+        
         if result_format == 1:
 
             # for get shape of all data:
@@ -168,10 +179,6 @@ class ResultPostprocNet():
                                or (model.dimension == 2 and common_dim == 3))
             
             for name in names_arrays:
-                res[name] = {}
-                res[name]["timevaluesarray"] = np.array(times[name],
-                                                        dtype=np.float32)
-                res[name]["timevalues"] = times[name]
                 res[name]["resvalues"] = {}
                 # print("times:")
                 # print(times)
@@ -186,19 +193,22 @@ class ResultPostprocNet():
                     # print("names_arrays[name]:")
                     # print(names_arrays[name])
 
-                    '''# data access for 1d in that case:
-                    first_30_res = model.results_arrays[result_name]['resvalues'][filenumber][time][var][:30]
-                    '''
                     if not self.seq:
+                        '''# data access for 1d in that case:
+                        first_30_res = model.results_arrays[result_name]['resvalues'][time][var][:30]
+                        '''
                         res[name]["resvalues"] = names_arrays[name][0]
                     else:
+                        '''# data access for 1d in that case:
+                        first_30_res = model.results_arrays[result_name]['resvalues'][filenumber][time][var][:30]
+                        '''
                         res[name]["resvalues"] = names_arrays[name]
                     # for filenumber in names_arrays[name]:
                     #     vars = range(len(names_arrays[name][filenumber][0]))
                 else:
                     for idxt in times[name]:
-
                         # print("case when all vars inside files")
+                        # map: [var][time] -> [time][var]:
                         '''
                         a1 = np.ones((3))
                         a2 = np.ones((3))
@@ -239,9 +249,7 @@ class ResultPostprocNet():
             model.results_arrays['resvalues']['name0'][filenumber or var][time]
             # for special case for several vars under one time (spec_svuot):
             model.results_arrays['resvalues']['u'][filenumber][time][var]
-            '''
-            # map: [time][var] -> [var][time]:
-            res["timevalues"] = times
+            '''            
             res["resvalues"] = names_arrays
 
         model.results_arrays = res
@@ -310,9 +318,10 @@ class ResultPostprocNet():
         def get_idxs(filepath):
             filename = os.path.basename(filepath)
             res_seq = re.search("_seq(?P<idx>\d+)", filename)
-            res_val = re.search("-value(?P<idx>\d+)", filename)
-            res = (int(res_seq.groupdict()["idx"]),
-                   int(res_val.groupdict()["idx"]))
+            res = int(res_seq.groupdict()["idx"])
+            # res_val = re.search("-value(?P<idx>\d+)", filename)
+            # res = (int(res_seq.groupdict()["idx"]),
+            #        int(res_val.groupdict()["idx"]))
             return(res)
 
         # bouts = list(map(get_idxs, outs))
@@ -327,27 +336,56 @@ class ResultPostprocNet():
         outs.sort(key=lambda elm: get_idxs(elm))
         
         def succ(acc, filename):
+            seq_idx = get_idxs(filename)
+            if seq_idx not in acc:
+                with open(filename) as f:
+                    seq_val_data = f.read()
+                acc[seq_idx] = seq_val_data
+            '''
+            # TODO: for -values or for -blocks
             seq_idx, val_idx = get_idxs(filename)
+            
             if seq_idx not in acc:
                 acc[seq_idx] = {}
             
             with open(filename) as f:
                 seq_val_data = f.read()
             acc[seq_idx][val_idx] = seq_val_data
+            '''
             return(acc)
         res_strings = reduce(succ, outs, {})
 
         self.results_param_strings = res_strings
 
+        '''
         # reinit progress steps:
         if progress is not None:
             progress.set_steps(len(outs))
-
+        '''
         # convert to arrays:
         times, res_arrays = self.out_to_array(res_strings, progress)
+    
         self.times = times
-        self.results_param_arrays = res_arrays
-        return((times, res_arrays))
+        
+        # check if there is bijection between names and files:
+        self.seq = any([len(res_arrays[name]) > 1
+                        for name in res_arrays])
+        self.results_param_arrays = {}
+        for param in res_arrays:
+        
+            if not self.seq:
+                '''# data access for 1d in that case:
+                first_30_res = results_param_arrays[seq_number][time][var][:30]
+                '''
+                self.results_param_arrays[param] = res_arrays[param][0]
+            else:
+                '''# data access for 1d in that case:
+                first_30_res = results_param_arrays[seq_number][filenumber][time][var][:30]
+                '''
+                self.results_param_arrays[param] = res_arrays[param]
+        # self.results_param_arrays = res_arrays
+        
+        return((times, self.results_param_arrays))
 
     def out_to_array(self, results_params, progress=None):
 
@@ -357,7 +395,9 @@ class ResultPostprocNet():
         Inputs:
 
         - ``results_params`` -- dict with values
-        (like: "0.3133: [0.12, 0.13, ..., 3.1]")
+        (like: "0.3133: [0.12, 0.13, ..., 3.1]"
+         or: ["0.3133: [0.12, 0.13, ..., 3.1]"]
+         or: {"key": "0.3133: [0.12, 0.13, ..., 3.1]"})
 
         - ``progress`` -- ProgressNotebook instance.
 
@@ -385,6 +425,10 @@ class ResultPostprocNet():
                 yield((key, step_6))
 
         steps = 0
+            
+        # reinit progress steps:
+        if progress is not None:
+            progress.set_steps(len(results_params))
 
         for param in results_params:
             result_t = []
@@ -397,9 +441,16 @@ class ResultPostprocNet():
                 vars_keys.sort()
                 data_list = (results_params[param][var_id]
                              for var_id in vars_keys)
+            elif type(results_params[param]) == str:
+                data_list = [results_params[param]]
             else:
                 # default is list:
                 data_list = results_params[param]
+
+            # reinit progress steps:
+            if progress is not None:
+                progress.set_steps(progress.get_steps()+len(data_list)-1)
+
             for var, data in enumerate(data_list):
 
                 if param not in results_param_arrays:
@@ -409,6 +460,7 @@ class ResultPostprocNet():
                     lines = data.split('\n')
                     result = {}
 
+                    # separate time:
                     for line in lines:
                         if ':' in line:
                             key, val = line.split(':')
@@ -416,7 +468,7 @@ class ResultPostprocNet():
                         else:
                             val = line
                             result[key] += val
-
+                    # parse arrays:
                     result_t = [(float(key), val) for key, val in gen(result)]
                     # print("result_t:")
                     # print(result_t)
