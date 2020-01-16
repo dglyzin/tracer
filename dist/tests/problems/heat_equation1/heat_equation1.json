@@ -31,7 +31,7 @@
                     "BoundNumber": 0, 
                     "Side": 0
                 },
-            {
+                {
                     "BoundNumber": 0, 
                     "Side": 1
                 }
@@ -71,10 +71,10 @@
             "Name": "Dirichlet1111", 
             "Type": 0, 
             "Values": [
-                "t"
+                "0"
             ], 
             "Derivative": [
-                "1"
+                "0"
             ]
         }
     ], 
@@ -91,7 +91,7 @@
             "Name": "*", 
             "CpuCount": 1, 
             "CpuMemory": [
-                56
+                5
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
