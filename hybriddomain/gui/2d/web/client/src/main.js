@@ -36,9 +36,10 @@ requirejs(['jquery', 'jquery-ui-custom/jquery-ui', 'modules/main_tree',
 	      
 	      // boards:
 	      self.boards = {
-		  models_envs: new tmeditor.Board(),
-		  patterns_editor: new tpeditor.Board(),
-		  equations_mode: new tetable.ETable(self)
+		  models_envs: new tmeditor.Board(self),
+		  patterns_editor: new tpeditor.Board(self),
+		  equations_mode: new tetable.ETable(self),
+		  equations_bs_mode: new tetable.ETable(self)
 	      };
 	      
 	      // board for patterns:

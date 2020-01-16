@@ -631,8 +631,12 @@ def createMovie(projectDir, projectName, modelParamsPath):
         logger.info(mParams['namesEquations'])
         
         outCellSize = len(vals)
-        dataListMin = [np.min(dataVals[:,idx]) for idx in range(outCellSize)]
-        dataListMax = [np.max(dataVals[:,idx]) for idx in range(outCellSize)]        
+        dataListMin = [np.min(dataVals[:, idx]) for idx in range(outCellSize)]
+        dataListMax = [np.max(dataVals[:, idx]) for idx in range(outCellSize)]
+        if any(np.isnan(dataListMin)):
+            dataListMin = [0 for idx in range(outCellSize)]
+        if any(np.isnan(dataListMax)):
+            dataListMax = [10 for idx in range(outCellSize)]
         
         logger.info("dataListMin:")
         logger.info(dataListMin)

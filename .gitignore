@@ -1,3 +1,6 @@
+hybriddomain.egg-info/
+hybriddomain.egg-info/*
+hybriddomain.egg-info/**
 build/
 build/*
 build/**
@@ -32,6 +35,7 @@ ManualHeat/*
 *.out
 !tests/problems/1dTests/Ginzburg_Landau/out/*.out
 !tests/problems/1dTests/Ginzburg_Landau_params/out/*.out
+!tests/problems/1dTests/Ginzburg_Landau_params_svuot/out/*.out
 !tests/problems/2dTests/heat_block_2_ics_other_offsets/out/*.out
 *.nfs000*
 dist/project_folder/settings/*.json

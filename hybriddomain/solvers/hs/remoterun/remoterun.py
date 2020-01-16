@@ -46,9 +46,14 @@ where
    test_folder_relative_name relative to hd repository folder (where hd folder is lokated)
       name of folder, model .json file stored to.
       (ex: ``hybriddomain/problems/1dTests/logistic_delays``)
+
+Ex (from pf):
+
+# 1d::
+ ~/anaconda3/bin/./python3 -c "import hybriddomain.solvers.hs.remoterun.remoterun as ts; ts.run()"  connection_acchome.json devices_acchome.json connection_acchome.json ~/Documents/projects/projectsNew/lab/project_folder/problems/logistic_delays1
+
       
 Ex (from hd):
-
 
 # 1d::
 
@@ -795,8 +800,7 @@ def finalParseAndRun(settings, dimention, model=None):
     # logger.clean()
 
 
-if __name__ == '__main__':
-
+def run():
     desc = 'Processing json file on a remote cluster.'
     parser = argparse.ArgumentParser(description=desc, epilog="Have fun!")
     parser.add_argument('conn_name', type=str,
@@ -870,4 +874,7 @@ if __name__ == '__main__':
 
     finalParseAndRun(settings, model.dimension, model=model)
 
+
+if __name__ == '__main__':
     
+    run()

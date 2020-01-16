@@ -6,10 +6,11 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
        function($, ui, fabric, base_editor, eqs_regions,
 		scene, table){
 	   
-	   function BoardModel(){
+	   function BoardModel(net){
 	       
 	       // FOR global variables:
 	       var self = this;
+	       self.net = net;
 	       self.name = "models_2d_editor";
 	       // END FOR
 	       base_editor.BoardBase.call(this);
@@ -40,9 +41,14 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	    };
 	   
 	  
-	   BoardModel.prototype.update = function(content_type){
+	   BoardModel.prototype.update = function(content_type, to_send){
+	       /*Using to_send data from main_tree ("title", "parents_list"),
+		and content_type ("boards", "centrals") remove and restore
+		board*/
+
 	       var self = this;
 	       
+	       // TODO: may be add arguments for fill table and canvas:
 	       // clear scene:
 	       self.remove();
 
@@ -78,10 +84,10 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       console.log(this);
 
 	       // apply controls to divs:
-	       this.apply_controls(draw_bounds, draw_eq_number);
-
-
+	       this.apply_controls(draw_bounds, draw_eq_number, to_send);
 	   };
+
+
 	   BoardModel.prototype.init_board = function(){
 	       // TODO:
 	       this.update();
@@ -130,7 +136,7 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       self.scene.draw_scene("#scene", draw_bounds, draw_eq_number);
 	   };
 
-	   BoardModel.prototype.apply_controls = function(draw_bounds, draw_eq_number){
+	   BoardModel.prototype.apply_controls = function(draw_bounds, draw_eq_number, to_send){
 	       var self = this;
 	       $("#controls").tabs();
 	       $("#models_tree_wrap_style").resizable();
@@ -145,10 +151,29 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       this.apply_remove_all("b_remove_all");
 	       this.apply_remove_selected("b_remove_selected");
 	       this.apply_regions("b_add_region", "b_add_region_br");
-	       // this.apply_save("b_save_fabric_canvas");
+	       this.apply_save("b_save_fabric_canvas", to_send);
+	       this.apply_reload("b_reload_fabric_canvas");
+	       this.apply_color_vals();
 	       // this.apply_tree();
 	   };
 
+	   BoardModel.prototype.apply_color_vals = function(){
+	       this.set_color_val("sr_draw_color", "p_draw_sr_val");
+	       this.set_color_val("sr_eq_color", "p_eq_sr_val");
+	       this.set_color_val("sr_eq_color_br", "p_eq_br_sr_val");
+	   };
+
+	   BoardModel.prototype.set_color_val = function(sr_color_id, p_color_id){
+	       // console.log("sr_color_id.val():");
+	       // console.log($("#"+ sr_color_id));
+	       
+	       $("#"+ sr_color_id).on("change", function(){
+		   // console.log("changing");
+		   // console.log(this);
+		   $("#" + p_color_id).text($(this).val());
+	       });
+	       
+	   };
 
 	   BoardModel.prototype.get_color_val_from_input = function(color_input_id){
 	       /*Owerride Get value from input value. Stored table value used*/
@@ -160,7 +185,8 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 
 	       /*Owerride default input for color. Table used */
 	       var self = this;
-	       self.table.set_on_row_click(tables_ids);
+	       var sranges_ids = ["sr_draw_color", "sr_eq_color", "sr_eq_color_br"];
+	       self.table.set_on_row_click(tables_ids, sranges_ids);
 	       /*
 	       // "t_eqs_draw"
 	       $("#"+color_input_id).on("click", function(){
@@ -212,15 +238,18 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 		   }
 	       
 
-	       self.table.apply_eqs_table("b_draw_add_eq_num", self.tables_ids,
+	       self.table.apply_eqs_table("b_draw_add_eq_num", "b_draw_del_eq_num",
+					  self.tables_ids,
 					  eq_number_draw, "sr_draw_color",
 					  btype_draw);
 	       
-	       self.table.apply_eqs_table("b_eqr_add_eq_num", self.tables_ids,
+	       self.table.apply_eqs_table("b_eqr_add_eq_num", "b_eqr_del_eq_num",
+					  self.tables_ids,
 					  eq_number_eq, "sr_eq_color",
 					  btype_eq);
 	       
-	       self.table.apply_eqs_table("b_br_add_eq_num", self.tables_ids,
+	       self.table.apply_eqs_table("b_br_add_eq_num", "b_br_del_eq_num",
+					  self.tables_ids,
 					  eq_number_br, "sr_eq_color_br",
 					  btype_br);
 	   };
@@ -314,7 +343,31 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 	       // self.tree = mtree.ModelsTree(self);
 	   };
 
-	   BoardModel.prototype.apply_save = function(b_save_fabric_canvas_id){
+
+	   BoardModel.prototype.apply_reload = function(b_reload_id){
+	       /*Reload board from button.*/
+
+	       var self = this;
+	       $("#"+b_reload_id).on("click", function(){
+
+		   var to_send = self.to_send;
+		   console.log("self.to_send");
+		   console.log(self.to_send);
+
+		   to_send["mode"] = "activate";
+		   
+		   var succ = function(recived_data){
+		       recived_data["out"]["in"] = to_send;
+		       console.log("recived_data = ", recived_data);
+		       self.load(recived_data["out"]);
+		       };
+		   self.net.tree.tree.send_data(self.net.tree.url, to_send, succ);
+
+	       });
+	   };
+
+
+	   BoardModel.prototype.apply_save = function(b_save_id, to_send){
 	       
 	       /*Save model to img and send it to server.
 		Some regions will be converted, some ignored
@@ -323,61 +376,42 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 		if parent of obj is bRegion, it will be converted to
 		1px width (for sides 0, 1) or height(for sides 2, 3)
 		in resulting img.
+
+		Save eqs_table to server.
 		*/
 
 	       var self = this;
 
 	       // "#b_save_fabric_canvas"
-	       $("#"+b_save_fabric_canvas_id).on("click", function(){
+	       $("#"+b_save_id).on("click", function(){
 		   
-		   var to_send = self.save();
-
-		   // FOR send data to server:
-		   console.log("\n sending");
-		   console.log(to_send);
-		   $.ajax(
-		       {
-			   url: '/',
-			   type: 'POST',
-			   data: to_send,
-			   
-			   success: function (jsonResponse) {
-			       var objresponse = JSON.parse(jsonResponse);
-			       
-			       var data = objresponse;
-			       console.log("\ndata_successfuly_recived:");
-			       console.log(data);
-
-			       var models_id = $.map(data["models_id"], function(elm, id){
-				   console.log(elm);
-				   console.log(id);
-				   return('<li class="ui-menu-item ui-widget ui-widget-content"'
-					  + 'title="title">'+elm+'</li>');
-			       });
-			       $("#m_models").append(models_id.join(""));
-			   },
-
-			   error: function (data) {
-			       console.log("error to send");
-			       console.log(data);
-			   }
-		       });
-		   // END FOR
+		   to_send["mode"] = "save";
+		   to_send["node"]["node_data"] = self.save();
+		   
+		   self.net.tree.tree.send_data(self.net.tree.url, to_send);
 	       });
 
 	   };
 	   
 	   BoardModel.prototype.load = function(data){
 	       var self = this;
-	       
+	       var to_send = data["in"];
+	       self.to_send = to_send;
+
 	       // TODO:
+	       // load table:
+	       // console.log('data["eqs_table"]');
+	       self.table.eqs_table = data["eqs_table"];
+
+	       // update board
 	       var content_type = data["content_type"];
-	       console.log("content_type:");
-	       console.log(data["content_type"]);
-	       self.update(content_type);
+	       // console.log("content_type:");
+	       // console.log(data["content_type"]);
+	       self.update(content_type, to_send);
 	       
-	       console.log("data[canvas_src]:");
-	       console.log(data["canvas_src"]);
+	       // load canvas:
+	       // console.log("data[canvas_src]:");
+	       // console.log(data["canvas_src"]);
 	       self.canvas.loadFromJSON(data["canvas_src"],
 					self.canvas.renderAll.bind(self.canvas),
 					function(o, object) {
@@ -387,17 +421,18 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 					    fabric.log(o, object);
 					});
 	       self.canvas.requestRenderAll();
-
+	       
 	   };
-
+	   
+	   
 	   BoardModel.prototype.save = function(){
 	       
 	       var self = this;
 
 	       // for filter unobservable:
-	       console.log("unobservable objects:");
+	       // console.log("unobservable objects:");
 	       var uo_objects = self.canvas._objects.filter(function(elm){return(!elm.observable);});
-	       console.log(uo_objects);
+	       // console.log(uo_objects);
 
 	       // FOR hiding unobservable by changing they color to canvas.background
 	       uo_objects.forEach(function(elm){
@@ -405,13 +440,13 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 		   // elm.set("fill", 'rgba(255, 255, 255, 1.0)');
 		   elm.setColor('rgba(0, 0, 0, 1.0)');
 	       });
-	       console.log("recolored done");
+	       // console.log("recolored done");
 	       self.canvas.renderCanvas(self.canvas.getContext(), uo_objects);
 	       // END FOR
 
-	       console.log("br objects:");
+	       // console.log("br objects:");
 	       var br_objects = self.canvas._objects.filter(function(elm){return(elm.type == "bRegion");});
-	       console.log(br_objects);
+	       // console.log(br_objects);
 
 	       // FOR set bRegion's width's to 1px:
 	       br_objects.forEach(function(elm){
@@ -484,11 +519,13 @@ define(['jquery', 'jquery-ui-custom/jquery-ui',
 
 	       $("#controls").tabs("refresh");
 	       
-	       console.log("canvas json obj:");
-	       console.log(data);
+	       // console.log("canvas json obj:");
+	       // console.log(data);
+	       // console.log("self.table.eqs_table:");
+	       // console.log(self.table.eqs_table);
 	       var to_send = JSON.stringify({canvas_img: data,
 					     canvas_source: JSON.stringify(self.canvas),
-					     eqs_table: JSON.stringify(self.eqs_table)});
+					     eqs_table: self.table.eqs_table});
 	       
 	       return(to_send);
 	   };

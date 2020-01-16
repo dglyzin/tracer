@@ -21,7 +21,7 @@ class FilesystemDatastore():
         self.models_root_title = "models_envs"
         self.templates_path = templates_path
         self.env_content_list = ["bounds", "centrals",
-                                 "initials", "equations"]
+                                 "initials", "equations", "equations_bs"]
         self.env_content_list_for_imgs = ["bounds", "centrals", "initials"]
         self.metafile = os.path.join(data_folder, tree_file_name)
 
@@ -40,71 +40,6 @@ class FilesystemDatastore():
                                 % path_dst))
         os.rename(path_src, path_dst)
 
-    def save_content(self, data_input):
-
-        '''save node["node_data"][{"canvas_source"/"canvas_img"}]
-        to env folder for
-           node["node"]["title"]+_{src.json/img.png}
-        name.'''
-        
-        di = data_input
-        if di["node"]["title"] == "equations":
-            node_data = di["node"]["node_data"]
-            table = node_data["table"]
-            parent_path = self.get_parent_full_path(di)  # , node_name="parent"
-            print("parent_path:")
-            print(parent_path)
-            print("table:")
-            print(table)
-        else:
-            parent_path = self.get_parent_full_path(di)  # , node_name="parent"
-            node_data_file = os.path.join(parent_path,
-                                          di["node"]["title"]+"_src.json")
-            print("node_data_file:")
-            print(node_data_file)
-
-            node_img_file = os.path.join(parent_path,
-                                         di["node"]["title"]+"_img.png")
-            print("node_img_file:")
-            print(node_img_file)
-
-            node_data = json.loads(data_input["node"]["node_data"])
-            print("di[node][node_data][eqs_table]")
-            print(node_data["eqs_table"])
-
-            node_data_src = node_data["canvas_source"]
-            node_data_img = node_data["canvas_img"]
-
-            # save json data:
-            with open(node_data_file, "w") as f:
-                f.write(node_data_src)
-                # f.write(json.dumps(node_data_src,
-                #                    sort_keys=False, indent=4))
-
-            img_orign = node_data_img.split(",")[1]
-            print("img_orign:")
-            print(img_orign)
-
-            # save img data:
-            with open(node_img_file, "wb") as f:
-                # imsave(img_orign, node_img_file, format='jpeg')
-                f.write(base64.decodebytes(img_orign.encode("utf-8")))
-                # f.write(base64.decodebytes(node_data_img.encode("utf-8")))
-            img = imread(node_img_file, mode="L")
-
-            print("img array:")
-            print(img)
-
-            # tree_data_src = data_input["tree"]
-
-        # self.update_tree(tree_data_src)
-        print("done")
-
-    def update_tree(self, tree_data_src):
-
-        with open(self.metafile, "w") as f:
-            f.write(tree_data_src)
-
     def mk_env(self, path):
 
         '''Create env folder and copy some data
@@ -114,9 +49,9 @@ class FilesystemDatastore():
         print(path)
         self.mk_folder(path)
 
-        for name in self.env_content_list_for_imgs:
+        for filename in os.listdir(self.templates_path):
             shutil.copy2(os.path.join(self.templates_path,
-                                      name+"_src.json"),
+                                      filename),
                          path)
 
     def mk_folder(self, path):
@@ -148,14 +83,57 @@ class FilesystemDatastore():
         di = data_input
         content = di["node"]["title"]
         out = {"content_type": content}
-        if content == "equations":
+        if content in ["equations", "equations_bs"]:
+            
+            # FOR load table:
+            parent_path = self.get_parent_full_path(di)  # , node_name="parent"
+
+            table_file = os.path.join(parent_path,
+                                      di["node"]["title"]+"_table.json")
+            print("table_file:")
+            print(table_file)
+            if os.path.exists(table_file):
+                with open(table_file, "r") as f:
+                    data = f.read()
+                out["table"] = json.loads(data)
+            else:
+                if content == "equations":
+                    out["table"] = [
+                        ["U'=a*U+b*U*((U)^2+(V)^2)+c*D[U,{x,2}]\n"
+                         + "V'=a*V+b*V*((U)^2+(V)^2)+c*D[V,{x,2}]\n"],
+                        ["U'=a*(D[U,{x,2}]+ D[U,{y,2}])\n"],
+                        ["U'= a*(b-U(t-1))*U\n"]]
+                elif content == "equations_bs":
+                    out["table"] = [["sin(t)"], ["cos(t)"], ["exp(t)"]]
+                
+            print('out["table"]:')
+            print(out["table"])
+            # END FOR
+            '''
             out["table"] = [
-                ["U'=a*U+b*U*((U)^2+(V)^2)+c*D[U,{x,2}]\n"
-                 + "V'=a*V+b*V*((U)^2+(V)^2)+c*D[V,{x,2}]\n"],
-                ["U'=a*(D[U,{x,2}]+ D[U,{y,2}])\n"],
-                ["U'= a*(b-U(t-1))*U\n"]
+                ['По известной теореме Эйлера каждый элемент группы SO(3) собственных вращений\n'
+                 + 'трёхмерного евклидова пространства $\mathbb{R}^{3}$ является вращением вокруг \n'
+                 + 'некоторой неподвижной оси. Скажем, матрицы'],
+                ['отвечают вращениям вокруг осей $O_{z}  \ \ и  \ \ О_{х}$ соответственно на углы \n'
+                 + '$\varphi \ \  и  \ \ \theta$. Используя параметризацию вращений углами Эйлера  \n'
+                 + '$\varphi, \theta,\psi \ \  (0 \leq \varphi, \psi < 2 \pi, 0 \leq \theta <\pi)$,\n'
+                 + 'геометрический смысл которых нас пока не интересует, \n'
+                 + 'любую матрицу $A \in SO(3)$ можно записать в виде \n'
+                 + '$A=B_{\varphi}C_{\theta}B_{\psi} \ \ \ (2)$ \n'
+                 + 'где $B_{\varphi}C_{\theta}B_{\psi}$ — указанные выше матрицы (1).'],
+                ['отвечают вращениям вокруг осей $O_{z}  \ \ и  \ \ О_{х}$ соответственно на углы \n'
+                 + '$\varphi \ \  и  \ \ \theta$. Используя параметризацию вращений углами Эйлера \n'
+                 + '$\varphi, \theta,\psi \ \  (0 \leq \varphi, \psi < 2 \pi, 0 \leq \theta <\pi)$,\n'
+                 + 'геометрический смысл которых нас пока не интересует, \n'
+                 + 'любую матрицу $A \in SO(3)$ можно записать в виде \n'
+                 + '$A=B_{\varphi}C_{\theta}B_{\psi} \ \ \ (2)$ \n'
+                 + 'где $B_{\varphi}C_{\theta}B_{\psi}$ — указанные выше матрицы (1).']
             ]
             out["table"] = 3*out["table"]
+            '''
+            # elif content == "equations_bs":
+            # out["table"] = [["sin(t)"], ["cos(t)"], ["exp(t)"]]
+            
         else:
             # this will return /path/to/model:
             model_folder_full_path = self.get_parent_full_path(di)
@@ -164,7 +142,111 @@ class FilesystemDatastore():
             with open(content_img_src_data_file) as f:
                 content_img_data_src = f.read()
             out["canvas_src"] = content_img_data_src
+
+            content_eqs_table_data_file = os.path.join(model_folder_full_path,
+                                                       content
+                                                       + "_colors_table.json")
+            if os.path.exists(content_eqs_table_data_file):
+                with open(content_eqs_table_data_file) as f:
+                    content_eqs_table = f.read()
+                out["eqs_table"] = json.loads(content_eqs_table)
+            else:
+                out["eqs_table"] = []
         return(out)
+
+    def save_content(self, data_input):
+
+        '''save node["node_data"][{"canvas_source"/"canvas_img"}]
+        to env folder for
+           node["node"]["title"]+_{src.json/img.png}
+        name.'''
+        
+        di = data_input
+        if di["node"]["title"] in ["equations", "equations_bs"]:
+            node_data = di["node"]["node_data"]
+            table = node_data["table"]
+            parent_path = self.get_parent_full_path(di)  # , node_name="parent"
+            print("parent_path:")
+            print(parent_path)
+            print("table:")
+            print(str(table))
+            table_file = os.path.join(parent_path,
+                                      di["node"]["title"]+"_table.json")
+            
+            print("table_file:")
+            print(table_file)
+
+            # save table:
+            with open(table_file, "w") as f:
+                # f.write(str(table))
+                f.write(json.dumps(table,
+                                   sort_keys=False, indent=4))
+        else:
+            # save canvas:
+
+            parent_path = self.get_parent_full_path(di)  # , node_name="parent"
+            node_data_file = os.path.join(parent_path,
+                                          di["node"]["title"]+"_src.json")
+            print("node_data_file:")
+            print(node_data_file)
+
+            node_img_file = os.path.join(parent_path,
+                                         di["node"]["title"]+"_img.png")
+            print("node_img_file:")
+            print(node_img_file)
+
+            node_eqs_table_file = os.path.join(parent_path,
+                                               di["node"]["title"]
+                                               + "_colors_table.json")
+            print("node_eqs_table_file:")
+            print(node_eqs_table_file)
+
+            node_data = json.loads(data_input["node"]["node_data"])
+            # print("di[node][node_data][eqs_table]")
+            # print(node_data["eqs_table"])
+
+            node_data_src = node_data["canvas_source"]
+            node_data_img = node_data["canvas_img"]
+            node_data_table = node_data["eqs_table"]
+
+            # save json data:
+            with open(node_data_file, "w") as f:
+                f.write(node_data_src)
+                # f.write(json.dumps(node_data_src,
+                #                    sort_keys=False, indent=4))
+
+            img_orign = node_data_img.split(",")[1]
+            print("img_orign:")
+            print(img_orign)
+
+            # save img data:
+            with open(node_img_file, "wb") as f:
+                # imsave(img_orign, node_img_file, format='jpeg')
+                f.write(base64.decodebytes(img_orign.encode("utf-8")))
+                # f.write(base64.decodebytes(node_data_img.encode("utf-8")))
+            img = imread(node_img_file, mode="L")
+
+            print("img array:")
+            print(img)
+
+            # save table:
+            with open(node_eqs_table_file, "w") as f:
+                # f.write(str(table))
+                f.write(json.dumps(node_data_table,
+                                   sort_keys=False, indent=4))
+        
+            print("eqs_table:")
+            print(node_data_table)
+
+            # tree_data_src = data_input["tree"]
+
+        # self.update_tree(tree_data_src)
+        print("done")
+
+    def update_tree(self, tree_data_src):
+
+        with open(self.metafile, "w") as f:
+            f.write(tree_data_src)
 
     def get_node_full_path(self, data_input, node_name="node"):
         '''Return full path of given node
