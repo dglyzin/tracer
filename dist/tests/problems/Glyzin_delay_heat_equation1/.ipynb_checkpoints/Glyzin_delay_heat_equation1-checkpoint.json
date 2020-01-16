@@ -3,9 +3,9 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 1.0, 
-        "TimeStep": 0.0001, 
-        "SaveInterval": 0.01, 
+        "FinishTime": 90.0, 
+        "TimeStep": 0.000001, 
+        "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
@@ -61,9 +61,9 @@
         ], 
         "ParamValues": [
             {
-                "a": 0.5, 
+                "a": 2, 
                 "k": 2,
-                "r": 2
+                "r": 5
             }
         ], 
         "DefaultParamsIndex": 0
@@ -93,7 +93,7 @@
             "Name": "*", 
             "CpuCount": 1, 
             "CpuMemory": [
-                10
+                5
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
