@@ -27,7 +27,14 @@
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [
-                
+                {
+                    "BoundNumber": 0, 
+                    "Side": 0
+                },
+                {
+                    "BoundNumber": 0, 
+                    "Side": 1
+                }
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
@@ -61,8 +68,8 @@
     }, 
     "Bounds": [
         {
-            "Name": "Dirichlet 1", 
-            "Type": 0, 
+            "Name": "Nayman 1", 
+            "Type": 1, 
             "Values": [
                 "0.0"
             ], 
