@@ -60,7 +60,7 @@ class ModelNet():
     def set_settings(self, settings):
         self.settings = settings
 
-    def get_video(self, name):
+    def get_video(self, name, idx=0):
 
         '''Return string that can be used for:
         display(HTML(str_video))'''
@@ -69,7 +69,7 @@ class ModelNet():
             result_postproc = self.result_postproc
         except AttributeError:
             raise(BaseException("Use model.readResults first"))
-        return(result_postproc.get_video(self, name))
+        return(result_postproc.get_video(self, name, idx))
 
     def readResults(self, names=[],
                     result_format=1, progress=None):
