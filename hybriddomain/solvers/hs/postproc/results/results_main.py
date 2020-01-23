@@ -60,12 +60,12 @@ class ResultPostprocNet():
         
         self.common_shape = None
 
-    def get_video(self, model, plot_name):
+    def get_video(self, model, plot_name, plot_idx=0):
 
         '''Return string that can be used for:
         display(HTML(str_video))'''
 
-        plot_file_name = model.plots_paths[plot_name][0]
+        plot_file_name = model.plots_paths[plot_name][plot_idx]
         str_video = '''
         <script>
         </script>
