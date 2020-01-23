@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0, 
         "StartTime": 0.0, 
-        "FinishTime": 10.0, 
+        "FinishTime": 2.0, 
         "TimeStep": 0.000001, 
         "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
@@ -41,7 +41,15 @@
             "EquationRegions": []
         }
     ], 
-    "Interconnects": [], 
+    "Interconnects": [
+        {
+            "Name": "connection",
+            "Block1": 0,
+            "Block2": 0,
+            "Block1Side": 0,
+            "Block2Side": 1
+        }
+    ], 
     "Equations": [
         {
             "Name": "1D heat 1", 
@@ -121,13 +129,7 @@
     "Plots": [ 
 	{
             "Title": "u(t,x)", 
-            "Name": "U1",
-            "Period": 0.1,
-            "Value": "U"
-        },
-        {
-            "Title": "u(t,x)", 
-            "Name": "U2",
+            "Name": "U",
             "Period": 0.1,
             "Value": "U"
         }
@@ -135,12 +137,7 @@
 
     "Results":[
         {
-            "Name": "u1", 
-            "Period": 0.1,
-            "Value": "U"
-        },
-        {
-            "Name": "u2", 
+            "Name": "u", 
             "Period": 0.1,
             "Value": "U"
         }

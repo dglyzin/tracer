@@ -1,17 +1,17 @@
 {
-    "ProjectName": "Heat_test",
+    "ProjectName": "Ginzburg_Landau",
     "Solver": {
         "SolverIdx": 0,
         "StartTime": 0.0,
-        "FinishTime": 2.0,
-        "TimeStep": 1e-06,
-        "SaveInterval": 0,
+        "FinishTime": 3.0,
+        "TimeStep": 1e-05,
+        "SaveInterval": 0.1,
         "AbsTolerance": 0.001,
         "RelTolerance": 0.001
     },
     "Grid": {
         "Dimension": 1,
-        "dx": 0.01,
+        "dx": 0.001,
         "dy": 1,
         "dz": 1
     },
@@ -19,24 +19,15 @@
         {
             "Name": "MainBlock",
             "Offset": {
-                "x": 0.01
+                "x": 0.0
             },
             "Size": {
-                "x": 1.0
+                "x": 6.28
             },
             "DefaultEquation": 0,
             "DefaultInitial": 0,
             "DefaultBound": 0,
-            "BoundRegions": [
-                {
-                    "BoundNumber": 0,
-                    "Side": 0
-                },
-                {
-                    "BoundNumber": 0,
-                    "Side": 1
-                }
-            ],
+            "BoundRegions": [],
             "InitialRegions": [],
             "EquationRegions": []
         }
@@ -52,50 +43,68 @@
     ],
     "Equations": [
         {
-            "Name": "1D heat 1",
+            "Name": "Ginzburg_Landau",
             "Vars": [
                 "x"
             ],
             "System": [
-                "U'= a*D[U,{x,2}] + r*(1-U(t-1)/(x)^0.5/k)*U"
+                "U'=a*U+b*U*((U)^2+(V)^2)+c*D[U,{x,2}]",
+                "V'=a*V+b*V*((U)^2+(V)^2)+c*D[V,{x,2}]"
             ]
         }
     ],
     "EquationParams": {
         "Params": [
             "a",
-            "k",
-            "r"
+            "b",
+            "c"
         ],
         "ParamValues": [
             {
-                "a": 20,
-                "k": 2,
-                "r": 5
+                "b": 0.0001,
+                "c": 0.001,
+                "a": 0.01
             },
             {
-                "a": 10,
-                "k": 2,
-                "r": 2
+                "b": -0.0001,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": 1e-05,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": -1e-05,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": 3e-05,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": -3e-05,
+                "c": 0.001,
+                "a": 0.01
+            },
+            {
+                "b": 3e-05,
+                "c": -0.001,
+                "a": 0.01
             }
         ],
-        "DefaultParamsIndex": 1
+        "DefaultParamsIndex": 6
     },
-    "Bounds": [
-        {
-            "Name": "Dirichlet1111",
-            "Type": 1,
-            "Values": [
-                "0"
-            ],
-            "Equation": null
-        }
-    ],
+    "Bounds": [],
     "Initials": [
         {
             "Name": "Initial values 0",
             "Values": [
-                "sin(x*3.1415926)"
+                "7.0*sin(x)",
+                "10.0 * sin(x)"
             ]
         }
     ],
@@ -104,7 +113,7 @@
             "Name": "*",
             "CpuCount": 1,
             "CpuMemory": [
-                6
+                56
             ],
             "GpuCount": 3,
             "GpuMemory": [
@@ -127,16 +136,22 @@
     "Plots": [
         {
             "Title": "u(t,x)",
-            "Name": "U",
+            "Name": "no_name_plot",
             "Period": 0.1,
-            "Value": "U"
+            "Value": [
+                "U",
+                "V"
+            ]
         }
     ],
     "Results": [
         {
             "Name": "u",
             "Period": 0.1,
-            "Value": "U"
+            "Value": [
+                "U",
+                "V"
+            ]
         }
     ]
 }
