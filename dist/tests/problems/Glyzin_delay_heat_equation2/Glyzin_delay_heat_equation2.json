@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 0,
         "StartTime": 0.0,
-        "FinishTime": 2.0,
+        "FinishTime": 10.0,
         "TimeStep": 1e-06,
         "SaveInterval": 0,
         "AbsTolerance": 0.001,
@@ -77,9 +77,19 @@
                 "a": 10,
                 "k": 2,
                 "r": 2
+            },
+            {
+                "a": 5,
+                "k": 2,
+                "r": 2
+            },
+            {
+                "a": 2,
+                "k": 2,
+                "r": 2
             }
         ],
-        "DefaultParamsIndex": 1
+        "DefaultParamsIndex": 3
     },
     "Bounds": [
         {
