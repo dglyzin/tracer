@@ -598,19 +598,28 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None,
         stdout_out = stdout.read()
         stderr_out = stderr.read()
         
+        stdout_out = stdout_out.decode()
+        stderr_out = stderr_out.decode()
+
+        if ("error" in stdout_out or "Error" in stdout_out):
+            logger.error("preprocessor errors:")
+            logger.error(stdout_out)
+            raise(BaseException("preprocessor error"))
+        if ("error" in stderr_out or "Error" in stderr_out):
+            logger.error("preprocessor errors:")
+            logger.error(stderr_out)
+            raise(BaseException("preprocessor error"))
+
         if notebook is None:
             logger.info("finally")
 
             logger.info("preprocessor stdout:")
-
-            stdout_out = stdout_out.decode()
 
             stdout_out = stdout_out.split("\n")
             for line in stdout_out:
                 logger.info(line)
             logger.info("stdout END")
 
-            stderr_out = stderr_out.decode()
 
             stderr_out = stderr_out.split("\n")
             if len(stderr_out) > 0:
@@ -645,9 +654,14 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None,
                 postproc = 'Creating pictures and a movie for a given folder.'
                 cond = ("Performance" in line
                         or "Done!" in line
-                        or postproc in line
-                        or 'error' in line or 'Error' in line
-                        or 'errors' in line or 'Errors' in line)
+                        or postproc in line)
+                cond_error = ('error' in line or 'Error' in line
+                              or 'errors' in line or 'Errors' in line)
+                if cond_error:
+                    logger.error("solver errors:")
+                    logger.error(line)
+                    raise(BaseException("solver error"))
+                    
                 if cond:
                     logger.info(line)
                     success = True
@@ -767,10 +781,12 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None,
         logger.error(u'Ошибка в протоколе SSH')
         logger.error(e)
         return u'Ошибка в протоколе SSH'
+    '''
     except BaseException as e:
         logger.error("base exception")
         logger.error(e)
         return()
+    '''
 
 
 def finalParseAndRun(settings, dimention, model=None):
