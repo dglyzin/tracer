@@ -683,17 +683,16 @@ def createMovie(projectDir, projectName, modelParamsPath):
 
         createVideoFile(projectDir, projectName, plot["Name"], plotIdx)
 
-
     for result_idx in range(rCount):
-        # TODO iterate through blocks to combine whole domain
-        block_idx = 0
+        
+        block_idx = result_idx
 
         out = getDomainProperties(info, block_idx)
         countZ, countY, countX, offsetZ, offsetY, offsetX = out
 
         resultItem = mParams['resultList'][result_idx]
 
-        resultValues = resultItem["Value"]# can be one element or can be list
+        resultValues = resultItem["Value"]  # can be one element or can be list
         pool = mp.Pool(processes=16)
         # here plotFileLists is list, generated
         # by solver, and extracted with getBinFilesByPlot:

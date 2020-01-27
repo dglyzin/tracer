@@ -78,6 +78,7 @@ class ModelNet():
         '''
         result_postproc = ResultPostproc(self.project_folder)
         self.result_postproc = result_postproc
+        self.result_postproc.get_results_filespaths(self)
         result_postproc.set_results_arrays(self, names=names,
                                            result_format=result_format,
                                            progress=progress)
