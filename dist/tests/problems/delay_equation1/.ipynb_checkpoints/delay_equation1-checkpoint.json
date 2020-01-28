@@ -41,7 +41,7 @@
                 "x"
             ], 
             "System": [
-                "U'= a*U*(1-U(t-2))"
+                "U'= a*U*(1-U(t-1.5))"
             ]
         }
     ], 
@@ -81,7 +81,7 @@
             "Name": "*", 
             "CpuCount": 1, 
             "CpuMemory": [
-                56
+                5
             ], 
             "GpuCount": 3, 
             "GpuMemory": [
