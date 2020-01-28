@@ -43,20 +43,26 @@ class Postproc():
 
         # sinch systems:
         delays_data = eSystems[0].postproc.postproc_delay_sys(eSystems[1:])
-        # print("delays_data:")
-        # print(delays_data)
-
+        delays_data.sort(key=lambda x: x[0])
+        print("delays_data:")
+        print(delays_data)
+        
         delays = {}
         for delay, source_data in delays_data:
             term_var = source_data[1][0]
+            delay_origin = float(source_data[2])
+
             # print("source_data")
             # print(source_data[1][0])
 
             if term_var not in delays:
-                delays[term_var] = [delay]
+                delays[term_var] = [delay_origin]
+                # delays[term_var] = [delay]
             else:
-                if delay not in delays[term_var]:
-                    delays[term_var].append(delay)
+                if delay_origin not in delays[term_var]:
+                    delays[term_var].append(delay_origin)
+                # if delay not in delays[term_var]:
+                #     delays[term_var].append(delay)
         # logger.info("delays:")
         # logger.info(delays)
 

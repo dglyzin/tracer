@@ -34,27 +34,7 @@
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
-        },
-        {
-            "Name": "SupplementaryBlock", 
-            "Offset": {
-                "x": 0.1
-            }, 
-            "Size": {
-                "x": 3.5
-            }, 
-            "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
-            "BoundRegions": [
-                {
-                    "BoundNumber": 1, 
-                    "Side": 0
-                }
-            ], 
-            "InitialRegions": [], 
-            "EquationRegions": []
         }
-
     ], 
     "Interconnects": [], 
     "Equations": [
@@ -64,7 +44,26 @@
                 "x"
             ], 
             "System": [
-                "U'= a*(b-U(t-1)-U(t-7))*U"
+                "U'= U(t-7)+U(t-3)+V(t-1)+V(t-2)",
+		"V'= U(t-1)+V(t-2)+U(t-3)+V(t-4)"
+            ]
+        },
+	{
+            "Name": "1D heat 1", 
+            "Vars": [
+                "x"
+            ], 
+            "System": [
+                "U'= U(t-1)+U(t-2)"
+            ]
+        },
+	{
+            "Name": "1D heat 1", 
+            "Vars": [
+                "x"
+            ], 
+            "System": [
+                "U'= U(t-1.1)+U(t-1.7)"
             ]
         }
     ], 
@@ -86,20 +85,24 @@
             "Name": "Dirichlet 1", 
             "Type": 0, 
             "Values": [
-                "sin(t)"
+                "33.0",
+		"33.0"
             ], 
             "Derivative": [
-                "cos(t)"
+                "33.0",
+		"33.0"
             ]
         },
 	{
             "Name": "Dirichlet 1", 
             "Type": 0, 
             "Values": [
-                "4.0+exp(t)"
+                "44.0",
+		"44.0"
             ], 
             "Derivative": [
-                "exp(t)"
+                "44.0",
+		"44.0"
             ]
         }
     ], 
@@ -107,13 +110,15 @@
         {
             "Name": "Initial values 0", 
             "Values": [
-                "1.0+t"
+                "12.0",
+		"12.0"
             ]
         }, 
         {
             "Name": "Initial values 1", 
             "Values": [
-                "2.0+sin(t)"
+                "12.0+t",
+		"12.0+t"
             ]
         }
     ], 
@@ -135,6 +140,11 @@
     "Mapping": {
         "IsMapped": true, 
         "BlockMapping": [
+            {
+                "NodeIdx": 0, 
+                "DeviceType": "cpu", 
+                "DeviceIdx": 0
+            },
             {
                 "NodeIdx": 0, 
                 "DeviceType": "cpu", 
