@@ -1,118 +1,119 @@
 {
-    "ProjectName": "Heat_test", 
+    "ProjectName": "Heat_test",
     "Solver": {
-        "SolverIdx": 0, 
-        "StartTime": 0.0, 
-        "FinishTime": 10, 
-        "TimeStep": 0.001, 
-        "SaveInterval": 0.1, 
-        "AbsTolerance": 0.001, 
+        "SolverIdx": 0,
+        "StartTime": 0.0,
+        "FinishTime": 10,
+        "TimeStep": 0.001,
+        "SaveInterval": 0.1,
+        "AbsTolerance": 0.001,
         "RelTolerance": 0.001
-    }, 
+    },
     "Grid": {
-        "Dimension": 1, 
-        "dx": 0.01, 
-        "dy": 1, 
+        "Dimension": 1,
+        "dx": 0.01,
+        "dy": 1,
         "dz": 1
-    }, 
+    },
     "Blocks": [
         {
-            "Name": "MainBlock", 
+            "Name": "MainBlock",
             "Offset": {
                 "x": 0
-            }, 
+            },
             "Size": {
                 "x": 1
-            }, 
-            "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
-            "BoundRegions": [
-                
-            ], 
-            "InitialRegions": [], 
+            },
+            "DefaultEquation": 0,
+            "DefaultInitial": 0,
+            "DefaultBound": 0,
+            "BoundRegions": [],
+            "InitialRegions": [],
             "EquationRegions": []
         }
-    ], 
-    "Interconnects": [], 
+    ],
+    "Interconnects": [],
     "Equations": [
         {
-            "Name": "1D heat 1", 
+            "Name": "1D heat 1",
             "Vars": [
                 "x"
-            ], 
+            ],
             "System": [
                 "U'= a*U*(1-U(t-1.5))"
             ]
         }
-    ], 
+    ],
     "EquationParams": {
         "Params": [
-            "a"
-        ], 
+            "a",
+            "h"
+        ],
         "ParamValues": [
             {
-                "a": 2
+                "a": 2,
+                "h": 1
             }
-        ], 
+        ],
         "DefaultParamsIndex": 0
-    }, 
+    },
     "Bounds": [
         {
-            "Name": "Dirichlet 1", 
-            "Type": 0, 
+            "Name": "Dirichlet 1",
+            "Type": 0,
             "Values": [
                 "0.0"
-            ], 
+            ],
+            "Equation": null,
             "Derivative": [
                 "0.0"
             ]
         }
-    ], 
+    ],
     "Initials": [
         {
-            "Name": "Initial values 0", 
+            "Name": "Initial values 0",
             "Values": [
                 "0.5"
             ]
         }
-    ], 
+    ],
     "Hardware": [
         {
-            "Name": "*", 
-            "CpuCount": 1, 
+            "Name": "*",
+            "CpuCount": 1,
             "CpuMemory": [
                 5
-            ], 
-            "GpuCount": 3, 
+            ],
+            "GpuCount": 3,
             "GpuMemory": [
-                5, 
-                5, 
+                5,
+                5,
                 5
             ]
         }
-    ], 
+    ],
     "Mapping": {
-        "IsMapped": true, 
+        "IsMapped": true,
         "BlockMapping": [
             {
-                "NodeIdx": 0, 
-                "DeviceType": "cpu", 
+                "NodeIdx": 0,
+                "DeviceType": "cpu",
                 "DeviceIdx": 0
             }
         ]
-    }, 
-    "Plots": [ 
-	{
-            "Name": "u", 
-            "Title": "u(t,x)", 
+    },
+    "Plots": [
+        {
+            "Title": "u(t,x)",
+            "Name": "u",
             "Period": 0.1,
             "Value": "U"
         }
     ],
-
-    "Results":[
+    "Results": [
         {
-            "Name": "u", 
+            "Name": "u",
             "Period": 0.1,
             "Value": "U"
         }

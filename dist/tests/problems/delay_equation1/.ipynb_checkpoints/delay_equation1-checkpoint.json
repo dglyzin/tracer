@@ -47,11 +47,13 @@
     ], 
     "EquationParams": {
         "Params": [
-            "a"
+            "a",
+            "h"
         ], 
         "ParamValues": [
             {
-                "a": 2
+                "a": 2,
+                "h": 1
             }
         ], 
         "DefaultParamsIndex": 0
