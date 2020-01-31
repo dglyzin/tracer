@@ -2,12 +2,29 @@ from hybriddomain.solvers.mini_solver.python.bounds import Bounds
 
 from scipy.misc import imread
 from scipy.misc import imsave
-import base64
+# import base64
 import json
 import os
 from functools import reduce
 import sympy
 import numpy as np
+
+from threads import Kernel as bKernel
+from threads import mp
+from threads import queue
+
+
+class Thread(bKernel):
+    def __init__(self, net, work_queue, number):
+        self.net = net
+        bKernel.__init__(self, work_queue, number)
+
+    def do_work(self, entry):
+        '''Run solver kernel for each thread'''
+        # print(entry)
+        
+        self.net.kernel(*entry)
+        print("thread: %d finished" % (self.number))
 
 
 class Solver():
@@ -17,37 +34,109 @@ class Solver():
         self.dt = 0.000001
         self.bounds = Bounds(unbound_value=unbound_value,
                              dxdy=[self.dx, self.dy])
-        
+        self.start_workers()
+
+    def start_workers(self):
+        # FOR init threads:
+        self.num_worker_threads = mp.cpu_count()
+        print("count of physical cpu:")
+        print(self.num_worker_threads)
+        self.threads = []
+        self.queue = queue.Queue()
+
+        for i in range(self.num_worker_threads):
+            # t = threading.Thread(target=worker)
+            t = Thread(self, self.queue, i)
+            t.start()
+            self.threads.append(t)
+        # END FOR
+
+    def stop_workers(self):
+        # stop workers
+        for i in range(self.num_worker_threads):
+            self.queue.put(None)
+        for t in self.threads:
+            t.join()
+
+    def kernel(self, entry_idxXs, idxYs,
+               result, source,
+               csIdxs, cFuncs,
+               bsIdxs, btypes, bFuncs):
+        '''What each thread will solve'''
+
+        # for idxX in idxXs:
+        for idxX in entry_idxXs:
+            for idxY in idxYs:
+                on_bounds = self.bounds.set_bounds(idxX, idxY,
+                                                   result, source,
+                                                   bsIdxs, btypes, bFuncs)
+
+                # if not on_bounds:
+                if bsIdxs[idxX, idxY] == self.bounds.unbound_value:
+                    dx, dy, dt = [self.dx, self.dy, self.dt]
+                    func = cFuncs[csIdxs[idxX, idxY]]
+                    result[idxX, idxY] = func(idxX, idxY, source, dt, dx, dy)
+                    # print("result[idxX, idxY]:")
+                    # print(result[idxX, idxY])
+
     def run(self, result, source,
             csIdxs, cFuncs,
             bsIdxs, btypes, bFuncs,
             ITERATION_COUNT, progress=None):
-
+        
         # donot touch to border:
-        idxXs = range(1, source.shape[0]-1)
+        idxXs = list(range(1, source.shape[0]-1))
         idxYs = range(1, source.shape[1]-1)
 
+        n = len(idxXs)
+        m = self.num_worker_threads
+        print("n=len(idxXs):")
+        print(n)
+        
+        # here "else idxXs[i*int(n/m):]" used for fill remained:
+        splited_idxXs = [idxXs[i*int(n/m): (i+1)*(int(n/m))]
+                         if i < m-1 else idxXs[i*int(n/m):]
+                         for i in range(m)]
+        print("for queue:")
+        print(splited_idxXs)
+        '''not used:
+        # check if all data in idxXs can be achived with m+1 i.e.
+        # if possible satisfy: (i+1)*[m/k]>=n which is equal to
+        # (m+1)*[m/k]>=n for i = m (=range(m+1)[-1])
+        if int(n/m) < m+1:
+            raise(BaseException("int(n/m)<m+1: n=%d, m=%d"
+                                % (n, m)))
+        M = m if n % m == 0 else m + 1
+        splited_idxXs = [idxXs[i*int(n/m): (i+1)*(int(n/m))]
+                         for i in range(M)]
+        '''
         for step in range(ITERATION_COUNT):
             
             # update progress:
             if progress is not None:
                 progress.succ(step)
-
-            for idxX in idxXs:
-                for idxY in idxYs:
-                    on_bounds = self.bounds.set_bounds(idxX, idxY,
-                                                       result, source,
-                                                       bsIdxs, btypes, bFuncs)
-                    
-                    # if not on_bounds:
-                    if bsIdxs[idxX, idxY] == self.bounds.unbound_value:
-                        dx, dy, dt = [self.dx, self.dy, self.dt]
-                        func = cFuncs[csIdxs[idxX, idxY]]
-                        result[idxX, idxY] = func(idxX, idxY, source, dt, dx, dy)
-                        # print("result[idxX, idxY]:")
-                        # print(result[idxX, idxY])
+                
+            for idx, entry_idxXs in enumerate(splited_idxXs):
+                
+                print("bounds between threads:")
+                a = bsIdxs[entry_idxXs[-1]-1: entry_idxXs[-1]+1, :]
+                print(a[a != self.bounds.unbound_value])
+        
+                self.queue.put([entry_idxXs, idxYs,
+                                result, source,
+                                csIdxs, cFuncs,
+                                bsIdxs, btypes, bFuncs])
+                '''
+                self.kernel(entry_idxXs, idxYs,
+                            result, source,
+                            csIdxs, cFuncs,
+                            bsIdxs, btypes, bFuncs)
+                '''
+            self.queue.join()
             source = result.copy()
-                        
+
+        self.stop_workers()
+
         return(result)
 
 
@@ -125,10 +214,13 @@ def run_files(model_path):
     def fix_missing_colors(idxs, equations_numbers):
         '''Put all unknown colors to default value'''
 
+        # union(idxs == eq_num, for all eq_nums)
+        #  == intersection(idxs != eq_num, for all eq_nums):
         or_args = [idxs != eq_num for eq_num in equations_numbers]
         or_func = np.vectorize(lambda x, y: x and y)
         condition = reduce(lambda acc, elm: or_func(acc, elm),
                            or_args[1:], or_args[0])
+        # TODO: csIdxs.unbound_value != bsIdxs.unbound_value:
         idxs[condition] = unbound_value
     fix_missing_colors(csIdxs, centrals_equations_numbers)
     fix_missing_colors(bsIdxs, bounds_equations_numbers)
@@ -140,6 +232,8 @@ def run_files(model_path):
     
     # FOR cFuncs:
     cFuncs = {}
+    # print("eval(equations_table[0][0]):")
+    # print(eval(equations_table[0][0]))
     for eq_num in centrals_equations_numbers:
         if eq_num not in range(len(equations_table)):
             raise(BaseException("no equation for num: %s"
