@@ -12,6 +12,7 @@ import numpy as np
 from threads import Kernel as bKernel
 from threads import mp
 from threads import queue
+import multiprocessing as mp
 
 
 class Thread(bKernel):
@@ -22,10 +23,23 @@ class Thread(bKernel):
     def do_work(self, entry):
         '''Run solver kernel for each thread'''
         # print(entry)
-        
+        import sympy
         self.net.kernel(*entry)
         print("thread: %d finished" % (self.number))
 
+
+class Process():
+
+    def __init__(self, net):
+        self.net = net
+
+    def do_work(self, entry):
+        '''Run solver kernel for each thread'''
+        # print(entry)
+        
+        self.net.kernel(*entry)
+        # print("thread: %d finished" % (self.number))
+    
 
 class Solver():
     
@@ -34,6 +48,9 @@ class Solver():
         self.dt = 0.000001
         self.bounds = Bounds(unbound_value=unbound_value,
                              dxdy=[self.dx, self.dy])
+        
+        # self.process = Process(self)
+        # self.num_worker_threads = mp.cpu_count()
         self.start_workers()
 
     def start_workers(self):
@@ -94,11 +111,24 @@ class Solver():
         print(n)
         
         # here "else idxXs[i*int(n/m):]" used for fill remained:
-        splited_idxXs = [idxXs[i*int(n/m): (i+1)*(int(n/m))]
-                         if i < m-1 else idxXs[i*int(n/m):]
+        splited_idxXs = [idxXs[i*int(n/m)+2: (i+1)*(int(n/m))-1]
+                         if i < m-1 else idxXs[i*int(n/m)+2:]
                          for i in range(m)]
         print("for queue:")
         print(splited_idxXs)
+        
+        # because of borders area between threads computed
+        # at single thread:
+        splited_idxXs_remainds = [idxXs[i*int(n/m)-1: (i)*(int(n/m))+2]
+                                  if i != 0 else idxXs[i*int(n/m):i*int(n/m)+2]
+                                  for i in range(m)]
+        print("for single thread:")
+        print(splited_idxXs_remainds)
+        '''
+        splited_idxXs = [idxXs[i*int(n/m): (i+1)*(int(n/m))]
+                         if i < m-1 else idxXs[i*int(n/m):]
+                         for i in range(m)]
+        '''
         '''not used:
         # check if all data in idxXs can be achived with m+1 i.e.
         # if possible satisfy: (i+1)*[m/k]>=n which is equal to
@@ -110,29 +140,50 @@ class Solver():
         splited_idxXs = [idxXs[i*int(n/m): (i+1)*(int(n/m))]
                          for i in range(M)]
         '''
+        # pool = mp.Pool(processes=self.num_worker_threads)
         for step in range(ITERATION_COUNT):
             
             # update progress:
             if progress is not None:
                 progress.succ(step)
                 
+            print("comute threads: ...")
+            '''
+            args_list = [[entry_idxXs, idxYs,
+                          result, source,
+                          csIdxs, cFuncs,
+                          bsIdxs, btypes, bFuncs]
+                         for entry_idxXs in splited_idxXs]
+            pool.map(self.process.do_work, args_list)
+            '''
             for idx, entry_idxXs in enumerate(splited_idxXs):
                 
-                print("bounds between threads:")
-                a = bsIdxs[entry_idxXs[-1]-1: entry_idxXs[-1]+1, :]
-                print(a[a != self.bounds.unbound_value])
-        
+                # print("bounds between threads:")
+                # a = bsIdxs[entry_idxXs[-1]-1: entry_idxXs[-1]+1, :]
+                # print(a[a != self.bounds.unbound_value])
                 self.queue.put([entry_idxXs, idxYs,
                                 result, source,
                                 csIdxs, cFuncs,
                                 bsIdxs, btypes, bFuncs])
-                '''
+            self.queue.join()
+            print("... done")
+
+            print("compute remainds at single thread: ...")
+            '''
+            args_list = [[entry_idxXs, idxYs,
+                          result, source,
+                          csIdxs, cFuncs,
+                          bsIdxs, btypes, bFuncs]
+                         for entry_idxXs in splited_idxXs_remainds]
+            pool.map(self.process.do_work, args_list)
+            '''
+            for idx, entry_idxXs in enumerate(splited_idxXs_remainds):
                 self.kernel(entry_idxXs, idxYs,
                             result, source,
                             csIdxs, cFuncs,
                             bsIdxs, btypes, bFuncs)
-                '''
-            self.queue.join()
+            print("... done")
+
             source = result.copy()
 
         self.stop_workers()
@@ -260,8 +311,16 @@ def run_files(model_path):
             raise(BaseException("no equation for num: %s"
                                 % (eq_num)))
         # only on equation in system, for now:
-        bFuncs[eq_num] = (lambda idxX, idxY:
-                          eval(equations_bs_table[eq_num][0]))
+        print(equations_bs_table[eq_num][0])
+        lambda_sympy = sympy.sympify(equations_bs_table[eq_num][0])
+        print(lambda_sympy)
+        bFuncs[eq_num] = (lambda x, y, a=lambda_sympy:
+                          float(a.subs({"idxX": x, "idxY": y})))
+        print("bFuncs[%d](1, 3):" % eq_num)
+        print(bFuncs[eq_num])
+        print(bFuncs[eq_num](1, 3))
+        # bFuncs[eq_num] = (lambda idxX, idxY:
+        #                   eval(equations_bs_table[eq_num][0]))
         btype = bounds_eq_number_btype[eq_num]
         if btype == "Dirichlet":
             btypes[eq_num] = 0
@@ -277,7 +336,7 @@ def run_files(model_path):
     print("btypes:")
     print(btypes)
     # END FOR
-
+    
     ITERATION_COUNT = 3
     result = run_cmd(source, csIdxs, cFuncs,
                      bsIdxs, btypes, bFuncs, unbound_value,
@@ -288,7 +347,7 @@ def run_files(model_path):
     plt.show()
     print("result:")
     print(result)
-
+    
 
 def test_files():
     import os

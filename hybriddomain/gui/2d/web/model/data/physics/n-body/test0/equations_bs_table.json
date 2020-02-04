@@ -1,9 +1,9 @@
 [
     [
-        "sympy.sin(idxX)"
+        "sin(idxX)"
     ],
     [
-        "sympy.cos(idxY)"
+        "cos(idxY)"
     ],
     [
         "1"
