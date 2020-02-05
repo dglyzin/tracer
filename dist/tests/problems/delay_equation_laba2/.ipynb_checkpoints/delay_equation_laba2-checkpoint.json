@@ -4,8 +4,8 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 10.0, 
-        "TimeStep": 0.001, 
-        "SaveInterval": 0.01, 
+        "TimeStep": 0.00001, 
+        "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
@@ -49,7 +49,7 @@
                 "x"
             ], 
             "System": [
-                "U'= D[U,{x,2}] + c*(1-U(t-1))*U"
+                "U'= a*D[U,{x,2}] + c*(1-U(t-1)/b)*U"
             ]
         }
     ], 
@@ -64,6 +64,26 @@
                 "a": 1, 
                 "b": 1,
                 "c": 1.5
+            },
+            {
+                "a": 0.1, 
+                "b": 1,
+                "c": 3
+            },
+            {
+                "a": 0.1, 
+                "b": 10,
+                "c": 3
+            },
+            {
+                "a": 0.01, 
+                "b": 10,
+                "c": 3
+            },
+            {
+                "a": 0.1, 
+                "b": 10,
+                "c": 4
             }
         ], 
         "DefaultParamsIndex": 0
@@ -126,7 +146,7 @@
         {
             "Name": "u", 
             "Period": 0.1,
-            "Value": "U"
+            "Value": ["U"]
         }
     ]
 }
