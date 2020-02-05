@@ -145,7 +145,9 @@
         {
             "Name": "U",
             "Period": 0.1,
-            "Value": "U"
+            "Value": [
+                "U"
+            ]
         }
     ]
 }
