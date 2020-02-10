@@ -3,9 +3,9 @@
     "Solver": {
         "SolverIdx": 2, 
         "StartTime": 0.0, 
-        "FinishTime": 30, 
+        "FinishTime": 10, 
         "TimeStep": 0.001, 
-        "SaveInterval": 0.01, 
+        "SaveInterval": 0.1, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
     }, 
@@ -32,7 +32,7 @@
                     "Side": 0
                 },
                 {
-                    "BoundNumber": 1, 
+                    "BoundNumber": 0, 
                     "Side": 1
                 }
             ], 
@@ -69,7 +69,7 @@
     "Bounds": [
         {
             "Name": "Nayman 1", 
-            "Type": 0, 
+            "Type": 1, 
             "Values": [
                 "0.0"
             ], 
