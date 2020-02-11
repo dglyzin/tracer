@@ -1,18 +1,57 @@
-from hybriddomain.solvers.mini_solver.python.bounds import Bounds
+'''
+pf$ srun -n 1   -p all  --exclusive  ~/anaconda3/bin/./python3 -u -c "import hybriddomain.solvers.ms.python.solver as ts; ts.run()" -model lab/hybriddomain/hybriddomain/gui/2d/web/model/data/physics/n-body/test0 -steps 1 -log_level info -plot False
 
-from scipy.misc import imread
-from scipy.misc import imsave
+pf$ ~/anaconda3/bin/./python3 -c "import hybriddomain.solvers.ms.python.solver as ts; ts.run()" -model ~/Documents/projects/projectsNew/lab/hybriddomain/hybriddomain/gui/2d/web/model/data/physics/n-body/test0 -steps 1 -log_level info -plot False
+
+v, u = np.meshgrid(y, x)
+
+In [55]: v = -(v-1)
+
+In [56]: u = u-1
+
+In [57]: q = pylab.quiver(u, v)
+
+In [88]: s = np.zeros(a.shape)
+In [88]: a, b = np.meshgrid(y, x)
+
+cond = (a-1)**2+(b-1)**2 < 0.1
+
+# sphere field:
+v[cond] = -(v[cond]-1)
+u[cond] = u[cond]+1
+
+# river field
+v[not cond] = 0
+u[not cond] = u[not cond]*(u[not cond]-2)
+'''
+from hybriddomain.solvers.ms.python.bounds import Bounds
+
+from PIL import Image
+# from matplotlib.pyplot import imread
+from matplotlib.pyplot import imsave
 # import base64
 import json
 import os
+import sys
 from functools import reduce
 import sympy
 import numpy as np
+from time import time
 
-from threads import Kernel as bKernel
-from threads import mp
-from threads import queue
+from hybriddomain.solvers.ms.python.threads import Kernel as bKernel
+from hybriddomain.solvers.ms.python.threads import mp
+from hybriddomain.solvers.ms.python.threads import queue
+
+from hybriddomain.solvers.ms.postproc.postprocessor import Postproc
 import multiprocessing as mp
+
+import logging
+
+# create logger
+log_level = logging.INFO  # logging.DEBUG
+logging.basicConfig(level=log_level)
+logger = logging.getLogger('ms.solver')
+logger.setLevel(level=log_level)
 
 
 class Thread(bKernel):
@@ -25,7 +64,7 @@ class Thread(bKernel):
         # print(entry)
         import sympy
         self.net.kernel(*entry)
-        print("thread: %d finished" % (self.number))
+        # print("thread: %d finished" % (self.number))
 
 
 class Process():
@@ -43,7 +82,8 @@ class Process():
 
 class Solver():
     
-    def __init__(self, unbound_value):
+    def __init__(self, unbound_value, model_path=None):
+        self.model_path = model_path
         self.dx = self.dy = 0.01
         self.dt = 0.000001
         self.bounds = Bounds(unbound_value=unbound_value,
@@ -56,8 +96,8 @@ class Solver():
     def start_workers(self):
         # FOR init threads:
         self.num_worker_threads = mp.cpu_count()
-        print("count of physical cpu:")
-        print(self.num_worker_threads)
+        logger.info("count of physical cpu:")
+        logger.info(self.num_worker_threads)
         self.threads = []
         self.queue = queue.Queue()
 
@@ -93,8 +133,8 @@ class Solver():
                     dx, dy, dt = [self.dx, self.dy, self.dt]
                     func = cFuncs[csIdxs[idxX, idxY]]
                     result[idxX, idxY] = func(idxX, idxY, source, dt, dx, dy)
-                    # print("result[idxX, idxY]:")
-                    # print(result[idxX, idxY])
+                    # logger.debug("result[idxX, idxY]:")
+                    # logger.debug(result[idxX, idxY])
 
     def run(self, result, source,
             csIdxs, cFuncs,
@@ -107,23 +147,23 @@ class Solver():
 
         n = len(idxXs)
         m = self.num_worker_threads
-        print("n=len(idxXs):")
-        print(n)
+        logger.debug("n=len(idxXs):")
+        logger.debug(n)
         
         # here "else idxXs[i*int(n/m):]" used for fill remained:
         splited_idxXs = [idxXs[i*int(n/m)+2: (i+1)*(int(n/m))-1]
                          if i < m-1 else idxXs[i*int(n/m)+2:]
                          for i in range(m)]
-        print("for queue:")
-        print(splited_idxXs)
+        logger.debug("for queue:")
+        logger.debug(splited_idxXs)
         
         # because of borders area between threads computed
         # at single thread:
         splited_idxXs_remainds = [idxXs[i*int(n/m)-1: (i)*(int(n/m))+2]
                                   if i != 0 else idxXs[i*int(n/m):i*int(n/m)+2]
                                   for i in range(m)]
-        print("for single thread:")
-        print(splited_idxXs_remainds)
+        logger.debug("for single thread:")
+        logger.debug(splited_idxXs_remainds)
         '''
         splited_idxXs = [idxXs[i*int(n/m): (i+1)*(int(n/m))]
                          if i < m-1 else idxXs[i*int(n/m):]
@@ -141,13 +181,10 @@ class Solver():
                          for i in range(M)]
         '''
         # pool = mp.Pool(processes=self.num_worker_threads)
+        start_time = time()
         for step in range(ITERATION_COUNT):
             
-            # update progress:
-            if progress is not None:
-                progress.succ(step)
-                
-            print("comute threads: ...")
+            logger.debug("compute threads: ...")
             '''
             args_list = [[entry_idxXs, idxYs,
                           result, source,
@@ -158,17 +195,17 @@ class Solver():
             '''
             for idx, entry_idxXs in enumerate(splited_idxXs):
                 
-                # print("bounds between threads:")
+                # logger.debug("bounds between threads:")
                 # a = bsIdxs[entry_idxXs[-1]-1: entry_idxXs[-1]+1, :]
-                # print(a[a != self.bounds.unbound_value])
+                # logger.debug(a[a != self.bounds.unbound_value])
                 self.queue.put([entry_idxXs, idxYs,
                                 result, source,
                                 csIdxs, cFuncs,
                                 bsIdxs, btypes, bFuncs])
             self.queue.join()
-            print("... done")
+            logger.debug("... done")
 
-            print("compute remainds at single thread: ...")
+            logger.debug("compute remainds at single thread: ...")
             '''
             args_list = [[entry_idxXs, idxYs,
                           result, source,
@@ -182,20 +219,39 @@ class Solver():
                             result, source,
                             csIdxs, cFuncs,
                             bsIdxs, btypes, bFuncs)
-            print("... done")
+            logger.debug("... done")
 
             source = result.copy()
 
+            # update progress:
+            if progress is not None:
+                progress.succ(step+1)
+            if self.model_path is not None:
+                imsave(os.path.join(self.model_path,
+                                    "result_%s.png" % str(step+1)), result)
         self.stop_workers()
-
+        self.running_time = time() - start_time
+        logger.info("running_time: %s" % str(self.running_time))
+        logger.info("Done!")
         return(result)
 
 
-def run_files(model_path):
+def imread(path, mode=None):
+    im = Image.open(path)
+    if mode == "L":
+        return(np.array(im.convert("L")))
+    return(np.array(im))
 
+
+def run_files(model_path, steps=3, plot=False):
+    
     source = imread(os.path.join(model_path, "initials_img.png"), mode="L")
     csIdxs = imread(os.path.join(model_path, "centrals_img.png"), mode="L")
     bsIdxs = imread(os.path.join(model_path, "bounds_img.png"), mode="L")
+    
+    # source = imread(os.path.join(model_path, "initials_img.png"), mode="L")
+    # csIdxs = imread(os.path.join(model_path, "centrals_img.png"), mode="L")
+    # bsIdxs = imread(os.path.join(model_path, "bounds_img.png"), mode="L")
     with open(os.path.join(model_path, "centrals_colors_table.json")) as f:
         centrals_colors_table = json.loads(f.read())
     centrals_colors_table = [[int(col) for col in row]
@@ -212,12 +268,12 @@ def run_files(model_path):
     initials_colors_table = [[int(col) for col_idx, col in enumerate(row)]
                              for row in initials_colors_table]
 
-    print("centrals_colors_table:")
-    print(centrals_colors_table)
-    print("bounds_colors_table:")
-    print(bounds_colors_table)
-    print("initials_colors_table:")
-    print(initials_colors_table)
+    logger.debug("centrals_colors_table:")
+    logger.debug(centrals_colors_table)
+    logger.debug("bounds_colors_table:")
+    logger.debug(bounds_colors_table)
+    logger.debug("initials_colors_table:")
+    logger.debug(initials_colors_table)
 
     with open(os.path.join(model_path, "equations_table.json")) as f:
         equations_table = json.loads(f.read())
@@ -226,8 +282,8 @@ def run_files(model_path):
         equations_bs_table = json.loads(f.read())
     
     # convert indexes from colors to equations numbers:
-    print("bsIdxs:")
-    print(bsIdxs)
+    logger.debug("bsIdxs:")
+    logger.debug(bsIdxs)
 
     # for check if all equations available:
     f = lambda acc, x: acc+[x] if (x not in [y for y in acc]) else acc    
@@ -247,13 +303,13 @@ def run_files(model_path):
     #     bounds_equations_numbers.append(0)
     # if 0 not in bounds_eq_number_btype:
         
-    print("centrals_equations_numbers:")
-    print(centrals_equations_numbers)
-    print("bounds_eq_numbers_btype:")
-    print(bounds_eq_number_btype)
+    logger.debug("centrals_equations_numbers:")
+    logger.debug(centrals_equations_numbers)
+    logger.debug("bounds_eq_numbers_btype:")
+    logger.debug(bounds_eq_number_btype)
 
-    print("bounds_equations_numbers:")
-    print(bounds_equations_numbers)
+    logger.debug("bounds_equations_numbers:")
+    logger.debug(bounds_equations_numbers)
 
     for row in centrals_colors_table:
         csIdxs[csIdxs == row[0]] = row[1]
@@ -276,15 +332,15 @@ def run_files(model_path):
     fix_missing_colors(csIdxs, centrals_equations_numbers)
     fix_missing_colors(bsIdxs, bounds_equations_numbers)
 
-    print("csIdxs:")
-    print(csIdxs)
-    print("bsIdxs:")
-    print(bsIdxs)
+    logger.debug("csIdxs:")
+    logger.debug(csIdxs)
+    logger.debug("bsIdxs:")
+    logger.debug(bsIdxs)
     
     # FOR cFuncs:
     cFuncs = {}
-    # print("eval(equations_table[0][0]):")
-    # print(eval(equations_table[0][0]))
+    # logger.debug("eval(equations_table[0][0]):")
+    # logger.debug(eval(equations_table[0][0]))
     for eq_num in centrals_equations_numbers:
         if eq_num not in range(len(equations_table)):
             raise(BaseException("no equation for num: %s"
@@ -292,11 +348,11 @@ def run_files(model_path):
         # only on equation in system, for now:
         cFuncs[eq_num] = (lambda idxX, idxY, u, dt, dx, dy:
                           eval(equations_table[eq_num][0]))
-    print("equations_table:")
-    print(equations_table)
-    print("cFuncs:")
-    print(cFuncs)
-    print(cFuncs[0](0, 0,
+    logger.debug("equations_table:")
+    logger.debug(equations_table)
+    logger.debug("cFuncs:")
+    logger.debug(cFuncs)
+    logger.debug(cFuncs[0](0, 0,
                     {(0, 0): 0, (1, 0): 1, (-1, 0): 1,
                      (0, 1): 1, (0, -1): 1},
                     0.1, 0.1, 0.1))
@@ -311,14 +367,14 @@ def run_files(model_path):
             raise(BaseException("no equation for num: %s"
                                 % (eq_num)))
         # only on equation in system, for now:
-        print(equations_bs_table[eq_num][0])
+        logger.debug(equations_bs_table[eq_num][0])
         lambda_sympy = sympy.sympify(equations_bs_table[eq_num][0])
-        print(lambda_sympy)
+        logger.debug(lambda_sympy)
         bFuncs[eq_num] = (lambda x, y, a=lambda_sympy:
                           float(a.subs({"idxX": x, "idxY": y})))
-        print("bFuncs[%d](1, 3):" % eq_num)
-        print(bFuncs[eq_num])
-        print(bFuncs[eq_num](1, 3))
+        logger.debug("bFuncs[%d](1, 3):" % eq_num)
+        logger.debug(bFuncs[eq_num])
+        logger.debug(bFuncs[eq_num](1, 3))
         # bFuncs[eq_num] = (lambda idxX, idxY:
         #                   eval(equations_bs_table[eq_num][0]))
         btype = bounds_eq_number_btype[eq_num]
@@ -329,25 +385,27 @@ def run_files(model_path):
     # for default
     if unbound_value not in btypes:
         btypes[unbound_value] = -1  # otherwise all bound will be Dirichlet
-    print("equations_bs_table:")
-    print(equations_bs_table)
-    print("bFuncs:")
-    print(bFuncs)
-    print("btypes:")
-    print(btypes)
+    logger.debug("equations_bs_table:")
+    logger.debug(equations_bs_table)
+    logger.debug("bFuncs:")
+    logger.debug(bFuncs)
+    logger.debug("btypes:")
+    logger.debug(btypes)
     # END FOR
     
-    ITERATION_COUNT = 3
+    ITERATION_COUNT = steps
     result = run_cmd(source, csIdxs, cFuncs,
                      bsIdxs, btypes, bFuncs, unbound_value,
-                     ITERATION_COUNT)
+                     ITERATION_COUNT, model_path=model_path)
 
-    import matplotlib.pyplot as plt
-    plt.imshow(result)
-    plt.show()
-    print("result:")
-    print(result)
-    
+    if plot:
+        import matplotlib.pyplot as plt
+        plt.imshow(result)
+        plt.show()
+    logger.debug("result:")
+    logger.debug(result)
+    imsave(os.path.join(model_path, "result.png"), result)
+
 
 def test_files():
     import os
@@ -359,23 +417,34 @@ def test_files():
                               "data", "physics", "n-body", "test0")
     print("model_path:")
     print(model_path)
-    run_files(model_path)
+    run_files(model_path, plot=True)
 
 
 def run_cmd(source, csIdxs, cFuncs,
             bsIdxs, btypes, bFuncs, unbound_value,
-            ITERATION_COUNT):
+            ITERATION_COUNT, model_path=None):
 
     result = source.copy()
 
-    from hybriddomain.solvers.hs.remoterun.progresses.progress_cmd import ProgressCmd
-    progress_cmd = ProgressCmd(ITERATION_COUNT)
+    # TODO: clear previus results, if not from remoterun
+    # from hybriddomain.solvers.hs.remoterun.progresses.progress_cmd import ProgressCmd
+    # progress_cmd = ProgressCmd(ITERATION_COUNT)
+    class SimpleProgress():
+        def __init__(self, steps):
+            self.steps = steps
 
-    solver = Solver(unbound_value)
+        def succ(self, step):
+            print(("%d" % int((step/self.steps)*100))+"%")
+    progress = SimpleProgress(ITERATION_COUNT)
+
+    solver = Solver(unbound_value, model_path=model_path)
 
     solver.run(result, source, csIdxs, cFuncs,
                bsIdxs, btypes, bFuncs,
-               ITERATION_COUNT, progress_cmd)
+               ITERATION_COUNT, progress)
+    if model_path is not None:
+        postproc = Postproc(logger, model_path)
+        postproc.createVideoFile()
     return(result)
 
 
@@ -460,7 +529,42 @@ def test_cmd():
     print(result)
 
 
+def run():
+    # print(sys.argv)
+    if '-model' in sys.argv:
+        model_path = sys.argv[sys.argv.index('-model') + 1]
+    else:
+        raise(BaseException("-model needed"))
+
+    if '-steps' in sys.argv:
+        steps = sys.argv[sys.argv.index('-steps') + 1]
+        steps = int(steps)
+    else:
+        raise(BaseException("-steps needed"))
+
+    if '-plot' in sys.argv:
+        plot = sys.argv[sys.argv.index('-plot') + 1]
+        plot = eval(plot)
+    else:
+        plot = False
+
+    if '-log_level' in sys.argv:
+        log_level_str = sys.argv[sys.argv.index('-log_level') + 1]
+        log_level_str = log_level_str.lower()
+        if "info" == log_level_str:
+            logger.setLevel(level=logging.INFO)
+        elif("debug" == log_level_str):
+            logger.setLevel(level=logging.DEBUG)
+        else:
+            raise(BaseException("-log_level either info or debug"))
+    else:
+        pass
+    
+    run_files(model_path, steps=steps, plot=plot)
+
+
 if __name__ == "__main__":
     
-    test_files()
+    run()
+    # test_files()
     # test_cmd()

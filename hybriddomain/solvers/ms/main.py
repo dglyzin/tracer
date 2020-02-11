@@ -1,11 +1,11 @@
 '''
 USAGE:
-    hybriddomain/domainmodel/mini_solver$: python3 main.py
+    hybriddomain/domainmodel/ms$: python3 main.py
   
     # for tests/2dTests/test2d_for_intervals_single.json only
     # (Block0CountX ...)
 
-    # go to mini_solver/cpp or mini_solver/cuda
+    # go to ms/cpp or ms/cuda
     # make solver_cpp
     g++ -I include -g -shared -o solver_cpp.so kernels.cpp from_test_template_2d.cpp -fPIC
 

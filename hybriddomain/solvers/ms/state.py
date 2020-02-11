@@ -39,16 +39,16 @@ import sys
 import pickle
 import subprocess
 
-import hybriddomain.solvers.mini_solver.main as mn
+import hybriddomain.solvers.ms.main as mn
 from hybriddomain.gens.hs.fiocr.fiocr_main import Fiocr
 '''
 # python 2 or 3
 if sys.version_info[0] > 2:
     from domainmodel.model import Model
-    import domainmodel.criminal.mini_solver.main as mn
+    import domainmodel.criminal.ms.main as mn
 else:
     from ..model import Model
-    import mini_solver.main as mn
+    import ms.main as mn
 '''
 
 
@@ -69,11 +69,11 @@ class State(object):
         curDir = os.getcwd()
         self.path = os.path.join(curDir,
                                  'solvers',
-                                 'mini_solver')
+                                 'ms')
 
         self.file_for_solver_args = os.path.join(os.getcwd(),
                                                  'solvers',
-                                                 'mini_solver',
+                                                 'ms',
                                                  'tmp_state')
 
         # file io compilation routine:
@@ -116,7 +116,7 @@ class State(object):
         funcIdxs_file = os.path.join(os.getcwd(),
                                      'domainmodel',
                                      'criminal',
-                                     'mini_solver',
+                                     'ms',
                                      'funcIdxs_file.txt')
         with open(funcIdxs_file, 'w') as f:
             f.write(str(list(self.funcIdxs)))
@@ -204,7 +204,7 @@ class State(object):
         plt.imshow(result)
         
         '''
-        cmd = ['python3', '-m', 'solvers.mini_solver.state', 'hello']
+        cmd = ['python3', '-m', 'solvers.ms.state', 'hello']
 
         # logger.debug("cmd = %s" % str(cmd))
         print(cmd)
@@ -428,7 +428,7 @@ def to_file(out, path):
     path = os.path.join(os.getcwd(),
                         'domainmodel',
                         'criminal',
-                        'mini_solver',
+                        'ms',
                         name)
     '''
     print("path =")

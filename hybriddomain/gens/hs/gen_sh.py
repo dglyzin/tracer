@@ -87,6 +87,15 @@ class GenSH():
            params['hs_python']
         
         if some missing, default values will be used.
+        
+        # TODO:
+        if not (params["jobId"] is None):
+            optionalArgs += " -jobId "+str(params["jobId"])
+
+        if params["continueEnabled"]:
+            optionalArgs += " -cont"
+            if params["continueFnameProvided"]:
+                optionalArgs += " "+params["continueFileName"]
         '''
         # set base params:
         self.set_params_default()
