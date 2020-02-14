@@ -69,9 +69,14 @@
                 "a": 0.1,
                 "b": 1,
                 "c": 4
+            },
+            {
+                "a": 0.01,
+                "b": 1,
+                "c": 4
             }
         ],
-        "DefaultParamsIndex": 1
+        "DefaultParamsIndex": 2
     },
     "Bounds": [
         {
