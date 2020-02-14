@@ -3,26 +3,6 @@ pf$ srun -n 1   -p all  --exclusive  ~/anaconda3/bin/./python3 -u -c "import hyb
 
 pf$ ~/anaconda3/bin/./python3 -c "import hybriddomain.solvers.ms.python.solver as ts; ts.run()" -model ~/Documents/projects/projectsNew/lab/hybriddomain/hybriddomain/gui/2d/web/model/data/physics/n-body/test0 -steps 1 -log_level info -plot False
 
-v, u = np.meshgrid(y, x)
-
-In [55]: v = -(v-1)
-
-In [56]: u = u-1
-
-In [57]: q = pylab.quiver(u, v)
-
-In [88]: s = np.zeros(a.shape)
-In [88]: a, b = np.meshgrid(y, x)
-
-cond = (a-1)**2+(b-1)**2 < 0.1
-
-# sphere field:
-v[cond] = -(v[cond]-1)
-u[cond] = u[cond]+1
-
-# river field
-v[not cond] = 0
-u[not cond] = u[not cond]*(u[not cond]-2)
 '''
 from hybriddomain.solvers.ms.python.bounds import Bounds
 
