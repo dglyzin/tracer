@@ -4,7 +4,7 @@
         "SolverIdx": 0, 
         "StartTime": 0.0, 
         "FinishTime": 30, 
-        "TimeStep": 0.001, 
+        "TimeStep": 0.00001, 
         "SaveInterval": 0, 
         "AbsTolerance": 0.001, 
         "RelTolerance": 0.001
@@ -27,7 +27,14 @@
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
             "BoundRegions": [
-                 
+                {
+                    "BoundNumber": 0,
+                    "Side": 0
+                },
+                {
+                    "BoundNumber": 0,
+                    "Side": 1
+                }
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
@@ -62,14 +69,12 @@
     }, 
     "Bounds": [
         {
-            "Name": "Dirichlet 1", 
-            "Type": 0, 
+            "Name": "Nayman 1",
+            "Type": 1,
             "Values": [
-                "0.0"
-            ], 
-            "Derivative": [
-                "0.0"
-            ]
+                "0"
+            ],
+            "Equation": null
         }
     ], 
     "Initials": [
@@ -108,7 +113,7 @@
     "Plots": [ 
 	{
             "Title": "u(t,x)", 
-            "Period": 0.01,
+            "Period": 0.1,
             "Value": "U"
         }
     ],
@@ -116,7 +121,7 @@
     "Results":[
         {
             "Name": "u", 
-            "Period": 0.01,
+            "Period": 0.1,
             "Value": "U"
         }
     ]
