@@ -409,12 +409,7 @@ def run_cmd(source, csIdxs, cFuncs,
     # TODO: clear previus results, if not from remoterun
     # from hybriddomain.solvers.hs.remoterun.progresses.progress_cmd import ProgressCmd
     # progress_cmd = ProgressCmd(ITERATION_COUNT)
-    class SimpleProgress():
-        def __init__(self, steps):
-            self.steps = steps
-
-        def succ(self, step):
-            print(("%d" % int((step/self.steps)*100))+"%")
+    from hybriddomain.solvers.ms.remoterun.progresses.progress_cmd import SimpleProgress
     progress = SimpleProgress(ITERATION_COUNT)
 
     solver = Solver(unbound_value, model_path=model_path)

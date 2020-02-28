@@ -16,12 +16,25 @@ class MSRunner(Runner):
         sn_model_path = paths[self.sn]['project_path_absolute']
         sn_out_folder = paths[self.sn]['out_folder']
         steps = settings.device_conf["steps"]
+        solver_type = settings.device_conf["solver_type"]
+        print("solver_type:")
+        print(solver_type)
+        start_from = " "
+        if "start_from" in settings.device_conf:
+            if settings.device_conf["start_from"] is not None:
+                start_from += ("-start_from "
+                               + settings.device_conf["start_from"])
+        save_interval = " "
+        if "save_interval" in settings.device_conf:
+            if settings.device_conf["save_interval"] is not None:
+                save_interval += ("-save_interval "
+                                  + settings.device_conf["save_interval"])
 
         'srun -n 1   -p all  --exclusive  /acchome/valdecar/anaconda3/envs/hd/bin/./python3 -u -c "import hybriddomain.solvers.ms.python.solver as ts; ts.run()" -model lab/hybriddomain/hybriddomain/gui/2d/web/model/data/physics/n-body/test0 -steps 4 -log_level debug -plot False'
         # " ~/anaconda3/bin/python3 "
         python_running_script = (
             '"import'
-            + ' hybriddomain.solvers.ms.python.solver as ts;'
+            + ' hybriddomain.solvers.ms.python.%s as ts;' % solver_type
             + ' ts.run()"')
         command = ("srun -n 1 -p all --exclusive "
                    + hd_python + " "
@@ -30,6 +43,8 @@ class MSRunner(Runner):
                    + ' -model ' + sn_out_folder
                    + ' -steps ' + steps
                    + ' -log_level info -plot False'
+                   + start_from
+                   + save_interval
                    + " 2>&1")
         logger.info("command:")
         logger.info(command)
