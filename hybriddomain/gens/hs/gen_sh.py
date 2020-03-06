@@ -174,7 +174,7 @@ class GenSH():
             runFile.write("echo Welcome to generated kernel launcher!\n")
 
             runFile.write("export LD_LIBRARY_PATH=" + self.projectDir
-                          + ":$LD_LIBRARY_PATH\n")
+                           +":/usr/mpi/gcc/openmpi-4.0.1/lib" +":$LD_LIBRARY_PATH\n") 
 
             # runFile.write("export OMP_NUM_THREADS=16\n")
 

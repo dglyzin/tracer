@@ -650,6 +650,7 @@ def remoteProjectRun(settings, dimention, notebook=None, model=None,
         success = False
         for line in iter(lambda: stdout.readline(2048), ""):
             try:
+                logger.debug("script: " + line )
                 # show progress and key points:
                 postproc = 'Creating pictures and a movie for a given folder.'
                 cond = ("Performance" in line
