@@ -94,7 +94,7 @@
             "Name": "*", 
             "CpuCount": 1, 
             "CpuMemory": [
-                56
+                1
             ], 
             "GpuCount": 3, 
             "GpuMemory": [

@@ -4,7 +4,7 @@
     "flag": "0",
     "finishTime": "-1.1",
     "cont": "n_a",
-    "partition": "all",
+    "partition": "acc",
     "mpimap": "",
     "affinity": "0-15",
     "hs_python": "~/anaconda3/bin/python3",
