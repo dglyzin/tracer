@@ -26,6 +26,7 @@
             }, 
             "DefaultEquation": 0, 
             "DefaultInitial": 0, 
+            "DefaultBound": 0,
             "BoundRegions": [
                 {
                     "BoundNumber": 0, 
@@ -35,7 +36,6 @@
                     "BoundNumber": 0, 
                     "Side": 1
                 }
-
             ], 
             "InitialRegions": [], 
             "EquationRegions": []
@@ -62,6 +62,14 @@
             {
                 "a": 1, 
                 "b": 0.5745
+            },
+            {
+                "a": 1, 
+                "b": 0.2
+            },
+            {
+                "a": 1, 
+                "b": 0.01
             }
         ], 
         "DefaultParamsIndex": 0

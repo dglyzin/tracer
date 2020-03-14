@@ -1,128 +1,136 @@
- {
-    "ProjectName": "Heat_test", 
+{
+    "ProjectName": "Heat_test",
     "Solver": {
-        "SolverIdx": 0, 
-        "StartTime": 0.0, 
-        "FinishTime": 10.0, 
-        "TimeStep": 0.000001, 
-        "SaveInterval": 0, 
-        "AbsTolerance": 0.001, 
+        "SolverIdx": 0,
+        "StartTime": 0.0,
+        "FinishTime": 10.0,
+        "TimeStep": 1e-06,
+        "SaveInterval": 0,
+        "AbsTolerance": 0.001,
         "RelTolerance": 0.001
-    }, 
+    },
     "Grid": {
-        "Dimension": 1, 
-        "dx": 0.01, 
-        "dy": 1, 
+        "Dimension": 1,
+        "dx": 0.01,
+        "dy": 1,
         "dz": 1
-    }, 
+    },
     "Blocks": [
         {
-            "Name": "MainBlock", 
+            "Name": "MainBlock",
             "Offset": {
                 "x": 0.0
-            }, 
+            },
             "Size": {
                 "x": 3.1415926
-            }, 
-            "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
+            },
+            "DefaultEquation": 0,
+            "DefaultInitial": 0,
+            "DefaultBound": 0,
             "BoundRegions": [
                 {
-                    "BoundNumber": 0, 
+                    "BoundNumber": 0,
                     "Side": 0
                 },
                 {
-                    "BoundNumber": 0, 
+                    "BoundNumber": 0,
                     "Side": 1
                 }
-
-            ], 
-            "InitialRegions": [], 
+            ],
+            "InitialRegions": [],
             "EquationRegions": []
         }
-    ], 
-    "Interconnects": [], 
+    ],
+    "Interconnects": [],
     "Equations": [
         {
-            "Name": "1D heat 1", 
+            "Name": "1D heat 1",
             "Vars": [
                 "x"
-            ], 
+            ],
             "System": [
                 "U'=1/(1+(U(t-1))^8)-b*U"
             ]
         }
-    ], 
+    ],
     "EquationParams": {
         "Params": [
-            "a", 
+            "a",
             "b"
-        ], 
+        ],
         "ParamValues": [
             {
-                "a": 1, 
+                "a": 1,
                 "b": 0.5745
+            },
+            {
+                "a": 1,
+                "b": 0.2
+            },
+            {
+                "a": 1,
+                "b": 0.01
             }
-        ], 
-        "DefaultParamsIndex": 0
-    }, 
+        ],
+        "DefaultParamsIndex": 2
+    },
     "Bounds": [
         {
-            "Name": "Dirichlet1111", 
-            "Type": 0, 
+            "Name": "Dirichlet1111",
+            "Type": 0,
             "Values": [
                 "0"
-            ], 
+            ],
+            "Equation": null,
             "Derivative": [
                 "0"
             ]
         }
-    ], 
+    ],
     "Initials": [
         {
-            "Name": "Initial values 0", 
+            "Name": "Initial values 0",
             "Values": [
                 "sin(x)"
             ]
         }
-    ], 
+    ],
     "Hardware": [
         {
-            "Name": "*", 
-            "CpuCount": 1, 
+            "Name": "*",
+            "CpuCount": 1,
             "CpuMemory": [
                 5
-            ], 
-            "GpuCount": 3, 
+            ],
+            "GpuCount": 3,
             "GpuMemory": [
-                5, 
-                5, 
+                5,
+                5,
                 5
             ]
         }
-    ], 
+    ],
     "Mapping": {
-        "IsMapped": true, 
+        "IsMapped": true,
         "BlockMapping": [
             {
-                "NodeIdx": 0, 
-                "DeviceType": "cpu", 
+                "NodeIdx": 0,
+                "DeviceType": "cpu",
                 "DeviceIdx": 0
             }
         ]
-    }, 
-    "Plots": [ 
-	{
-            "Title": "u(t,x)", 
+    },
+    "Plots": [
+        {
+            "Title": "u(t,x)",
             "Name": "U",
             "Period": 0.1,
             "Value": "U"
         }
     ],
-
-    "Results":[
+    "Results": [
         {
-            "Name": "u", 
+            "Name": "u",
             "Period": 0.1,
             "Value": "U"
         }
