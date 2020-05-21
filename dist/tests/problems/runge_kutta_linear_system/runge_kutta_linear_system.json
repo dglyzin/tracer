@@ -1,124 +1,163 @@
 {
-    "ProjectName": "Heat_test", 
+    "ProjectName": "Heat_test",
     "Solver": {
-        "SolverIdx": 1, 
-        "StartTime": 0.0, 
-        "FinishTime": 30, 
-        "TimeStep": 0.001, 
-        "SaveInterval": 0.01, 
-        "AbsTolerance": 0.001, 
+        "SolverIdx": 1,
+        "StartTime": 0.0,
+        "FinishTime": 10,
+        "TimeStep": 0.001,
+        "SaveInterval": 0.01,
+        "AbsTolerance": 0.001,
         "RelTolerance": 0.001
-    }, 
+    },
     "Grid": {
-        "Dimension": 1, 
-        "dx": 0.01, 
-        "dy": 1, 
+        "Dimension": 1,
+        "dx": 0.01,
+        "dy": 1,
         "dz": 1
-    }, 
+    },
     "Blocks": [
         {
-            "Name": "MainBlock", 
+            "Name": "MainBlock",
             "Offset": {
                 "x": 0
-            }, 
+            },
             "Size": {
                 "x": 1
-            }, 
-            "DefaultEquation": 0, 
-            "DefaultInitial": 0, 
+            },
+            "DefaultEquation": 0,
+            "DefaultInitial": 0,
+            "DefaultBound": 0,
             "BoundRegions": [
-                
-            ], 
-            "InitialRegions": [], 
+                {
+                    "BoundNumber": 0,
+                    "Side": 0
+                },
+                {
+                    "BoundNumber": 0,
+                    "Side": 1
+                }
+            ],
+            "InitialRegions": [],
             "EquationRegions": []
         }
-    ], 
-    "Interconnects": [], 
+    ],
+    "Interconnects": [],
     "Equations": [
         {
-            "Name": "1D heat 1", 
+            "Name": "1D heat 1",
             "Vars": [
                 "x"
-            ], 
+            ],
             "System": [
-                "U'= V-2*U",
-                "V'= 2*U-3*V"
+                "U'= a*U+b*V",
+                "V'= c*U+d*V"
             ]
         }
-    ], 
+    ],
     "EquationParams": {
         "Params": [
-            "a", 
-            "b"
-        ], 
+            "a",
+            "b",
+            "c",
+            "d"
+        ],
         "ParamValues": [
             {
-                "a": 1, 
-                "b": 1
+                "a": -2,
+                "b": 1,
+                "c": 2,
+                "d": -3
+            },
+            {
+                "a": -2,
+                "b": 1,
+                "c": 6,
+                "d": -3
+            },
+            {
+                "a": -1,
+                "b": 3,
+                "c": -3,
+                "d": -1
+            },
+            {
+                "a": 0,
+                "b": 2,
+                "c": -2,
+                "d": 0
+            },
+            {
+                "a": 0,
+                "b": 4,
+                "c": -4,
+                "d": 0
             }
-        ], 
-        "DefaultParamsIndex": 0
-    }, 
+        ],
+        "DefaultParamsIndex": 4
+    },
     "Bounds": [
         {
-            "Name": "Dirichlet 1", 
-            "Type": 0, 
+            "Name": "Nayman 1",
+            "Type": 1,
             "Values": [
                 "0.0"
-            ], 
-            "Derivative": [
-                "0.0"
-            ]
+            ],
+            "Equation": null
         }
-    ], 
+    ],
     "Initials": [
         {
-            "Name": "Initial values 0", 
+            "Name": "Initial values 0",
             "Values": [
                 "10.0*cos(2*3.1415926*x)",
                 "10.0*sin(2*3.1415926*x)"
             ]
         }
-    ], 
+    ],
     "Hardware": [
         {
-            "Name": "*", 
-            "CpuCount": 1, 
+            "Name": "*",
+            "CpuCount": 1,
             "CpuMemory": [
                 56
-            ], 
-            "GpuCount": 3, 
+            ],
+            "GpuCount": 3,
             "GpuMemory": [
-                5, 
-                5, 
+                5,
+                5,
                 5
             ]
         }
-    ], 
+    ],
     "Mapping": {
-        "IsMapped": true, 
+        "IsMapped": true,
         "BlockMapping": [
             {
-                "NodeIdx": 0, 
-                "DeviceType": "cpu", 
+                "NodeIdx": 0,
+                "DeviceType": "cpu",
                 "DeviceIdx": 0
             }
         ]
-    }, 
-    "Plots": [ 
-	{
+    },
+    "Plots": [
+        {
+            "Title": "u(t,x)",
             "Name": "System",
-            "Title": "u(t,x)", 
             "Period": 0.1,
-            "Value": ["U","V"]
+            "Value": [
+                "U",
+                "V"
+            ]
         }
     ],
-
-    "Results":[
+    "Results": [
         {
-            "Name": "u", 
+            "Name": "u",
             "Period": 0.1,
-            "Value": ["U","V"]
+            "Value": [
+                "U",
+                "V"
+            ]
         }
     ]
 }

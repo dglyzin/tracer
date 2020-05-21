@@ -3,7 +3,7 @@
     "Solver": {
         "SolverIdx": 1, 
         "StartTime": 0.0, 
-        "FinishTime": 30, 
+        "FinishTime": 10, 
         "TimeStep": 0.001, 
         "SaveInterval": 0.01, 
         "AbsTolerance": 0.001, 

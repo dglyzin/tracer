@@ -91,7 +91,7 @@
     ], 
     "Hardware": [
         {
-            "Name": "*", 
+            "Name": "dnode02", 
             "CpuCount": 1, 
             "CpuMemory": [
                 1
