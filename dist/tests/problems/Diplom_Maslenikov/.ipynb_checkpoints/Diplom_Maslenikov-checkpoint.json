@@ -11,7 +11,7 @@
     },
     "Grid": {
         "Dimension": 1,
-        "dx": 0.01,
+        "dx": 0.5,
         "dy": 1,
         "dz": 1
     },
@@ -79,8 +79,7 @@
             "Name": "Nayman 1",
             "Type": 1,
             "Values": [
-                "1.0",
-                "2.0"
+                "0"
             ],
             "Equation": null
         }
@@ -89,8 +88,8 @@
         {
             "Name": "Initial values 0",
             "Values": [
-                "10.0*cos(2*3.1415926*x)",
-                "10.0*sin(2*3.1415926*x)"
+                "1",
+                "2"
             ]
         }
     ],
@@ -123,7 +122,7 @@
         {
             "Title": "u(t,x)",
             "Name": "System",
-            "Period": 0.1,
+            "Period": 0.01,
             "Value": [
                 "U",
                 "V"
@@ -133,7 +132,7 @@
     "Results": [
         {
             "Name": "u",
-            "Period": 0.1,
+            "Period": 0.01,
             "Value": [
                 "U",
                 "V"
