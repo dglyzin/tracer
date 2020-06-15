@@ -3,8 +3,8 @@
     "Solver": {
         "SolverIdx": 0,
         "StartTime": 0.0,
-        "FinishTime": 2000,
-        "TimeStep": 0.0001,
+        "FinishTime": 10,
+        "TimeStep": 0.001,
         "SaveInterval": 0,
         "AbsTolerance": 0.001,
         "RelTolerance": 0.001
@@ -49,72 +49,57 @@
                 "x"
             ],
             "System": [
-                "U'= V",
-                "V'= (b*sin(V(t-1))-V-k*e*U)/e"
+                "U'= a*U/e+b*V/e+1/e",
+                "V'= c*U/e+d*V/e+1/e"
             ]
         }
     ],
     "EquationParams": {
         "Params": [
-            "e",
-            "k",
-            "b"
+            "a",
+            "b",
+            "c",
+            "d",
+            "e"
         ],
         "ParamValues": [
             {
-                "e": 0.02,
-                "k": 2,
-                "b": -1.1
+                "a": 1,
+                "b": 3,
+                "c": -1,
+                "d": -2,
+                "e": 1
             },
             {
-                "e": 0.01,
-                "k": 2,
-                "b": -1.05
+                "a": 1,
+                "b": 3,
+                "c": -1,
+                "d": -2,
+                "e": 0.5
             },
             {
-                "e": 0.005,
-                "k": 2,
-                "b": -1.025
+                "a": 1,
+                "b": 3,
+                "c": -1,
+                "d": -2,
+                "e": 0.2
             },
             {
-                "e": 0.01,
-                "k": 2,
-                "b": -1.02
-            },
-            {
-                "e": 0.01,
-                "k": 2,
-                "b": -1.01
-            },
-            {
-                "e": 0.01,
-                "k": 2,
-                "b": -1.008
-            },
-            {
-                "e": 0.01,
-                "k": 2,
-                "b": -1
-            },
-            {
-                "e": 0.01,
-                "k": 2,
-                "b": -0.99
-            },
-            {
-                "e": 0.01,
-                "k": 2,
-                "b": -0.5
+                "a": 1,
+                "b": 3,
+                "c": -1,
+                "d": -2,
+                "e": 0.1
             }
         ],
-        "DefaultParamsIndex": 8
+        "DefaultParamsIndex": 4
     },
     "Bounds": [
         {
             "Name": "Nayman 1",
             "Type": 1,
             "Values": [
-                "0"
+                "0.0"
             ],
             "Equation": null
         }
@@ -124,13 +109,13 @@
             "Name": "Initial values 0",
             "Values": [
                 "1",
-                "2"
+                "1"
             ]
         }
     ],
     "Hardware": [
         {
-            "Name": "dnode06",
+            "Name": "*",
             "CpuCount": 1,
             "CpuMemory": [
                 56
