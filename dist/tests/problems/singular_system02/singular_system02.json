@@ -49,50 +49,33 @@
                 "x"
             ],
             "System": [
-                "U'= a*U/e+b*V/e+1/e",
-                "V'= c*U/e+d*V/e+1/e"
+                "U'= 0-(sin(t))*U/e",
+                "V'= 1"
             ]
         }
     ],
     "EquationParams": {
         "Params": [
-            "a",
-            "b",
-            "c",
-            "d",
             "e"
         ],
         "ParamValues": [
             {
-                "a": 1,
-                "b": 3,
-                "c": -1,
-                "d": -2,
                 "e": 1
             },
             {
-                "a": 1,
-                "b": 3,
-                "c": -1,
-                "d": -2,
                 "e": 0.5
             },
             {
-                "a": 1,
-                "b": 3,
-                "c": -1,
-                "d": -2,
-                "e": 0.1
+                "e": 0.25
             },
             {
-                "a": 1,
-                "b": 3,
-                "c": -1,
-                "d": -2,
-                "e": 0.01
+                "e": 0.125
+            },
+            {
+                "e": 0.0625
             }
         ],
-        "DefaultParamsIndex": 3
+        "DefaultParamsIndex": 4
     },
     "Bounds": [
         {
@@ -108,7 +91,7 @@
         {
             "Name": "Initial values 0",
             "Values": [
-                "1",
+                "2.5",
                 "1"
             ]
         }
