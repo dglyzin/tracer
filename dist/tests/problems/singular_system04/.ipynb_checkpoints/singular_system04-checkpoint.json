@@ -1,0 +1,163 @@
+{
+    "ProjectName": "Heat_test",
+    "Solver": {
+        "SolverIdx": 0,
+        "StartTime": 0.0,
+        "FinishTime": 10,
+        "TimeStep": 0.001,
+        "SaveInterval": 0,
+        "AbsTolerance": 0.001,
+        "RelTolerance": 0.001
+    },
+    "Grid": {
+        "Dimension": 1,
+        "dx": 0.5,
+        "dy": 1,
+        "dz": 1
+    },
+    "Blocks": [
+        {
+            "Name": "MainBlock",
+            "Offset": {
+                "x": 0
+            },
+            "Size": {
+                "x": 1
+            },
+            "DefaultEquation": 0,
+            "DefaultInitial": 0,
+            "DefaultBound": 0,
+            "BoundRegions": [
+                {
+                    "BoundNumber": 0,
+                    "Side": 0
+                },
+                {
+                    "BoundNumber": 0,
+                    "Side": 1
+                }
+            ],
+            "InitialRegions": [],
+            "EquationRegions": []
+        }
+    ],
+    "Interconnects": [],
+    "Equations": [
+        {
+            "Name": "1D heat 1",
+            "Vars": [
+                "x"
+            ],
+            "System": [
+                "U'= (n*U*U*(1-U*U*U))/e",
+                "V'= 1"
+            ]
+        }
+    ],
+    "EquationParams": {
+        "Params": [
+            "n",
+            "e"
+        ],
+        "ParamValues": [
+            {
+                "n":16,
+                "e": 8
+            },
+            {
+                "n":16,
+                "e": 4
+            },
+            {
+                "n":16,
+                "e": 2
+            },
+            {
+                "n":16,
+                "e": 1
+            },
+            {
+                "n":16,
+                "e": 0.5
+            },
+            {
+                "n":16,
+                "e": 0.25
+            },
+            {
+                "n":16,
+                "e": 0.125
+            },
+            {
+                "n":16,
+                "e": 0.0625
+            }
+        ],
+        "DefaultParamsIndex": 4
+    },
+    "Bounds": [
+        {
+            "Name": "Nayman 1",
+            "Type": 1,
+            "Values": [
+                "0.0"
+            ],
+            "Equation": null
+        }
+    ],
+    "Initials": [
+        {
+            "Name": "Initial values 0",
+            "Values": [
+                "0.5",
+                "1"
+            ]
+        }
+    ],
+    "Hardware": [
+        {
+            "Name": "*",
+            "CpuCount": 1,
+            "CpuMemory": [
+                56
+            ],
+            "GpuCount": 3,
+            "GpuMemory": [
+                5,
+                5,
+                5
+            ]
+        }
+    ],
+    "Mapping": {
+        "IsMapped": true,
+        "BlockMapping": [
+            {
+                "NodeIdx": 0,
+                "DeviceType": "cpu",
+                "DeviceIdx": 0
+            }
+        ]
+    },
+    "Plots": [
+        {
+            "Title": "u(t,x)",
+            "Name": "System",
+            "Period": 0.01,
+            "Value": [
+                "U",
+                "V"
+            ]
+        }
+    ],
+    "Results": [
+        {
+            "Name": "u",
+            "Period": 0.01,
+            "Value": [
+                "U",
+                "V"
+            ]
+        }
+    ]
+}

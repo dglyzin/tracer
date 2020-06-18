@@ -49,33 +49,51 @@
                 "x"
             ],
             "System": [
-                "U'= 0-(sin(t))*U/e",
+                "U'= (n*U*U*(1-U*U*U))/e",
                 "V'= 1"
             ]
         }
     ],
     "EquationParams": {
         "Params": [
+            "n",
             "e"
         ],
         "ParamValues": [
             {
+                "n": 16,
+                "e": 8
+            },
+            {
+                "n": 16,
+                "e": 4
+            },
+            {
+                "n": 16,
+                "e": 2
+            },
+            {
+                "n": 16,
                 "e": 1
             },
             {
+                "n": 16,
                 "e": 0.5
             },
             {
+                "n": 16,
                 "e": 0.25
             },
             {
+                "n": 16,
                 "e": 0.125
             },
             {
+                "n": 16,
                 "e": 0.0625
             }
         ],
-        "DefaultParamsIndex": 3
+        "DefaultParamsIndex": 7
     },
     "Bounds": [
         {
@@ -91,7 +109,7 @@
         {
             "Name": "Initial values 0",
             "Values": [
-                "2.5",
+                "0.5",
                 "1"
             ]
         }
