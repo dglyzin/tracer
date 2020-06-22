@@ -4,7 +4,7 @@
         "SolverIdx": 0,
         "StartTime": 0.0,
         "FinishTime": 10,
-        "TimeStep": 0.001,
+        "TimeStep": 1e-05,
         "SaveInterval": 0,
         "AbsTolerance": 0.001,
         "RelTolerance": 0.001
@@ -49,48 +49,39 @@
                 "x"
             ],
             "System": [
-                "U'= (n*U*U*(1-U*U*U))/e",
+                "U'= 4*U*U*(1-U*U*U)/e",
                 "V'= 1"
             ]
         }
     ],
     "EquationParams": {
         "Params": [
-            "n",
             "e"
         ],
         "ParamValues": [
             {
-                "n": 16,
-                "e": 8
-            },
-            {
-                "n": 16,
-                "e": 4
-            },
-            {
-                "n": 16,
-                "e": 2
-            },
-            {
-                "n": 16,
                 "e": 1
             },
             {
-                "n": 16,
                 "e": 0.5
             },
             {
-                "n": 16,
-                "e": 0.25
+                "e": 0.1
             },
             {
-                "n": 16,
-                "e": 0.125
+                "e": 0.05
             },
             {
-                "n": 16,
-                "e": 0.0625
+                "e": 0.01
+            },
+            {
+                "e": 0.005
+            },
+            {
+                "e": 0.001
+            },
+            {
+                "e": 0.0005
             }
         ],
         "DefaultParamsIndex": 7
